@@ -25,7 +25,7 @@ struct macSKKApp: App {
             ContentView()
         }
     }
-    
+
     private func isTest() -> Bool {
         return ProcessInfo.processInfo.environment["MACSKK_IS_TEST"] == "1"
     }

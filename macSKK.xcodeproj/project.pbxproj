@@ -14,6 +14,9 @@
 		CE5ECF482957034D00E7BE7D /* macSKKTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE5ECF472957034D00E7BE7D /* macSKKTests.swift */; };
 		CE5ECF642957077D00E7BE7D /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = CE5ECF632957077D00E7BE7D /* InfoPlist.strings */; };
 		CE84A3B929570C37009394C4 /* InputController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE84A3B829570C37009394C4 /* InputController.swift */; };
+		CE84A3DC2957174D009394C4 /* State.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE84A3DB2957174D009394C4 /* State.swift */; };
+		CE84A3DE29571797009394C4 /* Action.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE84A3DD29571797009394C4 /* Action.swift */; };
+		CE84A3E0295717CB009394C4 /* StateMachine.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE84A3DF295717CB009394C4 /* StateMachine.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -38,6 +41,9 @@
 		CE5ECF612957061A00E7BE7D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CE5ECF632957077D00E7BE7D /* InfoPlist.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = InfoPlist.strings; sourceTree = "<group>"; };
 		CE84A3B829570C37009394C4 /* InputController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputController.swift; sourceTree = "<group>"; };
+		CE84A3DB2957174D009394C4 /* State.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = State.swift; sourceTree = "<group>"; };
+		CE84A3DD29571797009394C4 /* Action.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Action.swift; sourceTree = "<group>"; };
+		CE84A3DF295717CB009394C4 /* StateMachine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateMachine.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -65,7 +71,10 @@
 				CE5ECF462957034D00E7BE7D /* macSKKTests */,
 				CE5ECF332957034B00E7BE7D /* Products */,
 			);
+			indentWidth = 4;
 			sourceTree = "<group>";
+			tabWidth = 4;
+			wrapsLines = 1;
 		};
 		CE5ECF332957034B00E7BE7D /* Products */ = {
 			isa = PBXGroup;
@@ -81,6 +90,9 @@
 			children = (
 				CE5ECF352957034B00E7BE7D /* macSKKApp.swift */,
 				CE84A3B829570C37009394C4 /* InputController.swift */,
+				CE84A3DD29571797009394C4 /* Action.swift */,
+				CE84A3DB2957174D009394C4 /* State.swift */,
+				CE84A3DF295717CB009394C4 /* StateMachine.swift */,
 				CE5ECF372957034B00E7BE7D /* ContentView.swift */,
 				CE5ECF392957034D00E7BE7D /* Assets.xcassets */,
 				CE5ECF612957061A00E7BE7D /* Info.plist */,
@@ -237,7 +249,10 @@
 			files = (
 				CE84A3B929570C37009394C4 /* InputController.swift in Sources */,
 				CE5ECF382957034B00E7BE7D /* ContentView.swift in Sources */,
+				CE84A3E0295717CB009394C4 /* StateMachine.swift in Sources */,
 				CE5ECF362957034B00E7BE7D /* macSKKApp.swift in Sources */,
+				CE84A3DE29571797009394C4 /* Action.swift in Sources */,
+				CE84A3DC2957174D009394C4 /* State.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
