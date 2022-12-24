@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>InputMethodConnectionName</key>
+	<string>net.mtgto.inputmethod.macSKK_Connection</string>
+	<key>InputMethodServerControllerClass</key>
+	<string></string>
+	<key>TISInputSourceID</key>
+	<string>net.mtgto.inputmethod.macSKK</string>
+	<key>TISIntendedLanguage</key>
+	<string>ja</string>
+	<key>net.mtgto.inputmethod.macSKK.ascii</key>
+	<string>ASCII (macSKK)</string>
+	<key>net.mtgto.inputmethod.macSKK.hiragana</key>
+	<string>Hiragana (macSKK)</string>
+	<key>net.mtgto.inputmethod.macSKK.katakana</key>
+	<string>Katakana (macSKK)</string>
+	<key>tsInputMethodCharacterRepertoireKey</key>
+	<array>
+		<string>Hira</string>
+		<string>Kana</string>
+		<string>Latn</string>
+	</array>
+	<key>tsInputMethodIconFileKey</key>
+	<string>icon-hiragana.png</string>
+</dict>
+</plist>
