@@ -1,0 +1,4 @@
+CFBundleName = "macSKK";
+net.mtgto.inputmethod.macSKK.ascii = "ASCII (macSKK)";
+net.mtgto.inputmethod.macSKK.hiragana = "Hiragana (macSKK)";
+net.mtgto.inputmethod.macSKK.katakana = "Katakana (macSKK)";
