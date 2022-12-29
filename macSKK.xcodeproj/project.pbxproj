@@ -11,7 +11,6 @@
 		CE5ECF382957034B00E7BE7D /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE5ECF372957034B00E7BE7D /* ContentView.swift */; };
 		CE5ECF3A2957034D00E7BE7D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CE5ECF392957034D00E7BE7D /* Assets.xcassets */; };
 		CE5ECF3D2957034D00E7BE7D /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CE5ECF3C2957034D00E7BE7D /* Preview Assets.xcassets */; };
-		CE5ECF482957034D00E7BE7D /* macSKKTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE5ECF472957034D00E7BE7D /* macSKKTests.swift */; };
 		CE5ECF642957077D00E7BE7D /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = CE5ECF632957077D00E7BE7D /* InfoPlist.strings */; };
 		CE84A3B929570C37009394C4 /* InputController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE84A3B829570C37009394C4 /* InputController.swift */; };
 		CE84A3DC2957174D009394C4 /* State.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE84A3DB2957174D009394C4 /* State.swift */; };
@@ -42,7 +41,6 @@
 		CE5ECF3C2957034D00E7BE7D /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		CE5ECF3E2957034D00E7BE7D /* macSKK.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = macSKK.entitlements; sourceTree = "<group>"; };
 		CE5ECF432957034D00E7BE7D /* macSKKTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = macSKKTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		CE5ECF472957034D00E7BE7D /* macSKKTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = macSKKTests.swift; sourceTree = "<group>"; };
 		CE5ECF612957061A00E7BE7D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CE5ECF632957077D00E7BE7D /* InfoPlist.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = InfoPlist.strings; sourceTree = "<group>"; };
 		CE84A3B829570C37009394C4 /* InputController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputController.swift; sourceTree = "<group>"; };
@@ -127,7 +125,6 @@
 		CE5ECF462957034D00E7BE7D /* macSKKTests */ = {
 			isa = PBXGroup;
 			children = (
-				CE5ECF472957034D00E7BE7D /* macSKKTests.swift */,
 				CE84A3E8295DA504009394C4 /* RomajiTests.swift */,
 				CE84A3EC295DA818009394C4 /* DictTests.swift */,
 			);
@@ -279,7 +276,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				CE84A3ED295DA818009394C4 /* DictTests.swift in Sources */,
-				CE5ECF482957034D00E7BE7D /* macSKKTests.swift in Sources */,
 				CE84A3E9295DA504009394C4 /* RomajiTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -418,8 +414,8 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"macSKK/Preview Content\"";
-				DEVELOPMENT_TEAM = W3A6B7FDC7;
-				ENABLE_HARDENED_RUNTIME = YES;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = macSKK/Info.plist;
@@ -446,7 +442,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"macSKK/Preview Content\"";
-				DEVELOPMENT_TEAM = W3A6B7FDC7;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -471,7 +467,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = W3A6B7FDC7;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.1;
 				MARKETING_VERSION = 1.0;
@@ -490,7 +486,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = W3A6B7FDC7;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.1;
 				MARKETING_VERSION = 1.0;
