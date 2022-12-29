@@ -3,29 +3,41 @@
 
 import XCTest
 
-final class DictTests: XCTestCase {
+@testable import macSKK
 
-    override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+class DictTests: XCTestCase {
+    func testParseSource() throws {
+        let source = """
+            ;; この行はコメント扱い
+            ;; okuri-ari entries.
+            あg /挙/揚/上/
+            あb /浴/
+            ;; okuri-nasi entries.
+            Cyrillic /А/Б/В/Г/Д/Е/Ё/Ж/З/И/Й/К/Л/М/Н/О/П/Р/С/Т/У/Ф/Х/Ц/Ч/Ш/Щ/Ъ/Ы/Ь/Э/Ю/Я/
+            Greek /Α/Β/Γ/Δ/Ε/Ζ/Η/Θ/Ι/Κ/Λ/Μ/Ν/Ξ/Ο/Π/Ρ/Σ/Τ/Υ/Φ/Χ/Ψ/Ω/
+            cyrillic /а/б/в/г/д/е/ё/ж/з/и/й/к/л/м/н/о/п/р/с/т/у/ф/х/ц/ч/ш/щ/ъ/ы/ь/э/ю/я/
+            greek /α/β/γ/δ/ε/ζ/η/θ/ι/κ/λ/μ/ν/ξ/ο/π/ρ/σ/τ/υ/φ/χ/ψ/ω/
+            あ /阿/唖/亜/娃/
+
+            """
+        let dict = try Dict(source: source)
+        XCTAssertEqual(dict.words["あg"]?.map { $0.word }, ["挙", "揚", "上"])
+        XCTAssertEqual(dict.words["あb"]?.map { $0.word }, ["浴"])
+        XCTAssertEqual(dict.words["あ"]?.map { $0.word }, ["阿", "唖", "亜", "娃"])
     }
 
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-    }
+    func testParseSpecialSource() throws {
+        // Sampling from SKK-JISYO.L
+        let source = """
+            わi /湧;(spring) 泉が湧く/沸;(boil) お湯が沸く/涌;≒湧く/
+            ao /(concat "and\\057or")/
+            GPL /GNU General Public License;(concat "http:\\057\\057www.gnu.org\\057licenses\\057gpl.ja.html")/
 
-    func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // Any test you write for XCTest can be annotated as throws and async.
-        // Mark your test throws to produce an unexpected failure when your test encounters an uncaught error.
-        // Mark your test async to allow awaiting for asynchronous code to complete. Check the results with assertions afterwards.
+            """
+        let dict = try Dict(source: source)
+        XCTAssertEqual(dict.words["わi"]?.map { $0.word }, ["湧", "沸", "涌"])
+        XCTAssertEqual(dict.words["ao"]?.map { $0.word }, ["and/or"])
+        XCTAssertEqual(dict.words["GPL"]?.map { $0.annotation }, ["http://www.gnu.org/licenses/gpl.ja.html"])
     }
-
-    func testPerformanceExample() throws {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
-        }
-    }
-
 }
+
