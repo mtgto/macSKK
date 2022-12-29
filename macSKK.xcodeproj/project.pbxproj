@@ -17,6 +17,11 @@
 		CE84A3DC2957174D009394C4 /* State.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE84A3DB2957174D009394C4 /* State.swift */; };
 		CE84A3DE29571797009394C4 /* Action.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE84A3DD29571797009394C4 /* Action.swift */; };
 		CE84A3E0295717CB009394C4 /* StateMachine.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE84A3DF295717CB009394C4 /* StateMachine.swift */; };
+		CE84A3E5295D9F3E009394C4 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = CE84A3E4295D9F3E009394C4 /* Localizable.strings */; };
+		CE84A3E7295DA4DA009394C4 /* Romaji.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE84A3E6295DA4DA009394C4 /* Romaji.swift */; };
+		CE84A3E9295DA504009394C4 /* RomajiTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE84A3E8295DA504009394C4 /* RomajiTests.swift */; };
+		CE84A3EB295DA715009394C4 /* Dict.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE84A3EA295DA715009394C4 /* Dict.swift */; };
+		CE84A3ED295DA818009394C4 /* DictTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE84A3EC295DA818009394C4 /* DictTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -44,6 +49,11 @@
 		CE84A3DB2957174D009394C4 /* State.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = State.swift; sourceTree = "<group>"; };
 		CE84A3DD29571797009394C4 /* Action.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Action.swift; sourceTree = "<group>"; };
 		CE84A3DF295717CB009394C4 /* StateMachine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateMachine.swift; sourceTree = "<group>"; };
+		CE84A3E4295D9F3E009394C4 /* Localizable.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = Localizable.strings; sourceTree = "<group>"; };
+		CE84A3E6295DA4DA009394C4 /* Romaji.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Romaji.swift; sourceTree = "<group>"; };
+		CE84A3E8295DA504009394C4 /* RomajiTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RomajiTests.swift; sourceTree = "<group>"; };
+		CE84A3EA295DA715009394C4 /* Dict.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dict.swift; sourceTree = "<group>"; };
+		CE84A3EC295DA818009394C4 /* DictTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -93,11 +103,14 @@
 				CE84A3DD29571797009394C4 /* Action.swift */,
 				CE84A3DB2957174D009394C4 /* State.swift */,
 				CE84A3DF295717CB009394C4 /* StateMachine.swift */,
+				CE84A3EA295DA715009394C4 /* Dict.swift */,
+				CE84A3E6295DA4DA009394C4 /* Romaji.swift */,
 				CE5ECF372957034B00E7BE7D /* ContentView.swift */,
 				CE5ECF392957034D00E7BE7D /* Assets.xcassets */,
 				CE5ECF612957061A00E7BE7D /* Info.plist */,
 				CE5ECF3E2957034D00E7BE7D /* macSKK.entitlements */,
 				CE5ECF632957077D00E7BE7D /* InfoPlist.strings */,
+				CE84A3E4295D9F3E009394C4 /* Localizable.strings */,
 				CE5ECF3B2957034D00E7BE7D /* Preview Content */,
 			);
 			path = macSKK;
@@ -115,6 +128,8 @@
 			isa = PBXGroup;
 			children = (
 				CE5ECF472957034D00E7BE7D /* macSKKTests.swift */,
+				CE84A3E8295DA504009394C4 /* RomajiTests.swift */,
+				CE84A3EC295DA818009394C4 /* DictTests.swift */,
 			);
 			path = macSKKTests;
 			sourceTree = "<group>";
@@ -206,6 +221,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CE5ECF3D2957034D00E7BE7D /* Preview Assets.xcassets in Resources */,
+				CE84A3E5295D9F3E009394C4 /* Localizable.strings in Resources */,
 				CE5ECF642957077D00E7BE7D /* InfoPlist.strings in Resources */,
 				CE5ECF3A2957034D00E7BE7D /* Assets.xcassets in Resources */,
 			);
@@ -248,6 +264,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				CE84A3B929570C37009394C4 /* InputController.swift in Sources */,
+				CE84A3EB295DA715009394C4 /* Dict.swift in Sources */,
+				CE84A3E7295DA4DA009394C4 /* Romaji.swift in Sources */,
 				CE5ECF382957034B00E7BE7D /* ContentView.swift in Sources */,
 				CE84A3E0295717CB009394C4 /* StateMachine.swift in Sources */,
 				CE5ECF362957034B00E7BE7D /* macSKKApp.swift in Sources */,
@@ -260,7 +278,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CE84A3ED295DA818009394C4 /* DictTests.swift in Sources */,
 				CE5ECF482957034D00E7BE7D /* macSKKTests.swift in Sources */,
+				CE84A3E9295DA504009394C4 /* RomajiTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
