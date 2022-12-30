@@ -42,9 +42,9 @@ class InputController: IMKInputController {
         if modifiers.contains(.control) || modifiers.contains(.command) || modifiers.contains(.function) {
             if modifiers == [.control] {
                 if event.charactersIgnoringModifiers == "j" {
-                    return stateMachine.handle(.userInput(.ctrlJ))
+                    return stateMachine.handle(Action(keyEvent: .ctrlJ, originalEvent: event))
                 } else if event.charactersIgnoringModifiers == "g" {
-                    return stateMachine.handle(.userInput(.cancel))
+                    return stateMachine.handle(Action(keyEvent: .cancel, originalEvent: event))
                 }
             }
             return false
@@ -55,7 +55,7 @@ class InputController: IMKInputController {
             return false
         }
 
-        return stateMachine.handle(.userInput(keyEvent))
+        return stateMachine.handle(Action(keyEvent: keyEvent, originalEvent: event))
     }
 
     override func menu() -> NSMenu! {

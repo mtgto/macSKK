@@ -26,8 +26,23 @@ class StateMachine {
     }
 
     func handle(_ action: Action) -> Bool {
-        switch action {
-        case .userInput(let keyEvent):
+        switch state.inputMethod {
+        case .normal:
+            return handleNormal(action, registerState: state.registerState)
+        }
+    }
+
+    /**
+     * 状態がnormalのときのhandle
+     */
+    func handleNormal(_ action: Action, registerState: RegisterState?) -> Bool {
+        switch action.keyEvent {
+        case .enter:
+            // TODO: 登録中なら登録してfixedTextに打ち込んでprevに戻して入力中文字列を空にする
+            return false
+        case .backspace:
+            return true
+        case .printable(let text):
             state.inputMethod = .normal
             return true
         }
