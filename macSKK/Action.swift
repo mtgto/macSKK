@@ -7,11 +7,12 @@ enum Action: Sendable {
     case userInput(KeyEvent)
 
     enum KeyEvent {
-        case enterKey
-        case backspaceKey
-        case spaceKey
+        case enter
+        case backspace
+        case space
+        case stickyShift
         /// 印字可能な文字の入力 (space以外)
-        case printableKey(String)
+        case printable(String)
         /**
          * Ctrl-J
          */

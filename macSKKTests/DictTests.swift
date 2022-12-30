@@ -40,4 +40,3 @@ class DictTests: XCTestCase {
         XCTAssertEqual(dict.words["GPL"]?.map { $0.annotation }, ["http://www.gnu.org/licenses/gpl.ja.html"])
     }
 }
-

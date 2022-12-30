@@ -291,4 +291,3 @@ struct Romaji: Equatable {
         return ConvertedMoji(input: input, kakutei: nil)
     }
 }
-

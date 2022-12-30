@@ -3,11 +3,9 @@
 
 import Foundation
 
-/**
- * 辞書に登録する言葉。
- *
- * @note 将来プログラム辞書みたいな機能が増えるかもしれない。
- */
+/// 辞書に登録する言葉。
+///
+/// @note 将来プログラム辞書みたいな機能が増えるかもしれない。
 struct Word {
     let word: String
     let annotation: String?
@@ -24,7 +22,7 @@ struct Dict: DictProtocol {
         let source = try String(contentsOf: url, encoding: encoding)
         try self.init(source: source)
     }
-    
+
     init(source: String) throws {
         var dict: [String: [Word]] = [:]
         let pattern = try Regex(#"^(\S+) (/(?:[^/^\n^\r]+/)+)$"#).anchorsMatchLineEndings()
@@ -40,7 +38,7 @@ struct Dict: DictProtocol {
         }
         self.words = dict
     }
-    
+
     func refer(_ word: String) -> [Word] {
         return words[word] ?? []
     }
