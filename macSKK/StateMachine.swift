@@ -5,7 +5,7 @@ import Combine
 import Foundation
 
 // ActionによってIMEに関する状態が変更するイベントの列挙
-enum InputMethodEvent {
+enum InputMethodEvent: Equatable {
     // 確定文字列
     case fixedText(String)
     // 下線付きの未確定文字列
@@ -16,7 +16,7 @@ enum InputMethodEvent {
 }
 
 class StateMachine {
-    private var state: State
+    private(set) var state: State
     let inputMethodEvent: AnyPublisher<InputMethodEvent, Never>
     private let inputMethodEventSubject = PassthroughSubject<InputMethodEvent, Never>()
 
@@ -41,10 +41,20 @@ class StateMachine {
             // TODO: 登録中なら登録してfixedTextに打ち込んでprevに戻して入力中文字列を空にする
             return false
         case .backspace:
-            return true
+            return false
+        case .space:
+            return false
+        case .stickyShift:
+            return false
         case .printable(let text):
-            state.inputMethod = .normal
+            // state.markedTextを更新してinputMethodEventSubjectにstate.displayText()をsendしてreturn trueする
             return true
+        case .ctrlJ:
+            state.inputMode = .hiragana
+            inputMethodEventSubject.send(.modeChanged(.hiragana))
+            return true
+        case .cancel:
+            return false
         }
     }
 }
