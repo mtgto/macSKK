@@ -22,5 +22,13 @@ struct Action {
          * Ctrl-G
          */
         case cancel
+        case ctrlQ
+    }
+    
+    func shiftIsPressed() -> Bool {
+        guard let event = self.originalEvent else {
+            return false
+        }
+        return event.modifierFlags.contains(.shift)
     }
 }

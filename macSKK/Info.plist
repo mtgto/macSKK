@@ -16,6 +16,10 @@
 	<string>Hiragana (macSKK)</string>
 	<key>net.mtgto.inputmethod.macSKK.katakana</key>
 	<string>Katakana (macSKK)</string>
+	<key>net.mtgto.inputmethod.macSKK.hankaku</key>
+	<string>Hankaku (macSKK)</string>
+	<key>net.mtgto.inputmethod.macSKK.eisu</key>
+	<string>Eisu (macSKK)</string>
 	<key>tsInputMethodCharacterRepertoireKey</key>
 	<array>
 		<string>Hira</string>

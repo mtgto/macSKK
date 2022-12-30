@@ -47,14 +47,68 @@ class StateMachine {
         case .stickyShift:
             return false
         case .printable(let text):
-            // state.markedTextを更新してinputMethodEventSubjectにstate.displayText()をsendしてreturn trueする
-            return true
+            return handleNormalPrintable(text: text, action: action, registerState: registerState)
         case .ctrlJ:
             state.inputMode = .hiragana
             inputMethodEventSubject.send(.modeChanged(.hiragana))
             return true
         case .cancel:
             return false
+        case .ctrlQ:
+            switch state.inputMode {
+            case .hiragana, .katakana:
+                state.inputMode = .hankaku
+                inputMethodEventSubject.send(.modeChanged(.hankaku))
+                return true
+            case .hankaku:
+                state.inputMode = .hiragana
+                inputMethodEventSubject.send(.modeChanged(.hiragana))
+                return true
+            default:
+                return false
+            }
         }
+    }
+    
+    /// 状態がnormalのときのprintableイベントのhandle
+    func handleNormalPrintable(text: String, action: Action, registerState: RegisterState?) -> Bool {
+        if text == "q" {
+            switch state.inputMode {
+            case .hiragana:
+                state.inputMode = .katakana
+                inputMethodEventSubject.send(.modeChanged(.katakana))
+                return true
+            case .katakana, .hankaku:
+                state.inputMode = .hiragana
+                inputMethodEventSubject.send(.modeChanged(.hiragana))
+                return true
+            case .eisu:
+                // TODO: 小文字全角ｑを入力する
+                return true
+            case .direct:
+                // TODO: 登録中なら末尾にqをつける
+                return false
+            }
+        } else if text == "l" {
+            switch state.inputMode {
+            case .hiragana, .katakana, .hankaku:
+                if action.shiftIsPressed() {
+                    state.inputMode = .eisu
+                    inputMethodEventSubject.send(.modeChanged(.eisu))
+                } else {
+                    state.inputMode = .direct
+                    inputMethodEventSubject.send(.modeChanged(.direct))
+                }
+                return true
+            case .eisu:
+                // TODO: 小文字全角ｌを入力する
+                return true
+            case .direct:
+                // 登録中なら末尾にqをつける
+                return false
+            }
+        }
+        // state.markedTextを更新してinputMethodEventSubjectにstate.displayText()をsendしてreturn trueする
+        return true
     }
 }

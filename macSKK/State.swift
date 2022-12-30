@@ -66,7 +66,7 @@ struct State {
 enum InputMode: String {
     case hiragana = "net.mtgto.inputmethod.macSKK.hiragana"
     case katakana = "net.mtgto.inputmethod.macSKK.katakana"
-    // case hankaku  = "net.mtgto.inputmethod.macSKK.hankaku" // 半角カタカナ
-    // case eisu = "net.mtgto.inputmethod.macSKK.eisu" // 全角英数
+    case hankaku  = "net.mtgto.inputmethod.macSKK.hankaku" // 半角カタカナ
+    case eisu = "net.mtgto.inputmethod.macSKK.eisu" // 全角英数
     case direct = "net.mtgto.inputmethod.macSKK.ascii"  // 直接入力
 }
