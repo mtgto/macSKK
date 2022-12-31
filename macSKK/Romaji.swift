@@ -3,6 +3,7 @@
 
 import Foundation
 
+// TODO: CFStringTransformを使って大文字小文字・全角半角変換をする
 struct Romaji: Equatable {
     struct Moji: Equatable {
         /**

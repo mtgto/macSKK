@@ -14,7 +14,7 @@ final class StateMachineTests: XCTestCase {
         cancellables = []
     }
 
-    func testHandle() async throws {
+    func testHandleNormalSimple() throws {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.sink { event in
             if case .fixedText("あ") = event {
@@ -26,6 +26,38 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .printable("a"), originalEvent: nil)))
         wait(for: [expectation], timeout: 1.0)
     }
+
+    func testHandleNormalRomaji() throws {
+        let expectation = XCTestExpectation()
+        "ngabyn".forEach { char in
+            XCTAssertTrue(stateMachine.handle(Action(keyEvent: .printable(String(char)), originalEvent: nil)))
+        }
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil)))
+    }
+
+    //    func testHandle2() throws {
+    //        let expectation = XCTestExpectation()
+    //        stateMachine.inputMethodEvent.collect(8).sink { events in
+    //            XCTAssertEqual(textEvents[0], .marked(MarkedText(prefix: "", text: "n")))
+    //            XCTAssertEqual(textEvents[1], .fixed("ん"))
+    //            XCTAssertEqual(textEvents[2], .marked(MarkedText(prefix: "", text: "g")))
+    //            XCTAssertEqual(textEvents[3], .fixed("が"))
+    //            XCTAssertEqual(textEvents[4], .marked(MarkedText(prefix: "", text: "b")))
+    //            XCTAssertEqual(textEvents[5], .marked(MarkedText(prefix: "", text: "by")))
+    //            XCTAssertEqual(textEvents[6], .marked(MarkedText(prefix: "", text: "n")), "子音が連続したら前の子音がキャンセルされる")
+    //            XCTAssertEqual(textEvents[7], .fixed("ん"), "nが入力されているときにエンターされたら「ん」を確定する")
+    //            expectation.fulfill()
+    //        }
+    //        XCTAssertTrue(stateMachine.handle(UserInput(eventType: .input(text: "n"))))
+    //        XCTAssertTrue(stateMachine.handle(UserInput(eventType: .input(text: "g"))))
+    //        XCTAssertTrue(stateMachine.handle(UserInput(eventType: .input(text: "a"))))
+    //        XCTAssertTrue(stateMachine.handle(UserInput(eventType: .input(text: "b"))))
+    //        XCTAssertTrue(stateMachine.handle(UserInput(eventType: .input(text: "y"))))
+    //        XCTAssertTrue(stateMachine.handle(UserInput(eventType: .input(text: "n"))))
+    //        XCTAssertTrue(stateMachine.handle(UserInput(eventType: .enter)))
+    //        wait(for: [expectation], timeout: 1.0)
+    //        XCTAssertNotNil(cancellable)
+    //    }
 
     private func nextInputMethodEvent() async -> InputMethodEvent {
         var cancellation: Cancellable?

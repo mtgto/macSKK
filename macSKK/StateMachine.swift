@@ -29,6 +29,8 @@ class StateMachine {
         switch state.inputMethod {
         case .normal:
             return handleNormal(action, registerState: state.registerState)
+        case .composing:
+            fatalError("TODO")
         }
     }
 
@@ -45,7 +47,17 @@ class StateMachine {
         case .space:
             return false
         case .stickyShift:
-            return false
+            switch state.inputMode {
+            case .hiragana, .katakana, .hankaku:
+                state.inputMethod = .composing(isShift: true, text: [], okuri: nil, romaji: "")
+                updateMarkedText()
+                return true
+            case .eisu:
+                addFixedText("；")
+                return true
+            case .direct:
+                return false
+            }
         case .printable(let text):
             return handleNormalPrintable(text: text, action: action, registerState: registerState)
         case .ctrlJ:
@@ -83,11 +95,19 @@ class StateMachine {
                 inputMethodEventSubject.send(.modeChanged(.hiragana))
                 return true
             case .eisu:
-                // TODO: 小文字全角ｑを入力する
+                if action.shiftIsPressed() {
+                    addFixedText(text.uppercased().toZenkaku())
+                } else {
+                    addFixedText(text.toZenkaku())
+                }
                 return true
             case .direct:
-                // TODO: 登録中なら末尾にqをつける
-                return false
+                if action.shiftIsPressed() {
+                    addFixedText(text.uppercased())
+                } else {
+                    addFixedText(text)
+                }
+                return true
             }
         } else if text == "l" {
             switch state.inputMode {
@@ -101,11 +121,19 @@ class StateMachine {
                 }
                 return true
             case .eisu:
-                // TODO: 小文字全角ｌを入力する
+                if action.shiftIsPressed() {
+                    addFixedText(text.uppercased().toZenkaku())
+                } else {
+                    addFixedText(text.toZenkaku())
+                }
                 return true
             case .direct:
-                // 登録中なら末尾にqをつける
-                return false
+                if action.shiftIsPressed() {
+                    addFixedText(text.uppercased())
+                } else {
+                    addFixedText(text)
+                }
+                return true
             }
         }
 
@@ -118,13 +146,17 @@ class StateMachine {
                 } else {
                     addFixedText(moji.string(for: state.inputMode))
                 }
+            } else {
+                state.inputMethod = .composing(isShift: action.shiftIsPressed(), text: [], okuri: nil, romaji: text)
+                updateMarkedText()
             }
             return true
         case .eisu:
-            // TODO: 全角英数入力
-            return false
+            addFixedText(text.toZenkaku())
+            return true
         case .direct:
-            return false
+            addFixedText(text)
+            return true
         }
 
         // state.markedTextを更新してinputMethodEventSubjectにstate.displayText()をsendしてreturn trueする
@@ -138,5 +170,11 @@ class StateMachine {
         } else {
             inputMethodEventSubject.send(.fixedText(text))
         }
+    }
+
+    /// 現在のMarkedText状態をinputMethodEventSubject.sendする
+    /// 単語登録中ならprefixに "[登録：xxx]" を付与する
+    func updateMarkedText() {
+
     }
 }

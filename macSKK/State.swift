@@ -10,6 +10,34 @@ enum InputMethodState: Equatable {
      * 単語登録中は "[登録：りんご]apple" のようになり、全体に下線がついている状態であってもnormalになる
      */
     case normal
+
+    /**
+     * 未確定入力中の下線が当たっている部分
+     *
+     * 送り仮名があるときはあら + った + あらt みたいなようにもっておくと良さそう (辞書には "あらt" => "洗" が登録されている
+     * カタカナでも変換できるほうがよい
+     * ということはMojiの配列で持っておいたほうがよさそうな気がする
+     *
+     * 例えば "(Shift)ara(Shift)tta" と入力した場合、次のように遷移します
+     *
+     * 1. (true, "あ", nil, "")
+     * 2. (true, "あ", nil, "r")
+     * 3. (true, "あら", nil, "")
+     * 4. (true, "あら", "", "t") (Shift押して送り仮名モード)
+     * 5. (true, "あら", "っ", "t")
+     * 6. (true, "あら", "った", "") (ローマ字がなくなった瞬間に変換されて変換 or 辞書登録に遷移する)
+     *
+     * abbrevモードの例 "/apple" と入力した場合、次のように遷移します
+     *
+     * 1. (true, "", nil, "")
+     * 2. (true, "apple", nil, "")
+     *
+     * - Parameter isShift: (Sticky)Shiftによる未確定入力中かどうか。先頭に▽ついてる状態。
+     * - Parameter text: かな/カナならかなになっている文字列、abbrevなら入力した文字列. (Sticky)Shiftが押されたらそのあとは更新されない
+     * - Parameter okuri: (Sticky)Shiftが押されたあとに入力されてかなになっている文字列。送り仮名モードになってなければnil
+     * - Parameter romaji: ローマ字モードで未確定部分。"k" や "ky" など最低あと1文字でかなに変換できる文字列。
+     */
+    case composing(isShift: Bool, text: [Romaji.Moji], okuri: [Romaji.Moji]?, romaji: String)
 }
 
 //enum MarkedText {
