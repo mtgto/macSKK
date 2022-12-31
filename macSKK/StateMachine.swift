@@ -69,7 +69,7 @@ class StateMachine {
             }
         }
     }
-    
+
     /// 状態がnormalのときのprintableイベントのhandle
     func handleNormalPrintable(text: String, action: Action, registerState: RegisterState?) -> Bool {
         if text == "q" {
@@ -108,7 +108,35 @@ class StateMachine {
                 return false
             }
         }
+
+        switch state.inputMode {
+        case .hiragana, .katakana, .hankaku:
+            let result = Romaji.convert(text)
+            if let moji = result.kakutei {
+                if action.shiftIsPressed() {
+                    state.markedText = MarkedText(isShift: true, text: [moji], romaji: "")
+                } else {
+                    addFixedText(moji.string(for: state.inputMode))
+                }
+            }
+            return true
+        case .eisu:
+            // TODO: 全角英数入力
+            return false
+        case .direct:
+            return false
+        }
+
         // state.markedTextを更新してinputMethodEventSubjectにstate.displayText()をsendしてreturn trueする
-        return true
+    }
+
+    func addFixedText(_ text: String) {
+        if let registerState = state.registerState {
+            // state.markedTextを更新してinputMethodEventSubjectにstate.displayText()をsendする
+            state.registerState = registerState.appendText(text)
+            inputMethodEventSubject.send(.markedText(state.displayText()))
+        } else {
+            inputMethodEventSubject.send(.fixedText(text))
+        }
     }
 }

@@ -46,7 +46,11 @@ struct RegisterState {
     /// 辞書登録する際の読み。ひらがな、カタカナ、英数(abbrev)の場合がある
     let yomi: String
     /// 入力中の登録単語。変換中のように未確定の文字列は含まず確定済文字列のみが入る
-    // var text: String = ""
+    var text: String = ""
+
+    func appendText(_ text: String) -> RegisterState {
+        return RegisterState(prev: prev, yomi: yomi, text: self.text + text)
+    }
 }
 
 struct State {
@@ -66,7 +70,7 @@ struct State {
 enum InputMode: String {
     case hiragana = "net.mtgto.inputmethod.macSKK.hiragana"
     case katakana = "net.mtgto.inputmethod.macSKK.katakana"
-    case hankaku  = "net.mtgto.inputmethod.macSKK.hankaku" // 半角カタカナ
-    case eisu = "net.mtgto.inputmethod.macSKK.eisu" // 全角英数
+    case hankaku = "net.mtgto.inputmethod.macSKK.hankaku"  // 半角カタカナ
+    case eisu = "net.mtgto.inputmethod.macSKK.eisu"  // 全角英数
     case direct = "net.mtgto.inputmethod.macSKK.ascii"  // 直接入力
 }

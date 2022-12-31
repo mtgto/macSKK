@@ -7,7 +7,7 @@ import XCTest
 @testable import macSKK
 
 final class StateMachineTests: XCTestCase {
-    var stateMachine = StateMachine()
+    let stateMachine = StateMachine(initialState: State(inputMode: .hiragana))
     var cancellables: Set<AnyCancellable> = []
 
     override func setUpWithError() throws {
@@ -17,7 +17,7 @@ final class StateMachineTests: XCTestCase {
     func testHandle() async throws {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.sink { event in
-            if case .fixedText("a") = event {
+            if case .fixedText("あ") = event {
                 expectation.fulfill()
             } else {
                 XCTFail(#"想定していた状態遷移が起きませんでした: "\#(event)""#)

@@ -18,9 +18,11 @@ struct Romaji: Equatable {
         func string(for mode: InputMode) -> String {
             switch mode {
             case .hiragana:
-                return self.hiragana
+                return hiragana
             case .katakana:
-                return self.katakana
+                return katakana
+            case .hankaku:
+                return hankaku
             default:
                 fatalError("Called Romaji.Moji.string from wrong mode \(mode)")
             }
