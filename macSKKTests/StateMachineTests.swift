@@ -29,10 +29,14 @@ final class StateMachineTests: XCTestCase {
 
     func testHandleNormalRomaji() throws {
         let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(8).sink { events in
+            XCTAssertEqual(events[0], .markedText("n"))
+        }
         "ngabyn".forEach { char in
             XCTAssertTrue(stateMachine.handle(Action(keyEvent: .printable(String(char)), originalEvent: nil)))
         }
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil)))
+        wait(for: [expectation], timeout: 1.0)
     }
 
     //    func testHandle2() throws {

@@ -61,8 +61,8 @@ class StateMachine {
             case .direct:
                 return false
             }
-        case .printable(let text):
-            return handleNormalPrintable(text: text, action: action, registerState: registerState)
+        case .printable(let input):
+            return handleNormalPrintable(input: input, action: action, registerState: registerState)
         case .ctrlJ:
             state.inputMode = .hiragana
             inputMethodEventSubject.send(.modeChanged(.hiragana))
@@ -86,8 +86,8 @@ class StateMachine {
     }
 
     /// 状態がnormalのときのprintableイベントのhandle
-    func handleNormalPrintable(text: String, action: Action, registerState: RegisterState?) -> Bool {
-        if text == "q" {
+    func handleNormalPrintable(input: String, action: Action, registerState: RegisterState?) -> Bool {
+        if input == "q" {
             switch state.inputMode {
             case .hiragana:
                 state.inputMode = .katakana
@@ -99,20 +99,20 @@ class StateMachine {
                 return true
             case .eisu:
                 if action.shiftIsPressed() {
-                    addFixedText(text.uppercased().toZenkaku())
+                    addFixedText(input.uppercased().toZenkaku())
                 } else {
-                    addFixedText(text.toZenkaku())
+                    addFixedText(input.toZenkaku())
                 }
                 return true
             case .direct:
                 if action.shiftIsPressed() {
-                    addFixedText(text.uppercased())
+                    addFixedText(input.uppercased())
                 } else {
-                    addFixedText(text)
+                    addFixedText(input)
                 }
                 return true
             }
-        } else if text == "l" {
+        } else if input == "l" {
             switch state.inputMode {
             case .hiragana, .katakana, .hankaku:
                 if action.shiftIsPressed() {
@@ -125,16 +125,16 @@ class StateMachine {
                 return true
             case .eisu:
                 if action.shiftIsPressed() {
-                    addFixedText(text.uppercased().toZenkaku())
+                    addFixedText(input.uppercased().toZenkaku())
                 } else {
-                    addFixedText(text.toZenkaku())
+                    addFixedText(input.toZenkaku())
                 }
                 return true
             case .direct:
                 if action.shiftIsPressed() {
-                    addFixedText(text.uppercased())
+                    addFixedText(input.uppercased())
                 } else {
-                    addFixedText(text)
+                    addFixedText(input)
                 }
                 return true
             }
@@ -142,7 +142,7 @@ class StateMachine {
 
         switch state.inputMode {
         case .hiragana, .katakana, .hankaku:
-            let result = Romaji.convert(text)
+            let result = Romaji.convert(input)
             if let moji = result.kakutei {
                 if action.shiftIsPressed() {
                     state.markedText = MarkedText(isShift: true, text: [moji], romaji: "")
@@ -150,15 +150,15 @@ class StateMachine {
                     addFixedText(moji.string(for: state.inputMode))
                 }
             } else {
-                state.inputMethod = .composing(isShift: action.shiftIsPressed(), text: [], okuri: nil, romaji: text)
+                state.inputMethod = .composing(isShift: action.shiftIsPressed(), text: [], okuri: nil, romaji: input)
                 updateMarkedText()
             }
             return true
         case .eisu:
-            addFixedText(text.toZenkaku())
+            addFixedText(input.toZenkaku())
             return true
         case .direct:
-            addFixedText(text)
+            addFixedText(input)
             return true
         }
 
@@ -189,6 +189,105 @@ class StateMachine {
                 state.inputMethod = .normal
             } else {
                 state.inputMethod = .composing(isShift: isShift, text: text.dropLast(), okuri: okuri, romaji: romaji)
+            }
+            updateMarkedText()
+            return true
+        case .space:
+            // 未確定ローマ字はn以外は入力されずに削除される. nだけは"ん"として変換する
+            // 変換候補がないときは辞書登録へ
+            let newText: [Romaji.Moji] = romaji == "n" ? text + [Romaji.n] : text
+            // TODO
+            updateMarkedText()
+            return true
+        case .stickyShift:
+            // TODO
+            if !romaji.isEmpty {
+                state.inputMethod = .composing(isShift: isShift, text: text, okuri: [], romaji: romaji)
+            } else if let okuri {
+                // TODO 送り仮名の末尾に"；"をつける
+                // state.inputMethod = .composing(isShift: isShift, text: text, okuri: okuri + ["；"], romaji: "")
+            } else {
+                state.inputMethod = .composing(isShift: isShift, text: text, okuri: [], romaji: romaji)
+            }
+            updateMarkedText()
+            return true
+        case .printable(let input):
+            if input == "q" {
+                if okuri == nil {
+                    // ひらがな入力中ならカタカナ、カタカナ入力中ならひらがな、半角カタカナ入力中なら全角カタカナで確定する。
+                    switch state.inputMode {
+                    case .hiragana:
+                        state.inputMethod = .normal
+                        addFixedText(text.map { $0.string(for: .katakana) }.joined())
+                        return true
+                    case .katakana:
+                        state.inputMethod = .normal
+                        addFixedText(text.map { $0.string(for: .hiragana) }.joined())
+                        return true
+                    case .hankaku:
+                        state.inputMethod = .normal
+                        addFixedText(text.map { $0.string(for: .katakana) }.joined())
+                        return true
+                    default:
+                        fatalError("inputMode=\(state.inputMode), handleComposingでqが入力された")
+                    }
+                } else {
+                    // 送り仮名があるときはローマ字部分をリセットする
+                    state.inputMethod = .composing(isShift: isShift, text: text, okuri: okuri, romaji: "")
+                    return false
+                }
+            } else if input == "l" {
+                if okuri == nil {
+                    switch state.inputMode {
+                    case .hiragana:
+                        state.inputMethod = .normal
+                        addFixedText(text.map { $0.string(for: .hiragana) }.joined())
+                        return true
+                    case .katakana:
+                        state.inputMethod = .normal
+                        addFixedText(text.map { $0.string(for: .katakana) }.joined())
+                        return true
+                    case .hankaku:
+                        state.inputMethod = .normal
+                        addFixedText(text.map { $0.string(for: .hankaku) }.joined())
+                        return true
+                    default:
+                        fatalError("inputMode=\(state.inputMode), handleComposingでlが入力された")
+                    }
+                } else {
+                    // 送り仮名があるときはローマ字部分をリセットする
+                    state.inputMethod = .composing(isShift: isShift, text: text, okuri: okuri, romaji: "")
+                    return false
+                }
+            }
+            switch state.inputMode {
+            case .hiragana, .katakana, .hankaku:
+                let result = Romaji.convert(romaji + input)
+                if let moji = result.kakutei {
+                    if isShift {
+                        if let okuri {
+                            state.inputMethod = .composing(
+                                isShift: true, text: text, okuri: okuri + [moji], romaji: result.input)
+                        } else if action.shiftIsPressed() {
+                            // TODO: 変換開始
+                        } else {
+                            state.inputMethod = .composing(
+                                isShift: true, text: text + [moji], okuri: nil, romaji: result.input)
+                        }
+                    }
+                    if action.shiftIsPressed() {
+                        state.markedText = MarkedText(isShift: true, text: [moji], romaji: "")
+                    } else {
+                        addFixedText(moji.string(for: state.inputMode))
+                    }
+                } else {
+                    state.inputMethod = .composing(
+                        isShift: action.shiftIsPressed(), text: [], okuri: nil, romaji: input)
+                    updateMarkedText()
+                }
+                return true
+            default:
+                fatalError("inputMode=\(state.inputMode), handleComposingで\(input)が入力された")
             }
             updateMarkedText()
             return true
