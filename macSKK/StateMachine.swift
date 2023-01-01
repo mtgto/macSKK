@@ -30,6 +30,7 @@ class StateMachine {
         case .normal:
             return handleNormal(action, registerState: state.registerState)
         case .composing:
+            return handleComposing(action, registerState: state.registerState)
             fatalError("TODO")
         }
     }
@@ -43,9 +44,11 @@ class StateMachine {
             // TODO: 登録中なら登録してfixedTextに打ち込んでprevに戻して入力中文字列を空にする
             return false
         case .backspace:
+            // TODO
             return false
         case .space:
-            return false
+            addFixedText(" ")
+            return true
         case .stickyShift:
             switch state.inputMode {
             case .hiragana, .katakana, .hankaku:
@@ -160,6 +163,38 @@ class StateMachine {
         }
 
         // state.markedTextを更新してinputMethodEventSubjectにstate.displayText()をsendしてreturn trueする
+    }
+
+    func handleComposing(_ action: Action, registerState: RegisterState?) -> Bool {
+        guard case .composing(let isShift, let text, let okuri, let romaji) = state.inputMethod else {
+            return false
+        }
+        switch action.keyEvent {
+        case .enter:
+            // 未確定ローマ字はn以外は入力されずに削除される. nだけは"ん"として変換する
+            let newText: [Romaji.Moji] = romaji == "n" ? text + [Romaji.n] : text
+            let fixedText = newText.map { $0.string(for: state.inputMode) }.joined()
+            state.inputMethod = .normal
+            addFixedText(fixedText)
+            return true
+        case .backspace:
+            // TODO: composingをなんかのstructにしてdropLastを作る?
+            if !romaji.isEmpty {
+                state.inputMethod = .composing(
+                    isShift: isShift, text: text, okuri: okuri, romaji: String(romaji.dropLast()))
+            } else if let okuri {
+                state.inputMethod = .composing(
+                    isShift: isShift, text: text, okuri: okuri.isEmpty ? nil : okuri.dropLast(), romaji: romaji)
+            } else if text.isEmpty {
+                state.inputMethod = .normal
+            } else {
+                state.inputMethod = .composing(isShift: isShift, text: text.dropLast(), okuri: okuri, romaji: romaji)
+            }
+            updateMarkedText()
+            return true
+        default:
+            fatalError("TODO")
+        }
     }
 
     func addFixedText(_ text: String) {
