@@ -6,12 +6,13 @@ import Foundation
 
 // ActionによってIMEに関する状態が変更するイベントの列挙
 enum InputMethodEvent: Equatable {
-    // 確定文字列
+    /// 確定文字列
     case fixedText(String)
-    // 下線付きの未確定文字列
-    // 登録モード時は "[登録：あああ]ほげ" のように長くなる
+    /// 下線付きの未確定文字列
+    ///
+    /// 登録モード時は "[登録：あああ]ほげ" のように長くなる
     case markedText(String)
-    // qやlなどにより入力モードを変更する
+    /// qやlなどにより入力モードを変更する
     case modeChanged(InputMode)
 }
 
@@ -201,9 +202,7 @@ class StateMachine {
             return true
         case .stickyShift:
             // TODO
-            if !romaji.isEmpty {
-                state.inputMethod = .composing(isShift: isShift, text: text, okuri: [], romaji: romaji)
-            } else if let okuri {
+            if let okuri {
                 // TODO 送り仮名の末尾に"；"をつける
                 // state.inputMethod = .composing(isShift: isShift, text: text, okuri: okuri + ["；"], romaji: "")
             } else {
