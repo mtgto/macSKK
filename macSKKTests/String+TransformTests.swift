@@ -12,7 +12,13 @@ final class StringTransformTests: XCTestCase {
         XCTAssertEqual("A".toZenkaku(), "Ａ")
         XCTAssertEqual(";".toZenkaku(), "；")
         XCTAssertEqual(" ".toZenkaku(), "　")
-        XCTAssertEqual("ｱ".toZenkaku(), "ア")
+        XCTAssertEqual("ｱｯ".toZenkaku(), "アッ")
         XCTAssertEqual("ｸﾞｳﾞｪ".toZenkaku(), "グヴェ")
+    }
+
+    func testToKatakana() throws {
+        XCTAssertEqual("".toKatakana(), "")
+        XCTAssertEqual("あっ".toKatakana(), "アッ")
+        XCTAssertEqual("ぐう゛ぇ".toKatakana(), "グヴェ")
     }
 }

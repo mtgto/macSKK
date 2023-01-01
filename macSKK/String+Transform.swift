@@ -10,4 +10,14 @@ extension String {
         }
         return converted
     }
+
+    func toKatakana() -> String {
+        guard
+            let converted = replacingOccurrences(of: "う゛", with: "ヴ").applyingTransform(
+                .hiraganaToKatakana, reverse: false)
+        else {
+            fatalError("カタカナへの変換に失敗: \"\(self)\"")
+        }
+        return converted
+    }
 }
