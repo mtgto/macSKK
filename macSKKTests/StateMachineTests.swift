@@ -29,9 +29,16 @@ final class StateMachineTests: XCTestCase {
 
     func testHandleNormalRomaji() throws {
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(8).sink { events in
+        stateMachine.inputMethodEvent.collect(7).sink { events in
             XCTAssertEqual(events[0], .markedText("n"))
-        }
+            XCTAssertEqual(events[1], .fixedText("ん"))
+            XCTAssertEqual(events[2], .markedText("g"))
+            XCTAssertEqual(events[3], .fixedText("が"))
+            XCTAssertEqual(events[4], .markedText("b"))
+            XCTAssertEqual(events[5], .markedText("by"))
+            XCTAssertEqual(events[6], .markedText("n"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
         "ngabyn".forEach { char in
             XCTAssertTrue(stateMachine.handle(Action(keyEvent: .printable(String(char)), originalEvent: nil)))
         }

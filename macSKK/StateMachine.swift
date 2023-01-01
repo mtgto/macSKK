@@ -274,23 +274,24 @@ class StateMachine {
                             state.inputMethod = .composing(
                                 isShift: true, text: text + [moji], okuri: nil, romaji: result.input)
                         }
-                    }
-                    if action.shiftIsPressed() {
-                        state.markedText = MarkedText(isShift: true, text: [moji], romaji: "")
                     } else {
                         addFixedText(moji.string(for: state.inputMode))
+                        if result.input.isEmpty {
+                            state.inputMethod = .normal
+                        } else {
+                            state.inputMethod = .composing(isShift: false, text: [], okuri: nil, romaji: result.input)
+                            updateMarkedText()
+                        }
                     }
                 } else {
                     state.inputMethod = .composing(
-                        isShift: action.shiftIsPressed(), text: [], okuri: nil, romaji: input)
+                        isShift: action.shiftIsPressed(), text: [], okuri: nil, romaji: romaji + input)
                     updateMarkedText()
                 }
                 return true
             default:
                 fatalError("inputMode=\(state.inputMode), handleComposingで\(input)が入力された")
             }
-            updateMarkedText()
-            return true
         default:
             fatalError("TODO")
         }
@@ -309,6 +310,23 @@ class StateMachine {
     /// 現在のMarkedText状態をinputMethodEventSubject.sendする
     /// 単語登録中ならprefixに "[登録：xxx]" を付与する
     func updateMarkedText() {
-
+        var markedText = ""
+        if let registerState = state.registerState {
+            markedText = "[登録：xxx]"
+        }
+        switch state.inputMethod {
+        case .composing(let isShift, let text, let okuri, let romaji):
+            let displayText = text.map { $0.string(for: state.inputMode) }.joined()
+            if let okuri = okuri {
+                markedText += "▽" + displayText + "*" + okuri.map { $0.hiragana }.joined() + romaji
+            } else if isShift {
+                markedText += "▽" + displayText + romaji
+            } else {
+                markedText += romaji
+            }
+        default:
+            break
+        }
+        inputMethodEventSubject.send(.markedText(markedText))
     }
 }
