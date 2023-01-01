@@ -16,6 +16,23 @@ final class StringTransformTests: XCTestCase {
         XCTAssertEqual("ｸﾞｳﾞｪ".toZenkaku(), "グヴェ")
     }
 
+    func testToHankaku() throws {
+        XCTAssertEqual("".toHankaku(), "")
+        XCTAssertEqual("ａ".toHankaku(), "a")
+        XCTAssertEqual("Ａ".toHankaku(), "A")
+        XCTAssertEqual("；".toHankaku(), ";")
+        XCTAssertEqual("　".toHankaku(), " ")
+        XCTAssertEqual("アッ".toHankaku(), "ｱｯ")
+        XCTAssertEqual("グヴェ".toHankaku(), "ｸﾞｳﾞｪ")
+        XCTAssertEqual("あいう123!@#".toHankaku(), "あいう123!@#")
+    }
+
+    func testToHiragana() throws {
+        XCTAssertEqual("".toHiragana(), "")
+        XCTAssertEqual("アッ".toHiragana(), "あっ")
+        XCTAssertEqual("グヴェ".toHiragana(), "ぐう゛ぇ")
+    }
+
     func testToKatakana() throws {
         XCTAssertEqual("".toKatakana(), "")
         XCTAssertEqual("あっ".toKatakana(), "アッ")

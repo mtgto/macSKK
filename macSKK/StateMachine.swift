@@ -317,7 +317,7 @@ class StateMachine {
         case .composing(let isShift, let text, let okuri, let romaji):
             let displayText = text.map { $0.string(for: state.inputMode) }.joined()
             if let okuri = okuri {
-                markedText += "▽" + displayText + "*" + okuri.map { $0.hiragana }.joined() + romaji
+                markedText += "▽" + displayText + "*" + okuri.map { $0.string(for: state.inputMode) }.joined() + romaji
             } else if isShift {
                 markedText += "▽" + displayText + romaji
             } else {
