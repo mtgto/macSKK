@@ -23,6 +23,7 @@
 		CE84A3ED295DA818009394C4 /* DictTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE84A3EC295DA818009394C4 /* DictTests.swift */; };
 		CEA78FAA295EBCAC00B67E25 /* StateMachineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA78FA9295EBCAC00B67E25 /* StateMachineTests.swift */; };
 		CEA78FAC2960401F00B67E25 /* String+Transform.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA78FAB2960401F00B67E25 /* String+Transform.swift */; };
+		CEA78FAE2961BA1D00B67E25 /* String+TransformTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA78FAD2961BA1D00B67E25 /* String+TransformTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -56,6 +57,7 @@
 		CE84A3EC295DA818009394C4 /* DictTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictTests.swift; sourceTree = "<group>"; };
 		CEA78FA9295EBCAC00B67E25 /* StateMachineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateMachineTests.swift; sourceTree = "<group>"; };
 		CEA78FAB2960401F00B67E25 /* String+Transform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Transform.swift"; sourceTree = "<group>"; };
+		CEA78FAD2961BA1D00B67E25 /* String+TransformTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+TransformTests.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -108,13 +110,13 @@
 				CE84A3EA295DA715009394C4 /* Dict.swift */,
 				CE84A3E6295DA4DA009394C4 /* Romaji.swift */,
 				CE5ECF372957034B00E7BE7D /* ContentView.swift */,
+				CEA78FAB2960401F00B67E25 /* String+Transform.swift */,
 				CE5ECF392957034D00E7BE7D /* Assets.xcassets */,
 				CE5ECF612957061A00E7BE7D /* Info.plist */,
 				CE5ECF3E2957034D00E7BE7D /* macSKK.entitlements */,
 				CE5ECF632957077D00E7BE7D /* InfoPlist.strings */,
 				CE84A3E4295D9F3E009394C4 /* Localizable.strings */,
 				CE5ECF3B2957034D00E7BE7D /* Preview Content */,
-				CEA78FAB2960401F00B67E25 /* String+Transform.swift */,
 			);
 			path = macSKK;
 			sourceTree = "<group>";
@@ -133,6 +135,7 @@
 				CE84A3E8295DA504009394C4 /* RomajiTests.swift */,
 				CE84A3EC295DA818009394C4 /* DictTests.swift */,
 				CEA78FA9295EBCAC00B67E25 /* StateMachineTests.swift */,
+				CEA78FAD2961BA1D00B67E25 /* String+TransformTests.swift */,
 			);
 			path = macSKKTests;
 			sourceTree = "<group>";
@@ -285,6 +288,7 @@
 				CE84A3ED295DA818009394C4 /* DictTests.swift in Sources */,
 				CE84A3E9295DA504009394C4 /* RomajiTests.swift in Sources */,
 				CEA78FAA295EBCAC00B67E25 /* StateMachineTests.swift in Sources */,
+				CEA78FAE2961BA1D00B67E25 /* String+TransformTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
