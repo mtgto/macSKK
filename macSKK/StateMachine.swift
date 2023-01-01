@@ -285,7 +285,7 @@ class StateMachine {
                     }
                 } else {
                     state.inputMethod = .composing(
-                        isShift: action.shiftIsPressed(), text: [], okuri: nil, romaji: romaji + input)
+                        isShift: action.shiftIsPressed(), text: [], okuri: nil, romaji: result.input)
                     updateMarkedText()
                 }
                 return true
