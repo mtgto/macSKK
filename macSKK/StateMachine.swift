@@ -205,10 +205,17 @@ class StateMachine {
                 // AquaSKKは送り仮名の末尾に"；"をつけて変換処理もしくは単語登録に遷移
                 state.inputMethod = .composing(
                     isShift: isShift, text: text, okuri: okuri + [Romaji.symbolTable[";"]!], romaji: "")
+                updateMarkedText()
             } else {
-                state.inputMethod = .composing(isShift: isShift, text: text, okuri: [], romaji: romaji)
+                // 空文字列のときは全角；を入力、それ以外のときは送り仮名モードへ
+                if text.isEmpty {
+                    state.inputMethod = .normal
+                    addFixedText("；")
+                } else {
+                    state.inputMethod = .composing(isShift: isShift, text: text, okuri: [], romaji: romaji)
+                    updateMarkedText()
+                }
             }
-            updateMarkedText()
             return true
         case .printable(let input):
             if input == "q" {
@@ -325,7 +332,7 @@ class StateMachine {
         switch state.inputMethod {
         case .composing(let isShift, let text, let okuri, let romaji):
             let displayText = text.map { $0.string(for: state.inputMode) }.joined()
-            if let okuri = okuri {
+            if let okuri {
                 markedText += "▽" + displayText + "*" + okuri.map { $0.string(for: state.inputMode) }.joined() + romaji
             } else if isShift {
                 markedText += "▽" + displayText + romaji
