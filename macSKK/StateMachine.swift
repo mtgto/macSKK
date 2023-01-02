@@ -212,7 +212,7 @@ class StateMachine {
                     state.inputMethod = .normal
                     addFixedText("；")
                 } else {
-                    state.inputMethod = .composing(isShift: isShift, text: text, okuri: [], romaji: romaji)
+                    state.inputMethod = .composing(isShift: true, text: text, okuri: [], romaji: romaji)
                     updateMarkedText()
                 }
             }
@@ -283,11 +283,13 @@ class StateMachine {
                         if let okuri {
                             state.inputMethod = .composing(
                                 isShift: true, text: text, okuri: okuri + [moji], romaji: result.input)
-                        } else if action.shiftIsPressed() {
+                            updateMarkedText()
+                        } else if !text.isEmpty && action.shiftIsPressed() {
                             // TODO: 変換開始
                         } else {
                             state.inputMethod = .composing(
                                 isShift: true, text: text + [moji], okuri: nil, romaji: result.input)
+                            updateMarkedText()
                         }
                     } else {
                         addFixedText(moji.string(for: state.inputMode))
@@ -299,8 +301,12 @@ class StateMachine {
                         }
                     }
                 } else {
-                    state.inputMethod = .composing(
-                        isShift: action.shiftIsPressed(), text: [], okuri: nil, romaji: result.input)
+                    if let okuri {
+                        state.inputMethod = .composing(isShift: isShift, text: text, okuri: okuri, romaji: result.input)
+                    } else {
+                        state.inputMethod = .composing(
+                            isShift: action.shiftIsPressed(), text: text, okuri: [], romaji: result.input)
+                    }
                     updateMarkedText()
                 }
                 return true

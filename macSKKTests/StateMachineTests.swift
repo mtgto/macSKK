@@ -49,13 +49,23 @@ final class StateMachineTests: XCTestCase {
 
     func testHandleNormalStickyShift() {
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(2).sink { events in
+        stateMachine.inputMethodEvent.collect(6).sink { events in
             XCTAssertEqual(events[0], .markedText("▽"))
             XCTAssertEqual(events[1], .fixedText("；"))
+            XCTAssertEqual(events[2], .markedText("▽"))
+            XCTAssertEqual(events[3], .markedText("▽い"))
+            XCTAssertEqual(events[4], .markedText("▽い*"))
+            XCTAssertEqual(events[5], .markedText("▽い*j"))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil)))
+
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .printable("i"), originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .printable("j"), originalEvent: nil)))
+
         wait(for: [expectation], timeout: 1.0)
     }
 
