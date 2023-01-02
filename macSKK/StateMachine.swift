@@ -201,10 +201,10 @@ class StateMachine {
             updateMarkedText()
             return true
         case .stickyShift:
-            // TODO
             if let okuri {
-                // TODO 送り仮名の末尾に"；"をつける
-                // state.inputMethod = .composing(isShift: isShift, text: text, okuri: okuri + ["；"], romaji: "")
+                // AquaSKKは送り仮名の末尾に"；"をつけて変換処理もしくは単語登録に遷移
+                state.inputMethod = .composing(
+                    isShift: isShift, text: text, okuri: okuri + [Romaji.symbolTable[";"]!], romaji: "")
             } else {
                 state.inputMethod = .composing(isShift: isShift, text: text, okuri: [], romaji: romaji)
             }
@@ -213,23 +213,32 @@ class StateMachine {
         case .printable(let input):
             if input == "q" {
                 if okuri == nil {
+                    // AquaSKKの挙動に合わせてShift-Qのときは送り無視で確定、次の入力へ進む
+                    if action.shiftIsPressed() {
+                        state.inputMethod = .composing(isShift: true, text: [], okuri: nil, romaji: "")
+                        switch state.inputMode {
+                        case .hiragana:
+                            addFixedText(text.map { $0.string(for: .hiragana) }.joined())
+                        case .katakana, .hankaku:
+                            addFixedText(text.map { $0.string(for: .katakana) }.joined())
+                        default:
+                            fatalError("inputMode=\(state.inputMode), handleComposingでShift-Qが入力された")
+                        }
+                        return true
+                    }
                     // ひらがな入力中ならカタカナ、カタカナ入力中ならひらがな、半角カタカナ入力中なら全角カタカナで確定する。
+                    state.inputMethod = .normal
                     switch state.inputMode {
                     case .hiragana:
-                        state.inputMethod = .normal
                         addFixedText(text.map { $0.string(for: .katakana) }.joined())
-                        return true
                     case .katakana:
-                        state.inputMethod = .normal
                         addFixedText(text.map { $0.string(for: .hiragana) }.joined())
-                        return true
                     case .hankaku:
-                        state.inputMethod = .normal
                         addFixedText(text.map { $0.string(for: .katakana) }.joined())
-                        return true
                     default:
                         fatalError("inputMode=\(state.inputMode), handleComposingでqが入力された")
                     }
+                    return true
                 } else {
                     // 送り仮名があるときはローマ字部分をリセットする
                     state.inputMethod = .composing(isShift: isShift, text: text, okuri: okuri, romaji: "")
