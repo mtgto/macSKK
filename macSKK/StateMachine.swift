@@ -162,7 +162,11 @@ class StateMachine {
             }
             return true
         case .eisu:
-            addFixedText(input.toZenkaku())
+            if action.shiftIsPressed() {
+                addFixedText(input.uppercased().toZenkaku())
+            } else {
+                addFixedText(input.toZenkaku())
+            }
             return true
         case .direct:
             if let characters = action.characters() {

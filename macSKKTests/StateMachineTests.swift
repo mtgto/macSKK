@@ -84,6 +84,26 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    func testHandleNormalPrintableEisu() throws {
+        stateMachine = StateMachine(initialState: State(inputMode: .eisu))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(2).sink { events in
+            XCTAssertEqual(events[0], .fixedText("ａ"))
+            XCTAssertEqual(events[1], .fixedText("Ａ"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(
+            stateMachine.handle(
+                Action(
+                    keyEvent: .printable("a"),
+                    originalEvent: generateNSEvent(characters: "a", charactersIgnoringModifiers: "a", modifierFlags: [])
+                )))
+        XCTAssertTrue(
+            stateMachine.handle(
+                Action(keyEvent: .printable("a"), originalEvent: generateKeyEventWithShift(character: "a"))))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     func testHandleNormalStickyShift() {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(6).sink { events in
