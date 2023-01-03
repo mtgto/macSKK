@@ -19,6 +19,7 @@ enum InputMethodState: Equatable {
      * ということはMojiの配列で持っておいたほうがよさそうな気がする
      *
      * 例えば "(Shift)ara(Shift)tta" と入力した場合、次のように遷移します
+     * (isShift, text, okuri, romaji)
      *
      * 1. (true, "あ", nil, "")
      * 2. (true, "あ", nil, "r")
@@ -32,12 +33,25 @@ enum InputMethodState: Equatable {
      * 1. (true, "", nil, "")
      * 2. (true, "apple", nil, "")
      *
-     * - Parameter isShift: (Sticky)Shiftによる未確定入力中かどうか。先頭に▽ついてる状態。
-     * - Parameter text: かな/カナならかなになっている文字列、abbrevなら入力した文字列. (Sticky)Shiftが押されたらそのあとは更新されない
-     * - Parameter okuri: (Sticky)Shiftが押されたあとに入力されてかなになっている文字列。送り仮名モードになってなければnil
-     * - Parameter romaji: ローマ字モードで未確定部分。"k" や "ky" など最低あと1文字でかなに変換できる文字列。
-     */
-    case composing(isShift: Bool, text: [Romaji.Moji], okuri: [Romaji.Moji]?, romaji: String)
+     **/
+    case composing(ComposingState)
+}
+
+/// 入力中文字列の定義
+struct ComposingState: Equatable {
+    /// (Sticky)Shiftによる未確定入力中かどうか。先頭に▽ついてる状態。
+    var isShift: Bool
+    /// かな/カナならかなになっている文字列、abbrevなら入力した文字列. (Sticky)Shiftが押されたらそのあとは更新されない
+    var text: [Romaji.Moji]
+    /// (Sticky)Shiftが押されたあとに入力されてかなになっている文字列。送り仮名モードになってなければnil
+    var okuri: [Romaji.Moji]?
+    /// ローマ字モードで未確定部分。"k" や "ky" など最低あと1文字でかなに変換できる文字列。
+    var romaji: String
+
+    func string(for mode: InputMode) -> String {
+        let newText: [Romaji.Moji] = romaji == "n" ? text + [Romaji.n] : text
+        return newText.map { $0.string(for: mode) }.joined()
+    }
 }
 
 //enum MarkedText {
