@@ -35,6 +35,10 @@ enum InputMethodState: Equatable {
      *
      **/
     case composing(ComposingState)
+    /**
+     * 変換候補選択中の状態
+     */
+    case selecting(SelectingState)
 }
 
 /// 入力中文字列の定義
@@ -52,6 +56,12 @@ struct ComposingState: Equatable {
         let newText: [Romaji.Moji] = romaji == "n" ? text + [Romaji.n] : text
         return newText.map { $0.string(for: mode) }.joined()
     }
+}
+
+/// 変換候補選択状態
+struct SelectingState {
+    /// 候補選択状態に遷移する前の状態。
+    let prev: (InputMode, MarkedText, ComposingState)
 }
 
 //enum MarkedText {
@@ -83,9 +93,9 @@ struct MarkedText {
 
 /// 辞書登録状態
 struct RegisterState {
-    /// 辞書登録状態に遷移する前の状態。通常はcomposing
-    let prev: (MarkedText, InputMethodState)
-    /// 辞書登録する際の読み。ひらがな、カタカナ、英数(abbrev)の場合がある
+    /// 辞書登録状態に遷移する前の状態。
+    let prev: (InputMode, MarkedText, ComposingState)
+    /// 辞書登録する際の読み。ひらがな、カタカナ、半角カタカナ、英数(abbrev)の場合がある
     let yomi: String
     /// 入力中の登録単語。変換中のように未確定の文字列は含まず確定済文字列のみが入る
     var text: String = ""

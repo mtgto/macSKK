@@ -32,6 +32,8 @@ class StateMachine {
             return handleNormal(action, registerState: state.registerState)
         case .composing(let composing):
             return handleComposing(action, composing: composing, registerState: state.registerState)
+        case .selecting(let selecting):
+            return handleSelecting(action, selecting: selecting, registerState: state.registerState)
         }
     }
 
@@ -329,9 +331,25 @@ class StateMachine {
             state.inputMode = .hiragana
             inputMethodEventSubject.send(.modeChanged(.hiragana))
             return true
+        case .cancel:
+            if romaji.isEmpty {
+                // 下線テキストをリセットする
+                if let registerState {
+                    state.registerState = RegisterState(prev: registerState.prev, yomi: registerState.yomi)
+                }
+                state.inputMethod = .normal
+            } else {
+                state.inputMethod = .composing(ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: ""))
+            }
+            updateMarkedText()
+            return true
         default:
             fatalError("TODO")
         }
+    }
+
+    func handleSelecting(_ action: Action, selecting: SelectingState, registerState: RegisterState?) -> Bool {
+        return false
     }
 
     func addFixedText(_ text: String) {
