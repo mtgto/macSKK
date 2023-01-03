@@ -82,6 +82,22 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    func testHandleNormalQ() {
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(4).sink { events in
+            XCTAssertEqual(events[0], .modeChanged(.katakana))
+            XCTAssertEqual(events[1], .modeChanged(.hiragana))
+            XCTAssertEqual(events[2], .modeChanged(.hankaku))
+            XCTAssertEqual(events[3], .modeChanged(.hiragana))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .printable("q"), originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .printable("q"), originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .ctrlQ, originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .ctrlQ, originalEvent: nil)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     private func nextInputMethodEvent() async -> InputMethodEvent {
         var cancellation: Cancellable?
         let cancel = { cancellation?.cancel() }
