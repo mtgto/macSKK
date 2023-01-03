@@ -12,6 +12,7 @@ struct Word {
 }
 
 protocol DictProtocol {
+    /// 辞書を引き変換候補順に返す
     func refer(_ word: String) -> [Word]
 }
 
