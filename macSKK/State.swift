@@ -59,9 +59,13 @@ struct ComposingState: Equatable {
 }
 
 /// 変換候補選択状態
-struct SelectingState {
+struct SelectingState: Equatable {
+    struct PrevState: Equatable {
+        let mode: InputMode
+        let composing: ComposingState
+    }
     /// 候補選択状態に遷移する前の状態。
-    let prev: (InputMode, MarkedText, ComposingState)
+    let prev: PrevState
 }
 
 //enum MarkedText {
@@ -74,7 +78,7 @@ struct SelectingState {
 //}
 
 /// 入力中の下線が当たっていて編集可能な文字列. 変換中は下線が当たるのは
-struct MarkedText {
+struct MarkedText: Equatable {
     /// (Sticky)Shiftによる未確定入力中かどうか。先頭に▽ついてる状態。
     var isShift: Bool
     /// かな/カナならかなになっている文字列、abbrevなら入力した文字列。(Sticky)Shiftが押されたらそのあとは更新されない
