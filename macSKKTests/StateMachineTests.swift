@@ -6,6 +6,23 @@ import XCTest
 
 @testable import macSKK
 
+final class TestNSEvent: NSEvent {
+    let myModifierFlags: NSEvent.ModifierFlags
+
+    override var modifierFlags: NSEvent.ModifierFlags {
+        return myModifierFlags
+    }
+
+    init(modifierFlags: NSEvent.ModifierFlags) {
+        myModifierFlags = modifierFlags
+        super.init()
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+}
+
 final class StateMachineTests: XCTestCase {
     var stateMachine = StateMachine(initialState: State(inputMode: .hiragana))
     var cancellables: Set<AnyCancellable> = []
@@ -44,6 +61,26 @@ final class StateMachineTests: XCTestCase {
             XCTAssertTrue(stateMachine.handle(Action(keyEvent: .printable(String(char)), originalEvent: nil)))
         }
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    func testHandleNormalPrintable() throws {
+        stateMachine = StateMachine(initialState: State(inputMode: .direct))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(2).sink { events in
+            XCTAssertEqual(events[0], .fixedText("c"))
+            XCTAssertEqual(events[1], .fixedText("C"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(
+            stateMachine.handle(
+                Action(
+                    keyEvent: .printable("c"),
+                    originalEvent: generateNSEvent(characters: "c", charactersIgnoringModifiers: "c", modifierFlags: [])
+                )))
+        XCTAssertTrue(
+            stateMachine.handle(
+                Action(keyEvent: .printable("c"), originalEvent: generateKeyEventWithShift(character: "c"))))
         wait(for: [expectation], timeout: 1.0)
     }
 
@@ -151,5 +188,28 @@ final class StateMachineTests: XCTestCase {
         } onCancel: {
             cancel()
         }
+    }
+
+    private func generateKeyEventWithShift(character: Character) -> NSEvent? {
+        return generateNSEvent(
+            characters: String(character).uppercased(), charactersIgnoringModifiers: String(character).lowercased(),
+            modifierFlags: [.shift])
+    }
+
+    private func generateNSEvent(
+        characters: String, charactersIgnoringModifiers: String, modifierFlags: NSEvent.ModifierFlags = []
+    ) -> NSEvent? {
+        return NSEvent.keyEvent(
+            with: .keyDown,
+            location: .zero,
+            modifierFlags: modifierFlags,
+            timestamp: 0,
+            windowNumber: 0,
+            context: nil,
+            characters: characters,
+            charactersIgnoringModifiers: charactersIgnoringModifiers,
+            isARepeat: false,
+            keyCode: UInt16(0)  // TODO: 実装で使うようになったらちゃんとする
+        )
     }
 }

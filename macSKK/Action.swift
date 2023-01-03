@@ -26,9 +26,14 @@ struct Action {
     }
 
     func shiftIsPressed() -> Bool {
-        guard let event = self.originalEvent else {
+        guard let event = originalEvent else {
             return false
         }
         return event.modifierFlags.contains(.shift)
+    }
+
+    // Option-Shift-E (´) のように入力したキーコードを元に整形された文字列を返す
+    func characters() -> String? {
+        return originalEvent?.characters
     }
 }

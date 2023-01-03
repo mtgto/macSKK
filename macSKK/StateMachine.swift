@@ -165,8 +165,13 @@ class StateMachine {
             addFixedText(input.toZenkaku())
             return true
         case .direct:
-            addFixedText(input)
-            return true
+            if let characters = action.characters() {
+                addFixedText(characters)
+                return true
+            } else {
+                logger.error("Can not find printable characters in keyEvent")
+                return false
+            }
         }
 
         // state.markedTextを更新してinputMethodEventSubjectにstate.displayText()をsendしてreturn trueする
