@@ -89,9 +89,19 @@ struct RegisterState {
     let yomi: String
     /// 入力中の登録単語。変換中のように未確定の文字列は含まず確定済文字列のみが入る
     var text: String = ""
+    /// カーソル位置。特別に負数のときは末尾扱い (composing中の場合を含む)
+    var cursor: Int = -1
 
     func appendText(_ text: String) -> RegisterState {
         return RegisterState(prev: prev, yomi: yomi, text: self.text + text)
+    }
+
+    /// 入力中の文字列をカーソル位置から一文字削除する。0文字のときは無視する
+    func dropLast() -> RegisterState {
+        if text.isEmpty {
+            return self
+        }
+        return RegisterState(prev: prev, yomi: yomi, text: String(text.dropLast()))
     }
 }
 

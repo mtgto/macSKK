@@ -32,7 +32,6 @@ class StateMachine {
             return handleNormal(action, registerState: state.registerState)
         case .composing(let composing):
             return handleComposing(action, composing: composing, registerState: state.registerState)
-            fatalError("TODO")
         }
     }
 
@@ -45,8 +44,12 @@ class StateMachine {
             // TODO: 登録中なら登録してfixedTextに打ち込んでprevに戻して入力中文字列を空にする
             return false
         case .backspace:
-            // TODO
-            return false
+            if let registerState = state.registerState {
+                state.registerState = registerState.dropLast()
+                return true
+            } else {
+                return false
+            }
         case .space:
             addFixedText(" ")
             return true
