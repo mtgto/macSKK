@@ -98,6 +98,30 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    func testHandleComposingCtrlJ() {
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(9).sink { events in
+            XCTAssertEqual(events[0], .markedText("▽"))
+            XCTAssertEqual(events[1], .markedText("▽お"))
+            XCTAssertEqual(events[2], .fixedText("お"))
+            XCTAssertEqual(events[3], .modeChanged(.hiragana))
+            XCTAssertEqual(events[4], .modeChanged(.katakana))
+            XCTAssertEqual(events[5], .markedText("▽"))
+            XCTAssertEqual(events[6], .markedText("▽オ"))
+            XCTAssertEqual(events[7], .fixedText("オ"))
+            XCTAssertEqual(events[8], .modeChanged(.hiragana))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .printable("o"), originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .ctrlJ, originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .printable("q"), originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .printable("o"), originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .ctrlJ, originalEvent: nil)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     private func nextInputMethodEvent() async -> InputMethodEvent {
         var cancellation: Cancellable?
         let cancel = { cancellation?.cancel() }

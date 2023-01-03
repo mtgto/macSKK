@@ -321,8 +321,11 @@ class StateMachine {
             }
         case .ctrlJ:
             // 入力中文字列を確定させてひらがなモードにする
-
-            fatalError("TODO")
+            addFixedText(composing.string(for: state.inputMode))
+            state.inputMethod = .normal
+            state.inputMode = .hiragana
+            inputMethodEventSubject.send(.modeChanged(.hiragana))
+            return true
         default:
             fatalError("TODO")
         }
