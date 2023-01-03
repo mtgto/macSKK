@@ -7,7 +7,7 @@ import XCTest
 @testable import macSKK
 
 final class StateMachineTests: XCTestCase {
-    let stateMachine = StateMachine(initialState: State(inputMode: .hiragana))
+    var stateMachine = StateMachine(initialState: State(inputMode: .hiragana))
     var cancellables: Set<AnyCancellable> = []
 
     override func setUpWithError() throws {
@@ -66,6 +66,19 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .printable("j"), originalEvent: nil)))
 
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    func testHandleNormalCtrlJ() {
+        stateMachine = StateMachine(initialState: State(inputMode: .direct))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(2).sink { events in
+            XCTAssertEqual(events[0], .modeChanged(.hiragana))
+            XCTAssertEqual(events[1], .modeChanged(.hiragana), "複数回CtrlJ打ったときにイベントは毎回発生する")
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .ctrlJ, originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .ctrlJ, originalEvent: nil)))
         wait(for: [expectation], timeout: 1.0)
     }
 
