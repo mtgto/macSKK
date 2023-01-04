@@ -41,7 +41,7 @@ enum InputMethodState: Equatable {
     case selecting(SelectingState)
 }
 
-/// 入力中文字列の定義
+/// 入力中の未確定文字列の定義
 struct ComposingState: Equatable {
     /// (Sticky)Shiftによる未確定入力中かどうか。先頭に▽ついてる状態。
     var isShift: Bool
@@ -51,6 +51,8 @@ struct ComposingState: Equatable {
     var okuri: [Romaji.Moji]?
     /// ローマ字モードで未確定部分。"k" や "ky" など最低あと1文字でかなに変換できる文字列。
     var romaji: String
+    /// カーソル位置。末尾のときはnil
+    var cursor: UInt?
 
     func string(for mode: InputMode) -> String {
         let newText: [Romaji.Moji] = romaji == "n" ? text + [Romaji.n] : text
@@ -68,37 +70,10 @@ struct SelectingState: Equatable {
     let prev: PrevState
 }
 
-//enum MarkedText {
-//    case initial
-//    /// ローマ字の未変換状態 ("k" とか)
-//    case romaji(String)
-//    /// カーソル移動や編集が可能な文字列
-//    /// - Parameter text: 未確定入力中の "▽" を含む未確定入力中の文字列
-//    case combination(prefix: String, text: String)
-//}
-
-/// 入力中の下線が当たっていて編集可能な文字列. 変換中は下線が当たるのは
-struct MarkedText: Equatable {
-    /// (Sticky)Shiftによる未確定入力中かどうか。先頭に▽ついてる状態。
-    var isShift: Bool
-    /// かな/カナならかなになっている文字列、abbrevなら入力した文字列。(Sticky)Shiftが押されたらそのあとは更新されない
-    var text: [Romaji.Moji]
-    /// (Sticky)Shiftが押されたあとに入力されてかなになっている文字列。送り仮名モードになってなければnil
-    var okuri: [Romaji.Moji]?
-    /// ローマ字モードで未確定部分。"k" や "ky" などあと何文字か入力することでかなに変換できる文字列。
-    var romaji: String
-    /// カーソル位置。特別に負数のときは末尾扱い
-    var cursor: Int = -1
-
-    static func initial() -> MarkedText {
-        MarkedText(isShift: false, text: [], romaji: "", cursor: -1)
-    }
-}
-
 /// 辞書登録状態
 struct RegisterState {
     /// 辞書登録状態に遷移する前の状態。
-    let prev: (InputMode, MarkedText, ComposingState)
+    let prev: (InputMode, ComposingState)
     /// 辞書登録する際の読み。ひらがな、カタカナ、半角カタカナ、英数(abbrev)の場合がある
     let yomi: String
     /// 入力中の登録単語。変換中のように未確定の文字列は含まず確定済文字列のみが入る
@@ -121,7 +96,6 @@ struct RegisterState {
 
 struct IMEState {
     var inputMode: InputMode = .hiragana
-    var markedText: MarkedText = .initial()
     var inputMethod: InputMethodState = .normal
     var registerState: RegisterState?
     var candidates: [Word] = []
