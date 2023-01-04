@@ -3,33 +3,32 @@
 
 import SwiftUI
 
-struct SettingSection: Identifiable, Hashable {
-    var id = UUID()
-    var name: String
-}
+enum SettingSection: String, Identifiable {
+    var id: Self { self }
 
-enum Sections: Identifiable, Hashable {
-    var id: Self {
-        return self
-    }
-
-    case general
-    case keyEvent
+    case general = "General"
+    case keyEvent = "KeyEvent"
 }
 
 struct SettingsView: View {
-    private var sections: [SettingSection] = [SettingSection(name: "General")]
-    @State private var selectedSectionId: SettingSection.ID?
+    private var sections: [SettingSection] = [.general, .keyEvent]
+    @State private var selectedSection: SettingSection?
 
     var body: some View {
         NavigationSplitView {
-            List(sections, selection: $selectedSectionId) { section in
-                Text(section.name)
+            List(sections, selection: $selectedSection) { section in
+                Text(section.rawValue)
             }
         } detail: {
-            Text("Hoge")
+            if case .general = selectedSection {
+                Text("General")
+            } else if case .keyEvent = selectedSection {
+                KeyEventView()
+            } else {
+                Text(selectedSection?.rawValue ?? "None")
+            }
         }.onAppear {
-            selectedSectionId = sections.first?.id
+            selectedSection = sections.first
         }
     }
 }

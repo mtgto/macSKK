@@ -20,11 +20,14 @@ struct macSKKApp: App {
                 logger.error("Error while loading userDictionary")
             }
         } else {
-            guard let connectionName = Bundle.main.infoDictionary?["InputMethodConnectionName"] as? String else {
-                fatalError("InputMethodConnectionName is not set")
-            }
             setupDictionaries()
-            server = IMKServer(name: connectionName, bundleIdentifier: Bundle.main.bundleIdentifier)
+            logger.log("Bundle Path: \(Bundle.main.bundlePath, privacy: .public)")
+            if Bundle.main.bundleURL.deletingLastPathComponent().lastPathComponent == "Input Methods" {
+                guard let connectionName = Bundle.main.infoDictionary?["InputMethodConnectionName"] as? String else {
+                    fatalError("InputMethodConnectionName is not set")
+                }
+                server = IMKServer(name: connectionName, bundleIdentifier: Bundle.main.bundleIdentifier)
+            }
         }
     }
 
