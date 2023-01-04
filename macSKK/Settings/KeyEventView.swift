@@ -6,47 +6,35 @@ import SwiftUI
 struct KeyEventView: View {
     @State private var text: String = ""
     @State private var eventMonitor: Any!
-    @State private var event: NSEvent?
+    @State private var characters: String = ""
+    @State private var charactersIgnoringModifiers: String = ""
+    @State private var keyCode: String = ""
 
     var body: some View {
         VStack(alignment: .leading) {
             TextField("", text: $text)
                 .onAppear {
                     eventMonitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown]) { event in
-                        debugPrint(event.characters ?? "nil")
-                        self.event = event
+                        characters = event.characters ?? ""
+                        charactersIgnoringModifiers = event.charactersIgnoringModifiers ?? ""
+                        keyCode = event.keyCode.description
                         return event
                     }
                 }
                 .onDisappear {
                     NSEvent.removeMonitor(eventMonitor!)
                 }
-            Grid(alignment: .topLeading) {
-                GridRow {
-                    Text("KeyCode")
-                    Text(event?.keyCode.description ?? "")
+            Form {
+                Section {
+                    TextField("KeyCode", text: $keyCode)
                 }
-                Divider()
-                GridRow {
-                    Text("Characters")
-                    Text(event?.characters ?? "")
+                Section {
+                    TextField("Characters", text: $characters)
                 }
-                Divider()
-                GridRow {
-                    Text("CharactersIgnoringModifiers")
-                    Text(event?.charactersIgnoringModifiers ?? "")
-                }
-                Divider()
-                GridRow {
-                    Text("Shift")
-                    Text(event?.modifierFlags.contains(.shift).description ?? "")
+                Section {
+                    TextField("CharactersIgnoringModifiers", text: $charactersIgnoringModifiers)
                 }
             }
-            .padding()
-            .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(.blue, lineWidth: 4)
-            )
         }
         .padding()
     }
