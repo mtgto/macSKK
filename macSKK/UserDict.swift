@@ -5,16 +5,18 @@ import Foundation
 
 struct UserDict: DictProtocol {
     let fileURL: URL
-    /// 送りありの辞書 (ユーザー辞書)
-    var okuriari: [String: [Word]] = [:]
-    /// 送りなしの辞書 (ユーザー辞書)
-    var okurinashi: [String: [Word]] = [:]
     /// 有効になっている辞書
     let dicts: [Dict]
+    let userDict: Dict
 
-    init(dicts: [Dict]) {
+    init(dicts: [Dict]) throws {
         self.dicts = dicts
         fileURL = FileManager.default.homeDirectoryForCurrentUser.appendingPathExtension("skk-jisyo.utf8")
+        if FileManager.default.fileExists(atPath: fileURL.path()) {
+            userDict = try Dict(contentsOf: fileURL, encoding: .utf8)
+        } else {
+            userDict = Dict(words: [:])
+        }
     }
 
     // MARK: DictProtocol
@@ -29,15 +31,9 @@ struct UserDict: DictProtocol {
 
     /// ユーザー辞書をSKK辞書形式に変換する
     func serialize() -> String {
-        var text = ";; okuri-ari entries.\n"
-        text += okuriari.map { entry in
+        return userDict.words.map { entry in
             return "\(entry.key) /\(serializeWords(entry.value))/"
         }.joined(separator: "\n")
-        text += ";; okuri-nasi entries.\n"
-        text += okurinashi.map { entry in
-            return "\(entry.key) /\(serializeWords(entry.value))/\n"
-        }.joined()
-        return text
     }
 
     private func serializeWords(_ words: [Word]) -> String {

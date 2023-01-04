@@ -37,7 +37,11 @@ struct Dict: DictProtocol {
             }
             dict[String(word)] = words
         }
-        self.words = dict
+        words = dict
+    }
+
+    init(words: [String: [Word]]) {
+        self.words = words
     }
 
     func refer(_ word: String) -> [Word] {
