@@ -29,8 +29,8 @@ struct macSKKApp: App {
     }
 
     var body: some Scene {
-        WindowGroup {
-            ContentView()
+        Settings {
+            SettingsView()
         }
     }
 

@@ -119,7 +119,7 @@ struct RegisterState {
     }
 }
 
-struct State {
+struct IMEState {
     var inputMode: InputMode = .hiragana
     var markedText: MarkedText = .initial()
     var inputMethod: InputMethodState = .normal

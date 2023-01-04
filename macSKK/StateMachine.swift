@@ -17,11 +17,11 @@ enum InputMethodEvent: Equatable {
 }
 
 class StateMachine {
-    private(set) var state: State
+    private(set) var state: IMEState
     let inputMethodEvent: AnyPublisher<InputMethodEvent, Never>
     private let inputMethodEventSubject = PassthroughSubject<InputMethodEvent, Never>()
 
-    init(initialState: State = State()) {
+    init(initialState: IMEState = IMEState()) {
         state = initialState
         inputMethodEvent = inputMethodEventSubject.eraseToAnyPublisher()
     }
