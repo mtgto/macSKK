@@ -135,7 +135,8 @@ class StateMachine {
             let result = Romaji.convert(input)
             if let moji = result.kakutei {
                 if action.shiftIsPressed() {
-                    state.markedText = MarkedText(isShift: true, text: [moji], romaji: "")
+                    state.inputMethod = .composing(ComposingState(isShift: true, text: [moji], romaji: result.input))
+                    updateMarkedText()
                 } else {
                     addFixedText(moji.string(for: state.inputMode))
                 }
@@ -222,7 +223,7 @@ class StateMachine {
             }
             return true
         case .printable(let input):
-            if input == "q" {
+            if input.lowercased() == "q" {
                 if okuri == nil {
                     // AquaSKKの挙動に合わせてShift-Qのときは送り無視で確定、次の入力へ進む
                     if action.shiftIsPressed() {
@@ -256,24 +257,28 @@ class StateMachine {
                         ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: ""))
                     return false
                 }
-            } else if input == "l" {
+            } else if input.lowercased() == "l" {
+                // 入力済みを確定してからlを打ったのと同じ処理をする
                 if okuri == nil {
                     switch state.inputMode {
                     case .hiragana:
                         state.inputMethod = .normal
                         addFixedText(text.map { $0.string(for: .hiragana) }.joined())
-                        return true
                     case .katakana:
                         state.inputMethod = .normal
                         addFixedText(text.map { $0.string(for: .katakana) }.joined())
-                        return true
                     case .hankaku:
                         state.inputMethod = .normal
                         addFixedText(text.map { $0.string(for: .hankaku) }.joined())
-                        return true
                     default:
                         fatalError("inputMode=\(state.inputMode), handleComposingでlが入力された")
                     }
+                    if action.shiftIsPressed() {
+                        inputMethodEventSubject.send(.modeChanged(.eisu))
+                    } else {
+                        inputMethodEventSubject.send(.modeChanged(.direct))
+                    }
+                    return handleNormal(action, registerState: registerState)
                 } else {
                     // 送り仮名があるときはローマ字部分をリセットする
                     state.inputMethod = .composing(
