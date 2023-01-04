@@ -196,6 +196,26 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    func testHandleComposingCancel() {
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(6).sink { events in
+            XCTAssertEqual(events[0], .markedText("▽"))
+            XCTAssertEqual(events[1], .markedText("▽い"))
+            XCTAssertEqual(events[2], .markedText("▽い*"))
+            XCTAssertEqual(events[3], .markedText("▽い*s"))
+            XCTAssertEqual(events[4], .markedText("▽い"))
+            XCTAssertEqual(events[5], .markedText(""))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .printable("i"), originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .printable("s"), originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .cancel, originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .cancel, originalEvent: nil)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     private func nextInputMethodEvent() async -> InputMethodEvent {
         var cancellation: Cancellable?
         let cancel = { cancellation?.cancel() }
@@ -212,7 +232,8 @@ final class StateMachineTests: XCTestCase {
 
     private func generateKeyEventWithShift(character: Character) -> NSEvent? {
         return generateNSEvent(
-            characters: String(character).uppercased(), charactersIgnoringModifiers: String(character).lowercased(),
+            characters: String(character).uppercased(),
+            charactersIgnoringModifiers: String(character).uppercased(),
             modifierFlags: [.shift])
     }
 

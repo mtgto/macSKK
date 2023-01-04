@@ -93,7 +93,7 @@ class StateMachine {
 
     /// 状態がnormalのときのprintableイベントのhandle
     func handleNormalPrintable(input: String, action: Action, registerState: RegisterState?) -> Bool {
-        if input == "q" {
+        if input == "q" || input == "Q" {
             switch state.inputMode {
             case .hiragana:
                 state.inputMode = .katakana
@@ -104,21 +104,13 @@ class StateMachine {
                 inputMethodEventSubject.send(.modeChanged(.hiragana))
                 return true
             case .eisu:
-                if action.shiftIsPressed() {
-                    addFixedText(input.uppercased().toZenkaku())
-                } else {
-                    addFixedText(input.toZenkaku())
-                }
+                addFixedText(input.toZenkaku())
                 return true
             case .direct:
-                if action.shiftIsPressed() {
-                    addFixedText(input.uppercased())
-                } else {
-                    addFixedText(input)
-                }
+                addFixedText(input)
                 return true
             }
-        } else if input == "l" {
+        } else if input == "l" || input == "L" {
             switch state.inputMode {
             case .hiragana, .katakana, .hankaku:
                 if action.shiftIsPressed() {
@@ -130,18 +122,10 @@ class StateMachine {
                 }
                 return true
             case .eisu:
-                if action.shiftIsPressed() {
-                    addFixedText(input.uppercased().toZenkaku())
-                } else {
-                    addFixedText(input.toZenkaku())
-                }
+                addFixedText(input.toZenkaku())
                 return true
             case .direct:
-                if action.shiftIsPressed() {
-                    addFixedText(input.uppercased())
-                } else {
-                    addFixedText(input)
-                }
+                addFixedText(input)
                 return true
             }
         }
@@ -348,7 +332,7 @@ class StateMachine {
                 }
                 state.inputMethod = .normal
             } else {
-                state.inputMethod = .composing(ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: ""))
+                state.inputMethod = .composing(ComposingState(isShift: isShift, text: text, okuri: nil, romaji: ""))
             }
             updateMarkedText()
             return true
