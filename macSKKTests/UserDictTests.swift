@@ -7,9 +7,9 @@ import XCTest
 
 final class UserDictTests: XCTestCase {
     func testSerialize() throws {
-        var userDict = UserDict(dicts: [])
-        XCTAssertEqual(userDict.serialize(), ";; okuri-ari entries.\n;; okuri-nasi entries.\n")
-        userDict.okurinashi = ["あ": [Word(word: "亜", annotation: "亜の注釈")]]
-        XCTAssertEqual(userDict.serialize(), ";; okuri-ari entries.\n;; okuri-nasi entries.\nあ /亜;亜の注釈/\n")
+        var userDict = try UserDict(dicts: [])
+        XCTAssertEqual(userDict.serialize(), "")
+        userDict = try UserDict(dicts: [], userDictWords: ["あ": [Word(word: "亜", annotation: "亜の注釈")]])
+        XCTAssertEqual(userDict.serialize(), "あ /亜;亜の注釈/")
     }
 }

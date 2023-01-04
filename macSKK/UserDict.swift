@@ -7,12 +7,14 @@ struct UserDict: DictProtocol {
     let fileURL: URL
     /// 有効になっている辞書
     let dicts: [Dict]
-    let userDict: Dict
+    var userDict: Dict
 
-    init(dicts: [Dict]) throws {
+    init(dicts: [Dict], userDictWords: [String: [Word]]? = nil) throws {
         self.dicts = dicts
         fileURL = FileManager.default.homeDirectoryForCurrentUser.appendingPathExtension("skk-jisyo.utf8")
-        if FileManager.default.fileExists(atPath: fileURL.path()) {
+        if let userDictWords {
+            userDict = Dict(words: userDictWords)
+        } else if FileManager.default.fileExists(atPath: fileURL.path()) {
             userDict = try Dict(contentsOf: fileURL, encoding: .utf8)
         } else {
             userDict = Dict(words: [:])

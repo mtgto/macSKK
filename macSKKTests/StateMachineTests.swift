@@ -24,7 +24,7 @@ final class TestNSEvent: NSEvent {
 }
 
 final class StateMachineTests: XCTestCase {
-    var stateMachine = StateMachine(initialState: State(inputMode: .hiragana))
+    var stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
     var cancellables: Set<AnyCancellable> = []
 
     override func setUpWithError() throws {
@@ -65,7 +65,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     func testHandleNormalPrintable() throws {
-        stateMachine = StateMachine(initialState: State(inputMode: .direct))
+        stateMachine = StateMachine(initialState: IMEState(inputMode: .direct))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(2).sink { events in
             XCTAssertEqual(events[0], .fixedText("c"))
@@ -85,7 +85,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     func testHandleNormalPrintableEisu() throws {
-        stateMachine = StateMachine(initialState: State(inputMode: .eisu))
+        stateMachine = StateMachine(initialState: IMEState(inputMode: .eisu))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(2).sink { events in
             XCTAssertEqual(events[0], .fixedText("ａ"))
@@ -127,7 +127,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     func testHandleNormalCtrlJ() {
-        stateMachine = StateMachine(initialState: State(inputMode: .direct))
+        stateMachine = StateMachine(initialState: IMEState(inputMode: .direct))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(2).sink { events in
             XCTAssertEqual(events[0], .modeChanged(.hiragana))
@@ -157,9 +157,9 @@ final class StateMachineTests: XCTestCase {
 
     func testHandleNormalCtrlQ() {
         let expectation = XCTestExpectation()
-        stateMachine = StateMachine(initialState: State(inputMode: .direct))
+        stateMachine = StateMachine(initialState: IMEState(inputMode: .direct))
         XCTAssertFalse(stateMachine.handle(Action(keyEvent: .ctrlQ, originalEvent: nil)))
-        stateMachine = StateMachine(initialState: State(inputMode: .katakana))
+        stateMachine = StateMachine(initialState: IMEState(inputMode: .katakana))
         stateMachine.inputMethodEvent.collect(3).sink { events in
             XCTAssertEqual(events[0], .modeChanged(.hankaku))
             XCTAssertEqual(events[1], .modeChanged(.hiragana))
