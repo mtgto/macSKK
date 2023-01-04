@@ -26,13 +26,13 @@ struct KeyEventView: View {
                 }
             Form {
                 Section {
-                    TextField("KeyCode", text: $keyCode)
+                    TextField("KeyCode", text: .constant(keyCode))
                 }
                 Section {
-                    TextField("Characters", text: $characters)
+                    TextField("Characters", text: .constant(characters))
                 }
                 Section {
-                    TextField("CharactersIgnoringModifiers", text: $charactersIgnoringModifiers)
+                    TextField("CharactersIgnoringModifiers", text: .constant(charactersIgnoringModifiers))
                 }
             }
         }
