@@ -6,9 +6,14 @@ import Foundation
 /// 辞書に登録する言葉。
 ///
 /// @note 将来プログラム辞書みたいな機能が増えるかもしれない。
-struct Word {
+struct Word: Equatable {
     let word: String
     let annotation: String?
+
+    init(_ word: String, annotation: String? = nil) {
+        self.word = word
+        self.annotation = annotation
+    }
 }
 
 protocol DictProtocol {
@@ -33,7 +38,7 @@ struct Dict: DictProtocol {
             let words = wordsText.split(separator: Character("/")).map { word -> Word in
                 let words = word.split(separator: Character(";"), maxSplits: 1)
                 let annotation = words.count == 2 ? Dict.decode(String(words[1])) : nil
-                return Word(word: Dict.decode(String(words[0])), annotation: annotation)
+                return Word(Dict.decode(String(words[0])), annotation: annotation)
             }
             dict[String(word)] = words
         }

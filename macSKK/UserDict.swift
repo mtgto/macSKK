@@ -23,7 +23,7 @@ struct UserDict: DictProtocol {
 
     // MARK: DictProtocol
     func refer(_ word: String) -> [Word] {
-        return dicts.flatMap { $0.refer(word) }
+        return userDict.refer(word) + dicts.flatMap { $0.refer(word) }
     }
 
     /// ユーザー辞書を永続化する

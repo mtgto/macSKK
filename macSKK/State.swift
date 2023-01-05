@@ -68,6 +68,9 @@ struct SelectingState: Equatable {
     }
     /// 候補選択状態に遷移する前の状態。
     let prev: PrevState
+    /// 変換候補
+    let candidates: [Word]
+    var candidateIndex: Int = 0
 }
 
 /// 辞書登録状態
