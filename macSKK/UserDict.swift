@@ -7,23 +7,32 @@ struct UserDict: DictProtocol {
     let fileURL: URL
     /// 有効になっている辞書
     let dicts: [Dict]
-    var userDict: Dict
+    var userDictWords: [String: [Word]]
 
     init(dicts: [Dict], userDictWords: [String: [Word]]? = nil) throws {
         self.dicts = dicts
         fileURL = FileManager.default.homeDirectoryForCurrentUser.appendingPathExtension("skk-jisyo.utf8")
         if let userDictWords {
-            userDict = Dict(words: userDictWords)
+            self.userDictWords = userDictWords
         } else if FileManager.default.fileExists(atPath: fileURL.path()) {
-            userDict = try Dict(contentsOf: fileURL, encoding: .utf8)
+            let userDict = try Dict(contentsOf: fileURL, encoding: .utf8)
+            self.userDictWords = userDict.words
         } else {
-            userDict = Dict(words: [:])
+            self.userDictWords = [:]
         }
     }
 
     // MARK: DictProtocol
     func refer(_ word: String) -> [Word] {
-        return userDict.refer(word) + dicts.flatMap { $0.refer(word) }
+        return (userDictWords[word] ?? []) + dicts.flatMap { $0.refer(word) }
+    }
+
+    mutating func add(yomi: String, word: Word) {
+        if let words = userDictWords[yomi] {
+            userDictWords[yomi] = [word] + words
+        } else {
+            userDictWords[yomi] = [word]
+        }
     }
 
     /// ユーザー辞書を永続化する
@@ -33,7 +42,7 @@ struct UserDict: DictProtocol {
 
     /// ユーザー辞書をSKK辞書形式に変換する
     func serialize() -> String {
-        return userDict.words.map { entry in
+        return userDictWords.map { entry in
             return "\(entry.key) /\(serializeWords(entry.value))/"
         }.joined(separator: "\n")
     }

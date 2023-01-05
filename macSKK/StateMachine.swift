@@ -366,7 +366,9 @@ class StateMachine {
     func handleSelecting(_ action: Action, selecting: SelectingState, registerState: RegisterState?) -> Bool {
         switch action.keyEvent {
         case .enter:
-            addFixedText(selecting.candidates[selecting.candidateIndex].word)
+            let word = selecting.candidates[selecting.candidateIndex]
+            dictionary.add(yomi: selecting.yomi, word: word)
+            addFixedText(word.word)
             state.inputMethod = .normal
             return true
         case .backspace:

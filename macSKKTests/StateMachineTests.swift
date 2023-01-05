@@ -193,7 +193,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     func testHandleComposingSpace() {
-        dictionary.userDict = Dict(words: ["と": [Word("戸"), Word("都")]])
+        dictionary.userDictWords = ["と": [Word("戸"), Word("都")]]
 
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(6).sink { events in
