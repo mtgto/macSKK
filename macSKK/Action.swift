@@ -12,7 +12,11 @@ struct Action {
         case backspace
         case space
         case stickyShift
-        /// 印字可能な文字の入力 (space以外)
+        /**
+         * 印字可能な文字の入力 (space以外).
+         * 値はNSEvent.charactersIgnoringModifiersなのでシフトが押されているときは大文字になるし、Shift-1なら "!" になる
+         * - TODO: NSEvent.keyCodeからキーボードフォーマットを使って生の文字列を取る
+         */
         case printable(String)
         /**
          * Ctrl-J
@@ -32,7 +36,7 @@ struct Action {
         return event.modifierFlags.contains(.shift)
     }
 
-    // Option-Shift-E (´) のように入力したキーコードを元に整形された文字列を返す
+    /// Option-Shift-E (´) のように入力したキーコードを元に整形された文字列を返す
     func characters() -> String? {
         return originalEvent?.characters
     }

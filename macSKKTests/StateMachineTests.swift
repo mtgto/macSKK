@@ -64,6 +64,45 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    func testHandleNormalNoAlphabet() throws {
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(8).sink { events in
+            XCTAssertEqual(events[0], .fixedText(";"))
+            XCTAssertEqual(events[1], .fixedText("!"))
+            XCTAssertEqual(events[2], .fixedText("@"))
+            XCTAssertEqual(events[3], .fixedText("#"))
+            XCTAssertEqual(events[4], .fixedText(","))
+            XCTAssertEqual(events[5], .fixedText("."))
+            XCTAssertEqual(events[6], .fixedText("/"))
+            XCTAssertEqual(events[7], .fixedText("5"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ";")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "!", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "@", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "#", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ",")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ".")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "/")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "5")))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    func testHandleNormalNoAlphabetEisu() throws {
+        stateMachine = StateMachine(initialState: IMEState(inputMode: .eisu))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(3).sink { events in
+            XCTAssertEqual(events[0], .fixedText("５"))
+            XCTAssertEqual(events[1], .fixedText("％"))
+            XCTAssertEqual(events[2], .fixedText("／"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "5")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "%", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "/")))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     func testHandleNormalPrintable() throws {
         stateMachine = StateMachine(initialState: IMEState(inputMode: .direct))
         let expectation = XCTestExpectation()
@@ -148,8 +187,8 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[3], .modeChanged(.hiragana))
             expectation.fulfill()
         }.store(in: &cancellables)
-        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .printable("q"), originalEvent: nil)))
-        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .printable("q"), originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .ctrlQ, originalEvent: nil)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .ctrlQ, originalEvent: nil)))
         wait(for: [expectation], timeout: 1.0)
@@ -184,15 +223,15 @@ final class StateMachineTests: XCTestCase {
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil)))
-        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .printable("s"), originalEvent: nil)))
-        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .printable("u"), originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "s")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil)))
-        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .printable("s"), originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "s")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil)))
         wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleComposingSpace() {
+    func testHandleComposingSpaceOkurinashi() {
         dictionary.userDictWords = ["と": [Word("戸"), Word("都")]]
 
         let expectation = XCTestExpectation()
@@ -206,9 +245,33 @@ final class StateMachineTests: XCTestCase {
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil)))
-        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .printable("t"), originalEvent: nil)))
-        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .printable("o"), originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    func testHandleComposingSpaceOkuriari() {
+        dictionary.userDictWords = ["とr": [Word("取"), Word("撮")]]
+
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(7).sink { events in
+            XCTAssertEqual(events[0], .markedText("▽"))
+            XCTAssertEqual(events[1], .markedText("▽t"))
+            XCTAssertEqual(events[2], .markedText("▽と"))
+            XCTAssertEqual(events[3], .markedText("▽と*r"))
+            XCTAssertEqual(events[4], .markedText("▼取る"))
+            XCTAssertEqual(events[5], .markedText("▼撮る"))
+            XCTAssertEqual(events[6], .markedText("[登録：とr]"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "r", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil)))
         wait(for: [expectation], timeout: 1.0)
@@ -229,16 +292,31 @@ final class StateMachineTests: XCTestCase {
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil)))
-        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .printable("o"), originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .ctrlJ, originalEvent: nil)))
-        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .printable("q"), originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil)))
-        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .printable("o"), originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .ctrlJ, originalEvent: nil)))
         wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleComposingPrintable() {
+    func testHandleComposingPrintableOkuri() {
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(4).sink { events in
+            XCTAssertEqual(events[0], .markedText("▽え"))
+            XCTAssertEqual(events[1], .markedText("▽えr"))
+            XCTAssertEqual(events[2], .markedText("[登録：え*る]"))
+            XCTAssertEqual(events[3], .modeChanged(.direct))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "r")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u", withShift: true)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    func testHandleComposingPrintableAndL() {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
             XCTAssertEqual(events[0], .markedText("▽え"))
@@ -247,11 +325,9 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[3], .modeChanged(.direct))
             expectation.fulfill()
         }.store(in: &cancellables)
-        XCTAssertTrue(
-            stateMachine.handle(
-                Action(keyEvent: .printable("e"), originalEvent: generateKeyEventWithShift(character: "e"))))
-        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .printable("b"), originalEvent: nil)))
-        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .printable("l"), originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "b")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "l")))
         wait(for: [expectation], timeout: 1.0)
     }
 
@@ -286,6 +362,21 @@ final class StateMachineTests: XCTestCase {
             }
         } onCancel: {
             cancel()
+        }
+    }
+
+    private func printableKeyEventAction(character: Character, withShift: Bool = false) -> Action {
+        if withShift {
+            return Action(
+                keyEvent: .printable(String(character).uppercased()),
+                originalEvent: generateKeyEventWithShift(character: character)
+            )
+        } else {
+            let characters = String(character)
+            return Action(
+                keyEvent: .printable(characters),
+                originalEvent: generateNSEvent(characters: characters, charactersIgnoringModifiers: characters)
+            )
         }
     }
 
