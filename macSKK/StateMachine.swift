@@ -364,7 +364,31 @@ class StateMachine {
     }
 
     func handleSelecting(_ action: Action, selecting: SelectingState, registerState: RegisterState?) -> Bool {
-        return false
+        switch action.keyEvent {
+        case .enter:
+            addFixedText(selecting.candidates[selecting.candidateIndex].word)
+            state.inputMethod = .normal
+            return true
+        case .backspace:
+            if selecting.candidateIndex > 0 {
+                state.inputMethod = .selecting(selecting.addCandidateIndex(diff: -1))
+            } else {
+                state.inputMethod = .composing(selecting.prev.composing)
+                state.inputMode = selecting.prev.mode
+            }
+            updateMarkedText()
+            return true
+        case .space:
+            if selecting.candidateIndex + 1 < selecting.candidates.count {
+                state.inputMethod = .selecting(selecting.addCandidateIndex(diff: 1))
+            } else {
+                // TODO: 登録モードへ移行 or IMKCandidatesモードへ移行
+            }
+            updateMarkedText()
+            return true
+        default:
+            fatalError("TODO")
+        }
     }
 
     func addFixedText(_ text: String) {

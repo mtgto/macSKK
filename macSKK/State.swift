@@ -71,6 +71,10 @@ struct SelectingState: Equatable {
     /// 変換候補
     let candidates: [Word]
     var candidateIndex: Int = 0
+
+    func addCandidateIndex(diff: Int) -> SelectingState {
+        return SelectingState(prev: prev, candidates: candidates, candidateIndex: candidateIndex + diff)
+    }
 }
 
 /// 辞書登録状態
