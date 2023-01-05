@@ -196,18 +196,19 @@ final class StateMachineTests: XCTestCase {
         dictionary.userDict = Dict(words: ["と": [Word("戸"), Word("都")]])
 
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(5).sink { events in
+        stateMachine.inputMethodEvent.collect(6).sink { events in
             XCTAssertEqual(events[0], .markedText("▽"))
             XCTAssertEqual(events[1], .markedText("▽t"))
             XCTAssertEqual(events[2], .markedText("▽と"))
             XCTAssertEqual(events[3], .markedText("▼戸"))
             XCTAssertEqual(events[4], .markedText("▼都"))
-            // XCTAssertEqual(events[5], .markedText("[登録：と]"))
+            XCTAssertEqual(events[5], .markedText("[登録：と]"))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .printable("t"), originalEvent: nil)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .printable("o"), originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil)))
         wait(for: [expectation], timeout: 1.0)

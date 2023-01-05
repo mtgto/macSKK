@@ -68,12 +68,14 @@ struct SelectingState: Equatable {
     }
     /// 候補選択状態に遷移する前の状態。
     let prev: PrevState
+    /// 辞書登録する際の読み。ひらがなのみ、もしくは `ひらがな + アルファベット` もしくは `":" + アルファベット` (abbrev) のパターンがある
+    let yomi: String
     /// 変換候補
     let candidates: [Word]
     var candidateIndex: Int = 0
 
     func addCandidateIndex(diff: Int) -> SelectingState {
-        return SelectingState(prev: prev, candidates: candidates, candidateIndex: candidateIndex + diff)
+        return SelectingState(prev: prev, yomi: yomi, candidates: candidates, candidateIndex: candidateIndex + diff)
     }
 }
 
@@ -81,7 +83,7 @@ struct SelectingState: Equatable {
 struct RegisterState {
     /// 辞書登録状態に遷移する前の状態。
     let prev: (InputMode, ComposingState)
-    /// 辞書登録する際の読み。ひらがな、カタカナ、半角カタカナ、英数(abbrev)の場合がある
+    /// 辞書登録する際の読み。ひらがなのみ、もしくは `ひらがな + アルファベット` もしくは `":" + アルファベット` (abbrev) のパターンがある
     let yomi: String
     /// 入力中の登録単語。変換中のように未確定の文字列は含まず確定済文字列のみが入る
     var text: String = ""

@@ -216,7 +216,7 @@ class StateMachine {
                 state.inputMethod = .selecting(
                     SelectingState(
                         prev: SelectingState.PrevState(mode: state.inputMode, composing: composing),
-                        candidates: candidates, candidateIndex: 0))
+                        yomi: yomiText, candidates: candidates, candidateIndex: 0))
             }
             // TODO
             updateMarkedText()
@@ -382,7 +382,16 @@ class StateMachine {
             if selecting.candidateIndex + 1 < selecting.candidates.count {
                 state.inputMethod = .selecting(selecting.addCandidateIndex(diff: 1))
             } else {
-                // TODO: 登録モードへ移行 or IMKCandidatesモードへ移行
+                // TODO: IMKCandidatesモードへ移行
+                if registerState != nil {
+                    state.inputMethod = .normal
+                    state.inputMode = selecting.prev.mode
+                } else {
+                    state.registerState = RegisterState(
+                        prev: (selecting.prev.mode, selecting.prev.composing), yomi: selecting.yomi)
+                    state.inputMethod = .normal
+                    state.inputMode = selecting.prev.mode
+                }
             }
             updateMarkedText()
             return true
@@ -406,7 +415,7 @@ class StateMachine {
     func updateMarkedText() {
         var markedText = ""
         if let registerState = state.registerState {
-            markedText = "[登録：xxx]"
+            markedText = "[登録：\(registerState.yomi)]"
         }
         switch state.inputMethod {
         case .composing(let composing):
