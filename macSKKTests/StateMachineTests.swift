@@ -131,15 +131,8 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[1], .fixedText("Ａ"))
             expectation.fulfill()
         }.store(in: &cancellables)
-        XCTAssertTrue(
-            stateMachine.handle(
-                Action(
-                    keyEvent: .printable("a"),
-                    originalEvent: generateNSEvent(characters: "a", charactersIgnoringModifiers: "a", modifierFlags: [])
-                )))
-        XCTAssertTrue(
-            stateMachine.handle(
-                Action(keyEvent: .printable("a"), originalEvent: generateKeyEventWithShift(character: "a"))))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
         wait(for: [expectation], timeout: 1.0)
     }
 
@@ -158,9 +151,9 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil)))
 
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil)))
-        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .printable("i"), originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil)))
-        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .printable("j"), originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "j")))
 
         wait(for: [expectation], timeout: 1.0)
     }
@@ -264,7 +257,7 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[3], .markedText("▽と*r"))
             XCTAssertEqual(events[4], .markedText("▼取る"))
             XCTAssertEqual(events[5], .markedText("▼撮る"))
-            XCTAssertEqual(events[6], .markedText("[登録：とr]"))
+            XCTAssertEqual(events[6], .markedText("[登録：と*る]"))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil)))
@@ -272,6 +265,30 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "r", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u")))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    func testHandleComposingSpaceOkuriari2() {
+        dictionary.userDictWords = ["とr": [Word("取"), Word("撮")]]
+
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(7).sink { events in
+            XCTAssertEqual(events[0], .markedText("▽"))
+            XCTAssertEqual(events[1], .markedText("▽t"))
+            XCTAssertEqual(events[2], .markedText("▽と"))
+            XCTAssertEqual(events[3], .markedText("▽と*r"))
+            XCTAssertEqual(events[4], .markedText("▼取る"))
+            XCTAssertEqual(events[5], .markedText("▼撮る"))
+            XCTAssertEqual(events[6], .markedText("[登録：と*る]"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "r")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u", withShift: true)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil)))
         wait(for: [expectation], timeout: 1.0)

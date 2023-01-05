@@ -224,7 +224,6 @@ class StateMachine {
                         prev: SelectingState.PrevState(mode: state.inputMode, composing: composing),
                         yomi: yomiText, candidates: candidates, candidateIndex: 0))
             }
-            // TODO
             updateMarkedText()
             return true
         case .stickyShift:
@@ -309,14 +308,30 @@ class StateMachine {
                 // printableはシフト押されているとき大文字が渡ってくるので小文字に固定
                 let result = Romaji.convert(romaji + input.lowercased())
                 if let moji = result.kakutei {
-                    if isShift {
-                        if let okuri {
-                            state.inputMethod = .composing(
-                                ComposingState(
-                                    isShift: true, text: text, okuri: okuri + [moji], romaji: result.input))
+                    if isShift || action.shiftIsPressed() {
+                        if okuri != nil {
+                            // 未確定ローマ字はn以外は入力されずに削除される. nだけは"ん"として変換する
+                            // 変換候補がないときは辞書登録へ
+                            // TODO: カーソル位置がnilじゃないときはその前までで変換を試みる
+                            let newText: [Romaji.Moji] = romaji == "n" ? text + [Romaji.n] : text
+                            let yomiText = newText.map { $0.string(for: .hiragana) }.joined() + moji.firstRomaji
+                            let candidates = dictionary.refer(yomiText)
+                            if candidates.isEmpty {
+                                if registerState != nil {
+                                    // 登録中に変換不能な変換をした場合は空文字列に変換する
+                                    state.inputMethod = .normal
+                                } else {
+                                    // 単語登録に遷移する
+                                    state.registerState = RegisterState(
+                                        prev: (state.inputMode, composing), yomi: yomiText)
+                                }
+                            } else {
+                                state.inputMethod = .selecting(
+                                    SelectingState(
+                                        prev: SelectingState.PrevState(mode: state.inputMode, composing: composing),
+                                        yomi: yomiText, candidates: candidates, candidateIndex: 0))
+                            }
                             updateMarkedText()
-                        } else if !text.isEmpty && action.shiftIsPressed() {
-                            // TODO: 変換開始
                         } else {
                             state.inputMethod = .composing(
                                 ComposingState(isShift: true, text: text + [moji], okuri: nil, romaji: result.input))
@@ -333,8 +348,13 @@ class StateMachine {
                         }
                     }
                 } else {
-                    state.inputMethod = .composing(
-                        ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: result.input))
+                    if okuri == nil && action.shiftIsPressed() {
+                        state.inputMethod = .composing(
+                            ComposingState(isShift: isShift, text: text, okuri: [], romaji: result.input))
+                    } else {
+                        state.inputMethod = .composing(
+                            ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: result.input))
+                    }
                     updateMarkedText()
                 }
                 return true
