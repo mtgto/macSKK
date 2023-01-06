@@ -4,16 +4,21 @@
 import SwiftUI
 
 struct SettingsView: View {
+    enum Section {
+        case general, keyEvent
+    }
     var body: some View {
         TabView {
             GeneralView()
                 .tabItem {
                     Label("General", systemImage: "gearshape")
                 }
+                .tag(Section.general)
             KeyEventView()
                 .tabItem {
                     Label("KeyEvent", systemImage: "keyboard")
                 }
+                .tag(Section.keyEvent)
         }
         .frame(minWidth: 640, minHeight: 360)
     }

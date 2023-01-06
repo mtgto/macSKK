@@ -9,6 +9,7 @@ struct KeyEventView: View {
     @State private var characters: String = ""
     @State private var charactersIgnoringModifiers: String = ""
     @State private var keyCode: String = ""
+    @State private var modifiers: String = ""
 
     var body: some View {
         VStack(alignment: .leading) {
@@ -18,6 +19,33 @@ struct KeyEventView: View {
                         characters = event.characters ?? ""
                         charactersIgnoringModifiers = event.charactersIgnoringModifiers ?? ""
                         keyCode = event.keyCode.description
+                        var modifiers: [String] = []
+                        if event.modifierFlags.contains(.capsLock) {
+                            modifiers.append("CapsLock")
+                        }
+                        if event.modifierFlags.contains(.shift) {
+                            modifiers.append("Shift")
+                        }
+                        if event.modifierFlags.contains(.control) {
+                            modifiers.append("Control")
+                        }
+                        if event.modifierFlags.contains(.option) {
+                            modifiers.append("Option")
+                        }
+                        if event.modifierFlags.contains(.command) {
+                            modifiers.append("Command")
+                        }
+                        if event.modifierFlags.contains(.numericPad) {
+                            modifiers.append("NumericPad")
+                        }
+                        if event.modifierFlags.contains(.help) {
+                            modifiers.append("Help")
+                        }
+                        if event.modifierFlags.contains(.function) {
+                            modifiers.append("Fn")
+                        }
+                        self.modifiers = modifiers.joined(separator: ", ")
+                        
                         return event
                     }
                 }
@@ -34,7 +62,11 @@ struct KeyEventView: View {
                 Section {
                     TextField("CharactersIgnoringModifiers", text: .constant(charactersIgnoringModifiers))
                 }
+                Section {
+                    TextField("Modifiers", text: .constant(modifiers))
+                }
             }
+            Spacer()
         }
         .padding()
     }
