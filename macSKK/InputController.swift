@@ -18,7 +18,8 @@ class InputController: IMKInputController {
         super.init(server: server, delegate: delegate, client: inputClient)
 
         preferenceMenu.addItem(
-            withTitle: NSLocalizedString("PreferenceMenuItem", comment: "Preferences…"), action: nil, keyEquivalent: "")
+            withTitle: NSLocalizedString("PreferenceMenuItem", comment: "Preferences…"),
+            action: #selector(showSettings), keyEquivalent: "")
 
         guard let textInput = inputClient as? IMKTextInput else {
             return
@@ -60,6 +61,15 @@ class InputController: IMKInputController {
 
     override func menu() -> NSMenu! {
         return preferenceMenu
+    }
+
+    @objc func showSettings() {
+        if #available(macOS 13, *) {
+            NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+        } else {
+            NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: nil)
+        }
+        NSApp.activate(ignoringOtherApps: true)
     }
 
     // MARK: -
