@@ -278,7 +278,7 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[0], .markedText("▽"))
             XCTAssertEqual(events[1], .markedText("▽t"))
             XCTAssertEqual(events[2], .markedText("▽と"))
-            XCTAssertEqual(events[3], .markedText("▽と*r"))
+            XCTAssertEqual(events[3], .markedText("▽とr"))
             XCTAssertEqual(events[4], .markedText("▼取る"))
             XCTAssertEqual(events[5], .markedText("▼撮る"))
             XCTAssertEqual(events[6], .markedText("[登録：と*る]"))
