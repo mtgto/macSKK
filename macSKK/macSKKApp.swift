@@ -48,7 +48,7 @@ struct macSKKApp: App {
         }
         do {
             dictionary = try UserDict(dicts: [dict])
-            logger.info("Load \(dict.words.count) words")
+            logger.info("Load \(dict.entries.count) entries")
         } catch {
             logger.error("Error while loading userDictionary: \(error)")
         }

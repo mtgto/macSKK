@@ -21,9 +21,9 @@ class DictTests: XCTestCase {
 
             """
         let dict = try Dict(source: source)
-        XCTAssertEqual(dict.words["あg"]?.map { $0.word }, ["挙", "揚", "上"])
-        XCTAssertEqual(dict.words["あb"]?.map { $0.word }, ["浴"])
-        XCTAssertEqual(dict.words["あ"]?.map { $0.word }, ["阿", "唖", "亜", "娃"])
+        XCTAssertEqual(dict.entries["あg"]?.map { $0.word }, ["挙", "揚", "上"])
+        XCTAssertEqual(dict.entries["あb"]?.map { $0.word }, ["浴"])
+        XCTAssertEqual(dict.entries["あ"]?.map { $0.word }, ["阿", "唖", "亜", "娃"])
     }
 
     func testParseSpecialSource() throws {
@@ -35,8 +35,8 @@ class DictTests: XCTestCase {
 
             """
         let dict = try Dict(source: source)
-        XCTAssertEqual(dict.words["わi"]?.map { $0.word }, ["湧", "沸", "涌"])
-        XCTAssertEqual(dict.words["ao"]?.map { $0.word }, ["and/or"])
-        XCTAssertEqual(dict.words["GPL"]?.map { $0.annotation }, ["http://www.gnu.org/licenses/gpl.ja.html"])
+        XCTAssertEqual(dict.entries["わi"]?.map { $0.word }, ["湧", "沸", "涌"])
+        XCTAssertEqual(dict.entries["ao"]?.map { $0.word }, ["and/or"])
+        XCTAssertEqual(dict.entries["GPL"]?.map { $0.annotation }, ["http://www.gnu.org/licenses/gpl.ja.html"])
     }
 }

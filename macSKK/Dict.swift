@@ -22,7 +22,7 @@ protocol DictProtocol {
 }
 
 struct Dict: DictProtocol {
-    let words: [String: [Word]]
+    let entries: [String: [Word]]
 
     init(contentsOf url: URL, encoding: String.Encoding) throws {
         let source = try String(contentsOf: url, encoding: encoding)
@@ -42,15 +42,15 @@ struct Dict: DictProtocol {
             }
             dict[String(word)] = words
         }
-        words = dict
+        entries = dict
     }
 
-    init(words: [String: [Word]]) {
-        self.words = words
+    init(entries: [String: [Word]]) {
+        self.entries = entries
     }
 
     func refer(_ word: String) -> [Word] {
-        return words[word] ?? []
+        return entries[word] ?? []
     }
 
     static func decode(_ word: String) -> String {

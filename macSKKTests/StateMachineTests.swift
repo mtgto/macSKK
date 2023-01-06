@@ -227,7 +227,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     func testHandleComposingSpaceOkurinashi() {
-        dictionary.userDictWords = ["と": [Word("戸"), Word("都")]]
+        dictionary.userDictEntries = ["と": [Word("戸"), Word("都")]]
 
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(7).sink { events in
@@ -251,7 +251,7 @@ final class StateMachineTests: XCTestCase {
 
     // 送り仮名入力でShiftキーを押すのを子音側でするパターン
     func testHandleComposingOkuriari() {
-        dictionary.userDictWords = ["とr": [Word("取"), Word("撮")]]
+        dictionary.userDictEntries = ["とr": [Word("取"), Word("撮")]]
 
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(8).sink { events in
@@ -277,7 +277,7 @@ final class StateMachineTests: XCTestCase {
 
     // 送り仮名入力でShiftキーを押すのを母音側にしたパターン
     func testHandleComposingOkuriari2() {
-        dictionary.userDictWords = ["とr": [Word("取"), Word("撮")]]
+        dictionary.userDictEntries = ["とr": [Word("取"), Word("撮")]]
 
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(8).sink { events in
@@ -303,7 +303,7 @@ final class StateMachineTests: XCTestCase {
 
     // 送り仮名入力でShiftキーを押すのを途中の子音でするパターン
     func testHandleComposingOkuriari3() {
-        dictionary.userDictWords = ["とr": [Word("取"), Word("撮")]]
+        dictionary.userDictEntries = ["とr": [Word("取"), Word("撮")]]
 
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(9).sink { events in
@@ -330,7 +330,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     func testHandleComposingOkuriariIncludeN() {
-        dictionary.userDictWords = ["かんz": [Word("感")]]
+        dictionary.userDictEntries = ["かんz": [Word("感")]]
 
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(7).sink { events in
@@ -427,7 +427,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     func testHandleSelectingEnter() {
-        dictionary.userDictWords = ["と": [Word("戸")]]
+        dictionary.userDictEntries = ["と": [Word("戸")]]
 
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
@@ -445,7 +445,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     func testHandleSelectingEnterOkuriari() {
-        dictionary.userDictWords = ["とr": [Word("取")]]
+        dictionary.userDictEntries = ["とr": [Word("取")]]
 
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(5).sink { events in
@@ -465,7 +465,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     func testHandleSelectingBackspace() {
-        dictionary.userDictWords = ["と": [Word("戸"), Word("都")]]
+        dictionary.userDictEntries = ["と": [Word("戸"), Word("都")]]
 
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(6).sink { events in
@@ -488,7 +488,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     func testHandleSelectingStickyShift() {
-        dictionary.userDictWords = ["と": [Word("戸")]]
+        dictionary.userDictEntries = ["と": [Word("戸")]]
 
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(5).sink { events in
@@ -507,7 +507,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     func testHandleSelectingCancel() {
-        dictionary.userDictWords = ["と": [Word("戸"), Word("都")]]
+        dictionary.userDictEntries = ["と": [Word("戸"), Word("都")]]
 
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(5).sink { events in
