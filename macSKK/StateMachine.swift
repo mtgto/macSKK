@@ -218,6 +218,8 @@ class StateMachine {
                     // 単語登録に遷移する
                     state.registerState = RegisterState(prev: (state.inputMode, composing), yomi: yomiText)
                     state.inputMethod = .normal
+                    state.inputMode = .hiragana
+                    inputMethodEventSubject.send(.modeChanged(.hiragana))
                 }
             } else {
                 state.inputMethod = .selecting(
@@ -330,6 +332,8 @@ class StateMachine {
                                         yomi: yomiText
                                     )
                                     state.inputMethod = .normal
+                                    state.inputMode = .hiragana
+                                    inputMethodEventSubject.send(.modeChanged(.hiragana))
                                 }
                             } else {
                                 state.inputMethod = .selecting(
@@ -434,7 +438,8 @@ class StateMachine {
                     state.registerState = RegisterState(
                         prev: (selecting.prev.mode, selecting.prev.composing), yomi: selecting.yomi)
                     state.inputMethod = .normal
-                    state.inputMode = selecting.prev.mode
+                    state.inputMode = .hiragana
+                    inputMethodEventSubject.send(.modeChanged(.hiragana))
                 }
             }
             updateMarkedText()

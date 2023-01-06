@@ -228,13 +228,14 @@ final class StateMachineTests: XCTestCase {
         dictionary.userDictWords = ["と": [Word("戸"), Word("都")]]
 
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(6).sink { events in
+        stateMachine.inputMethodEvent.collect(7).sink { events in
             XCTAssertEqual(events[0], .markedText("▽"))
             XCTAssertEqual(events[1], .markedText("▽t"))
             XCTAssertEqual(events[2], .markedText("▽と"))
             XCTAssertEqual(events[3], .markedText("▼戸"))
             XCTAssertEqual(events[4], .markedText("▼都"))
-            XCTAssertEqual(events[5], .markedText("[登録：と]"))
+            XCTAssertEqual(events[5], .modeChanged(.hiragana))
+            XCTAssertEqual(events[6], .markedText("[登録：と]"))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil)))
@@ -246,18 +247,20 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    // 送り仮名入力でShiftキーを押すのを子音側でするパターン
     func testHandleComposingOkuriari() {
         dictionary.userDictWords = ["とr": [Word("取"), Word("撮")]]
 
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(7).sink { events in
+        stateMachine.inputMethodEvent.collect(8).sink { events in
             XCTAssertEqual(events[0], .markedText("▽"))
             XCTAssertEqual(events[1], .markedText("▽t"))
             XCTAssertEqual(events[2], .markedText("▽と"))
             XCTAssertEqual(events[3], .markedText("▽と*r"))
             XCTAssertEqual(events[4], .markedText("▼取る"))
             XCTAssertEqual(events[5], .markedText("▼撮る"))
-            XCTAssertEqual(events[6], .markedText("[登録：と*る]"))
+            XCTAssertEqual(events[6], .modeChanged(.hiragana))
+            XCTAssertEqual(events[7], .markedText("[登録：と*る]"))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil)))
@@ -270,18 +273,20 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    // 送り仮名入力でShiftキーを押すのを母音側にしたパターン
     func testHandleComposingOkuriari2() {
         dictionary.userDictWords = ["とr": [Word("取"), Word("撮")]]
 
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(7).sink { events in
+        stateMachine.inputMethodEvent.collect(8).sink { events in
             XCTAssertEqual(events[0], .markedText("▽"))
             XCTAssertEqual(events[1], .markedText("▽t"))
             XCTAssertEqual(events[2], .markedText("▽と"))
             XCTAssertEqual(events[3], .markedText("▽とr"))
             XCTAssertEqual(events[4], .markedText("▼取る"))
             XCTAssertEqual(events[5], .markedText("▼撮る"))
-            XCTAssertEqual(events[6], .markedText("[登録：と*る]"))
+            XCTAssertEqual(events[6], .modeChanged(.hiragana))
+            XCTAssertEqual(events[7], .markedText("[登録：と*る]"))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil)))
@@ -294,17 +299,46 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    // 送り仮名入力でShiftキーを押すのを途中の子音でするパターン
     func testHandleComposingOkuriari3() {
+        dictionary.userDictWords = ["とr": [Word("取"), Word("撮")]]
+
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(9).sink { events in
+            XCTAssertEqual(events[0], .markedText("▽"))
+            XCTAssertEqual(events[1], .markedText("▽t"))
+            XCTAssertEqual(events[2], .markedText("▽と"))
+            XCTAssertEqual(events[3], .markedText("▽とr"))
+            XCTAssertEqual(events[4], .markedText("▽と*ry"))
+            XCTAssertEqual(events[5], .markedText("▼取りゃ"))
+            XCTAssertEqual(events[6], .markedText("▼撮りゃ"))
+            XCTAssertEqual(events[7], .modeChanged(.hiragana))
+            XCTAssertEqual(events[8], .markedText("[登録：と*りゃ]"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "r")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "y", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    func testHandleComposingOkuriariIncludeN() {
         dictionary.userDictWords = ["かんz": [Word("感")]]
 
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(6).sink { events in
+        stateMachine.inputMethodEvent.collect(7).sink { events in
             XCTAssertEqual(events[0], .markedText("▽k"))
             XCTAssertEqual(events[1], .markedText("▽か"))
             XCTAssertEqual(events[2], .markedText("▽かn"))
             XCTAssertEqual(events[3], .markedText("▽かん*z"))
             XCTAssertEqual(events[4], .markedText("▼感じ"))
-            XCTAssertEqual(events[5], .markedText("[登録：かん*じ]"))
+            XCTAssertEqual(events[5], .modeChanged(.hiragana))
+            XCTAssertEqual(events[6], .markedText("[登録：かん*じ]"))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "k", withShift: true)))
@@ -342,10 +376,11 @@ final class StateMachineTests: XCTestCase {
 
     func testHandleComposingPrintableOkuri() {
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(3).sink { events in
+        stateMachine.inputMethodEvent.collect(4).sink { events in
             XCTAssertEqual(events[0], .markedText("▽え"))
             XCTAssertEqual(events[1], .markedText("▽えr"))
-            XCTAssertEqual(events[2], .markedText("[登録：え*る]"))
+            XCTAssertEqual(events[2], .modeChanged(.hiragana))
+            XCTAssertEqual(events[3], .markedText("[登録：え*る]"))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e", withShift: true)))
