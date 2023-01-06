@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>FILEHEADER</key>
-	<string> SPDX-FileCopyrightText: 2023 mtgto &lt;hogerappa@gmail.com&gt;
+	<string> SPDX-FileCopyrightText: ___YEAR___ mtgto &lt;hogerappa@gmail.com&gt;
 // SPDX-License-Identifier: GPL-3.0-or-later</string>
 </dict>
 </plist>
