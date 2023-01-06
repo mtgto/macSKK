@@ -308,36 +308,39 @@ class StateMachine {
                 // printableはシフト押されているとき大文字が渡ってくるので小文字に固定
                 let result = Romaji.convert(romaji + input.lowercased())
                 if let moji = result.kakutei {
-                    if isShift || action.shiftIsPressed() {
-                        if okuri != nil {
-                            // 変換候補がないときは辞書登録へ
-                            // TODO: カーソル位置がnilじゃないときはその前までで変換を試みる
-                            let yomiText = text.map { $0.string(for: .hiragana) }.joined() + moji.firstRomaji
-                            let newComposing = ComposingState(isShift: true, text: text, okuri: [moji], romaji: "")
-                            let candidates = dictionary.refer(yomiText)
-                            if candidates.isEmpty {
-                                if registerState != nil {
-                                    // 登録中に変換不能な変換をした場合は空文字列に変換する
-                                    state.inputMethod = .normal
-                                } else {
-                                    // 単語登録に遷移する
-                                    state.registerState = RegisterState(
-                                        prev: (state.inputMode, newComposing),
-                                        yomi: yomiText
-                                    )
-                                }
+                    // 送り仮名が1文字以上確定した時点で変換を開始する
+                    if okuri != nil || (isShift && action.shiftIsPressed()) {
+                        // 変換候補がないときは辞書登録へ
+                        // TODO: カーソル位置がnilじゃないときはその前までで変換を試みる
+                        let yomiText = text.map { $0.string(for: .hiragana) }.joined() + moji.firstRomaji
+                        let newComposing = ComposingState(isShift: true, text: text, okuri: [moji], romaji: "")
+                        let candidates = dictionary.refer(yomiText)
+                        if candidates.isEmpty {
+                            if registerState != nil {
+                                // 登録中に変換不能な変換をした場合は空文字列に変換する
+                                state.inputMethod = .normal
                             } else {
-                                state.inputMethod = .selecting(
-                                    SelectingState(
-                                        prev: SelectingState.PrevState(mode: state.inputMode, composing: newComposing),
-                                        yomi: yomiText, candidates: candidates, candidateIndex: 0))
+                                // 単語登録に遷移する
+                                state.registerState = RegisterState(
+                                    prev: (state.inputMode, newComposing),
+                                    yomi: yomiText
+                                )
                             }
-                            updateMarkedText()
                         } else {
-                            state.inputMethod = .composing(
-                                ComposingState(isShift: true, text: text + [moji], okuri: nil, romaji: result.input))
-                            updateMarkedText()
+                            state.inputMethod = .selecting(
+                                SelectingState(
+                                    prev: SelectingState.PrevState(mode: state.inputMode, composing: newComposing),
+                                    yomi: yomiText, candidates: candidates, candidateIndex: 0))
                         }
+                        updateMarkedText()
+                    } else if isShift || action.shiftIsPressed() {
+                        state.inputMethod = .composing(
+                            ComposingState(
+                                isShift: true,
+                                text: text + [moji],
+                                okuri: nil,
+                                romaji: result.input))
+                        updateMarkedText()
                     } else {
                         addFixedText(moji.string(for: state.inputMode))
                         if result.input.isEmpty {
