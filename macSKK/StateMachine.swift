@@ -440,7 +440,13 @@ class StateMachine {
     func updateMarkedText() {
         var markedText = ""
         if let registerState = state.registerState {
-            markedText = "[登録：\(registerState.yomi)]"
+            let mode = registerState.prev.0
+            let composing = registerState.prev.1
+            var yomi = composing.text.map { $0.string(for: mode) }.joined()
+            if let okuri = composing.okuri {
+                yomi += "*" + okuri.map { $0.string(for: mode) }.joined()
+            }
+            markedText = "[登録：\(yomi)]"
         }
         switch state.inputMethod {
         case .composing(let composing):

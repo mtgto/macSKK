@@ -246,7 +246,7 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleComposingSpaceOkuriari() {
+    func testHandleComposingOkuriari() {
         dictionary.userDictWords = ["とr": [Word("取"), Word("撮")]]
 
         let expectation = XCTestExpectation()
@@ -270,7 +270,7 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleComposingSpaceOkuriari2() {
+    func testHandleComposingOkuriari2() {
         dictionary.userDictWords = ["とr": [Word("取"), Word("撮")]]
 
         let expectation = XCTestExpectation()
