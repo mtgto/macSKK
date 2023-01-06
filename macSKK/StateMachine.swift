@@ -444,6 +444,18 @@ class StateMachine {
             }
             updateMarkedText()
             return true
+        case .stickyShift, .ctrlJ, .ctrlQ:
+            // 選択中候補で確定
+            let word = selecting.candidates[selecting.candidateIndex]
+            dictionary.add(yomi: selecting.yomi, word: word)
+            addFixedText(word.word)
+            state.inputMethod = .normal
+            return handleNormal(action, registerState: nil)
+        case .cancel:
+            state.inputMethod = .composing(selecting.prev.composing)
+            state.inputMode = selecting.prev.mode
+            updateMarkedText()
+            return true
         default:
             fatalError("TODO")
         }

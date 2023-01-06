@@ -424,6 +424,86 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    func testHandleSelectingEnter() {
+        dictionary.userDictWords = ["と": [Word("戸")]]
+
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(4).sink { events in
+            XCTAssertEqual(events[0], .markedText("▽t"))
+            XCTAssertEqual(events[1], .markedText("▽と"))
+            XCTAssertEqual(events[2], .markedText("▼戸"))
+            XCTAssertEqual(events[3], .fixedText("戸"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    func testHandleSelectingBackspace() {
+        dictionary.userDictWords = ["と": [Word("戸"), Word("都")]]
+
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(6).sink { events in
+            XCTAssertEqual(events[0], .markedText("▽t"))
+            XCTAssertEqual(events[1], .markedText("▽と"))
+            XCTAssertEqual(events[2], .markedText("▼戸"))
+            XCTAssertEqual(events[3], .markedText("▼都"))
+            XCTAssertEqual(events[4], .markedText("▼戸"))
+            XCTAssertEqual(events[5], .markedText("▽と"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .backspace, originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .backspace, originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .backspace, originalEvent: nil)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    func testHandleSelectingStickyShift() {
+        dictionary.userDictWords = ["と": [Word("戸")]]
+
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(5).sink { events in
+            XCTAssertEqual(events[0], .markedText("▽t"))
+            XCTAssertEqual(events[1], .markedText("▽と"))
+            XCTAssertEqual(events[2], .markedText("▼戸"))
+            XCTAssertEqual(events[3], .fixedText("戸"))
+            XCTAssertEqual(events[4], .markedText("▽"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    func testHandleSelectingCancel() {
+        dictionary.userDictWords = ["と": [Word("戸"), Word("都")]]
+
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(5).sink { events in
+            XCTAssertEqual(events[0], .markedText("▽t"))
+            XCTAssertEqual(events[1], .markedText("▽と"))
+            XCTAssertEqual(events[2], .markedText("▼戸"))
+            XCTAssertEqual(events[3], .markedText("▼都"))
+            XCTAssertEqual(events[4], .markedText("▽と"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .cancel, originalEvent: nil)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     private func nextInputMethodEvent() async -> InputMethodEvent {
         var cancellation: Cancellable?
         let cancel = { cancellation?.cancel() }
