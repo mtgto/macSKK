@@ -53,7 +53,12 @@ class StateMachine {
                 return false
             }
         case .space:
-            addFixedText(" ")
+            switch state.inputMode {
+            case .eisu:
+                addFixedText("　")
+            default:
+                addFixedText(" ")
+            }
             return true
         case .stickyShift:
             switch state.inputMode {
@@ -412,9 +417,8 @@ class StateMachine {
     func handleSelecting(_ action: Action, selecting: SelectingState, registerState: RegisterState?) -> Bool {
         switch action.keyEvent {
         case .enter:
-            let word = selecting.candidates[selecting.candidateIndex]
-            dictionary.add(yomi: selecting.yomi, word: word)
-            addFixedText(word.word)
+            dictionary.add(yomi: selecting.yomi, word: selecting.candidates[selecting.candidateIndex])
+            addFixedText(selecting.fixedText())
             state.inputMethod = .normal
             return true
         case .backspace:
@@ -446,9 +450,8 @@ class StateMachine {
             return true
         case .stickyShift, .ctrlJ, .ctrlQ:
             // 選択中候補で確定
-            let word = selecting.candidates[selecting.candidateIndex]
-            dictionary.add(yomi: selecting.yomi, word: word)
-            addFixedText(word.word)
+            dictionary.add(yomi: selecting.yomi, word: selecting.candidates[selecting.candidateIndex])
+            addFixedText(selecting.fixedText())
             state.inputMethod = .normal
             return handleNormal(action, registerState: nil)
         case .cancel:

@@ -91,15 +91,17 @@ final class StateMachineTests: XCTestCase {
     func testHandleNormalNoAlphabetEisu() throws {
         stateMachine = StateMachine(initialState: IMEState(inputMode: .eisu))
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(3).sink { events in
+        stateMachine.inputMethodEvent.collect(4).sink { events in
             XCTAssertEqual(events[0], .fixedText("５"))
             XCTAssertEqual(events[1], .fixedText("％"))
             XCTAssertEqual(events[2], .fixedText("／"))
+            XCTAssertEqual(events[3], .fixedText("　"))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "5")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "%", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "/")))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil)))
         wait(for: [expectation], timeout: 1.0)
     }
 
@@ -438,6 +440,26 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    func testHandleSelectingEnterOkuriari() {
+        dictionary.userDictWords = ["とr": [Word("取")]]
+
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(5).sink { events in
+            XCTAssertEqual(events[0], .markedText("▽t"))
+            XCTAssertEqual(events[1], .markedText("▽と"))
+            XCTAssertEqual(events[2], .markedText("▽と*r"))
+            XCTAssertEqual(events[3], .markedText("▼取ろ"))
+            XCTAssertEqual(events[4], .fixedText("取ろ"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "r", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil)))
         wait(for: [expectation], timeout: 1.0)
     }

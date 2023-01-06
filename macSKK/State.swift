@@ -77,6 +77,17 @@ struct SelectingState: Equatable {
     func addCandidateIndex(diff: Int) -> SelectingState {
         return SelectingState(prev: prev, yomi: yomi, candidates: candidates, candidateIndex: candidateIndex + diff)
     }
+
+    /// 現在選択中の文字列を返す
+    func fixedText() -> String {
+        let text = candidates[candidateIndex].word
+        let okuri = prev.composing.okuri?.map { $0.string(for: prev.mode) }
+        if let okuri {
+            return text + okuri.joined()
+        } else {
+            return text
+        }
+    }
 }
 
 /// 辞書登録状態

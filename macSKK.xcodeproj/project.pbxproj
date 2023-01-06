@@ -28,6 +28,7 @@
 		CEC376E82965199500D9C432 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEC376E72965199500D9C432 /* SettingsView.swift */; };
 		CEC376EB2965211200D9C432 /* KeyEventView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEC376EA2965211200D9C432 /* KeyEventView.swift */; };
 		CEE3717529653112000DB2C3 /* GeneralView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEE3717429653112000DB2C3 /* GeneralView.swift */; };
+		CEF0823629685C0800646366 /* StateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF0823529685C0800646366 /* StateTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -66,6 +67,7 @@
 		CEC376E72965199500D9C432 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		CEC376EA2965211200D9C432 /* KeyEventView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyEventView.swift; sourceTree = "<group>"; };
 		CEE3717429653112000DB2C3 /* GeneralView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralView.swift; sourceTree = "<group>"; };
+		CEF0823529685C0800646366 /* StateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -146,6 +148,7 @@
 				CEA78FA9295EBCAC00B67E25 /* StateMachineTests.swift */,
 				CEA78FAD2961BA1D00B67E25 /* String+TransformTests.swift */,
 				CEA78FB129646CA100B67E25 /* UserDictTests.swift */,
+				CEF0823529685C0800646366 /* StateTests.swift */,
 			);
 			path = macSKKTests;
 			sourceTree = "<group>";
@@ -311,6 +314,7 @@
 				CE84A3ED295DA818009394C4 /* DictTests.swift in Sources */,
 				CE84A3E9295DA504009394C4 /* RomajiTests.swift in Sources */,
 				CEA78FAA295EBCAC00B67E25 /* StateMachineTests.swift in Sources */,
+				CEF0823629685C0800646366 /* StateTests.swift in Sources */,
 				CEA78FB229646CA100B67E25 /* UserDictTests.swift in Sources */,
 				CEA78FAE2961BA1D00B67E25 /* String+TransformTests.swift in Sources */,
 			);

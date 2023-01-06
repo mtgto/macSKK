@@ -45,7 +45,7 @@ struct KeyEventView: View {
                             modifiers.append("Fn")
                         }
                         self.modifiers = modifiers.joined(separator: ", ")
-                        
+
                         return event
                     }
                 }
