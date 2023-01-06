@@ -295,14 +295,14 @@ final class StateMachineTests: XCTestCase {
     }
 
     func testHandleComposingOkuriari3() {
-        dictionary.userDictWords = ["かんj": [Word("感")]]
+        dictionary.userDictWords = ["かんz": [Word("感")]]
 
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(6).sink { events in
             XCTAssertEqual(events[0], .markedText("▽k"))
             XCTAssertEqual(events[1], .markedText("▽か"))
             XCTAssertEqual(events[2], .markedText("▽かn"))
-            XCTAssertEqual(events[3], .markedText("▽かん*j"))
+            XCTAssertEqual(events[3], .markedText("▽かん*z"))
             XCTAssertEqual(events[4], .markedText("▼感じ"))
             XCTAssertEqual(events[5], .markedText("[登録：かん*じ]"))
             expectation.fulfill()
@@ -310,7 +310,7 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "k", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "j", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "z", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil)))
         wait(for: [expectation], timeout: 1.0)
