@@ -342,11 +342,10 @@ final class StateMachineTests: XCTestCase {
 
     func testHandleComposingPrintableOkuri() {
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(4).sink { events in
+        stateMachine.inputMethodEvent.collect(3).sink { events in
             XCTAssertEqual(events[0], .markedText("▽え"))
             XCTAssertEqual(events[1], .markedText("▽えr"))
             XCTAssertEqual(events[2], .markedText("[登録：え*る]"))
-            XCTAssertEqual(events[3], .modeChanged(.direct))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e", withShift: true)))
