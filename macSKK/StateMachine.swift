@@ -79,7 +79,15 @@ class StateMachine {
             inputMethodEventSubject.send(.modeChanged(.hiragana))
             return true
         case .cancel:
-            return false
+            if let registerState = state.registerState {
+                state.inputMode = registerState.prev.0
+                state.inputMethod = .composing(registerState.prev.1)
+                state.registerState = nil
+                updateMarkedText()
+                return true
+            } else {
+                return false
+            }
         case .ctrlQ:
             switch state.inputMode {
             case .hiragana, .katakana:

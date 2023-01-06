@@ -206,6 +206,22 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    func testHandleNormalCancel() {
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(4).sink { events in
+            XCTAssertEqual(events[0], .markedText("▽え"))
+            XCTAssertEqual(events[1], .modeChanged(.hiragana))
+            XCTAssertEqual(events[2], .markedText("[登録：え]"))
+            XCTAssertEqual(events[3], .markedText("▽え"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertFalse(stateMachine.handle(Action(keyEvent: .cancel, originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .cancel, originalEvent: nil)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     func testHandleComposingEnter() {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(6).sink { events in
