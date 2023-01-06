@@ -12,4 +12,16 @@ final class UserDictTests: XCTestCase {
         userDict = try UserDict(dicts: [], userDictWords: ["あ": [Word("亜", annotation: "亜の注釈")]])
         XCTAssertEqual(userDict.serialize(), "あ /亜;亜の注釈/")
     }
+
+    func testAdd() throws {
+        var userDict = try UserDict(dicts: [])
+        let word1 = Word("井")
+        let word2 = Word("伊")
+        userDict.add(yomi: "い", word: word1)
+        XCTAssertEqual(userDict.userDictWords, ["い": [word1]])
+        userDict.add(yomi: "い", word: word2)
+        XCTAssertEqual(userDict.userDictWords, ["い": [word2, word1]])
+        userDict.add(yomi: "い", word: word1)
+        XCTAssertEqual(userDict.userDictWords, ["い": [word1, word2]])
+    }
 }

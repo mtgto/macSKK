@@ -27,8 +27,15 @@ struct UserDict: DictProtocol {
         return (userDictWords[word] ?? []) + dicts.flatMap { $0.refer(word) }
     }
 
+    /// ユーザー辞書にエントリを追加する
+    /// - Parameter yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
+    /// - Parameter word: SKK辞書の変換候補。
     mutating func add(yomi: String, word: Word) {
-        if let words = userDictWords[yomi] {
+        if var words = userDictWords[yomi] {
+            let index = words.firstIndex { $0.word == word.word }
+            if let index {
+                words.remove(at: index)
+            }
             userDictWords[yomi] = [word] + words
         } else {
             userDictWords[yomi] = [word]
