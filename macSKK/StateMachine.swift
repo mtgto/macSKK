@@ -481,37 +481,7 @@ class StateMachine {
     }
 
     /// 現在のMarkedText状態をinputMethodEventSubject.sendする
-    /// 単語登録中ならprefixに "[登録：xxx]" を付与する
     func updateMarkedText() {
-        var markedText = ""
-        if let registerState = state.registerState {
-            let mode = registerState.prev.0
-            let composing = registerState.prev.1
-            var yomi = composing.text.map { $0.string(for: mode) }.joined()
-            if let okuri = composing.okuri {
-                yomi += "*" + okuri.map { $0.string(for: mode) }.joined()
-            }
-            markedText = "[登録：\(yomi)]"
-        }
-        switch state.inputMethod {
-        case .composing(let composing):
-            let displayText = composing.text.map { $0.string(for: state.inputMode) }.joined()
-            if let okuri = composing.okuri {
-                markedText +=
-                    "▽" + displayText + "*" + okuri.map { $0.string(for: state.inputMode) }.joined() + composing.romaji
-            } else if composing.isShift {
-                markedText += "▽" + displayText + composing.romaji
-            } else {
-                markedText += composing.romaji
-            }
-        case .selecting(let selecting):
-            markedText += "▼" + selecting.candidates[selecting.candidateIndex].word
-            if let okuri = selecting.prev.composing.okuri {
-                markedText += okuri.map { $0.string(for: state.inputMode) }.joined()
-            }
-        default:
-            break
-        }
-        inputMethodEventSubject.send(.markedText(markedText))
+        inputMethodEventSubject.send(.markedText(state.displayText()))
     }
 }

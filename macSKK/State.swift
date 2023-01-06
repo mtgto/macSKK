@@ -122,7 +122,36 @@ struct IMEState {
 
     /// "▽\(text)" や "▼(変換候補)" や "[登録：\(text)]" のような、下線が当たっていて表示されている文字列
     func displayText() -> String {
-        return "TODO"
+        var markedText = ""
+        if let registerState {
+            let mode = registerState.prev.0
+            let composing = registerState.prev.1
+            var yomi = composing.text.map { $0.string(for: mode) }.joined()
+            if let okuri = composing.okuri {
+                yomi += "*" + okuri.map { $0.string(for: mode) }.joined()
+            }
+            markedText = "[登録：\(yomi)]"
+        }
+        switch inputMethod {
+        case .composing(let composing):
+            let displayText = composing.text.map { $0.string(for: inputMode) }.joined()
+            if let okuri = composing.okuri {
+                markedText +=
+                    "▽" + displayText + "*" + okuri.map { $0.string(for: inputMode) }.joined() + composing.romaji
+            } else if composing.isShift {
+                markedText += "▽" + displayText + composing.romaji
+            } else {
+                markedText += composing.romaji
+            }
+        case .selecting(let selecting):
+            markedText += "▼" + selecting.candidates[selecting.candidateIndex].word
+            if let okuri = selecting.prev.composing.okuri {
+                markedText += okuri.map { $0.string(for: inputMode) }.joined()
+            }
+        default:
+            break
+        }
+        return markedText
     }
 }
 
