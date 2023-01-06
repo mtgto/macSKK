@@ -418,11 +418,30 @@ final class StateMachineTests: XCTestCase {
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil)))
-        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .printable("i"), originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil)))
-        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .printable("s"), originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "s")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .cancel, originalEvent: nil)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .cancel, originalEvent: nil)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    func testHandleComposingCtrlQ() {
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(5).sink { events in
+            XCTAssertEqual(events[0], .markedText("▽"))
+            XCTAssertEqual(events[1], .markedText("▽い"))
+            XCTAssertEqual(events[2], .fixedText("ｲ"))
+            XCTAssertEqual(events[3], .markedText("▽い"))
+            XCTAssertEqual(events[4], .markedText("▽い*k"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .ctrlQ, originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "k", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .ctrlQ, originalEvent: nil)))
         wait(for: [expectation], timeout: 1.0)
     }
 

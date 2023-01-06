@@ -409,8 +409,16 @@ class StateMachine {
             }
             updateMarkedText()
             return true
-        default:
-            fatalError("TODO")
+        case .ctrlQ:
+            if okuri == nil {
+                // 半角カタカナで確定する。
+                state.inputMethod = .normal
+                addFixedText(text.map { $0.string(for: .hankaku) }.joined())
+                return true
+            } else {
+                // 送り仮名があるときはなにもしない
+                return true
+            }
         }
     }
 
@@ -448,7 +456,7 @@ class StateMachine {
             }
             updateMarkedText()
             return true
-        case .stickyShift, .ctrlJ, .ctrlQ:
+        case .stickyShift, .ctrlJ, .ctrlQ, .printable:
             // 選択中候補で確定
             dictionary.add(yomi: selecting.yomi, word: selecting.candidates[selecting.candidateIndex])
             addFixedText(selecting.fixedText())
@@ -459,8 +467,6 @@ class StateMachine {
             state.inputMode = selecting.prev.mode
             updateMarkedText()
             return true
-        default:
-            fatalError("TODO")
         }
     }
 
