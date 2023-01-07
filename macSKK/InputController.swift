@@ -46,6 +46,8 @@ class InputController: IMKInputController {
                     return stateMachine.handle(Action(keyEvent: .ctrlJ, originalEvent: event))
                 } else if event.charactersIgnoringModifiers == "g" {
                     return stateMachine.handle(Action(keyEvent: .cancel, originalEvent: event))
+                } else if event.charactersIgnoringModifiers == "h" {
+                    return stateMachine.handle(Action(keyEvent: .backspace, originalEvent: event))
                 }
             }
             return false
