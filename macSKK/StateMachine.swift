@@ -327,7 +327,7 @@ class StateMachine {
                 // StickyShiftでokuriが[]になっている、またはShift押しながら入力した
                 if let moji = result.kakutei {
                     if result.input.isEmpty {
-                        if text.isEmpty {
+                        if text.isEmpty || (okuri == nil && !action.shiftIsPressed()) {
                             if isShift || action.shiftIsPressed() {
                                 state.inputMethod = .composing(
                                     ComposingState(

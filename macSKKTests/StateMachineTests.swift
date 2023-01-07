@@ -316,25 +316,29 @@ final class StateMachineTests: XCTestCase {
 
     // 送り仮名入力でShiftキーを押すのを母音側にしたパターン
     func testHandleComposingOkuriari2() {
-        dictionary.userDictEntries = ["とr": [Word("取"), Word("撮")]]
+        dictionary.userDictEntries = ["とらw": [Word("捕"), Word("捉")]]
 
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(8).sink { events in
+        stateMachine.inputMethodEvent.collect(10).sink { events in
             XCTAssertEqual(events[0], .markedText("▽"))
             XCTAssertEqual(events[1], .markedText("▽t"))
             XCTAssertEqual(events[2], .markedText("▽と"))
             XCTAssertEqual(events[3], .markedText("▽とr"))
-            XCTAssertEqual(events[4], .markedText("▼取る"))
-            XCTAssertEqual(events[5], .markedText("▼撮る"))
-            XCTAssertEqual(events[6], .modeChanged(.hiragana))
-            XCTAssertEqual(events[7], .markedText("[登録：と*る]"))
+            XCTAssertEqual(events[4], .markedText("▽とら"))
+            XCTAssertEqual(events[5], .markedText("▽とらw"))
+            XCTAssertEqual(events[6], .markedText("▼捕わ"))
+            XCTAssertEqual(events[7], .markedText("▼捉わ"))
+            XCTAssertEqual(events[8], .modeChanged(.hiragana))
+            XCTAssertEqual(events[9], .markedText("[登録：とら*わ]"))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "r")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "w")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil)))
         wait(for: [expectation], timeout: 1.0)
