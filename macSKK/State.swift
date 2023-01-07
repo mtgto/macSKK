@@ -130,7 +130,7 @@ struct IMEState {
             if let okuri = composing.okuri {
                 yomi += "*" + okuri.map { $0.string(for: mode) }.joined()
             }
-            markedText = "[登録：\(yomi)]"
+            markedText = "[登録：\(yomi)]\(registerState.text)"
         }
         switch inputMethod {
         case .composing(let composing):
