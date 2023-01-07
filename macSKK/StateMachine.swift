@@ -327,7 +327,20 @@ class StateMachine {
                 // StickyShiftでokuriが[]になっている、またはShift押しながら入力した
                 if let moji = result.kakutei {
                     if result.input.isEmpty {
-                        if okuri != nil || (isShift && action.shiftIsPressed()) {
+                        if text.isEmpty {
+                            if isShift || action.shiftIsPressed() {
+                                state.inputMethod = .composing(
+                                    ComposingState(
+                                        isShift: true,
+                                        text: text + [moji],
+                                        okuri: nil,
+                                        romaji: ""))
+                            } else {
+                                addFixedText(moji.string(for: state.inputMode))
+                                state.inputMethod = .normal
+                                return true
+                            }
+                        } else {
                             // 送り仮名が1文字以上確定した時点で変換を開始する
                             // 変換候補がないときは辞書登録へ
                             // TODO: カーソル位置がnilじゃないときはその前までで変換を試みる
@@ -354,19 +367,6 @@ class StateMachine {
                                         prev: SelectingState.PrevState(mode: state.inputMode, composing: newComposing),
                                         yomi: yomiText, candidates: candidates, candidateIndex: 0))
                             }
-                        } else {
-                            if isShift || action.shiftIsPressed() {
-                                state.inputMethod = .composing(
-                                    ComposingState(
-                                        isShift: true,
-                                        text: text + [moji],
-                                        okuri: nil,
-                                        romaji: ""))
-                            } else {
-                                addFixedText(moji.string(for: state.inputMode))
-                                state.inputMethod = .normal
-                                return true
-                            }
                         }
                     } else {  // !result.input.isEmpty
                         // n + 子音入力したときなど
@@ -385,7 +385,7 @@ class StateMachine {
                     }
                     updateMarkedText()
                 } else {  // result.kakutei == nil
-                    if okuri == nil && action.shiftIsPressed() {
+                    if !text.isEmpty && okuri == nil && action.shiftIsPressed() {
                         state.inputMethod = .composing(
                             ComposingState(isShift: isShift, text: text, okuri: [], romaji: result.input))
                     } else {

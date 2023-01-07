@@ -156,7 +156,6 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "j")))
-
         wait(for: [expectation], timeout: 1.0)
     }
 
@@ -239,6 +238,30 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "s")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    func testHandleComposingBackspace() {
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(8).sink { events in
+            XCTAssertEqual(events[0], .markedText("▽"))
+            XCTAssertEqual(events[1], .markedText("▽s"))
+            XCTAssertEqual(events[2], .markedText("▽す"))
+            XCTAssertEqual(events[3], .markedText("▽す*t"))
+            XCTAssertEqual(events[4], .markedText("▽す*"))
+            XCTAssertEqual(events[5], .markedText("▽す"))
+            XCTAssertEqual(events[6], .markedText("▽"))
+            XCTAssertEqual(events[7], .markedText(""))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "s", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .backspace, originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .backspace, originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .backspace, originalEvent: nil)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .backspace, originalEvent: nil)))
         wait(for: [expectation], timeout: 1.0)
     }
 
