@@ -61,6 +61,11 @@ class InputController: IMKInputController {
         return stateMachine.handle(Action(keyEvent: keyEvent, originalEvent: event))
     }
 
+    override func setValue(_ value: Any!, forTag tag: Int, client sender: Any!) {
+        guard let value = value as? NSString else { return }
+        logger.log("setValue \(value, privacy: .public)")
+    }
+
     override func menu() -> NSMenu! {
         return preferenceMenu
     }
