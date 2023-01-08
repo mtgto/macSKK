@@ -210,17 +210,23 @@ struct IMEState {
             if let okuri = composing.okuri {
                 yomi += "*" + okuri.map { $0.string(for: mode) }.joined()
             }
-            markedText = "[登録：\(yomi)]\(registerState.text)"
-            cursor = markedText.count
+            markedText = "[登録：\(yomi)]"
+            if let registerCursor = registerState.cursor {
+                cursor = markedText.count + registerCursor
+            } else {
+                cursor = markedText.count + registerState.text.count
+            }
+            markedText += registerState.text
         }
         switch inputMethod {
         case .composing(let composing):
+            let displayText = composing.text.map { $0.string(for: inputMode) }.joined()
             if let currentCursor = cursor {
                 if let composingCursor = composing.cursor {
                     // 先頭の "▽" 分の1を足す
                     cursor = currentCursor + composingCursor + (composing.isShift ? 1 : 0)
                 } else {
-                    cursor = currentCursor + markedText.count + (composing.isShift ? 1 : 0)
+                    cursor = currentCursor + displayText.count + (composing.isShift ? 1 : 0)
                 }
             } else {
                 if let composingCursor = composing.cursor {
@@ -229,7 +235,7 @@ struct IMEState {
                     cursor = nil
                 }
             }
-            let displayText = composing.text.map { $0.string(for: inputMode) }.joined()
+
             if let okuri = composing.okuri {
                 markedText +=
                     "▽" + displayText + "*" + okuri.map { $0.string(for: inputMode) }.joined() + composing.romaji
