@@ -31,7 +31,12 @@ class InputController: IMKInputController {
                 textInput.insertText(text, replacementRange: Self.notFoundRange)
             case .markedText(let markedText):
                 let attributedText = NSMutableAttributedString(string: markedText.text)
-                let cursorRange = NSRange(location: markedText.text.count, length: 0)
+                let cursorRange: NSRange
+                if let cursor = markedText.cursor {
+                    cursorRange = NSRange(location: cursor, length: 0)
+                } else {
+                    cursorRange = NSRange(location: markedText.text.count, length: 0)
+                }
                 attributedText.addAttributes([.cursor: NSCursor.iBeam], range: cursorRange)
                 textInput.setMarkedText(
                     attributedText, selectionRange: cursorRange, replacementRange: Self.notFoundRange)
