@@ -174,7 +174,13 @@ struct RegisterState: CursorProtocol {
         if text.isEmpty {
             return self
         }
-        return RegisterState(prev: prev, yomi: yomi, text: String(text.dropLast()))
+        if let cursor = cursor, cursor > 0 {
+            var newText: String = text
+            newText.remove(at: text.index(text.startIndex, offsetBy: cursor - 1))
+            return RegisterState(prev: prev, yomi: yomi, text: newText, cursor: cursor - 1)
+        } else {
+            return RegisterState(prev: prev, yomi: yomi, text: String(text.dropLast()), cursor: cursor)
+        }
     }
 
     // MARK: - CursorProtocol

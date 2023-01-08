@@ -62,6 +62,7 @@ class StateMachine {
         case .backspace:
             if let registerState = state.registerState {
                 state.registerState = registerState.dropLast()
+                updateMarkedText()
                 return true
             } else {
                 return false
