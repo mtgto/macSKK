@@ -41,8 +41,13 @@ enum InputMethodState: Equatable {
     case selecting(SelectingState)
 }
 
+protocol CursorProtocol {
+    func moveCursorLeft() -> Self
+    func moveCursorRight() -> Self
+}
+
 /// 入力中の未確定文字列の定義
-struct ComposingState: Equatable {
+struct ComposingState: Equatable, CursorProtocol {
     /// (Sticky)Shiftによる未確定入力中かどうか。先頭に▽ついてる状態。
     var isShift: Bool
     /// かな/カナならかなになっている文字列、abbrevなら入力した文字列. (Sticky)Shiftが押されたらそのあとは更新されない
@@ -52,11 +57,31 @@ struct ComposingState: Equatable {
     /// ローマ字モードで未確定部分。"k" や "ky" など最低あと1文字でかなに変換できる文字列。
     var romaji: String
     /// カーソル位置。末尾のときはnil
-    var cursor: UInt?
+    var cursor: Int?
 
     func string(for mode: InputMode) -> String {
         let newText: [Romaji.Moji] = romaji == "n" ? text + [Romaji.n] : text
         return newText.map { $0.string(for: mode) }.joined()
+    }
+
+    // MARK: - CursorProtocol
+    func moveCursorLeft() -> Self {
+        let newCursor: Int
+        if let cursor {
+            newCursor = max(cursor - 1, 0)
+        } else {
+            newCursor = max(text.count - 1, 0)
+        }
+        return ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: romaji, cursor: newCursor)
+    }
+
+    func moveCursorRight() -> Self {
+        if let cursor {
+            return ComposingState(
+                isShift: isShift, text: text, okuri: okuri, romaji: romaji, cursor: min(cursor + 1, text.count))
+        } else {
+            return self
+        }
     }
 }
 
@@ -91,27 +116,51 @@ struct SelectingState: Equatable {
 }
 
 /// 辞書登録状態
-struct RegisterState {
+struct RegisterState: CursorProtocol {
     /// 辞書登録状態に遷移する前の状態。
     let prev: (InputMode, ComposingState)
     /// 辞書登録する際の読み。ひらがなのみ、もしくは `ひらがな + アルファベット` もしくは `":" + アルファベット` (abbrev) のパターンがある
     let yomi: String
     /// 入力中の登録単語。変換中のように未確定の文字列は含まず確定済文字列のみが入る
     var text: String = ""
-    /// カーソル位置。特別に負数のときは末尾扱い (composing中の場合を含む)
-    var cursor: Int = -1
+    /// カーソル位置。nilのときは末尾扱い (composing中の場合を含む) 0のときは "[登録：\(text)]" の直後
+    var cursor: Int?
 
     func appendText(_ text: String) -> RegisterState {
         return RegisterState(prev: prev, yomi: yomi, text: self.text + text)
     }
 
     /// 入力中の文字列をカーソル位置から一文字削除する。0文字のときは無視する
-    func dropLast() -> RegisterState {
+    func dropLast() -> Self {
         if text.isEmpty {
             return self
         }
         return RegisterState(prev: prev, yomi: yomi, text: String(text.dropLast()))
     }
+
+    // MARK: - CursorProtocol
+    func moveCursorLeft() -> Self {
+        let newCursor: Int
+        if let cursor {
+            newCursor = max(cursor - 1, 0)
+        } else {
+            newCursor = max(text.count - 1, 0)
+        }
+        return RegisterState(prev: prev, yomi: yomi, text: text, cursor: newCursor)
+    }
+
+    func moveCursorRight() -> Self {
+        if let cursor {
+            return RegisterState(prev: prev, yomi: yomi, text: text, cursor: min(cursor + 1, text.count))
+        } else {
+            return self
+        }
+    }
+}
+
+struct MarkedText: Equatable {
+    let text: String
+    let cursor: Int?
 }
 
 struct IMEState {
@@ -120,9 +169,11 @@ struct IMEState {
     var registerState: RegisterState?
     var candidates: [Word] = []
 
-    /// "▽\(text)" や "▼(変換候補)" や "[登録：\(text)]" のような、下線が当たっていて表示されている文字列
-    func displayText() -> String {
+    /// "▽\(text)" や "▼(変換候補)" や "[登録：\(text)]" のような、下線が当たっていて表示されている文字列とカーソル位置を返す。
+    /// カーソル位置は末尾の場合はnilを返す
+    func displayText() -> MarkedText {
         var markedText = ""
+        var cursor: Int? = nil
         if let registerState {
             let mode = registerState.prev.0
             let composing = registerState.prev.1
@@ -151,7 +202,7 @@ struct IMEState {
         default:
             break
         }
-        return markedText
+        return MarkedText(text: markedText, cursor: cursor)
     }
 }
 
