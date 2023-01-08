@@ -11,7 +11,7 @@ struct UserDict: DictProtocol {
 
     init(dicts: [Dict], userDictEntries: [String: [Word]]? = nil) throws {
         self.dicts = dicts
-        fileURL = FileManager.default.homeDirectoryForCurrentUser.appendingPathExtension("skk-jisyo.utf8")
+        fileURL = FileManager.default.homeDirectoryForCurrentUser.appending(path: "skk-jisyo.utf8")
         if let userDictEntries {
             self.userDictEntries = userDictEntries
         } else if FileManager.default.fileExists(atPath: fileURL.path()) {

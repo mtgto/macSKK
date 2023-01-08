@@ -35,6 +35,17 @@ struct macSKKApp: App {
         Settings {
             SettingsView()
         }
+        .commands {
+            CommandGroup(after: .appSettings) {
+                Button("Save User Directory") {
+                    do {
+                        try dictionary.save()
+                    } catch {
+                        print(error)
+                    }
+                }.keyboardShortcut("S")
+            }
+        }
     }
 
     private func setupDictionaries() {
