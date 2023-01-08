@@ -97,6 +97,9 @@ class InputController: IMKInputController {
         let modifiers = event.modifierFlags
         let keyCode = event.keyCode
         let charactersIgnoringModifiers = event.charactersIgnoringModifiers
+        if let charactersIgnoringModifiers, let characters = event.characters {
+            logger.log("入力されたキー: \(charactersIgnoringModifiers, privacy: .public), \(characters, privacy: .public)")
+        }
         if modifiers.contains(.control) || modifiers.contains(.command) || modifiers.contains(.function) {
             if modifiers == [.control] {
                 if charactersIgnoringModifiers == "j" {

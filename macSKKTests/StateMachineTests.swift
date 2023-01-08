@@ -121,6 +121,19 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    func testHandleNormalPrintableDirect() throws {
+        stateMachine = StateMachine(initialState: IMEState(inputMode: .direct))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(2).sink { events in
+            XCTAssertEqual(events[0], .fixedText("L"))
+            XCTAssertEqual(events[1], .fixedText("Q"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "l", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q", withShift: true)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     func testHandleNormalRegistering() throws {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(5).sink { events in
@@ -670,10 +683,11 @@ final class StateMachineTests: XCTestCase {
         }
     }
 
+    // TODO: "!" が渡されたときは "1" が printable に渡されるようにする
     private func printableKeyEventAction(character: Character, withShift: Bool = false) -> Action {
         if withShift {
             return Action(
-                keyEvent: .printable(String(character).uppercased()),
+                keyEvent: .printable(String(character)),
                 originalEvent: generateKeyEventWithShift(character: character)
             )
         } else {
@@ -688,7 +702,7 @@ final class StateMachineTests: XCTestCase {
     private func generateKeyEventWithShift(character: Character) -> NSEvent? {
         return generateNSEvent(
             characters: String(character).uppercased(),
-            charactersIgnoringModifiers: String(character).uppercased(),
+            charactersIgnoringModifiers: String(character).lowercased(),
             modifierFlags: [.shift])
     }
 

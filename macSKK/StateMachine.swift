@@ -147,11 +147,9 @@ class StateMachine {
                 inputMethodEventSubject.send(.modeChanged(.hiragana))
                 return true
             case .eisu:
-                addFixedText(input.toZenkaku())
-                return true
+                break
             case .direct:
-                addFixedText(input)
-                return true
+                break
             }
         } else if input.lowercased() == "l" {
             switch state.inputMode {
@@ -165,20 +163,17 @@ class StateMachine {
                 }
                 return true
             case .eisu:
-                addFixedText(input.toZenkaku())
-                return true
+                break
             case .direct:
-                addFixedText(input)
-                return true
+                break
             }
         }
 
-        let inputLowercased = input.lowercased()
         let isAlphabet = input.unicodeScalars.allSatisfy { CharacterSet.letters.contains($0) }
         switch state.inputMode {
         case .hiragana, .katakana, .hankaku:
             if isAlphabet {
-                let result = Romaji.convert(inputLowercased)
+                let result = Romaji.convert(input)
                 if let moji = result.kakutei {
                     if action.shiftIsPressed() {
                         state.inputMethod = .composing(
@@ -189,7 +184,7 @@ class StateMachine {
                     }
                 } else {
                     state.inputMethod = .composing(
-                        ComposingState(isShift: action.shiftIsPressed(), text: [], okuri: nil, romaji: inputLowercased))
+                        ComposingState(isShift: action.shiftIsPressed(), text: [], okuri: nil, romaji: input))
                     updateMarkedText()
                 }
             } else {
@@ -200,7 +195,12 @@ class StateMachine {
             }
             return true
         case .eisu:
-            addFixedText(input.toZenkaku())
+            if let characters = action.characters() {
+                addFixedText(characters.toZenkaku())
+            } else {
+                logger.error("Can not find printable characters in keyEvent")
+                return false
+            }
             return true
         case .direct:
             if let characters = action.characters() {

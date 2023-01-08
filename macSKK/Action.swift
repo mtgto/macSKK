@@ -14,7 +14,7 @@ struct Action {
         case stickyShift
         /**
          * 印字可能な文字の入力 (space以外).
-         * 値はNSEvent.charactersIgnoringModifiersなのでシフトが押されているときは大文字になるし、Shift-1なら "!" になる
+         * 値はNSEvent.charactersIgnoringModifiersベースで、シフトが押されているときは小文字になる。Shift-1なら "1" になる
          * - TODO: NSEvent.keyCodeからキーボードフォーマットを使って生の文字列を取る
          */
         case printable(String)
