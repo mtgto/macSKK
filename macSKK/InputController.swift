@@ -18,8 +18,11 @@ class InputController: IMKInputController {
         super.init(server: server, delegate: delegate, client: inputClient)
 
         preferenceMenu.addItem(
-            withTitle: NSLocalizedString("PreferenceMenuItem", comment: "Preferences…"),
+            withTitle: NSLocalizedString("MenuItemPreference", comment: "Preferences…"),
             action: #selector(showSettings), keyEquivalent: "")
+        preferenceMenu.addItem(
+            withTitle: NSLocalizedString("MenuItemSaveDict", comment: "Save User Dictionary"),
+            action: #selector(saveDict), keyEquivalent: "")
 
         guard let textInput = inputClient as? IMKTextInput else {
             return
@@ -47,25 +50,6 @@ class InputController: IMKInputController {
     }
 
     override func handle(_ event: NSEvent!, client sender: Any!) -> Bool {
-        let modifiers = event.modifierFlags
-        // Ctrl-J, Ctrl-Gなどは受け取るが、基本的にはCtrl, Command, Fnが押されていたら無視する
-        if modifiers.contains(.control) || modifiers.contains(.command) || modifiers.contains(.function) {
-            if modifiers == [.control] {
-                if event.charactersIgnoringModifiers == "j" {
-                    return stateMachine.handle(Action(keyEvent: .ctrlJ, originalEvent: event))
-                } else if event.charactersIgnoringModifiers == "g" {
-                    return stateMachine.handle(Action(keyEvent: .cancel, originalEvent: event))
-                } else if event.charactersIgnoringModifiers == "h" {
-                    return stateMachine.handle(Action(keyEvent: .backspace, originalEvent: event))
-                } else if event.charactersIgnoringModifiers == "b" {
-                    return stateMachine.handle(Action(keyEvent: .left, originalEvent: event))
-                } else if event.charactersIgnoringModifiers == "f" {
-                    return stateMachine.handle(Action(keyEvent: .right, originalEvent: event))
-                }
-            }
-            return stateMachine.handleUnhandledEvent(event)
-        }
-
         guard let keyEvent = convert(event: event) else {
             logger.debug("Can not convert event to KeyEvent")
             return stateMachine.handleUnhandledEvent(event)
@@ -92,6 +76,14 @@ class InputController: IMKInputController {
         NSApp.activate(ignoringOtherApps: true)
     }
 
+    @objc func saveDict() {
+        do {
+            try dictionary.save()
+        } catch {
+            logger.error("ユーザー辞書保存中にエラーが発生しました")
+        }
+    }
+
     // MARK: -
     private func isPrintable(_ text: String) -> Bool {
         let printable = [CharacterSet.alphanumerics, CharacterSet.symbols, CharacterSet.punctuationCharacters]
@@ -100,19 +92,52 @@ class InputController: IMKInputController {
     }
 
     private func convert(event: NSEvent) -> Action.KeyEvent? {
-        if event.keyCode == 36 {  // エンター
+        // Ctrl-J, Ctrl-Gなどは受け取るが、基本的にはCtrl, Command, Fnが押されていたら無視する
+        // Optionは修飾キーを打つかもしれないので許容する
+        let modifiers = event.modifierFlags
+        let keyCode = event.keyCode
+        let charactersIgnoringModifiers = event.charactersIgnoringModifiers
+        if modifiers.contains(.control) || modifiers.contains(.command) || modifiers.contains(.function) {
+            if modifiers == [.control] {
+                if charactersIgnoringModifiers == "j" {
+                    return .ctrlJ
+                } else if charactersIgnoringModifiers == "g" {
+                    return .cancel
+                } else if charactersIgnoringModifiers == "h" {
+                    return .backspace
+                } else if charactersIgnoringModifiers == "b" {
+                    return .left
+                } else if charactersIgnoringModifiers == "f" {
+                    return .right
+                }
+            }
+            // カーソルキーはFn + NumPadがmodifierFlagsに設定されている
+            if !modifiers.contains(.control) && !modifiers.contains(.command) && modifiers.contains(.function) {
+                if keyCode == 123 {
+                    return .left
+                } else if keyCode == 124 {
+                    return .right
+                }
+            }
+
+            return nil
+        }
+
+        if keyCode == 36 {  // エンター
             return .enter
-        } else if event.keyCode == 123 {
+        } else if keyCode == 123 {
             return .left
-        } else if event.keyCode == 124 {
+        } else if keyCode == 124 {
             return .right
-        } else if event.keyCode == 51 {
+        } else if keyCode == 51 {
             return .backspace
+        } else if keyCode == 53 {  // ESC
+            return .cancel
         } else if event.characters == " " {
             return .space
         } else if event.characters == ";" {
             return .stickyShift
-        } else if let text = event.charactersIgnoringModifiers {
+        } else if let text = charactersIgnoringModifiers {
             if isPrintable(text) {
                 return .printable(text)
             }
