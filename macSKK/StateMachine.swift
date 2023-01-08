@@ -346,7 +346,7 @@ class StateMachine {
                     if result.input.isEmpty {
                         if text.isEmpty || (okuri == nil && !action.shiftIsPressed()) || composing.cursor != nil {
                             if isShift || action.shiftIsPressed() {
-                                state.inputMethod = .composing(composing.appendText(moji))
+                                state.inputMethod = .composing(composing.appendText(moji).resetRomaji())
                             } else {
                                 addFixedText(moji.string(for: state.inputMode))
                                 state.inputMethod = .normal

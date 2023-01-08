@@ -78,6 +78,10 @@ struct ComposingState: Equatable, CursorProtocol {
         return ComposingState(isShift: isShift, text: newText, okuri: okuri, romaji: romaji, cursor: newCursor)
     }
 
+    func resetRomaji() -> ComposingState {
+        return ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: "", cursor: cursor)
+    }
+
     // MARK: - CursorProtocol
     func moveCursorLeft() -> Self {
         let newCursor: Int
@@ -156,7 +160,13 @@ struct RegisterState: CursorProtocol {
 
     /// カーソル位置に文字列を追加する。
     func appendText(_ text: String) -> RegisterState {
-        return RegisterState(prev: prev, yomi: yomi, text: self.text + text)
+        if let cursor {
+            var newText: String = self.text
+            newText.insert(contentsOf: text, at: newText.index(newText.startIndex, offsetBy: cursor))
+            return RegisterState(prev: prev, yomi: yomi, text: newText, cursor: cursor + text.count)
+        } else {
+            return RegisterState(prev: prev, yomi: yomi, text: self.text + text, cursor: cursor)
+        }
     }
 
     /// 入力中の文字列をカーソル位置から一文字削除する。0文字のときは無視する
@@ -169,6 +179,9 @@ struct RegisterState: CursorProtocol {
 
     // MARK: - CursorProtocol
     func moveCursorLeft() -> Self {
+        if text.isEmpty {
+            return self
+        }
         let newCursor: Int
         if let cursor {
             newCursor = max(cursor - 1, 0)
@@ -180,7 +193,8 @@ struct RegisterState: CursorProtocol {
 
     func moveCursorRight() -> Self {
         if let cursor {
-            return RegisterState(prev: prev, yomi: yomi, text: text, cursor: min(cursor + 1, text.count))
+            return RegisterState(
+                prev: prev, yomi: yomi, text: text, cursor: cursor + 1 == text.count ? nil : cursor + 1)
         } else {
             return self
         }
@@ -202,6 +216,8 @@ struct IMEState {
     /// カーソル位置は末尾の場合はnilを返す
     func displayText() -> MarkedText {
         var markedText = ""
+        // 単語登録モードのカーソルより後の確定済文字列
+        var registerTextSuffix = ""
         var cursor: Int? = nil
         if let registerState {
             let mode = registerState.prev.0
@@ -213,20 +229,38 @@ struct IMEState {
             markedText = "[登録：\(yomi)]"
             if let registerCursor = registerState.cursor {
                 cursor = markedText.count + registerCursor
+                markedText += registerState.text.prefix(registerCursor)
+                if registerCursor == 0 {
+                    registerTextSuffix = registerState.text
+                } else {
+                    registerTextSuffix += registerState.text.suffix(
+                        from: registerState.text.index(registerState.text.startIndex, offsetBy: registerCursor))
+                }
             } else {
-                cursor = markedText.count + registerState.text.count
+                markedText += registerState.text
             }
-            markedText += registerState.text
         }
         switch inputMethod {
+        case .normal:
+            markedText += registerTextSuffix
         case .composing(let composing):
             let displayText = composing.text.map { $0.string(for: inputMode) }.joined()
+            let composingText: String
+            if let okuri = composing.okuri {
+                composingText =
+                    "▽" + displayText + "*" + okuri.map { $0.string(for: inputMode) }.joined() + composing.romaji
+            } else if composing.isShift {
+                composingText = "▽" + displayText + composing.romaji
+            } else {
+                composingText = composing.romaji
+            }
+
             if let currentCursor = cursor {
                 if let composingCursor = composing.cursor {
                     // 先頭の "▽" 分の1を足す
                     cursor = currentCursor + composingCursor + (composing.isShift ? 1 : 0)
                 } else {
-                    cursor = currentCursor + displayText.count + (composing.isShift ? 1 : 0)
+                    cursor = currentCursor + composingText.count
                 }
             } else {
                 if let composingCursor = composing.cursor {
@@ -235,23 +269,13 @@ struct IMEState {
                     cursor = nil
                 }
             }
-
-            if let okuri = composing.okuri {
-                markedText +=
-                    "▽" + displayText + "*" + okuri.map { $0.string(for: inputMode) }.joined() + composing.romaji
-            } else if composing.isShift {
-                markedText += "▽" + displayText + composing.romaji
-            } else {
-                markedText += composing.romaji
-            }
+            markedText += composingText + registerTextSuffix
         case .selecting(let selecting):
             markedText += "▼" + selecting.candidates[selecting.candidateIndex].word
             if let okuri = selecting.prev.composing.okuri {
                 markedText += okuri.map { $0.string(for: inputMode) }.joined()
             }
             cursor = nil
-        default:
-            break
         }
         return MarkedText(text: markedText, cursor: cursor)
     }

@@ -49,4 +49,17 @@ final class StateTests: XCTestCase {
         )
         XCTAssertEqual(selectingState.fixedText(), "有る")
     }
+
+    func testRegisterStateAppendText() throws {
+        var state = RegisterState(
+            prev: (.hiragana, ComposingState(isShift: true, text: [Romaji.table["a"]!], okuri: nil, romaji: "")),
+            yomi: "あ", text: "")
+        state = state.appendText("あ")
+        XCTAssertEqual(state.appendText("い").text, "あい")
+        state = state.moveCursorLeft()
+        XCTAssertEqual(state.cursor, 0)
+        state = state.appendText("い")
+        XCTAssertEqual(state.text, "いあ")
+        XCTAssertEqual(state.cursor, 1)
+    }
 }
