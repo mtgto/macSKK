@@ -15,7 +15,9 @@ final class StateTests: XCTestCase {
         XCTAssertEqual(state.cursor, 2)
         state = state.appendText(Romaji.table["e"]!)
         XCTAssertEqual(state.string(for: .hiragana), "あいえう")
-        XCTAssertEqual(state.cursor, 2)
+        XCTAssertEqual(state.cursor, 3)
+        state = state.moveCursorRight()
+        XCTAssertNil(state.cursor, "末尾まで移動したらカーソルはnilになる")
     }
 
     func testSelectingStateFixedText() throws {

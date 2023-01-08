@@ -344,14 +344,9 @@ class StateMachine {
                 // StickyShiftでokuriが[]になっている、またはShift押しながら入力した
                 if let moji = result.kakutei {
                     if result.input.isEmpty {
-                        if text.isEmpty || (okuri == nil && !action.shiftIsPressed()) {
+                        if text.isEmpty || (okuri == nil && !action.shiftIsPressed()) || composing.cursor != nil {
                             if isShift || action.shiftIsPressed() {
-                                state.inputMethod = .composing(
-                                    ComposingState(
-                                        isShift: true,
-                                        text: text + [moji],
-                                        okuri: nil,
-                                        romaji: ""))
+                                state.inputMethod = .composing(composing.appendText(moji))
                             } else {
                                 addFixedText(moji.string(for: state.inputMode))
                                 state.inputMethod = .normal

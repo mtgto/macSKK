@@ -67,12 +67,15 @@ struct ComposingState: Equatable, CursorProtocol {
     /// text部に文字を追加する
     func appendText(_ moji: Romaji.Moji) -> ComposingState {
         let newText: [Romaji.Moji]
+        let newCursor: Int?
         if let cursor {
             newText = text[0..<cursor] + [moji] + text[cursor...]
+            newCursor = cursor + 1
         } else {
             newText = text + [moji]
+            newCursor = nil
         }
-        return ComposingState(isShift: isShift, text: newText, okuri: okuri, romaji: romaji, cursor: cursor)
+        return ComposingState(isShift: isShift, text: newText, okuri: okuri, romaji: romaji, cursor: newCursor)
     }
 
     // MARK: - CursorProtocol
@@ -98,8 +101,12 @@ struct ComposingState: Equatable, CursorProtocol {
         if text.isEmpty {
             return self
         } else if let cursor, isShift {
-            return ComposingState(
-                isShift: isShift, text: text, okuri: okuri, romaji: romaji, cursor: min(cursor + 1, text.count))
+            if cursor + 1 == text.count {
+                return ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: romaji, cursor: nil)
+            } else {
+                return ComposingState(
+                    isShift: isShift, text: text, okuri: okuri, romaji: romaji, cursor: min(cursor + 1, text.count))
+            }
         } else {
             return self
         }
