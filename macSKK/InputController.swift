@@ -29,8 +29,12 @@ class InputController: IMKInputController {
             switch event {
             case .fixedText(let text):
                 textInput.insertText(text, replacementRange: Self.notFoundRange)
-            case .markedText(let text):
-                textInput.setMarkedText(text, selectionRange: Self.notFoundRange, replacementRange: Self.notFoundRange)
+            case .markedText(let markedText):
+                let attributedText = NSMutableAttributedString(string: markedText.text)
+                let cursorRange = NSRange(location: markedText.text.count, length: 0)
+                attributedText.addAttributes([.cursor: NSCursor.iBeam], range: cursorRange)
+                textInput.setMarkedText(
+                    attributedText, selectionRange: cursorRange, replacementRange: Self.notFoundRange)
             case .modeChanged(let inputMode):
                 textInput.selectMode(inputMode.rawValue)
             }

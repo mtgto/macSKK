@@ -11,7 +11,8 @@ enum InputMethodEvent: Equatable {
     /// 下線付きの未確定文字列
     ///
     /// 登録モード時は "[登録：あああ]ほげ" のように長くなる
-    case markedText(String)
+    /// 第二引数はカーソル位置。nil時は末尾扱い
+    case markedText(MarkedText)
     /// qやlなどにより入力モードを変更する
     case modeChanged(InputMode)
 }
@@ -99,6 +100,22 @@ class StateMachine {
                 inputMethodEventSubject.send(.modeChanged(.hiragana))
                 return true
             default:
+                return false
+            }
+        case .left:
+            if let registerState = state.registerState {
+                state.registerState = registerState.moveCursorLeft()
+                updateMarkedText()
+                return true
+            } else {
+                return false
+            }
+        case .right:
+            if let registerState = state.registerState {
+                state.registerState = registerState.moveCursorRight()
+                updateMarkedText()
+                return true
+            } else {
                 return false
             }
         }
@@ -427,6 +444,23 @@ class StateMachine {
                 // 送り仮名があるときはなにもしない
                 return true
             }
+        case .left:
+            if romaji.isEmpty {
+                state.inputMethod = .composing(composing.moveCursorLeft())
+            } else {
+                // 未確定ローマ字があるときはローマ字を消す (AquaSKKと同じ)
+                state.inputMethod = .composing(ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: ""))
+            }
+            updateMarkedText()
+            return true
+        case .right:
+            if romaji.isEmpty {
+                state.inputMethod = .composing(composing.moveCursorRight())
+            } else {
+                state.inputMethod = .composing(ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: ""))
+            }
+            updateMarkedText()
+            return true
         }
     }
 
@@ -474,6 +508,9 @@ class StateMachine {
             state.inputMethod = .composing(selecting.prev.composing)
             state.inputMode = selecting.prev.mode
             updateMarkedText()
+            return true
+        case .left, .right:
+            // AquaSKKと同様に何もしない (IMKCandidates表示時はそちらの移動に使われる)
             return true
         }
     }

@@ -26,7 +26,14 @@ struct Action {
          * Ctrl-G
          */
         case cancel
+        /**
+         * 半角カナ
+         */
         case ctrlQ
+        /// 左矢印キー or Ctrl-B
+        case left
+        /// 右矢印キー or Ctrl-F
+        case right
     }
 
     func shiftIsPressed() -> Bool {

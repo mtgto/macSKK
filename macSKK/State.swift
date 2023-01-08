@@ -56,7 +56,7 @@ struct ComposingState: Equatable, CursorProtocol {
     var okuri: [Romaji.Moji]?
     /// ローマ字モードで未確定部分。"k" や "ky" など最低あと1文字でかなに変換できる文字列。
     var romaji: String
-    /// カーソル位置。末尾のときはnil
+    /// カーソル位置。末尾のときはnil。先頭の▽分は含まないので非nilのときは[0, text.count)の範囲を取る。
     var cursor: Int?
 
     func string(for mode: InputMode) -> String {
@@ -64,19 +64,40 @@ struct ComposingState: Equatable, CursorProtocol {
         return newText.map { $0.string(for: mode) }.joined()
     }
 
+    /// text部に文字を追加する
+    func appendText(_ moji: Romaji.Moji) -> ComposingState {
+        let newText: [Romaji.Moji]
+        if let cursor {
+            newText = text[0..<cursor] + [moji] + text[cursor...]
+        } else {
+            newText = text + [moji]
+        }
+        return ComposingState(isShift: isShift, text: newText, okuri: okuri, romaji: romaji, cursor: cursor)
+    }
+
     // MARK: - CursorProtocol
     func moveCursorLeft() -> Self {
         let newCursor: Int
-        if let cursor {
-            newCursor = max(cursor - 1, 0)
+        // 入力済みの非送り仮名部分のみカーソル移動可能
+        if text.isEmpty {
+            return self
+        } else if isShift {
+            if let cursor {
+                newCursor = max(cursor - 1, 0)
+            } else {
+                newCursor = max(text.count - 1, 0)
+            }
+            return ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: romaji, cursor: newCursor)
         } else {
-            newCursor = max(text.count - 1, 0)
+            return self
         }
-        return ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: romaji, cursor: newCursor)
     }
 
     func moveCursorRight() -> Self {
-        if let cursor {
+        // 入力済みの非送り仮名部分のみカーソル移動可能
+        if text.isEmpty {
+            return self
+        } else if let cursor, isShift {
             return ComposingState(
                 isShift: isShift, text: text, okuri: okuri, romaji: romaji, cursor: min(cursor + 1, text.count))
         } else {
@@ -126,6 +147,7 @@ struct RegisterState: CursorProtocol {
     /// カーソル位置。nilのときは末尾扱い (composing中の場合を含む) 0のときは "[登録：\(text)]" の直後
     var cursor: Int?
 
+    /// カーソル位置に文字列を追加する。
     func appendText(_ text: String) -> RegisterState {
         return RegisterState(prev: prev, yomi: yomi, text: self.text + text)
     }
@@ -182,9 +204,24 @@ struct IMEState {
                 yomi += "*" + okuri.map { $0.string(for: mode) }.joined()
             }
             markedText = "[登録：\(yomi)]\(registerState.text)"
+            cursor = markedText.count
         }
         switch inputMethod {
         case .composing(let composing):
+            if let currentCursor = cursor {
+                if let composingCursor = composing.cursor {
+                    // 先頭の "▽" 分の1を足す
+                    cursor = currentCursor + composingCursor + (composing.isShift ? 1 : 0)
+                } else {
+                    cursor = currentCursor + markedText.count + (composing.isShift ? 1 : 0)
+                }
+            } else {
+                if let composingCursor = composing.cursor {
+                    cursor = markedText.count + composingCursor + (composing.isShift ? 1 : 0)
+                } else {
+                    cursor = nil
+                }
+            }
             let displayText = composing.text.map { $0.string(for: inputMode) }.joined()
             if let okuri = composing.okuri {
                 markedText +=
@@ -199,6 +236,7 @@ struct IMEState {
             if let okuri = selecting.prev.composing.okuri {
                 markedText += okuri.map { $0.string(for: inputMode) }.joined()
             }
+            cursor = nil
         default:
             break
         }
