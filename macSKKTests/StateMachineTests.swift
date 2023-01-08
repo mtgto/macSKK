@@ -6,23 +6,6 @@ import XCTest
 
 @testable import macSKK
 
-final class TestNSEvent: NSEvent {
-    let myModifierFlags: NSEvent.ModifierFlags
-
-    override var modifierFlags: NSEvent.ModifierFlags {
-        return myModifierFlags
-    }
-
-    init(modifierFlags: NSEvent.ModifierFlags) {
-        myModifierFlags = modifierFlags
-        super.init()
-    }
-
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-}
-
 final class StateMachineTests: XCTestCase {
     var stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
     var cancellables: Set<AnyCancellable> = []

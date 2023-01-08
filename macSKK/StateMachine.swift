@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2022 mtgto <hogerappa@gmail.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import Cocoa
 import Combine
-import Foundation
 
 // ActionによってIMEに関する状態が変更するイベントの列挙
 enum InputMethodEvent: Equatable {
@@ -35,6 +35,19 @@ class StateMachine {
             return handleComposing(action, composing: composing, registerState: state.registerState)
         case .selecting(let selecting):
             return handleSelecting(action, selecting: selecting, registerState: state.registerState)
+        }
+    }
+
+    /// 処理されないキーイベントを処理するかどうかを返す
+    func handleUnhandledEvent(_ event: NSEvent) -> Bool {
+        if state.registerState != nil {
+            return true
+        }
+        switch state.inputMethod {
+        case .normal:
+            return false
+        case .composing, .selecting:
+            return true
         }
     }
 

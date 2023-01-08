@@ -52,14 +52,18 @@ class InputController: IMKInputController {
                     return stateMachine.handle(Action(keyEvent: .cancel, originalEvent: event))
                 } else if event.charactersIgnoringModifiers == "h" {
                     return stateMachine.handle(Action(keyEvent: .backspace, originalEvent: event))
+                } else if event.charactersIgnoringModifiers == "b" {
+                    return stateMachine.handle(Action(keyEvent: .left, originalEvent: event))
+                } else if event.charactersIgnoringModifiers == "f" {
+                    return stateMachine.handle(Action(keyEvent: .right, originalEvent: event))
                 }
             }
-            return false
+            return stateMachine.handleUnhandledEvent(event)
         }
 
         guard let keyEvent = convert(event: event) else {
-            logger.log("Can not convert event to KeyEvent")
-            return false
+            logger.debug("Can not convert event to KeyEvent")
+            return stateMachine.handleUnhandledEvent(event)
         }
 
         return stateMachine.handle(Action(keyEvent: keyEvent, originalEvent: event))
@@ -93,6 +97,10 @@ class InputController: IMKInputController {
     private func convert(event: NSEvent) -> Action.KeyEvent? {
         if event.keyCode == 36 {  // エンター
             return .enter
+        } else if event.keyCode == 123 {
+            return .left
+        } else if event.keyCode == 124 {
+            return .right
         } else if event.keyCode == 51 {
             return .backspace
         } else if event.characters == " " {
