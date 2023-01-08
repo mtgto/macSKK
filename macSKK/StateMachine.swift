@@ -434,9 +434,6 @@ class StateMachine {
         case .cancel:
             if romaji.isEmpty {
                 // 下線テキストをリセットする
-                if let registerState {
-                    state.registerState = RegisterState(prev: registerState.prev, yomi: registerState.yomi)
-                }
                 state.inputMethod = .normal
             } else {
                 state.inputMethod = .composing(ComposingState(isShift: isShift, text: text, okuri: nil, romaji: ""))
