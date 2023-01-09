@@ -14,7 +14,7 @@ class UserDict: DictProtocol {
     init(dicts: [Dict], userDictEntries: [String: [Word]]? = nil) throws {
         self.dicts = dicts
         fileURL = FileManager.default.homeDirectoryForCurrentUser.appending(path: "skk-jisyo.utf8")
-        fileHandle = try FileHandle(forReadingFrom: fileURL)
+        fileHandle = try FileHandle(forUpdating: fileURL)
         source = DispatchSource.makeFileSystemObjectSource(
             fileDescriptor: fileHandle.fileDescriptor, eventMask: .extend)
         source.setEventHandler {
@@ -74,7 +74,11 @@ class UserDict: DictProtocol {
 
     /// ユーザー辞書を永続化する
     func save() throws {
-        try serialize().write(to: fileURL, atomically: true, encoding: .utf8)
+        try fileHandle.seek(toOffset: 0)
+        if let serialized = serialize().data(using: .utf8) {
+            try fileHandle.write(contentsOf: serialized)
+            try fileHandle.truncate(atOffset: fileHandle.offset())
+        }
     }
 
     /// ユーザー辞書をSKK辞書形式に変換する
