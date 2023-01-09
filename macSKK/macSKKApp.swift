@@ -11,7 +11,6 @@ var dictionary: UserDict!
 @main
 struct macSKKApp: App {
     private var server: IMKServer!
-    private var inputModePanel: InputModePanel!
 
     init() {
         if isTest() {
@@ -22,14 +21,12 @@ struct macSKKApp: App {
             }
         } else {
             setupDictionaries()
-            logger.log("Bundle Path: \(Bundle.main.bundlePath, privacy: .public)")
             if Bundle.main.bundleURL.deletingLastPathComponent().lastPathComponent == "Input Methods" {
                 guard let connectionName = Bundle.main.infoDictionary?["InputMethodConnectionName"] as? String else {
                     fatalError("InputMethodConnectionName is not set")
                 }
                 server = IMKServer(name: connectionName, bundleIdentifier: Bundle.main.bundleIdentifier)
             }
-            inputModePanel = InputModePanel()
         }
     }
 
@@ -46,10 +43,6 @@ struct macSKKApp: App {
                         print(error)
                     }
                 }.keyboardShortcut("S")
-                Button("Show Panel") {
-                    let point = NSPoint(x: 100, y: 200)
-                    self.inputModePanel.show(at: point, mode: .hiragana)
-                }
             }
         }
     }
