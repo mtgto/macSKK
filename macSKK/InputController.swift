@@ -59,14 +59,8 @@ class InputController: IMKInputController {
         var cursorPosition: NSRect = .zero
         if let textInput = sender as? IMKTextInput {
             // カーソル位置あたりを取得する
-            textInput.attributes(forCharacterIndex: 0, lineHeightRectangle: &cursorPosition)
+            _ = textInput.attributes(forCharacterIndex: 0, lineHeightRectangle: &cursorPosition)
             // TODO: 単語登録中など、現在のカーソル位置が0ではないときはそれに合わせて座標を取得したい
-            //            if let attributes = textInput.attributes(forCharacterIndex: 0, lineHeightRectangle: &lineRect) {
-            //                let rectInfo = "x=\(lineRect.origin.x),y=\(lineRect.origin.y),w=\(lineRect.size.width),h=\(lineRect.size.height)"
-            //                logger.log("属性: \(attributes, privacy: .public), rect: \(rectInfo, privacy: .public)")
-            //            } else {
-            //                logger.log("属性が取得できません")
-            //            }
         } else {
             logger.log("IMKTextInputが取得できません")
         }

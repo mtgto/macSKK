@@ -3,22 +3,52 @@
 
 import Foundation
 
-struct UserDict: DictProtocol {
+class UserDict: DictProtocol {
     let fileURL: URL
+    let fileHandle: FileHandle
+    let source: DispatchSourceFileSystemObject
     /// 有効になっている辞書
     let dicts: [Dict]
-    var userDictEntries: [String: [Word]]
+    var userDictEntries: [String: [Word]] = [:]
 
     init(dicts: [Dict], userDictEntries: [String: [Word]]? = nil) throws {
         self.dicts = dicts
         fileURL = FileManager.default.homeDirectoryForCurrentUser.appending(path: "skk-jisyo.utf8")
+        fileHandle = try FileHandle(forReadingFrom: fileURL)
+        source = DispatchSource.makeFileSystemObjectSource(
+            fileDescriptor: fileHandle.fileDescriptor, eventMask: .extend)
+        source.setEventHandler {
+            logger.log("ユーザー辞書が更新されました")
+            do {
+                try self.load()
+            } catch {
+                logger.error("ユーザー辞書の読み込みに失敗しました")
+            }
+        }
+        source.setCancelHandler {
+            logger.log("ユーザー辞書の監視がキャンセルされました")
+            self.source.cancel()
+        }
         if let userDictEntries {
             self.userDictEntries = userDictEntries
         } else if FileManager.default.fileExists(atPath: fileURL.path()) {
-            let userDict = try Dict(contentsOf: fileURL, encoding: .utf8)
-            self.userDictEntries = userDict.entries
+            try load()
         } else {
             self.userDictEntries = [:]
+        }
+        source.resume()
+    }
+
+    deinit {
+        source.cancel()
+    }
+
+    private func load() throws {
+        try fileHandle.seek(toOffset: 0)
+        if let data = try fileHandle.readToEnd(), let source = String(data: data, encoding: .utf8) {
+            let userDict = try Dict(source: source)
+            userDictEntries = userDict.entries
+            logger.log("ユーザー辞書から \(userDict.entries.count) エントリ読み込みました")
         }
     }
 
@@ -30,7 +60,7 @@ struct UserDict: DictProtocol {
     /// ユーザー辞書にエントリを追加する
     /// - Parameter yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
     /// - Parameter word: SKK辞書の変換候補。
-    mutating func add(yomi: String, word: Word) {
+    func add(yomi: String, word: Word) {
         if var words = userDictEntries[yomi] {
             let index = words.firstIndex { $0.word == word.word }
             if let index {
