@@ -50,12 +50,27 @@ class InputController: IMKInputController {
     }
 
     override func handle(_ event: NSEvent!, client sender: Any!) -> Bool {
+        // 左下座標基準でwidth=1, height=(通常だとフォントサイズ)のNSRect
+        var cursorPosition: NSRect = .zero
+        if let textInput = sender as? IMKTextInput {
+            // カーソル位置あたりを取得する
+            textInput.attributes(forCharacterIndex: 0, lineHeightRectangle: &cursorPosition)
+            // TODO: 単語登録中など、現在のカーソル位置が0ではないときはそれに合わせて座標を取得したい
+            //            if let attributes = textInput.attributes(forCharacterIndex: 0, lineHeightRectangle: &lineRect) {
+            //                let rectInfo = "x=\(lineRect.origin.x),y=\(lineRect.origin.y),w=\(lineRect.size.width),h=\(lineRect.size.height)"
+            //                logger.log("属性: \(attributes, privacy: .public), rect: \(rectInfo, privacy: .public)")
+            //            } else {
+            //                logger.log("属性が取得できません")
+            //            }
+        } else {
+            logger.log("IMKTextInputが取得できません")
+        }
         guard let keyEvent = convert(event: event) else {
             logger.debug("Can not convert event to KeyEvent")
             return stateMachine.handleUnhandledEvent(event)
         }
 
-        return stateMachine.handle(Action(keyEvent: keyEvent, originalEvent: event))
+        return stateMachine.handle(Action(keyEvent: keyEvent, originalEvent: event, cursorPosition: cursorPosition))
     }
 
     override func setValue(_ value: Any!, forTag tag: Int, client sender: Any!) {
@@ -97,9 +112,6 @@ class InputController: IMKInputController {
         let modifiers = event.modifierFlags
         let keyCode = event.keyCode
         let charactersIgnoringModifiers = event.charactersIgnoringModifiers
-        if let charactersIgnoringModifiers, let characters = event.characters {
-            logger.log("入力されたキー: \(charactersIgnoringModifiers, privacy: .public), \(characters, privacy: .public)")
-        }
         if modifiers.contains(.control) || modifiers.contains(.command) || modifiers.contains(.function) {
             if modifiers == [.control] {
                 if charactersIgnoringModifiers == "j" {
