@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2023 mtgto <hogerappa@gmail.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import Combine
 import Foundation
 
 class UserDict: DictProtocol {
@@ -10,6 +11,8 @@ class UserDict: DictProtocol {
     /// 有効になっている辞書
     let dicts: [Dict]
     var userDictEntries: [String: [Word]] = [:]
+    private let savePublisher = PassthroughSubject<Void, Never>()
+    private var cancellables: Set<AnyCancellable> = []
 
     init(dicts: [Dict], userDictEntries: [String: [Word]]? = nil) throws {
         self.dicts = dicts
@@ -37,6 +40,13 @@ class UserDict: DictProtocol {
             self.userDictEntries = [:]
         }
         source.resume()
+
+        savePublisher
+            .debounce(for: .seconds(60), scheduler: RunLoop.main)  // 短期間に複数の保存要求があっても一回にまとめる
+            .sink { _ in
+                try? self.save()
+            }
+            .store(in: &cancellables)
     }
 
     deinit {
@@ -70,6 +80,7 @@ class UserDict: DictProtocol {
         } else {
             userDictEntries[yomi] = [word]
         }
+        savePublisher.send(())
     }
 
     /// ユーザー辞書を永続化する
