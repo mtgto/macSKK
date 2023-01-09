@@ -78,7 +78,27 @@ struct ComposingState: Equatable, CursorProtocol {
         return ComposingState(isShift: isShift, text: newText, okuri: okuri, romaji: romaji, cursor: newCursor)
     }
 
-    func resetRomaji() -> ComposingState {
+    /// 入力中の文字列をカーソル位置から一文字削除する。0文字で削除できないときはnilを返す
+    func dropLast() -> Self? {
+        if !romaji.isEmpty {
+            return ComposingState(
+                isShift: isShift, text: text, okuri: okuri, romaji: String(romaji.dropLast()), cursor: cursor)
+        } else if let okuri {
+            return ComposingState(
+                isShift: isShift, text: text, okuri: okuri.isEmpty ? nil : okuri.dropLast(), romaji: romaji,
+                cursor: cursor)
+        } else if text.isEmpty {
+            return nil
+        } else if let cursor = cursor, cursor > 0 {
+            var newText = text
+            newText.remove(at: cursor - 1)
+            return ComposingState(isShift: isShift, text: newText, okuri: okuri, romaji: romaji, cursor: cursor - 1)
+        } else {
+            return ComposingState(isShift: isShift, text: text.dropLast(), okuri: okuri, romaji: romaji, cursor: cursor)
+        }
+    }
+
+    func resetRomaji() -> Self {
         return ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: "", cursor: cursor)
     }
 

@@ -20,6 +20,35 @@ final class StateTests: XCTestCase {
         XCTAssertNil(state.cursor, "末尾まで移動したらカーソルはnilになる")
     }
 
+    func testComposingStateDropLast() {
+        let state = ComposingState(
+            isShift: true, text: [Romaji.table["a"]!, Romaji.table["i"]!], okuri: nil, romaji: "", cursor: nil)
+        XCTAssertEqual(state.dropLast()?.text, [Romaji.table["a"]!])
+    }
+
+    func testComposingStateDropLastEmpty() {
+        let state = ComposingState(isShift: true, text: [], okuri: nil, romaji: "", cursor: nil)
+        XCTAssertNil(state.dropLast())
+    }
+
+    func testComposingStateDropLastTextAndRomaji() {
+        let state = ComposingState(isShift: true, text: [Romaji.table["a"]!], okuri: nil, romaji: "k", cursor: nil)
+        let state2 = state.dropLast()
+        XCTAssertEqual(state2?.romaji, "")
+    }
+
+    func testComposingStateDropLastTextAndOkuri() {
+        let state = ComposingState(isShift: true, text: [Romaji.table["a"]!], okuri: [], romaji: "", cursor: nil)
+        let state2 = state.dropLast()
+        XCTAssertNil(state2?.okuri)
+    }
+
+    func testComposingStateDropLastCursor() {
+        let state = ComposingState(
+            isShift: true, text: [Romaji.table["a"]!, Romaji.table["i"]!], okuri: nil, romaji: "", cursor: 1)
+        XCTAssertEqual(state.dropLast()?.text, [Romaji.table["i"]!])
+    }
+
     func testSelectingStateFixedText() throws {
         let selectingState = SelectingState(
             prev: SelectingState.PrevState(

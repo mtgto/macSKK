@@ -230,20 +230,10 @@ class StateMachine {
             addFixedText(fixedText)
             return true
         case .backspace:
-            // TODO: composingをなんかのstructにしてdropLastを作る?
-            if !romaji.isEmpty {
-                state.inputMethod = .composing(
-                    ComposingState(
-                        isShift: isShift, text: text, okuri: okuri, romaji: String(romaji.dropLast())))
-            } else if let okuri {
-                state.inputMethod = .composing(
-                    ComposingState(
-                        isShift: isShift, text: text, okuri: okuri.isEmpty ? nil : okuri.dropLast(), romaji: romaji))
-            } else if text.isEmpty {
-                state.inputMethod = .normal
+            if let newComposingState = composing.dropLast() {
+                state.inputMethod = .composing(newComposingState)
             } else {
-                state.inputMethod = .composing(
-                    ComposingState(isShift: isShift, text: text.dropLast(), okuri: okuri, romaji: romaji))
+                state.inputMethod = .normal
             }
             updateMarkedText()
             return true

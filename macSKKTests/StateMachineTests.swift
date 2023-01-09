@@ -527,6 +527,22 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    func testHandleComposingLeftAndBackspace() {
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(4).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText(text: "▽あ", cursor: nil)))
+            XCTAssertEqual(events[1], .markedText(MarkedText(text: "▽あい", cursor: nil)))
+            XCTAssertEqual(events[2], .markedText(MarkedText(text: "▽あい", cursor: 2)))
+            XCTAssertEqual(events[3], .markedText(MarkedText(text: "▽い", cursor: 1)))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .left, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .backspace, originalEvent: nil, cursorPosition: .zero)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     func testHandleRegisteringLeftRight() {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(15).sink { events in
