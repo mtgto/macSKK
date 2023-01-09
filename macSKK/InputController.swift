@@ -12,6 +12,7 @@ class InputController: IMKInputController {
     private let preferenceMenu = NSMenu()
     private var cancellables: Set<AnyCancellable> = []
     private static let notFoundRange = NSRange(location: NSNotFound, length: NSNotFound)
+    private let panel: InputModePanel = InputModePanel()
 
     override init!(server: IMKServer!, delegate: Any!, client inputClient: Any!) {
         candidates = IMKCandidates(server: server, panelType: kIMKSingleRowSteppingCandidatePanel)
@@ -23,6 +24,9 @@ class InputController: IMKInputController {
         preferenceMenu.addItem(
             withTitle: NSLocalizedString("MenuItemSaveDict", comment: "Save User Dictionary"),
             action: #selector(saveDict), keyEquivalent: "")
+        preferenceMenu.addItem(
+            withTitle: "Show Panel",
+            action: #selector(showPanel), keyEquivalent: "")
 
         guard let textInput = inputClient as? IMKTextInput else {
             return
@@ -43,8 +47,9 @@ class InputController: IMKInputController {
                 attributedText.addAttributes([.cursor: NSCursor.iBeam], range: cursorRange)
                 textInput.setMarkedText(
                     attributedText, selectionRange: cursorRange, replacementRange: Self.notFoundRange)
-            case .modeChanged(let inputMode):
+            case .modeChanged(let inputMode, let cursorPosition):
                 textInput.selectMode(inputMode.rawValue)
+                self.panel.show(at: cursorPosition.origin, mode: inputMode)
             }
         }.store(in: &cancellables)
     }
@@ -97,6 +102,11 @@ class InputController: IMKInputController {
         } catch {
             logger.error("ユーザー辞書保存中にエラーが発生しました")
         }
+    }
+
+    @objc func showPanel() {
+        let point = NSPoint(x: 100, y: 500)
+        self.panel.show(at: point, mode: .hiragana)
     }
 
     // MARK: -

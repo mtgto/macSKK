@@ -14,7 +14,7 @@ enum InputMethodEvent: Equatable {
     /// 第二引数はカーソル位置。nil時は末尾扱い
     case markedText(MarkedText)
     /// qやlなどにより入力モードを変更する
-    case modeChanged(InputMode)
+    case modeChanged(InputMode, NSRect)
 }
 
 class StateMachine {
@@ -91,7 +91,7 @@ class StateMachine {
             return handleNormalPrintable(input: input, action: action, registerState: registerState)
         case .ctrlJ:
             state.inputMode = .hiragana
-            inputMethodEventSubject.send(.modeChanged(.hiragana))
+            inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
             return true
         case .cancel:
             if let registerState = state.registerState {
@@ -107,11 +107,11 @@ class StateMachine {
             switch state.inputMode {
             case .hiragana, .katakana:
                 state.inputMode = .hankaku
-                inputMethodEventSubject.send(.modeChanged(.hankaku))
+                inputMethodEventSubject.send(.modeChanged(.hankaku, action.cursorPosition))
                 return true
             case .hankaku:
                 state.inputMode = .hiragana
-                inputMethodEventSubject.send(.modeChanged(.hiragana))
+                inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
                 return true
             default:
                 return false
@@ -141,11 +141,11 @@ class StateMachine {
             switch state.inputMode {
             case .hiragana:
                 state.inputMode = .katakana
-                inputMethodEventSubject.send(.modeChanged(.katakana))
+                inputMethodEventSubject.send(.modeChanged(.katakana, action.cursorPosition))
                 return true
             case .katakana, .hankaku:
                 state.inputMode = .hiragana
-                inputMethodEventSubject.send(.modeChanged(.hiragana))
+                inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
                 return true
             case .eisu:
                 break
@@ -157,10 +157,10 @@ class StateMachine {
             case .hiragana, .katakana, .hankaku:
                 if action.shiftIsPressed() {
                     state.inputMode = .eisu
-                    inputMethodEventSubject.send(.modeChanged(.eisu))
+                    inputMethodEventSubject.send(.modeChanged(.eisu, action.cursorPosition))
                 } else {
                     state.inputMode = .direct
-                    inputMethodEventSubject.send(.modeChanged(.direct))
+                    inputMethodEventSubject.send(.modeChanged(.direct, action.cursorPosition))
                 }
                 return true
             case .eisu:
@@ -263,7 +263,7 @@ class StateMachine {
                     state.registerState = RegisterState(prev: (state.inputMode, composing), yomi: yomiText)
                     state.inputMethod = .normal
                     state.inputMode = .hiragana
-                    inputMethodEventSubject.send(.modeChanged(.hiragana))
+                    inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
                 }
             } else {
                 state.inputMethod = .selecting(
@@ -385,7 +385,7 @@ class StateMachine {
                                     )
                                     state.inputMethod = .normal
                                     state.inputMode = .hiragana
-                                    inputMethodEventSubject.send(.modeChanged(.hiragana))
+                                    inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
                                 }
                             } else {
                                 state.inputMethod = .selecting(
@@ -429,7 +429,7 @@ class StateMachine {
             addFixedText(composing.string(for: state.inputMode))
             state.inputMethod = .normal
             state.inputMode = .hiragana
-            inputMethodEventSubject.send(.modeChanged(.hiragana))
+            inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
             return true
         case .cancel:
             if romaji.isEmpty {
@@ -499,7 +499,7 @@ class StateMachine {
                         prev: (selecting.prev.mode, selecting.prev.composing), yomi: selecting.yomi)
                     state.inputMethod = .normal
                     state.inputMode = .hiragana
-                    inputMethodEventSubject.send(.modeChanged(.hiragana))
+                    inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
                 }
             }
             updateMarkedText()

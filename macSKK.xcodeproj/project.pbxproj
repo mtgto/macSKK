@@ -29,6 +29,7 @@
 		CEC376EB2965211200D9C432 /* KeyEventView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEC376EA2965211200D9C432 /* KeyEventView.swift */; };
 		CEE3717529653112000DB2C3 /* GeneralView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEE3717429653112000DB2C3 /* GeneralView.swift */; };
 		CEF0823629685C0800646366 /* StateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF0823529685C0800646366 /* StateTests.swift */; };
+		CEF0823A296BCDB000646366 /* InputModePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF08239296BCDB000646366 /* InputModePanel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -68,6 +69,7 @@
 		CEC376EA2965211200D9C432 /* KeyEventView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyEventView.swift; sourceTree = "<group>"; };
 		CEE3717429653112000DB2C3 /* GeneralView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralView.swift; sourceTree = "<group>"; };
 		CEF0823529685C0800646366 /* StateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateTests.swift; sourceTree = "<group>"; };
+		CEF08239296BCDB000646366 /* InputModePanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputModePanel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -120,6 +122,7 @@
 				CE84A3EA295DA715009394C4 /* Dict.swift */,
 				CEA78FAF2964209B00B67E25 /* UserDict.swift */,
 				CE84A3E6295DA4DA009394C4 /* Romaji.swift */,
+				CEF08239296BCDB000646366 /* InputModePanel.swift */,
 				CEA78FAB2960401F00B67E25 /* String+Transform.swift */,
 				CEC376E929651DE000D9C432 /* Settings */,
 				CE5ECF392957034D00E7BE7D /* Assets.xcassets */,
@@ -304,6 +307,7 @@
 				CEE3717529653112000DB2C3 /* GeneralView.swift in Sources */,
 				CEC376E82965199500D9C432 /* SettingsView.swift in Sources */,
 				CEC376EB2965211200D9C432 /* KeyEventView.swift in Sources */,
+				CEF0823A296BCDB000646366 /* InputModePanel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
