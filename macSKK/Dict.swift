@@ -6,13 +6,17 @@ import Foundation
 /// 辞書に登録する言葉。
 ///
 /// - NOTE: 将来プログラム辞書みたいな機能が増えるかもしれない。
-struct Word: Equatable {
+struct Word: Hashable {
     let word: String
     let annotation: String?
 
     init(_ word: String, annotation: String? = nil) {
         self.word = word
         self.annotation = annotation
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(word)
     }
 }
 

@@ -11,6 +11,7 @@ var dictionary: UserDict!
 @main
 struct macSKKApp: App {
     private var server: IMKServer!
+    private var panel: CandidatesPanel! = CandidatesPanel()
 
     init() {
         if isTest() {
@@ -43,6 +44,11 @@ struct macSKKApp: App {
                         print(error)
                     }
                 }.keyboardShortcut("S")
+                Button("Show CandidatesPanel") {
+                    self.panel.setFrame(NSRect(x: 100, y: 100, width: 400, height: 400), display: true)
+                    self.panel.level = .floating
+                    self.panel.orderFront(nil)
+                }
             }
         }
     }
