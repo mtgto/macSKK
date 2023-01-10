@@ -32,6 +32,7 @@
 		CEF0823A296BCDB000646366 /* InputModePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF08239296BCDB000646366 /* InputModePanel.swift */; };
 		CEF08257296D8CBD00646366 /* CandidatesPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF08256296D8CBD00646366 /* CandidatesPanel.swift */; };
 		CEF0825B296D8FF000646366 /* CandidatesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF0825A296D8FF000646366 /* CandidatesView.swift */; };
+		CEF0825D296DB58600646366 /* CandidatesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF0825C296DB58600646366 /* CandidatesViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -74,6 +75,7 @@
 		CEF08239296BCDB000646366 /* InputModePanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputModePanel.swift; sourceTree = "<group>"; };
 		CEF08256296D8CBD00646366 /* CandidatesPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CandidatesPanel.swift; sourceTree = "<group>"; };
 		CEF0825A296D8FF000646366 /* CandidatesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CandidatesView.swift; sourceTree = "<group>"; };
+		CEF0825C296DB58600646366 /* CandidatesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CandidatesViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -129,6 +131,7 @@
 				CEF08239296BCDB000646366 /* InputModePanel.swift */,
 				CEF08256296D8CBD00646366 /* CandidatesPanel.swift */,
 				CEF0825A296D8FF000646366 /* CandidatesView.swift */,
+				CEF0825C296DB58600646366 /* CandidatesViewModel.swift */,
 				CEA78FAB2960401F00B67E25 /* String+Transform.swift */,
 				CEC376E929651DE000D9C432 /* Settings */,
 				CE5ECF392957034D00E7BE7D /* Assets.xcassets */,
@@ -301,6 +304,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CEF0825D296DB58600646366 /* CandidatesViewModel.swift in Sources */,
 				CEA78FAC2960401F00B67E25 /* String+Transform.swift in Sources */,
 				CE84A3B929570C37009394C4 /* InputController.swift in Sources */,
 				CE84A3EB295DA715009394C4 /* Dict.swift in Sources */,

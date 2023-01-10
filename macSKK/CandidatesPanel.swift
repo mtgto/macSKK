@@ -6,7 +6,9 @@ import SwiftUI
 
 class CandidatesPanel: NSPanel {
     init() {
-        let viewController = NSHostingController(rootView: CandidatesView(words: .constant([])))
+        let words = [Word("ほげ")]
+        let viewModel = CandidatesViewModel(candidates: [Word("ほげ")])
+        let viewController = NSHostingController(rootView: CandidatesView(candidates: viewModel))
         super.init(contentRect: .zero, styleMask: [.nonactivatingPanel], backing: .buffered, defer: true)
         contentViewController = viewController
     }
