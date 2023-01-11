@@ -7,7 +7,7 @@ import Foundation
 final class CandidatesViewModel: ObservableObject {
     @Published var candidates: [Word]
     @Published var selected: Word?
-    
+
     init(candidates: [Word]) {
         self.candidates = candidates
         self.selected = candidates.first

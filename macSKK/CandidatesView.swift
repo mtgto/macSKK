@@ -10,12 +10,12 @@ struct CandidatesView: View {
 
     var body: some View {
         VStack {
-//            List(candidates.candidates.indices, id: \.self, selection: $candidates.selected) { i in
-//                HStack {
-//                    Text("\(i)")
-//                    Text(candidates.candidates[i].word)
-//                }
-//            }
+            //            List(candidates.candidates.indices, id: \.self, selection: $candidates.selected) { i in
+            //                HStack {
+            //                    Text("\(i)")
+            //                    Text(candidates.candidates[i].word)
+            //                }
+            //            }
             List(candidates.candidates, id: \.self, selection: $candidates.selected) { word in
                 HStack {
                     Text(word.word)

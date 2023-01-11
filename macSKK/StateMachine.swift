@@ -15,6 +15,8 @@ enum InputMethodEvent: Equatable {
     case markedText(MarkedText)
     /// qやlなどにより入力モードを変更する
     case modeChanged(InputMode, NSRect)
+    /// 変換候補を表示する
+    case candidates(Candidates)
 }
 
 class StateMachine {
@@ -525,6 +527,13 @@ class StateMachine {
         case .space:
             if selecting.candidateIndex + 1 < selecting.candidates.count {
                 state.inputMethod = .selecting(selecting.addCandidateIndex(diff: 1))
+                if selecting.candidateIndex > 3 {
+                    inputMethodEventSubject.send(
+                        .candidates(
+                            Candidates(
+                                words: selecting.candidates, index: selecting.candidateIndex,
+                                cursorPosition: action.cursorPosition)))
+                }
             } else {
                 // TODO: IMKCandidatesモードへ移行
                 if registerState != nil {

@@ -11,7 +11,7 @@ var dictionary: UserDict!
 @main
 struct macSKKApp: App {
     private var server: IMKServer!
-    private var panel: CandidatesPanel! = CandidatesPanel(candidates: [])
+    private var panel: CandidatesPanel! = CandidatesPanel()
 
     init() {
         if isTest() {
@@ -45,13 +45,14 @@ struct macSKKApp: App {
                     }
                 }.keyboardShortcut("S")
                 Button("Show CandidatesPanel") {
-                    panel.setWords([Word("こんにちは"), Word("こんばんは"), Word("おはようございます")])
+                    panel.setWords([Word("こんにちは"), Word("こんばんは"), Word("おはようございます")], selected: nil)
                     panel.setFrame(NSRect(x: 100, y: 100, width: 400, height: 400), display: true)
                     panel.level = .floating
                     panel.orderFront(nil)
                 }
                 Button("Add Word") {
-                    panel.setWords([Word("こんにちは"), Word("こんばんは"), Word("おはようございます"), Word("追加したよ")])
+                    panel.setWords(
+                        [Word("こんにちは"), Word("こんばんは"), Word("おはようございます"), Word("追加したよ")], selected: Word("追加したよ"))
                 }
             }
         }

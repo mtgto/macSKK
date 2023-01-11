@@ -241,6 +241,12 @@ struct MarkedText: Equatable {
     let cursor: Int?
 }
 
+struct Candidates: Equatable {
+    let words: [Word]
+    let index: Int
+    let cursorPosition: NSRect
+}
+
 struct IMEState {
     var inputMode: InputMode = .hiragana
     var inputMethod: InputMethodState = .normal

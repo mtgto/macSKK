@@ -8,14 +8,13 @@ import InputMethodKit
 @objc(InputController)
 class InputController: IMKInputController {
     private let stateMachine = StateMachine()
-    private let candidates: IMKCandidates
     private let preferenceMenu = NSMenu()
     private var cancellables: Set<AnyCancellable> = []
     private static let notFoundRange = NSRange(location: NSNotFound, length: NSNotFound)
-    private let panel: InputModePanel = InputModePanel()
+    private let inputModePanel = InputModePanel()
+    private let candidatesPanel = CandidatesPanel()
 
     override init!(server: IMKServer!, delegate: Any!, client inputClient: Any!) {
-        candidates = IMKCandidates(server: server, panelType: kIMKSingleRowSteppingCandidatePanel)
         super.init(server: server, delegate: delegate, client: inputClient)
 
         preferenceMenu.addItem(
@@ -49,7 +48,10 @@ class InputController: IMKInputController {
                     attributedText, selectionRange: cursorRange, replacementRange: Self.notFoundRange)
             case .modeChanged(let inputMode, let cursorPosition):
                 textInput.selectMode(inputMode.rawValue)
-                self.panel.show(at: cursorPosition.origin, mode: inputMode)
+                self.inputModePanel.show(at: cursorPosition.origin, mode: inputMode)
+            case .candidates(let candidates):
+                self.candidatesPanel.setWords(candidates.words, selected: candidates.words[candidates.index])
+                self.candidatesPanel.show(at: candidates.cursorPosition.origin)
             }
         }.store(in: &cancellables)
     }
@@ -72,13 +74,20 @@ class InputController: IMKInputController {
         return stateMachine.handle(Action(keyEvent: keyEvent, originalEvent: event, cursorPosition: cursorPosition))
     }
 
+    override func menu() -> NSMenu! {
+        return preferenceMenu
+    }
+
+    // MARK: - IMKStateSetting
+    override func deactivateServer(_ sender: Any!) {
+        // 他の入力に切り替わるときには入力候補は消す
+        candidatesPanel.orderOut(sender)
+        super.deactivateServer(sender)
+    }
+
     override func setValue(_ value: Any!, forTag tag: Int, client sender: Any!) {
         guard let value = value as? NSString else { return }
         logger.log("setValue \(value, privacy: .public)")
-    }
-
-    override func menu() -> NSMenu! {
-        return preferenceMenu
     }
 
     @objc func showSettings() {
@@ -100,7 +109,7 @@ class InputController: IMKInputController {
 
     @objc func showPanel() {
         let point = NSPoint(x: 100, y: 500)
-        self.panel.show(at: point, mode: .hiragana)
+        self.inputModePanel.show(at: point, mode: .hiragana)
     }
 
     // MARK: -
