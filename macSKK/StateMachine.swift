@@ -361,7 +361,8 @@ class StateMachine {
                             // 変換候補がないときは辞書登録へ
                             // TODO: カーソル位置がnilじゃないときはその前までで変換を試みる
                             let yomiText = text.map { $0.string(for: .hiragana) }.joined() + moji.firstRomaji
-                            let newComposing = ComposingState(isShift: true, text: text, okuri: [moji], romaji: "")
+                            let newComposing = ComposingState(
+                                isShift: true, text: text, okuri: (okuri ?? []) + [moji], romaji: "")
                             let candidates = dictionary.refer(yomiText)
                             if candidates.isEmpty {
                                 if registerState != nil {
@@ -387,12 +388,21 @@ class StateMachine {
                     } else {  // !result.input.isEmpty
                         // n + 子音入力したときなど
                         if isShift || action.shiftIsPressed() {
-                            state.inputMethod = .composing(
-                                ComposingState(
-                                    isShift: true,
-                                    text: text + [moji],
-                                    okuri: action.shiftIsPressed() ? [] : nil,
-                                    romaji: result.input))
+                            if let okuri {
+                                state.inputMethod = .composing(
+                                    ComposingState(
+                                        isShift: true,
+                                        text: text,
+                                        okuri: okuri + [moji],
+                                        romaji: result.input))
+                            } else {
+                                state.inputMethod = .composing(
+                                    ComposingState(
+                                        isShift: true,
+                                        text: text + [moji],
+                                        okuri: action.shiftIsPressed() ? [] : nil,
+                                        romaji: result.input))
+                            }
                         } else {
                             addFixedText(moji.string(for: state.inputMode))
                             state.inputMethod = .composing(

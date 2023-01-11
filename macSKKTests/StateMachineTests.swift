@@ -410,6 +410,64 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    func testHandleComposingOkuriSokuon() {
+        dictionary.userDictEntries = ["あt": [Word("会")]]
+
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(4).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText(text: "▽あ", cursor: nil)))
+            XCTAssertEqual(events[1], .markedText(MarkedText(text: "▽あ*t", cursor: nil)))
+            XCTAssertEqual(events[2], .markedText(MarkedText(text: "▽あ*っt", cursor: nil)))
+            XCTAssertEqual(events[3], .markedText(MarkedText(text: "▼会った", cursor: nil)))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    func testHandleComposingOkuriSokuon2() {
+        dictionary.userDictEntries = ["あt": [Word("会")]]
+
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(5).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText(text: "▽あ", cursor: nil)))
+            XCTAssertEqual(events[1], .markedText(MarkedText(text: "▽あ*t", cursor: nil)))
+            XCTAssertEqual(events[2], .markedText(MarkedText(text: "▽あ*っt", cursor: nil)))
+            XCTAssertEqual(events[3], .markedText(MarkedText(text: "▽あ*っっt", cursor: nil)))
+            XCTAssertEqual(events[4], .markedText(MarkedText(text: "▼会っった", cursor: nil)))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    func testHandleComposingOkuriSokuon3() {
+        dictionary.userDictEntries = ["やっt": [Word("八")]]
+
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(5).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText(text: "▽y", cursor: nil)))
+            XCTAssertEqual(events[1], .markedText(MarkedText(text: "▽や", cursor: nil)))
+            XCTAssertEqual(events[2], .markedText(MarkedText(text: "▽やt", cursor: nil)))
+            XCTAssertEqual(events[3], .markedText(MarkedText(text: "▽やっt", cursor: nil)))
+            XCTAssertEqual(events[4], .markedText(MarkedText(text: "▼八つ", cursor: nil)))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "y", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u", withShift: true)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     func testHandleComposingCtrlJ() {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(9).sink { events in
