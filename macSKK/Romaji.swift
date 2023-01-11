@@ -75,6 +75,7 @@ struct Romaji: Equatable {
         "ha": Moji(firstRomaji: "h", kana: "は"),
         "hi": Moji(firstRomaji: "h", kana: "ひ"),
         "hu": Moji(firstRomaji: "h", kana: "ふ"),
+        "fu": Moji(firstRomaji: "f", kana: "ふ"),
         "he": Moji(firstRomaji: "h", kana: "へ"),
         "ho": Moji(firstRomaji: "h", kana: "ほ"),
         "ma": Moji(firstRomaji: "m", kana: "ま"),

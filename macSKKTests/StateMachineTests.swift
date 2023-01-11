@@ -29,18 +29,20 @@ final class StateMachineTests: XCTestCase {
 
     func testHandleNormalRomaji() throws {
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(8).sink { events in
+        stateMachine.inputMethodEvent.collect(10).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText(text: "n", cursor: nil)))
             XCTAssertEqual(events[1], .fixedText("ん"))
             XCTAssertEqual(events[2], .markedText(MarkedText(text: "g", cursor: nil)))
             XCTAssertEqual(events[3], .fixedText("が"))
-            XCTAssertEqual(events[4], .markedText(MarkedText(text: "b", cursor: nil)))
-            XCTAssertEqual(events[5], .markedText(MarkedText(text: "by", cursor: nil)))
-            XCTAssertEqual(events[6], .markedText(MarkedText(text: "n", cursor: nil)))
-            XCTAssertEqual(events[7], .fixedText("ん"))
+            XCTAssertEqual(events[4], .markedText(MarkedText(text: "f", cursor: nil)))
+            XCTAssertEqual(events[5], .fixedText("ふ"))
+            XCTAssertEqual(events[6], .markedText(MarkedText(text: "b", cursor: nil)))
+            XCTAssertEqual(events[7], .markedText(MarkedText(text: "by", cursor: nil)))
+            XCTAssertEqual(events[8], .markedText(MarkedText(text: "n", cursor: nil)))
+            XCTAssertEqual(events[9], .fixedText("ん"))
             expectation.fulfill()
         }.store(in: &cancellables)
-        "ngabyn".forEach { char in
+        "ngafubyn".forEach { char in
             XCTAssertTrue(
                 stateMachine.handle(
                     Action(keyEvent: .printable(String(char)), originalEvent: nil, cursorPosition: .zero)))
