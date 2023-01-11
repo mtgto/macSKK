@@ -243,7 +243,7 @@ struct MarkedText: Equatable {
 
 struct Candidates: Equatable {
     let words: [Word]
-    let index: Int
+    let selected: Word
     let cursorPosition: NSRect
 }
 

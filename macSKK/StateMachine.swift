@@ -15,18 +15,19 @@ enum InputMethodEvent: Equatable {
     case markedText(MarkedText)
     /// qやlなどにより入力モードを変更する
     case modeChanged(InputMode, NSRect)
-    /// 変換候補を表示する
-    case candidates(Candidates)
 }
 
 class StateMachine {
     private(set) var state: IMEState
     let inputMethodEvent: AnyPublisher<InputMethodEvent, Never>
     private let inputMethodEventSubject = PassthroughSubject<InputMethodEvent, Never>()
+    let candidateEvent: AnyPublisher<Candidates?, Never>
+    private let candidateEventSubject = PassthroughSubject<Candidates?, Never>()
 
     init(initialState: IMEState = IMEState()) {
         state = initialState
         inputMethodEvent = inputMethodEventSubject.eraseToAnyPublisher()
+        candidateEvent = candidateEventSubject.eraseToAnyPublisher()
     }
 
     func handle(_ action: Action) -> Bool {
@@ -512,13 +513,17 @@ class StateMachine {
         switch action.keyEvent {
         case .enter:
             dictionary.add(yomi: selecting.yomi, word: selecting.candidates[selecting.candidateIndex])
+            updateCandidates(action: action, selecting: nil)
             state.inputMethod = .normal
             addFixedText(selecting.fixedText())
             return true
         case .backspace:
             if selecting.candidateIndex > 0 {
-                state.inputMethod = .selecting(selecting.addCandidateIndex(diff: -1))
+                let newSelectingState = selecting.addCandidateIndex(diff: -1)
+                updateCandidates(action: action, selecting: newSelectingState)
+                state.inputMethod = .selecting(newSelectingState)
             } else {
+                updateCandidates(action: action, selecting: nil)
                 state.inputMethod = .composing(selecting.prev.composing)
                 state.inputMode = selecting.prev.mode
             }
@@ -526,16 +531,10 @@ class StateMachine {
             return true
         case .space:
             if selecting.candidateIndex + 1 < selecting.candidates.count {
-                state.inputMethod = .selecting(selecting.addCandidateIndex(diff: 1))
-                if selecting.candidateIndex > 3 {
-                    inputMethodEventSubject.send(
-                        .candidates(
-                            Candidates(
-                                words: selecting.candidates, index: selecting.candidateIndex,
-                                cursorPosition: action.cursorPosition)))
-                }
+                let newSelectingState = selecting.addCandidateIndex(diff: 1)
+                state.inputMethod = .selecting(newSelectingState)
+                updateCandidates(action: action, selecting: newSelectingState)
             } else {
-                // TODO: IMKCandidatesモードへ移行
                 if registerState != nil {
                     state.inputMethod = .normal
                     state.inputMode = selecting.prev.mode
@@ -546,18 +545,21 @@ class StateMachine {
                     state.inputMode = .hiragana
                     inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
                 }
+                updateCandidates(action: action, selecting: nil)
             }
             updateMarkedText()
             return true
         case .stickyShift, .ctrlJ, .ctrlQ, .printable:
             // 選択中候補で確定
             dictionary.add(yomi: selecting.yomi, word: selecting.candidates[selecting.candidateIndex])
+            updateCandidates(action: action, selecting: nil)
             addFixedText(selecting.fixedText())
             state.inputMethod = .normal
             return handleNormal(action, registerState: nil)
         case .cancel:
             state.inputMethod = .composing(selecting.prev.composing)
             state.inputMode = selecting.prev.mode
+            updateCandidates(action: action, selecting: nil)
             updateMarkedText()
             return true
         case .left, .right:
@@ -579,5 +581,28 @@ class StateMachine {
     /// 現在のMarkedText状態をinputMethodEventSubject.sendする
     func updateMarkedText() {
         inputMethodEventSubject.send(.markedText(state.displayText()))
+    }
+
+    /// 現在の変換候補選択状態をcandidateEventSubject.sendする
+    /// TODO: inlineCandidateCount, displayCandidateCountを環境設定にするかも
+    func updateCandidates(action: Action, selecting: SelectingState?) {
+        // 変換候補パネルを表示するまで表示する変換候補の数
+        let inlineCandidateCount = 3
+        // 変換候補パネルに一度に表示する変換候補の数
+        let displayCandidateCount = 9
+
+        if let selecting, selecting.candidateIndex >= inlineCandidateCount {
+            var start = selecting.candidateIndex - inlineCandidateCount
+            start = start - start % displayCandidateCount + inlineCandidateCount
+            let candidates = selecting.candidates[
+                start..<min(start + displayCandidateCount, selecting.candidates.count)]
+            candidateEventSubject.send(
+                Candidates(
+                    words: Array(candidates),
+                    selected: selecting.candidates[selecting.candidateIndex],
+                    cursorPosition: action.cursorPosition))
+        } else {
+            candidateEventSubject.send(nil)
+        }
     }
 }

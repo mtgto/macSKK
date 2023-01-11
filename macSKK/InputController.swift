@@ -49,9 +49,14 @@ class InputController: IMKInputController {
             case .modeChanged(let inputMode, let cursorPosition):
                 textInput.selectMode(inputMode.rawValue)
                 self.inputModePanel.show(at: cursorPosition.origin, mode: inputMode)
-            case .candidates(let candidates):
-                self.candidatesPanel.setWords(candidates.words, selected: candidates.words[candidates.index])
+            }
+        }.store(in: &cancellables)
+        stateMachine.candidateEvent.sink { candidates in
+            if let candidates {
+                self.candidatesPanel.setWords(candidates.words, selected: candidates.selected)
                 self.candidatesPanel.show(at: candidates.cursorPosition.origin)
+            } else {
+                self.candidatesPanel.orderOut(nil)
             }
         }.store(in: &cancellables)
     }
@@ -80,7 +85,7 @@ class InputController: IMKInputController {
 
     // MARK: - IMKStateSetting
     override func deactivateServer(_ sender: Any!) {
-        // 他の入力に切り替わるときには入力候補は消す
+        // 他の入力に切り替わるときには入力候補は消す + 現在表示中の候補を確定させる
         candidatesPanel.orderOut(sender)
         super.deactivateServer(sender)
     }
