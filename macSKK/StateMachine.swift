@@ -348,7 +348,7 @@ class StateMachine {
                 // StickyShiftでokuriが[]になっている、またはShift押しながら入力した
                 if let moji = result.kakutei {
                     if result.input.isEmpty {
-                        if text.isEmpty || (okuri == nil && !action.shiftIsPressed()) || composing.cursor != nil {
+                        if text.isEmpty || (okuri == nil && !action.shiftIsPressed()) || composing.cursor == 0 {
                             if isShift || action.shiftIsPressed() {
                                 state.inputMethod = .composing(composing.appendText(moji).resetRomaji())
                             } else {
@@ -359,10 +359,16 @@ class StateMachine {
                         } else {
                             // 送り仮名が1文字以上確定した時点で変換を開始する
                             // 変換候補がないときは辞書登録へ
-                            // TODO: カーソル位置がnilじゃないときはその前までで変換を試みる
-                            let yomiText = text.map { $0.string(for: .hiragana) }.joined() + moji.firstRomaji
+                            // カーソル位置がnilじゃないときはその前までで変換を試みる
+                            let subText: [Romaji.Moji]
+                            if let cursor = composing.cursor {
+                                subText = Array(text[0..<cursor])
+                            } else {
+                                subText = text
+                            }
+                            let yomiText = subText.map { $0.string(for: .hiragana) }.joined() + moji.firstRomaji
                             let newComposing = ComposingState(
-                                isShift: true, text: text, okuri: (okuri ?? []) + [moji], romaji: "")
+                                isShift: true, text: subText, okuri: (okuri ?? []) + [moji], romaji: "")
                             let candidates = dictionary.refer(yomiText)
                             if candidates.isEmpty {
                                 if registerState != nil {
