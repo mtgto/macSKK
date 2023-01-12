@@ -191,7 +191,12 @@ class StateMachine {
             } else {
                 // Option-Shift-2のような入力のときには€が入力されるようにする
                 if let characters = action.characters() {
-                    addFixedText(characters)
+                    let result = Romaji.convert(characters)
+                    if let moji = result.kakutei {
+                        addFixedText(moji.string(for: state.inputMode))
+                    } else {
+                        addFixedText(characters)
+                    }
                 }
             }
             return true

@@ -237,7 +237,6 @@ struct Romaji: Equatable {
         "-": Moji(firstRomaji: "-", kana: "ー"),
         ",": Moji(firstRomaji: "", kana: "、"),
         ".": Moji(firstRomaji: "", kana: "。"),
-        ";": Moji(firstRomaji: "", kana: "；"),
     ]
 
     // 設定で有効化するかも? 普段使いにないと不便すぎるので追加
