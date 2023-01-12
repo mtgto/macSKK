@@ -17,6 +17,10 @@ class UserDict: DictProtocol {
     init(dicts: [Dict], userDictEntries: [String: [Word]]? = nil) throws {
         self.dicts = dicts
         fileURL = FileManager.default.homeDirectoryForCurrentUser.appending(path: "skk-jisyo.utf8")
+        if !FileManager.default.fileExists(atPath: fileURL.path()) {
+            logger.log("ユーザー辞書ファイルがないため作成します")
+            try Data().write(to: fileURL, options: .withoutOverwriting)
+        }
         fileHandle = try FileHandle(forUpdating: fileURL)
         source = DispatchSource.makeFileSystemObjectSource(
             fileDescriptor: fileHandle.fileDescriptor, eventMask: .extend)
@@ -34,10 +38,8 @@ class UserDict: DictProtocol {
         }
         if let userDictEntries {
             self.userDictEntries = userDictEntries
-        } else if FileManager.default.fileExists(atPath: fileURL.path()) {
-            try load()
         } else {
-            self.userDictEntries = [:]
+            try load()
         }
         source.resume()
 
