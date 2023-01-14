@@ -48,9 +48,10 @@ final class StateTests: XCTestCase {
             isShift: true, text: [Romaji.table["a"]!, Romaji.table["i"]!], okuri: nil, romaji: "", cursor: 1)
         XCTAssertEqual(state.dropLast()?.text, [Romaji.table["i"]!])
     }
-    
+
     func testComposingStateSubText() {
-        var state = ComposingState(isShift: true, text: [Romaji.table["a"]!, Romaji.table["i"]!], okuri: nil, romaji: "", cursor: 1)
+        var state = ComposingState(
+            isShift: true, text: [Romaji.table["a"]!, Romaji.table["i"]!], okuri: nil, romaji: "", cursor: 1)
         XCTAssertEqual(state.subText(), [Romaji.table["a"]!])
         state.cursor = nil
         XCTAssertEqual(state.subText(), [Romaji.table["a"]!, Romaji.table["i"]!])

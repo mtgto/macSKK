@@ -58,6 +58,13 @@ class StateMachine {
         switch action.keyEvent {
         case .enter:
             // TODO: 登録中なら登録してfixedTextに打ち込んでprevに戻して入力中文字列を空にする
+            if let registerState {
+                dictionary.add(yomi: registerState.yomi, word: Word(registerState.text))
+                state.registerState = nil
+                state.inputMode = registerState.prev.0
+                addFixedText(registerState.text)
+                return true
+            }
             return false
         case .backspace:
             if let registerState = state.registerState {
@@ -503,8 +510,8 @@ class StateMachine {
         switch action.keyEvent {
         case .enter:
             dictionary.add(yomi: selecting.yomi, word: selecting.candidates[selecting.candidateIndex])
-            addFixedText(selecting.fixedText())
             state.inputMethod = .normal
+            addFixedText(selecting.fixedText())
             return true
         case .backspace:
             if selecting.candidateIndex > 0 {

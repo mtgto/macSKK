@@ -101,7 +101,7 @@ struct ComposingState: Equatable, CursorProtocol {
     func resetRomaji() -> Self {
         return ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: "", cursor: cursor)
     }
-    
+
     /// カーソルより左のtext部分を返す。
     func subText() -> [Romaji.Moji] {
         if let cursor {
