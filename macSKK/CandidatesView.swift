@@ -12,7 +12,7 @@ struct CandidatesView: View {
         VStack {
             List(candidates.candidates, id: \.self, selection: $candidates.selected) { word in
                 Text(word.word)
-            }
+            }.environment(\.defaultMinListRowHeight, 20)
         }
     }
 }
