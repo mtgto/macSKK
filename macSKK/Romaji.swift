@@ -241,7 +241,7 @@ struct Romaji: Equatable {
 
     // 設定で有効化するかも? 普段使いにないと不便すぎるので追加
     static let specialSymbolTable: [String: Moji] = [
-        "z-": Moji(firstRomaji: "", kana: "～"),
+        "z-": Moji(firstRomaji: "", kana: "〜"),
         "z,": Moji(firstRomaji: "", kana: "‥"),
         "z.": Moji(firstRomaji: "", kana: "…"),
         "z/": Moji(firstRomaji: "", kana: "・"),

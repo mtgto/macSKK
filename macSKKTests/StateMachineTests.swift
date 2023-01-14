@@ -51,20 +51,31 @@ final class StateMachineTests: XCTestCase {
 
     func testHandleNormalSpecialSymbol() throws {
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(8).sink { events in
+        stateMachine.inputMethodEvent.collect(18).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText(text: "z", cursor: nil)))
-            XCTAssertEqual(events[1], .fixedText("←"))
+            XCTAssertEqual(events[1], .fixedText("〜"))
             XCTAssertEqual(events[2], .markedText(MarkedText(text: "z", cursor: nil)))
-            XCTAssertEqual(events[3], .fixedText("↓"))
+            XCTAssertEqual(events[3], .fixedText("‥"))
             XCTAssertEqual(events[4], .markedText(MarkedText(text: "z", cursor: nil)))
-            XCTAssertEqual(events[5], .fixedText("↑"))
+            XCTAssertEqual(events[5], .fixedText("…"))
             XCTAssertEqual(events[6], .markedText(MarkedText(text: "z", cursor: nil)))
-            XCTAssertEqual(events[7], .fixedText("→"))
+            XCTAssertEqual(events[7], .fixedText("・"))
+            XCTAssertEqual(events[8], .markedText(MarkedText(text: "z", cursor: nil)))
+            XCTAssertEqual(events[9], .fixedText("←"))
+            XCTAssertEqual(events[10], .markedText(MarkedText(text: "z", cursor: nil)))
+            XCTAssertEqual(events[11], .fixedText("↓"))
+            XCTAssertEqual(events[12], .markedText(MarkedText(text: "z", cursor: nil)))
+            XCTAssertEqual(events[13], .fixedText("↑"))
+            XCTAssertEqual(events[14], .markedText(MarkedText(text: "z", cursor: nil)))
+            XCTAssertEqual(events[15], .fixedText("→"))
+            XCTAssertEqual(events[16], .markedText(MarkedText(text: "z", cursor: nil)))
+            XCTAssertEqual(events[17], .fixedText("　"))
             expectation.fulfill()
         }.store(in: &cancellables)
-        "zhzjzkzl".forEach { char in
+        "z-z,z.z/zhzjzkzlz".forEach { char in
             XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: char)))
         }
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
         wait(for: [expectation], timeout: 1.0)
     }
 
