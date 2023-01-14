@@ -5,7 +5,7 @@ import Foundation
 
 /// 辞書に登録する言葉。
 ///
-/// @note 将来プログラム辞書みたいな機能が増えるかもしれない。
+/// - NOTE: 将来プログラム辞書みたいな機能が増えるかもしれない。
 struct Word: Equatable {
     let word: String
     let annotation: String?

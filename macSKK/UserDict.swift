@@ -66,7 +66,15 @@ class UserDict: DictProtocol {
 
     // MARK: DictProtocol
     func refer(_ word: String) -> [Word] {
-        return (userDictEntries[word] ?? []) + dicts.flatMap { $0.refer(word) }
+        var result = userDictEntries[word] ?? []
+        dicts.forEach { dict in
+            dict.refer(word).forEach { found in
+                if !result.contains(found) {
+                    result.append(found)
+                }
+            }
+        }
+        return result
     }
 
     /// ユーザー辞書にエントリを追加する

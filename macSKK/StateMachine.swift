@@ -211,14 +211,12 @@ class StateMachine {
         case .direct:
             if let characters = action.characters() {
                 addFixedText(characters)
-                return true
             } else {
                 logger.error("Can not find printable characters in keyEvent")
                 return false
             }
+            return true
         }
-
-        // state.markedTextを更新してinputMethodEventSubjectにstate.displayText()をsendしてreturn trueする
     }
 
     func handleComposing(_ action: Action, composing: ComposingState, registerState: RegisterState?) -> Bool {
