@@ -64,7 +64,8 @@ final class StateTests: XCTestCase {
                 composing: ComposingState(isShift: true, text: [Romaji.table["a"]!], romaji: "")),
             yomi: "あ",
             candidates: [Word("亜")],
-            candidateIndex: 0
+            candidateIndex: 0,
+            cursorPosition: .zero
         )
         XCTAssertEqual(selectingState.fixedText(), "亜")
     }
@@ -82,7 +83,8 @@ final class StateTests: XCTestCase {
             ),
             yomi: "あ",
             candidates: [Word("有")],
-            candidateIndex: 0
+            candidateIndex: 0,
+            cursorPosition: .zero
         )
         XCTAssertEqual(selectingState.fixedText(), "有る")
     }

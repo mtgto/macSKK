@@ -282,7 +282,8 @@ class StateMachine {
                     state.inputMethod = .selecting(
                         SelectingState(
                             prev: SelectingState.PrevState(mode: state.inputMode, composing: composing),
-                            yomi: yomiText, candidates: candidates, candidateIndex: 0))
+                            yomi: yomiText, candidates: candidates, candidateIndex: 0,
+                            cursorPosition: action.cursorPosition))
                 }
                 updateMarkedText()
                 return true
@@ -465,7 +466,8 @@ class StateMachine {
                             state.inputMethod = .selecting(
                                 SelectingState(
                                     prev: SelectingState.PrevState(mode: state.inputMode, composing: newComposing),
-                                    yomi: yomiText, candidates: candidates, candidateIndex: 0))
+                                    yomi: yomiText, candidates: candidates, candidateIndex: 0,
+                                    cursorPosition: action.cursorPosition))
                         }
                     }
                 } else {  // !result.input.isEmpty
@@ -513,17 +515,17 @@ class StateMachine {
         switch action.keyEvent {
         case .enter:
             dictionary.add(yomi: selecting.yomi, word: selecting.candidates[selecting.candidateIndex])
-            updateCandidates(action: action, selecting: nil)
+            updateCandidates(selecting: nil)
             state.inputMethod = .normal
             addFixedText(selecting.fixedText())
             return true
         case .backspace:
             if selecting.candidateIndex > 0 {
                 let newSelectingState = selecting.addCandidateIndex(diff: -1)
-                updateCandidates(action: action, selecting: newSelectingState)
+                updateCandidates(selecting: newSelectingState)
                 state.inputMethod = .selecting(newSelectingState)
             } else {
-                updateCandidates(action: action, selecting: nil)
+                updateCandidates(selecting: nil)
                 state.inputMethod = .composing(selecting.prev.composing)
                 state.inputMode = selecting.prev.mode
             }
@@ -533,7 +535,7 @@ class StateMachine {
             if selecting.candidateIndex + 1 < selecting.candidates.count {
                 let newSelectingState = selecting.addCandidateIndex(diff: 1)
                 state.inputMethod = .selecting(newSelectingState)
-                updateCandidates(action: action, selecting: newSelectingState)
+                updateCandidates(selecting: newSelectingState)
             } else {
                 if registerState != nil {
                     state.inputMethod = .normal
@@ -545,21 +547,21 @@ class StateMachine {
                     state.inputMode = .hiragana
                     inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
                 }
-                updateCandidates(action: action, selecting: nil)
+                updateCandidates(selecting: nil)
             }
             updateMarkedText()
             return true
         case .stickyShift, .ctrlJ, .ctrlQ, .printable:
             // 選択中候補で確定
             dictionary.add(yomi: selecting.yomi, word: selecting.candidates[selecting.candidateIndex])
-            updateCandidates(action: action, selecting: nil)
+            updateCandidates(selecting: nil)
             addFixedText(selecting.fixedText())
             state.inputMethod = .normal
             return handleNormal(action, registerState: nil)
         case .cancel:
             state.inputMethod = .composing(selecting.prev.composing)
             state.inputMode = selecting.prev.mode
-            updateCandidates(action: action, selecting: nil)
+            updateCandidates(selecting: nil)
             updateMarkedText()
             return true
         case .left, .right:
@@ -568,7 +570,7 @@ class StateMachine {
         }
     }
 
-    func addFixedText(_ text: String) {
+    private func addFixedText(_ text: String) {
         if let registerState = state.registerState {
             // state.markedTextを更新してinputMethodEventSubjectにstate.displayText()をsendする
             state.registerState = registerState.appendText(text)
@@ -579,13 +581,13 @@ class StateMachine {
     }
 
     /// 現在のMarkedText状態をinputMethodEventSubject.sendする
-    func updateMarkedText() {
+    private func updateMarkedText() {
         inputMethodEventSubject.send(.markedText(state.displayText()))
     }
 
     /// 現在の変換候補選択状態をcandidateEventSubject.sendする
     /// TODO: inlineCandidateCount, displayCandidateCountを環境設定にするかも
-    func updateCandidates(action: Action, selecting: SelectingState?) {
+    private func updateCandidates(selecting: SelectingState?) {
         // 変換候補パネルを表示するまで表示する変換候補の数
         let inlineCandidateCount = 3
         // 変換候補パネルに一度に表示する変換候補の数
@@ -600,9 +602,20 @@ class StateMachine {
                 Candidates(
                     words: Array(candidates),
                     selected: selecting.candidates[selecting.candidateIndex],
-                    cursorPosition: action.cursorPosition))
+                    cursorPosition: selecting.cursorPosition))
         } else {
             candidateEventSubject.send(nil)
+        }
+    }
+
+    /// StateMachine外で選択されている変換候補が更新されたときに通知される
+    func didSelectCandidate(_ candidate: Word) {
+        if case .selecting(var selecting) = state.inputMethod {
+            if let candidateIndex = selecting.candidates.firstIndex(of: candidate) {
+                selecting.candidateIndex = candidateIndex
+                state.inputMethod = .selecting(selecting)
+                updateMarkedText()
+            }
         }
     }
 }

@@ -159,9 +159,13 @@ struct SelectingState: Equatable {
     /// 変換候補
     let candidates: [Word]
     var candidateIndex: Int = 0
+    /// カーソル位置。この位置を基に変換候補パネルを表示する
+    let cursorPosition: NSRect
 
     func addCandidateIndex(diff: Int) -> SelectingState {
-        return SelectingState(prev: prev, yomi: yomi, candidates: candidates, candidateIndex: candidateIndex + diff)
+        return SelectingState(
+            prev: prev, yomi: yomi, candidates: candidates, candidateIndex: candidateIndex + diff,
+            cursorPosition: cursorPosition)
     }
 
     /// 現在選択中の文字列を返す
