@@ -247,31 +247,36 @@ class StateMachine {
                     input: " ", converted: converted, action: action, composing: composing, registerState: registerState
                 )
             }
-            // 未確定ローマ字はn以外は入力されずに削除される. nだけは"ん"として変換する
-            // 変換候補がないときは辞書登録へ
-            // TODO: カーソル位置がnilじゃないときはその前までで変換を試みる
-            let newText: [Romaji.Moji] = romaji == "n" ? text + [Romaji.n] : text
-            let yomiText = newText.map { $0.string(for: .hiragana) }.joined() + (okuri?.first?.firstRomaji ?? "")
-            let candidates = dictionary.refer(yomiText)
-            if candidates.isEmpty {
-                if registerState != nil {
-                    // 登録中に変換不能な変換をした場合は空文字列に変換する
-                    state.inputMethod = .normal
-                } else {
-                    // 単語登録に遷移する
-                    state.registerState = RegisterState(prev: (state.inputMode, composing), yomi: yomiText)
-                    state.inputMethod = .normal
-                    state.inputMode = .hiragana
-                    inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
-                }
+            if text.isEmpty {
+                addFixedText(" ")
+                state.inputMethod = .normal
+                return true
             } else {
-                state.inputMethod = .selecting(
-                    SelectingState(
-                        prev: SelectingState.PrevState(mode: state.inputMode, composing: composing),
-                        yomi: yomiText, candidates: candidates, candidateIndex: 0))
+                // 未確定ローマ字はn以外は入力されずに削除される. nだけは"ん"として変換する
+                // 変換候補がないときは辞書登録へ
+                let newText: [Romaji.Moji] = romaji == "n" ? composing.subText() + [Romaji.n] : composing.subText()
+                let yomiText = newText.map { $0.string(for: .hiragana) }.joined() + (okuri?.first?.firstRomaji ?? "")
+                let candidates = dictionary.refer(yomiText)
+                if candidates.isEmpty {
+                    if registerState != nil {
+                        // 登録中に変換不能な変換をした場合は空文字列に変換する
+                        state.inputMethod = .normal
+                    } else {
+                        // 単語登録に遷移する
+                        state.registerState = RegisterState(prev: (state.inputMode, composing), yomi: yomiText)
+                        state.inputMethod = .normal
+                        state.inputMode = .hiragana
+                        inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
+                    }
+                } else {
+                    state.inputMethod = .selecting(
+                        SelectingState(
+                            prev: SelectingState.PrevState(mode: state.inputMode, composing: composing),
+                            yomi: yomiText, candidates: candidates, candidateIndex: 0))
+                }
+                updateMarkedText()
+                return true
             }
-            updateMarkedText()
-            return true
         case .stickyShift:
             if let okuri {
                 // AquaSKKは送り仮名の末尾に"；"をつけて変換処理もしくは単語登録に遷移
@@ -427,12 +432,7 @@ class StateMachine {
                         // 送り仮名が1文字以上確定した時点で変換を開始する
                         // 変換候補がないときは辞書登録へ
                         // カーソル位置がnilじゃないときはその前までで変換を試みる
-                        let subText: [Romaji.Moji]
-                        if let cursor = composing.cursor {
-                            subText = Array(text[0..<cursor])
-                        } else {
-                            subText = text
-                        }
+                        let subText: [Romaji.Moji] = composing.subText()
                         let yomiText = subText.map { $0.string(for: .hiragana) }.joined() + moji.firstRomaji
                         let newComposing = ComposingState(
                             isShift: true, text: subText, okuri: (okuri ?? []) + [moji], romaji: "")
