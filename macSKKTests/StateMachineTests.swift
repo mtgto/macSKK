@@ -43,11 +43,28 @@ final class StateMachineTests: XCTestCase {
             expectation.fulfill()
         }.store(in: &cancellables)
         "ngafubyn".forEach { char in
-            XCTAssertTrue(
-                stateMachine.handle(
-                    Action(keyEvent: .printable(String(char)), originalEvent: nil, cursorPosition: .zero)))
+            XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: char)))
         }
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil, cursorPosition: .zero)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    func testHandleNormalSpecialSymbol() throws {
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(8).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText(text: "z", cursor: nil)))
+            XCTAssertEqual(events[1], .fixedText("←"))
+            XCTAssertEqual(events[2], .markedText(MarkedText(text: "z", cursor: nil)))
+            XCTAssertEqual(events[3], .fixedText("↓"))
+            XCTAssertEqual(events[4], .markedText(MarkedText(text: "z", cursor: nil)))
+            XCTAssertEqual(events[5], .fixedText("↑"))
+            XCTAssertEqual(events[6], .markedText(MarkedText(text: "z", cursor: nil)))
+            XCTAssertEqual(events[7], .fixedText("→"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        "zhzjzkzl".forEach { char in
+            XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: char)))
+        }
         wait(for: [expectation], timeout: 1.0)
     }
 

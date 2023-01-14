@@ -285,7 +285,9 @@ class StateMachine {
             }
             return true
         case .printable(let input):
-            if input.lowercased() == "q" {
+            // printableはシフト押されているとき大文字が渡ってくるので小文字に固定
+            let result = Romaji.convert(romaji + input.lowercased())
+            if input.lowercased() == "q" && result.kakutei == nil {
                 if okuri == nil {
                     // AquaSKKの挙動に合わせてShift-Qのときは送り無視で確定、次の入力へ進む
                     if action.shiftIsPressed() {
@@ -319,7 +321,7 @@ class StateMachine {
                         ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: ""))
                     return false
                 }
-            } else if input.lowercased() == "l" {
+            } else if input.lowercased() == "l" && result.kakutei == nil {
                 // 入力済みを確定してからlを打ったのと同じ処理をする
                 if okuri == nil {
                     switch state.inputMode {
@@ -345,8 +347,6 @@ class StateMachine {
             }
             switch state.inputMode {
             case .hiragana, .katakana, .hankaku:
-                // printableはシフト押されているとき大文字が渡ってくるので小文字に固定
-                let result = Romaji.convert(romaji + input.lowercased())
                 // ローマ字が確定してresult.inputがない
                 // StickyShiftでokuriが[]になっている、またはShift押しながら入力した
                 if let moji = result.kakutei {
