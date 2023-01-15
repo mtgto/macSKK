@@ -12,20 +12,29 @@ struct CandidatesView: View {
         // Listではスクロールが生じるためForEachを使用
         VStack(alignment: .leading, spacing: 0) {
             ForEach(candidates.candidates.indices, id: \.self) { index in
+                let candidate = candidates.candidates[index]
                 VStack {
                     Spacer()
                     HStack {
-                        Text("\(index + 1)").padding(EdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 0))
-                        Text(candidates.candidates[index].word)
+                        Text("\(index + 1)")
+                            .padding(EdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 0))
+                            .frame(width: 16)
+                        Text(candidate.word)
                         Spacer()
                     }
-                    .background(candidates.candidates[index] == candidates.selected ? Color.accentColor : nil)
+                    .background(candidate == candidates.selected ? Color.accentColor : nil)
                     Spacer()
                 }
                 .frame(height: 20)
                 .contentShape(Rectangle())
                 .onTapGesture {
-                    candidates.selected = candidates.candidates[index]
+                    candidates.selected = candidate
+                }
+                .popover(
+                    isPresented: .constant(candidate == candidates.selected && candidate.annotation != nil),
+                    arrowEdge: .trailing
+                ) {
+                    Text(candidate.annotation!).padding()
                 }
             }
         }
