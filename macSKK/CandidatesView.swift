@@ -15,13 +15,18 @@ struct CandidatesView: View {
                 VStack {
                     Spacer()
                     HStack {
-                        Text("\(index + 1)")
+                        Text("\(index + 1)").padding(EdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 0))
                         Text(candidates.candidates[index].word)
                         Spacer()
                     }
                     .background(candidates.candidates[index] == candidates.selected ? Color.accentColor : nil)
                     Spacer()
-                }.frame(height: 20)
+                }
+                .frame(height: 20)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    candidates.selected = candidates.candidates[index]
+                }
             }
         }
     }
