@@ -5,7 +5,7 @@ import Cocoa
 import SwiftUI
 
 final class CandidatesPanel: NSPanel {
-    private let viewModel: CandidatesViewModel
+    let viewModel: CandidatesViewModel
 
     init() {
         viewModel = CandidatesViewModel(candidates: [])

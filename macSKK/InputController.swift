@@ -59,6 +59,11 @@ class InputController: IMKInputController {
                 self.candidatesPanel.orderOut(nil)
             }
         }.store(in: &cancellables)
+        candidatesPanel.viewModel.$selected.sink { selected in
+            if let selected {
+                self.stateMachine.didSelectCandidate(selected)
+            }
+        }.store(in: &cancellables)
     }
 
     override func handle(_ event: NSEvent!, client sender: Any!) -> Bool {
