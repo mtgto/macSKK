@@ -435,8 +435,8 @@ class StateMachine {
                         if isShift || action.shiftIsPressed() {
                             state.inputMethod = .composing(composing.appendText(moji).resetRomaji().with(isShift: true))
                         } else {
-                            addFixedText(moji.string(for: state.inputMode))
                             state.inputMethod = .normal
+                            addFixedText(moji.string(for: state.inputMode))
                             return true
                         }
                     } else {
