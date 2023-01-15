@@ -11,6 +11,8 @@ final class CandidatesPanel: NSPanel {
         viewModel = CandidatesViewModel(candidates: [])
         let viewController = NSHostingController(rootView: CandidatesView(candidates: viewModel))
         super.init(contentRect: .zero, styleMask: [.nonactivatingPanel], backing: .buffered, defer: true)
+        viewController.preferredContentSize = viewController.view.intrinsicContentSize
+        viewController.sizingOptions = .preferredContentSize
         contentViewController = viewController
         minSize = CGSize(width: 320, height: 20)
     }
@@ -21,11 +23,19 @@ final class CandidatesPanel: NSPanel {
     }
 
     func show(at point: NSPoint) {
-        let size = CGSize(width: 100, height: viewModel.candidates.count * 20)
-        let origin = NSPoint(x: point.x, y: point.y - size.height)
-        let rect = NSRect(origin: origin, size: size)
-        setFrame(rect, display: true)
+        //        let size = CGSize(width: 100, height: viewModel.candidates.count * 20)
+        //        let origin = NSPoint(x: point.x, y: point.y - size.height)
+        //        let rect = NSRect(origin: origin, size: size)
+        //        setFrame(rect, display: true)
+        setFrameTopLeftPoint(point)
+        if let viewController = contentViewController as? NSHostingController<CandidatesView> {
+            print("content size = \(viewController.sizeThatFits(in: CGSize(width: Int.max, height: Int.max)))")
+            print("intrinsicContentSize = \(viewController.view.intrinsicContentSize)")
+        } else {
+            print("\(contentViewController!.className)")
+        }
+        //setContentSize(NSSize(width: 100, height: viewModel.candidates.count * 20))
         level = .floating
-        orderFront(nil)
+        orderFrontRegardless()
     }
 }

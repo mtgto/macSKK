@@ -9,18 +9,26 @@ struct CandidatesView: View {
     @ObservedObject var candidates: CandidatesViewModel
 
     var body: some View {
-        VStack {
-            List(candidates.candidates, id: \.self, selection: $candidates.selected) { word in
-                Text(word.word)
+        // Listではスクロールが生じるためForEachを使用
+        VStack(alignment: .leading, spacing: 0) {
+            ForEach(candidates.candidates.indices, id: \.self) { index in
+                VStack {
+                    Spacer()
+                    HStack {
+                        Text("\(index + 1)")
+                        Text(candidates.candidates[index].word)
+                        Spacer()
+                    }
+                    .background(candidates.candidates[index] == candidates.selected ? Color.accentColor : nil)
+                    Spacer()
+                }.frame(height: 20)
             }
-            .listRowInsets(.none)
-            .environment(\.defaultMinListRowHeight, 20)
         }
     }
 }
 
 struct CandidatesView_Previews: PreviewProvider {
-    private static let words: [Word] = (0..<10).map { Word("例文\($0)") }
+    private static let words: [Word] = (0..<9).map { Word(String(repeating: "例文\($0)", count: $0)) }
 
     static var previews: some View {
         CandidatesView(candidates: CandidatesViewModel(candidates: words))

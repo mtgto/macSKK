@@ -46,9 +46,7 @@ struct macSKKApp: App {
                 }.keyboardShortcut("S")
                 Button("Show CandidatesPanel") {
                     panel.setWords([Word("こんにちは"), Word("こんばんは"), Word("おはようございます")], selected: nil)
-                    panel.setFrame(NSRect(x: 100, y: 100, width: 400, height: 400), display: true)
-                    panel.level = .floating
-                    panel.orderFront(nil)
+                    panel.show(at: NSPoint(x: 100, y: 600))
                 }
                 Button("Add Word") {
                     panel.setWords(
