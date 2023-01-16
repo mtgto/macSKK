@@ -13,6 +13,8 @@ class RomajiTests: XCTestCase {
         XCTAssertEqual(Romaji.convert("-"), Romaji.ConvertedMoji(input: "", kakutei: Romaji.symbolTable["-"]))
         XCTAssertEqual(Romaji.convert(","), Romaji.ConvertedMoji(input: "", kakutei: Romaji.symbolTable[","]))
         XCTAssertEqual(Romaji.convert("."), Romaji.ConvertedMoji(input: "", kakutei: Romaji.symbolTable["."]))
+        XCTAssertEqual(Romaji.convert("["), Romaji.ConvertedMoji(input: "", kakutei: Romaji.symbolTable["["]))
+        XCTAssertEqual(Romaji.convert("]"), Romaji.ConvertedMoji(input: "", kakutei: Romaji.symbolTable["]"]))
         XCTAssertEqual(Romaji.convert("zh"), Romaji.ConvertedMoji(input: "", kakutei: Romaji.specialSymbolTable["zh"]))
         XCTAssertEqual(Romaji.convert("sy"), Romaji.ConvertedMoji(input: "sy", kakutei: nil))
         XCTAssertEqual(
