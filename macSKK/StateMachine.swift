@@ -60,12 +60,18 @@ class StateMachine {
     func handleNormal(_ action: Action, registerState: RegisterState?) -> Bool {
         switch action.keyEvent {
         case .enter:
-            // TODO: 登録中なら登録してfixedTextに打ち込んでprevに戻して入力中文字列を空にする
             if let registerState {
-                dictionary.add(yomi: registerState.yomi, word: Word(registerState.text))
-                state.registerState = nil
-                state.inputMode = registerState.prev.0
-                addFixedText(registerState.text)
+                if registerState.text.isEmpty {
+                    state.inputMode = registerState.prev.0
+                    state.inputMethod = .composing(registerState.prev.1)
+                    state.registerState = nil
+                    updateMarkedText()
+                } else {
+                    dictionary.add(yomi: registerState.yomi, word: Word(registerState.text))
+                    state.registerState = nil
+                    state.inputMode = registerState.prev.0
+                    addFixedText(registerState.text)
+                }
                 return true
             }
             return false
