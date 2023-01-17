@@ -96,13 +96,12 @@ class StateMachine {
             case .hiragana, .katakana, .hankaku:
                 state.inputMethod = .composing(ComposingState(isShift: true, text: [], okuri: nil, romaji: ""))
                 updateMarkedText()
-                return true
             case .eisu:
                 addFixedText("；")
-                return true
             case .direct:
-                return false
+                addFixedText(";")
             }
+            return true
         case .printable(let input):
             return handleNormalPrintable(input: input, action: action, registerState: registerState)
         case .ctrlJ:
