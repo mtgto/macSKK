@@ -570,6 +570,10 @@ class StateMachine {
         }
     }
 
+    func setMode(_ mode: InputMode) {
+        state.inputMode = mode
+    }
+
     private func addFixedText(_ text: String) {
         if let registerState = state.registerState {
             // state.markedTextを更新してinputMethodEventSubjectにstate.displayText()をsendする

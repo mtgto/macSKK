@@ -96,8 +96,18 @@ class InputController: IMKInputController {
     }
 
     override func setValue(_ value: Any!, forTag tag: Int, client sender: Any!) {
-        guard let value = value as? NSString else { return }
+        guard let value = value as? String else { return }
         logger.log("setValue \(value, privacy: .public)")
+        guard let inputMode = InputMode(rawValue: value) else { return }
+        stateMachine.setMode(inputMode)
+        guard let textInput = sender as? IMKTextInput else {
+            logger.warning("setValueの引数clientがIMKTextInputではありません")
+            return
+        }
+        // カーソル位置あたりを取得する
+        var cursorPosition: NSRect = .zero
+        _ = textInput.attributes(forCharacterIndex: 0, lineHeightRectangle: &cursorPosition)
+        inputModePanel.show(at: cursorPosition.origin, mode: inputMode)
     }
 
     @objc func showSettings() {
