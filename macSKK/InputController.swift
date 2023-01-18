@@ -147,16 +147,23 @@ class InputController: IMKInputController {
         let charactersIgnoringModifiers = event.charactersIgnoringModifiers
         if modifiers.contains(.control) || modifiers.contains(.command) || modifiers.contains(.function) {
             if modifiers == [.control] {
-                if charactersIgnoringModifiers == "j" {
+                switch charactersIgnoringModifiers {
+                case "j":
                     return .ctrlJ
-                } else if charactersIgnoringModifiers == "g" {
+                case "g":
                     return .cancel
-                } else if charactersIgnoringModifiers == "h" {
+                case "h":
                     return .backspace
-                } else if charactersIgnoringModifiers == "b" {
+                case "b":
                     return .left
-                } else if charactersIgnoringModifiers == "f" {
+                case "f":
                     return .right
+                case "p":
+                    return .up
+                case "n":
+                    return .down
+                default:
+                    break
                 }
             }
             // カーソルキーはFn + NumPadがmodifierFlagsに設定されている
@@ -177,6 +184,10 @@ class InputController: IMKInputController {
             return .left
         } else if keyCode == 124 {
             return .right
+        } else if keyCode == 126 {
+            return .up
+        } else if keyCode == 125 {
+            return .down
         } else if keyCode == 51 {
             return .backspace
         } else if keyCode == 53 {  // ESC

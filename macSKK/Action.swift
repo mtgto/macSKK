@@ -36,6 +36,10 @@ struct Action {
         case left
         /// 右矢印キー or Ctrl-F
         case right
+        /// 上矢印キー or Ctrl-P
+        case up
+        /// 下矢印キー or Ctrl-N
+        case down
     }
 
     func shiftIsPressed() -> Bool {

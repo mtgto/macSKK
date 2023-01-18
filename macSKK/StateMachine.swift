@@ -147,6 +147,8 @@ class StateMachine {
             } else {
                 return false
             }
+        case .down, .up:
+            return false
         }
     }
 
@@ -361,6 +363,8 @@ class StateMachine {
             }
             updateMarkedText()
             return true
+        case .up, .down:
+            return false
         }
     }
 
@@ -524,7 +528,7 @@ class StateMachine {
             state.inputMethod = .normal
             addFixedText(selecting.fixedText())
             return true
-        case .backspace:
+        case .backspace, .up:
             if selecting.candidateIndex > 0 {
                 let newSelectingState = selecting.addCandidateIndex(diff: -1)
                 updateCandidates(selecting: newSelectingState)
@@ -536,7 +540,7 @@ class StateMachine {
             }
             updateMarkedText()
             return true
-        case .space:
+        case .space, .down:
             if selecting.candidateIndex + 1 < selecting.candidates.count {
                 let newSelectingState = selecting.addCandidateIndex(diff: 1)
                 state.inputMethod = .selecting(newSelectingState)
