@@ -28,6 +28,9 @@ struct CandidatesView: View {
                 .frame(height: 20)
                 .contentShape(Rectangle())
                 .onTapGesture {
+                    if candidates.selected == candidate {
+                        candidates.doubleSelected = candidate
+                    }
                     candidates.selected = candidate
                 }
                 .popover(

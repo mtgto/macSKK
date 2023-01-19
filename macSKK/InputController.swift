@@ -59,10 +59,11 @@ class InputController: IMKInputController {
                 self.candidatesPanel.orderOut(nil)
             }
         }.store(in: &cancellables)
-        candidatesPanel.viewModel.$selected.sink { selected in
-            if let selected {
-                self.stateMachine.didSelectCandidate(selected)
-            }
+        candidatesPanel.viewModel.$selected.compactMap { $0 }.sink { selected in
+            self.stateMachine.didSelectCandidate(selected)
+        }.store(in: &cancellables)
+        candidatesPanel.viewModel.$doubleSelected.compactMap { $0 }.sink { doubleSelected in
+            self.stateMachine.didDoubleSelectCandidate(doubleSelected)
         }.store(in: &cancellables)
     }
 

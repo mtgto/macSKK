@@ -642,4 +642,14 @@ class StateMachine {
             }
         }
     }
+
+    /// StateMachine外で選択されている変換候補が二回選択されたときに通知される
+    func didDoubleSelectCandidate(_ candidate: Word) {
+        if case .selecting(let selecting) = state.inputMethod {
+            dictionary.add(yomi: selecting.yomi, word: candidate)
+            updateCandidates(selecting: nil)
+            state.inputMethod = .normal
+            addFixedText(candidate.word)
+        }
+    }
 }
