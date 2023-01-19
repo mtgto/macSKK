@@ -172,6 +172,10 @@ class InputController: IMKInputController {
                     return .left
                 } else if keyCode == 124 {
                     return .right
+                } else if keyCode == 125 {
+                    return .down
+                } else if keyCode == 126 {
+                    return .up
                 }
             }
 
