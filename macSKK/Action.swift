@@ -9,7 +9,7 @@ struct Action {
     /// 現在のカーソル位置。正常に取得できない場合はNSRect.zeroになっているかも?
     let cursorPosition: NSRect
 
-    enum KeyEvent {
+    enum KeyEvent: Equatable {
         case enter
         case backspace
         case space

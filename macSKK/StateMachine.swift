@@ -24,6 +24,12 @@ class StateMachine {
     let candidateEvent: AnyPublisher<Candidates?, Never>
     private let candidateEventSubject = PassthroughSubject<Candidates?, Never>()
 
+    /// TODO: inlineCandidateCount, displayCandidateCountを環境設定にするかも
+    /// 変換候補パネルを表示するまで表示する変換候補の数
+    let inlineCandidateCount = 3
+    /// 変換候補パネルに一度に表示する変換候補の数
+    let displayCandidateCount = 9
+
     init(initialState: IMEState = IMEState()) {
         state = initialState
         inputMethodEvent = inputMethodEventSubject.eraseToAnyPublisher()
@@ -524,8 +530,16 @@ class StateMachine {
             addFixedText(selecting.fixedText())
             return true
         case .backspace, .up:
-            if selecting.candidateIndex > 0 {
-                let newSelectingState = selecting.addCandidateIndex(diff: -1)
+            let diff: Int
+            if selecting.candidateIndex >= inlineCandidateCount && action.keyEvent == .backspace {
+                // 前ページの先頭
+                diff =
+                    -((selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount) - displayCandidateCount
+            } else {
+                diff = -1
+            }
+            if selecting.candidateIndex + diff >= 0 {
+                let newSelectingState = selecting.addCandidateIndex(diff: diff)
                 updateCandidates(selecting: newSelectingState)
                 state.inputMethod = .selecting(newSelectingState)
             } else {
@@ -536,8 +550,15 @@ class StateMachine {
             updateMarkedText()
             return true
         case .space, .down:
-            if selecting.candidateIndex + 1 < selecting.candidates.count {
-                let newSelectingState = selecting.addCandidateIndex(diff: 1)
+            let diff: Int
+            if selecting.candidateIndex >= inlineCandidateCount && action.keyEvent == .space {
+                // 次ページの先頭
+                diff = displayCandidateCount - (selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount
+            } else {
+                diff = 1
+            }
+            if selecting.candidateIndex + diff < selecting.candidates.count {
+                let newSelectingState = selecting.addCandidateIndex(diff: diff)
                 state.inputMethod = .selecting(newSelectingState)
                 updateCandidates(selecting: newSelectingState)
             } else {
@@ -546,7 +567,8 @@ class StateMachine {
                     state.inputMode = selecting.prev.mode
                 } else {
                     state.registerState = RegisterState(
-                        prev: (selecting.prev.mode, selecting.prev.composing), yomi: selecting.yomi)
+                        prev: (selecting.prev.mode, selecting.prev.composing),
+                        yomi: selecting.yomi)
                     state.inputMethod = .normal
                     state.inputMode = .hiragana
                     inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
@@ -594,13 +616,7 @@ class StateMachine {
     }
 
     /// 現在の変換候補選択状態をcandidateEventSubject.sendする
-    /// TODO: inlineCandidateCount, displayCandidateCountを環境設定にするかも
     private func updateCandidates(selecting: SelectingState?) {
-        // 変換候補パネルを表示するまで表示する変換候補の数
-        let inlineCandidateCount = 3
-        // 変換候補パネルに一度に表示する変換候補の数
-        let displayCandidateCount = 9
-
         if let selecting, selecting.candidateIndex >= inlineCandidateCount {
             var start = selecting.candidateIndex - inlineCandidateCount
             start = start - start % displayCandidateCount + inlineCandidateCount
