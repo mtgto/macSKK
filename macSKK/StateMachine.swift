@@ -392,14 +392,15 @@ class StateMachine {
                     return true
                 }
                 // ひらがな入力中ならカタカナ、カタカナ入力中ならひらがな、半角カタカナ入力中なら全角カタカナで確定する。
+                // 未確定ローマ字はn以外は入力されずに削除される. nだけは"ん"が入力されているとする
+                let newText: [Romaji.Moji] =
+                    composing.romaji == "n" ? composing.subText() + [Romaji.n] : composing.subText()
                 state.inputMethod = .normal
                 switch state.inputMode {
-                case .hiragana:
-                    addFixedText(text.map { $0.string(for: .katakana) }.joined())
+                case .hiragana, .hankaku:
+                    addFixedText(newText.map { $0.string(for: .katakana) }.joined())
                 case .katakana:
-                    addFixedText(text.map { $0.string(for: .hiragana) }.joined())
-                case .hankaku:
-                    addFixedText(text.map { $0.string(for: .katakana) }.joined())
+                    addFixedText(newText.map { $0.string(for: .hiragana) }.joined())
                 default:
                     fatalError("inputMode=\(state.inputMode), handleComposingでqが入力された")
                 }
@@ -414,15 +415,9 @@ class StateMachine {
             // 入力済みを確定してからlを打ったのと同じ処理をする
             if okuri == nil {
                 switch state.inputMode {
-                case .hiragana:
+                case .hiragana, .katakana, .hankaku:
                     state.inputMethod = .normal
-                    addFixedText(text.map { $0.string(for: .hiragana) }.joined())
-                case .katakana:
-                    state.inputMethod = .normal
-                    addFixedText(text.map { $0.string(for: .katakana) }.joined())
-                case .hankaku:
-                    state.inputMethod = .normal
-                    addFixedText(text.map { $0.string(for: .hankaku) }.joined())
+                    addFixedText(text.map { $0.string(for: state.inputMode) }.joined())
                 default:
                     fatalError("inputMode=\(state.inputMode), handleComposingでlが入力された")
                 }

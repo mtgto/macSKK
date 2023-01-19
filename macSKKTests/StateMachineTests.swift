@@ -279,6 +279,26 @@ final class StateMachineTests: XCTestCase {
         XCTAssertFalse(stateMachine.handle(Action(keyEvent: .right, originalEvent: nil, cursorPosition: .zero)))
     }
 
+    func testHandleComposingNandQ() {
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(6).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText(text: "▽お", cursor: nil)))
+            XCTAssertEqual(events[1], .markedText(MarkedText(text: "▽おn", cursor: nil)))
+            XCTAssertEqual(events[2], .fixedText("オン"))
+            XCTAssertEqual(events[3], .modeChanged(.katakana, .zero))
+            XCTAssertEqual(events[4], .markedText(MarkedText(text: "▽n", cursor: nil)))
+            XCTAssertEqual(events[5], .fixedText("ん"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     func testHandleComposingEnter() {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(9).sink { events in
