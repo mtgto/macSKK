@@ -39,17 +39,17 @@ class StateMachine {
     func handle(_ action: Action) -> Bool {
         switch state.inputMethod {
         case .normal:
-            return handleNormal(action, registerState: state.registerState)
+            return handleNormal(action, specialState: state.specialState)
         case .composing(let composing):
-            return handleComposing(action, composing: composing, registerState: state.registerState)
+            return handleComposing(action, composing: composing, specialState: state.specialState)
         case .selecting(let selecting):
-            return handleSelecting(action, selecting: selecting, registerState: state.registerState)
+            return handleSelecting(action, selecting: selecting, specialState: state.specialState)
         }
     }
 
     /// 処理されないキーイベントを処理するかどうかを返す
     func handleUnhandledEvent(_ event: NSEvent) -> Bool {
-        if state.registerState != nil {
+        if state.specialState != nil {
             return true
         }
         switch state.inputMethod {
@@ -63,29 +63,42 @@ class StateMachine {
     /**
      * 状態がnormalのときのhandle
      */
-    func handleNormal(_ action: Action, registerState: RegisterState?) -> Bool {
+    func handleNormal(_ action: Action, specialState: SpecialState?) -> Bool {
         switch action.keyEvent {
         case .enter:
-            if let registerState {
-                if registerState.text.isEmpty {
-                    state.inputMode = registerState.prev.0
-                    state.inputMethod = .composing(registerState.prev.1)
-                    state.registerState = nil
-                    updateMarkedText()
-                } else {
-                    dictionary.add(yomi: registerState.yomi, word: Word(registerState.text))
-                    state.registerState = nil
-                    state.inputMode = registerState.prev.0
-                    addFixedText(registerState.text)
+            if let specialState {
+                if case .register(let registerState) = specialState {
+                    if registerState.text.isEmpty {
+                        state.inputMode = registerState.prev.0
+                        state.inputMethod = .composing(registerState.prev.1)
+                        state.specialState = nil
+                        updateMarkedText()
+                    } else {
+                        dictionary.add(yomi: registerState.yomi, word: Word(registerState.text))
+                        state.specialState = nil
+                        state.inputMode = registerState.prev.0
+                        addFixedText(registerState.text)
+                    }
+                    return true
+                } else if case .unregister(let unregisterState) = specialState {
+                    // TODO: unregister
+                    if unregisterState.text == "yes" {
+                        // TODO
+                    } else if unregisterState.text == "no" {
+                        // TODO
+                    } else {
+
+                    }
+                    return true
                 }
-                return true
             }
             return false
         case .backspace:
-            if let registerState = state.registerState {
-                state.registerState = registerState.dropLast()
+            if let specialState = state.specialState {
+                state.specialState = specialState.dropLast()
                 updateMarkedText()
                 return true
+
             } else {
                 return false
             }
@@ -109,16 +122,22 @@ class StateMachine {
             }
             return true
         case .printable(let input):
-            return handleNormalPrintable(input: input, action: action, registerState: registerState)
+            return handleNormalPrintable(input: input, action: action, specialState: specialState)
         case .ctrlJ:
             state.inputMode = .hiragana
             inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
             return true
         case .cancel:
-            if let registerState = state.registerState {
-                state.inputMode = registerState.prev.0
-                state.inputMethod = .composing(registerState.prev.1)
-                state.registerState = nil
+            if let specialState = state.specialState {
+                switch specialState {
+                case .register(let registerState):
+                    state.inputMode = registerState.prev.0
+                    state.inputMethod = .composing(registerState.prev.1)
+                case .unregister(let unregisterState):
+                    state.inputMode = unregisterState.prev.0
+                    state.inputMethod = .composing(unregisterState.prev.1)
+                }
+                state.specialState = nil
                 updateMarkedText()
                 return true
             } else {
@@ -138,16 +157,16 @@ class StateMachine {
                 return false
             }
         case .left:
-            if let registerState = state.registerState {
-                state.registerState = registerState.moveCursorLeft()
+            if let specialState = state.specialState {
+                state.specialState = specialState.moveCursorLeft()
                 updateMarkedText()
                 return true
             } else {
                 return false
             }
         case .right:
-            if let registerState = state.registerState {
-                state.registerState = registerState.moveCursorRight()
+            if let specialState = state.specialState {
+                state.specialState = specialState.moveCursorRight()
                 updateMarkedText()
                 return true
             } else {
@@ -159,7 +178,7 @@ class StateMachine {
     }
 
     /// 状態がnormalのときのprintableイベントのhandle
-    func handleNormalPrintable(input: String, action: Action, registerState: RegisterState?) -> Bool {
+    func handleNormalPrintable(input: String, action: Action, specialState: SpecialState?) -> Bool {
         if input.lowercased() == "q" {
             switch state.inputMode {
             case .hiragana:
@@ -242,7 +261,7 @@ class StateMachine {
         }
     }
 
-    func handleComposing(_ action: Action, composing: ComposingState, registerState: RegisterState?) -> Bool {
+    func handleComposing(_ action: Action, composing: ComposingState, specialState: SpecialState?) -> Bool {
         let isShift = composing.isShift
         let text = composing.text
         let okuri = composing.okuri
@@ -267,7 +286,7 @@ class StateMachine {
             let converted = Romaji.convert(romaji + " ")
             if converted.kakutei != nil {
                 return handleComposingPrintable(
-                    input: " ", converted: converted, action: action, composing: composing, registerState: registerState
+                    input: " ", converted: converted, action: action, composing: composing, specialState: specialState
                 )
             }
             if text.isEmpty {
@@ -281,12 +300,13 @@ class StateMachine {
                 let yomiText = newText.map { $0.string(for: .hiragana) }.joined() + (okuri?.first?.firstRomaji ?? "")
                 let candidates = dictionary.refer(yomiText)
                 if candidates.isEmpty {
-                    if registerState != nil {
+                    if specialState != nil {
                         // 登録中に変換不能な変換をした場合は空文字列に変換する
                         state.inputMethod = .normal
                     } else {
                         // 単語登録に遷移する
-                        state.registerState = RegisterState(prev: (state.inputMode, composing), yomi: yomiText)
+                        state.specialState = .register(
+                            RegisterState(prev: (state.inputMode, composing), yomi: yomiText))
                         state.inputMethod = .normal
                         state.inputMode = .hiragana
                         inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
@@ -325,7 +345,7 @@ class StateMachine {
                 converted: Romaji.convert(romaji + input.lowercased()),
                 action: action,
                 composing: composing,
-                registerState: registerState)
+                specialState: specialState)
         case .ctrlJ:
             // 入力中文字列を確定させてひらがなモードにする
             addFixedText(composing.string(for: state.inputMode))
@@ -376,7 +396,7 @@ class StateMachine {
 
     func handleComposingPrintable(
         input: String, converted: Romaji.ConvertedMoji, action: Action, composing: ComposingState,
-        registerState: RegisterState?
+        specialState: SpecialState?
     ) -> Bool {
         let isShift = composing.isShift
         let text = composing.text
@@ -427,7 +447,7 @@ class StateMachine {
                 default:
                     fatalError("inputMode=\(state.inputMode), handleComposingでlが入力された")
                 }
-                return handleNormal(action, registerState: registerState)
+                return handleNormal(action, specialState: specialState)
             } else {
                 // 送り仮名があるときはローマ字部分をリセットする
                 state.inputMethod = .composing(
@@ -459,15 +479,16 @@ class StateMachine {
                             isShift: true, text: subText, okuri: (okuri ?? []) + [moji], romaji: "")
                         let candidates = dictionary.refer(yomiText)
                         if candidates.isEmpty {
-                            if registerState != nil {
+                            if specialState != nil {
                                 // 登録中に変換不能な変換をした場合は空文字列に変換する
                                 state.inputMethod = .normal
                             } else {
                                 // 単語登録に遷移する
-                                state.registerState = RegisterState(
-                                    prev: (state.inputMode, newComposing),
-                                    yomi: yomiText
-                                )
+                                state.specialState = .register(
+                                    RegisterState(
+                                        prev: (state.inputMode, newComposing),
+                                        yomi: yomiText
+                                    ))
                                 state.inputMethod = .normal
                                 state.inputMode = .hiragana
                                 inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
@@ -521,7 +542,7 @@ class StateMachine {
         }
     }
 
-    func handleSelecting(_ action: Action, selecting: SelectingState, registerState: RegisterState?) -> Bool {
+    func handleSelecting(_ action: Action, selecting: SelectingState, specialState: SpecialState?) -> Bool {
         switch action.keyEvent {
         case .enter:
             dictionary.add(yomi: selecting.yomi, word: selecting.candidates[selecting.candidateIndex])
@@ -562,13 +583,14 @@ class StateMachine {
                 state.inputMethod = .selecting(newSelectingState)
                 updateCandidates(selecting: newSelectingState)
             } else {
-                if registerState != nil {
+                if specialState != nil {
                     state.inputMethod = .normal
                     state.inputMode = selecting.prev.mode
                 } else {
-                    state.registerState = RegisterState(
-                        prev: (selecting.prev.mode, selecting.prev.composing),
-                        yomi: selecting.yomi)
+                    state.specialState = .register(
+                        RegisterState(
+                            prev: (selecting.prev.mode, selecting.prev.composing),
+                            yomi: selecting.yomi))
                     state.inputMethod = .normal
                     state.inputMode = .hiragana
                     inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
@@ -583,7 +605,7 @@ class StateMachine {
             updateCandidates(selecting: nil)
             addFixedText(selecting.fixedText())
             state.inputMethod = .normal
-            return handleNormal(action, registerState: nil)
+            return handleNormal(action, specialState: nil)
         case .cancel:
             state.inputMethod = .composing(selecting.prev.composing)
             state.inputMode = selecting.prev.mode
@@ -601,9 +623,9 @@ class StateMachine {
     }
 
     private func addFixedText(_ text: String) {
-        if let registerState = state.registerState {
+        if let specialState = state.specialState {
             // state.markedTextを更新してinputMethodEventSubjectにstate.displayText()をsendする
-            state.registerState = registerState.appendText(text)
+            state.specialState = specialState.appendText(text)
             inputMethodEventSubject.send(.markedText(state.displayText()))
         } else {
             inputMethodEventSubject.send(.fixedText(text))

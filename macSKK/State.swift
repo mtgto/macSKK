@@ -46,6 +46,11 @@ protocol CursorProtocol {
     func moveCursorRight() -> Self
 }
 
+protocol SpecialStateProtocol: CursorProtocol {
+    func appendText(_ text: String) -> Self
+    func dropLast() -> Self
+}
+
 /// 入力中の未確定文字列の定義
 struct ComposingState: Equatable, CursorProtocol {
     /// (Sticky)Shiftによる未確定入力中かどうか。先頭に▽ついてる状態。
@@ -185,7 +190,7 @@ struct SelectingState: Equatable {
 }
 
 /// 辞書登録状態
-struct RegisterState: CursorProtocol {
+struct RegisterState: SpecialStateProtocol {
     /// 辞書登録状態に遷移する前の状態。
     let prev: (InputMode, ComposingState)
     /// 辞書登録する際の読み。ひらがなのみ、もしくは `ひらがな + アルファベット` もしくは `":" + アルファベット` (abbrev) のパターンがある
@@ -196,7 +201,7 @@ struct RegisterState: CursorProtocol {
     var cursor: Int?
 
     /// カーソル位置に文字列を追加する。
-    func appendText(_ text: String) -> RegisterState {
+    func appendText(_ text: String) -> Self {
         if let cursor {
             var newText: String = self.text
             newText.insert(contentsOf: text, at: newText.index(newText.startIndex, offsetBy: cursor))
@@ -244,6 +249,72 @@ struct RegisterState: CursorProtocol {
     }
 }
 
+/// 辞書登録解除するかどうか判定状態
+struct UnregisterState: SpecialStateProtocol {
+    /// 辞書登録解除状態に遷移する前の状態。
+    let prev: (InputMode, ComposingState)
+    /// 入力中の単語。変換中にはならず確定済文字列のみが入る
+    var text: String = ""
+
+    func appendText(_ text: String) -> Self {
+        return UnregisterState(prev: prev, text: self.text + text)
+    }
+
+    func dropLast() -> Self {
+        return UnregisterState(prev: prev, text: String(text.dropLast(1)))
+    }
+
+    func moveCursorLeft() -> Self {
+        return self
+    }
+
+    func moveCursorRight() -> Self {
+        return self
+    }
+}
+
+/// 入力中に遷移する特別なモード
+enum SpecialState: SpecialStateProtocol {
+    case register(RegisterState)
+    case unregister(UnregisterState)
+
+    func appendText(_ text: String) -> Self {
+        switch self {
+        case .register(let registerState):
+            return .register(registerState.appendText(text))
+        case .unregister(let unregisterState):
+            return .unregister(unregisterState.appendText(text))
+        }
+    }
+
+    func dropLast() -> Self {
+        switch self {
+        case .register(let registerState):
+            return .register(registerState.dropLast())
+        case .unregister(let unregisterState):
+            return .unregister(unregisterState.dropLast())
+        }
+    }
+
+    func moveCursorLeft() -> Self {
+        switch self {
+        case .register(let registerState):
+            return .register(registerState.moveCursorLeft())
+        case .unregister(let unregisterState):
+            return .unregister(unregisterState.moveCursorLeft())
+        }
+    }
+
+    func moveCursorRight() -> Self {
+        switch self {
+        case .register(let registerState):
+            return .register(registerState.moveCursorRight())
+        case .unregister(let unregisterState):
+            return .unregister(unregisterState.moveCursorRight())
+        }
+    }
+}
+
 struct MarkedText: Equatable {
     let text: String
     let cursor: Int?
@@ -258,7 +329,7 @@ struct Candidates: Equatable {
 struct IMEState {
     var inputMode: InputMode = .hiragana
     var inputMethod: InputMethodState = .normal
-    var registerState: RegisterState?
+    var specialState: SpecialState?
     var candidates: [Word] = []
 
     /// "▽\(text)" や "▼(変換候補)" や "[登録：\(text)]" のような、下線が当たっていて表示されている文字列とカーソル位置を返す。
@@ -268,25 +339,27 @@ struct IMEState {
         // 単語登録モードのカーソルより後の確定済文字列
         var registerTextSuffix = ""
         var cursor: Int? = nil
-        if let registerState {
-            let mode = registerState.prev.0
-            let composing = registerState.prev.1
-            var yomi = composing.text.map { $0.string(for: mode) }.joined()
-            if let okuri = composing.okuri {
-                yomi += "*" + okuri.map { $0.string(for: mode) }.joined()
-            }
-            markedText = "[登録：\(yomi)]"
-            if let registerCursor = registerState.cursor {
-                cursor = markedText.count + registerCursor
-                markedText += registerState.text.prefix(registerCursor)
-                if registerCursor == 0 {
-                    registerTextSuffix = registerState.text
-                } else {
-                    registerTextSuffix += registerState.text.suffix(
-                        from: registerState.text.index(registerState.text.startIndex, offsetBy: registerCursor))
+        if let specialState {
+            if case .register(let registerState) = specialState {
+                let mode = registerState.prev.0
+                let composing = registerState.prev.1
+                var yomi = composing.text.map { $0.string(for: mode) }.joined()
+                if let okuri = composing.okuri {
+                    yomi += "*" + okuri.map { $0.string(for: mode) }.joined()
                 }
-            } else {
-                markedText += registerState.text
+                markedText = "[登録：\(yomi)]"
+                if let registerCursor = registerState.cursor {
+                    cursor = markedText.count + registerCursor
+                    markedText += registerState.text.prefix(registerCursor)
+                    if registerCursor == 0 {
+                        registerTextSuffix = registerState.text
+                    } else {
+                        registerTextSuffix += registerState.text.suffix(
+                            from: registerState.text.index(registerState.text.startIndex, offsetBy: registerCursor))
+                    }
+                } else {
+                    markedText += registerState.text
+                }
             }
         }
         switch inputMethod {
