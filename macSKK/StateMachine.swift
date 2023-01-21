@@ -124,9 +124,13 @@ class StateMachine {
         case .printable(let input):
             return handleNormalPrintable(input: input, action: action, specialState: specialState)
         case .ctrlJ:
-            state.inputMode = .hiragana
-            inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
-            return true
+            if case .unregister = specialState {
+                return true
+            } else {
+                state.inputMode = .hiragana
+                inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
+                return true
+            }
         case .cancel:
             if let specialState = state.specialState {
                 switch specialState {
@@ -135,7 +139,7 @@ class StateMachine {
                     state.inputMethod = .composing(registerState.prev.1)
                 case .unregister(let unregisterState):
                     state.inputMode = unregisterState.prev.0
-                    state.inputMethod = .composing(unregisterState.prev.1)
+                    state.inputMethod = .selecting(unregisterState.prev.1)
                 }
                 state.specialState = nil
                 updateMarkedText()
@@ -599,13 +603,29 @@ class StateMachine {
             }
             updateMarkedText()
             return true
-        case .stickyShift, .ctrlJ, .ctrlQ, .printable:
+        case .stickyShift, .ctrlJ, .ctrlQ:
             // 選択中候補で確定
             dictionary.add(yomi: selecting.yomi, word: selecting.candidates[selecting.candidateIndex])
             updateCandidates(selecting: nil)
             addFixedText(selecting.fixedText())
             state.inputMethod = .normal
             return handleNormal(action, specialState: nil)
+        case .printable(let input):
+            if input == "x" && action.shiftIsPressed() {
+                state.specialState = .unregister(UnregisterState(prev: (state.inputMode, selecting)))
+                state.inputMethod = .normal
+                state.inputMode = .direct
+                updateCandidates(selecting: nil)
+                updateMarkedText()
+                return true
+            } else {
+                // 選択中候補で確定
+                dictionary.add(yomi: selecting.yomi, word: selecting.candidates[selecting.candidateIndex])
+                updateCandidates(selecting: nil)
+                addFixedText(selecting.fixedText())
+                state.inputMethod = .normal
+                return handleNormal(action, specialState: nil)
+            }
         case .cancel:
             state.inputMethod = .composing(selecting.prev.composing)
             state.inputMode = selecting.prev.mode

@@ -252,7 +252,7 @@ struct RegisterState: SpecialStateProtocol {
 /// 辞書登録解除するかどうか判定状態
 struct UnregisterState: SpecialStateProtocol {
     /// 辞書登録解除状態に遷移する前の状態。
-    let prev: (InputMode, ComposingState)
+    let prev: (InputMode, SelectingState)
     /// 入力中の単語。変換中にはならず確定済文字列のみが入る
     var text: String = ""
 
@@ -340,7 +340,8 @@ struct IMEState {
         var registerTextSuffix = ""
         var cursor: Int? = nil
         if let specialState {
-            if case .register(let registerState) = specialState {
+            switch specialState {
+            case .register(let registerState):
                 let mode = registerState.prev.0
                 let composing = registerState.prev.1
                 var yomi = composing.text.map { $0.string(for: mode) }.joined()
@@ -360,6 +361,11 @@ struct IMEState {
                 } else {
                     markedText += registerState.text
                 }
+            case .unregister(let unregisterState):
+                let selectingState = unregisterState.prev.1
+                markedText =
+                    "\(selectingState.yomi) /\(selectingState.candidates[selectingState.candidateIndex].word)/ を削除します(yes/no)"
+                markedText += unregisterState.text
             }
         }
         switch inputMethod {

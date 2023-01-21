@@ -1012,10 +1012,12 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e", withShift: true)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "x", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .ctrlJ, originalEvent: nil, cursorPosition: .zero)))
         "yes".forEach { character in
             XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: character)))
         }
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertEqual(dictionary.userDictEntries["え"], [])
         wait(for: [expectation], timeout: 1.0)
     }
 
