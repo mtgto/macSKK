@@ -33,7 +33,7 @@ class StateMachine {
     init(initialState: IMEState = IMEState()) {
         state = initialState
         inputMethodEvent = inputMethodEventSubject.eraseToAnyPublisher()
-        candidateEvent = candidateEventSubject.eraseToAnyPublisher()
+        candidateEvent = candidateEventSubject.removeDuplicates().eraseToAnyPublisher()
     }
 
     func handle(_ action: Action) -> Bool {
