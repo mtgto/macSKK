@@ -41,12 +41,14 @@ class UserDict: DictProtocol {
         } else {
             try load()
         }
-        source.resume()
+        source.activate()
 
         savePublisher
             .debounce(for: .seconds(60), scheduler: RunLoop.main)  // 短期間に複数の保存要求があっても一回にまとめる
             .sink { _ in
+                self.source.suspend()
                 try? self.save()
+                self.source.resume()
             }
             .store(in: &cancellables)
     }

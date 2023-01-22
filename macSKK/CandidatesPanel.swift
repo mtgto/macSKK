@@ -23,10 +23,6 @@ final class CandidatesPanel: NSPanel {
     }
 
     func show(at point: NSPoint) {
-        //        let size = CGSize(width: 100, height: viewModel.candidates.count * 20)
-        //        let origin = NSPoint(x: point.x, y: point.y - size.height)
-        //        let rect = NSRect(origin: origin, size: size)
-        //        setFrame(rect, display: true)
         setFrameTopLeftPoint(point)
         if let viewController = contentViewController as? NSHostingController<CandidatesView> {
             print("content size = \(viewController.sizeThatFits(in: CGSize(width: Int.max, height: Int.max)))")
@@ -34,7 +30,6 @@ final class CandidatesPanel: NSPanel {
         } else {
             print("\(contentViewController!.className)")
         }
-        //setContentSize(NSSize(width: 100, height: viewModel.candidates.count * 20))
         level = .floating
         orderFrontRegardless()
     }
