@@ -31,4 +31,12 @@ final class UserDictTests: XCTestCase {
         let userDict = try UserDict(dicts: [dict1, dict2], userDictEntries: ["い": [Word("井"), Word("伊")]])
         XCTAssertEqual(userDict.refer("い").map { $0.word }, ["井", "伊", "胃", "意"])
     }
+
+    func testDelete() throws {
+        let userDict = try UserDict(dicts: [], userDictEntries: ["あr": [Word("有"), Word("在")]])
+        XCTAssertTrue(userDict.delete(yomi: "あr", word: Word("在")))
+        XCTAssertEqual(userDict.userDictEntries["あr"], [Word("有")])
+        XCTAssertFalse(userDict.delete(yomi: "いいい", word: Word("いいい")))
+        XCTAssertFalse(userDict.delete(yomi: "あr", word: Word("在")))
+    }
 }

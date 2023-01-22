@@ -93,6 +93,20 @@ class UserDict: DictProtocol {
         savePublisher.send(())
     }
 
+    /// ユーザー辞書からエントリを削除する
+    /// - Parameter yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
+    /// - Parameter word: SKK辞書の変換候補。
+    func delete(yomi: String, word: Word) -> Bool {
+        if var entries = userDictEntries[yomi] {
+            if let index = entries.firstIndex(of: word) {
+                entries.remove(at: index)
+                userDictEntries[yomi] = entries
+                return true
+            }
+        }
+        return false
+    }
+
     /// ユーザー辞書を永続化する
     func save() throws {
         try fileHandle.seek(toOffset: 0)

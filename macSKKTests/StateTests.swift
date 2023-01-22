@@ -101,4 +101,38 @@ final class StateTests: XCTestCase {
         XCTAssertEqual(state.text, "いあ")
         XCTAssertEqual(state.cursor, 1)
     }
+
+    func testRegisterStateDropLast() throws {
+        var state = RegisterState(
+            prev: (.hiragana, ComposingState(isShift: true, text: [Romaji.table["a"]!], okuri: nil, romaji: "")),
+            yomi: "あ", text: "あいう", cursor: nil)
+        state = state.dropLast()
+        XCTAssertEqual(state.text, "あい")
+        state = state.moveCursorLeft().dropLast()
+        XCTAssertEqual(state.text, "い")
+        XCTAssertEqual(state.cursor, 0)
+    }
+
+    func testUnregisterState() throws {
+        let prevSelectingState = SelectingState(
+            prev: SelectingState.PrevState(
+                mode: .hiragana,
+                composing: ComposingState(
+                    isShift: true,
+                    text: [Romaji.table["a"]!],
+                    okuri: [Romaji.table["ru"]!],
+                    romaji: ""
+                )
+            ),
+            yomi: "あ",
+            candidates: [Word("有")],
+            candidateIndex: 0,
+            cursorPosition: .zero
+        )
+        var state = UnregisterState(prev: (.hiragana, prevSelectingState), text: "")
+        state = state.appendText("y")
+        XCTAssertEqual(state.text, "y")
+        state = state.appendText("e").moveCursorLeft().dropLast()
+        XCTAssertEqual(state.text, "y")
+    }
 }
