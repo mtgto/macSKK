@@ -81,13 +81,18 @@ class StateMachine {
                     }
                     return true
                 } else if case .unregister(let unregisterState) = specialState {
-                    // TODO: unregister
                     if unregisterState.text == "yes" {
-                        // TODO
-                    } else if unregisterState.text == "no" {
-                        // TODO
+                        let word = unregisterState.prev.1.candidates[unregisterState.prev.1.candidateIndex]
+                        _ = dictionary.delete(yomi: unregisterState.prev.1.yomi, word: word)
+                        state.inputMode = unregisterState.prev.0
+                        state.inputMethod = .normal
+                        state.specialState = nil
+                        updateMarkedText()
                     } else {
-
+                        state.inputMode = unregisterState.prev.0
+                        state.inputMethod = .selecting(unregisterState.prev.1)
+                        state.specialState = nil
+                        updateMarkedText()
                     }
                     return true
                 }

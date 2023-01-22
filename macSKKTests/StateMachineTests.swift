@@ -1000,13 +1000,14 @@ final class StateMachineTests: XCTestCase {
         dictionary.userDictEntries = ["え": [Word("絵")]]
 
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(6).sink { events in
+        stateMachine.inputMethodEvent.collect(7).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText(text: "▽え", cursor: nil)))
             XCTAssertEqual(events[1], .markedText(MarkedText(text: "▼絵", cursor: nil)))
             XCTAssertEqual(events[2], .markedText(MarkedText(text: "え /絵/ を削除します(yes/no)", cursor: nil)))
             XCTAssertEqual(events[3], .markedText(MarkedText(text: "え /絵/ を削除します(yes/no)y", cursor: nil)))
             XCTAssertEqual(events[4], .markedText(MarkedText(text: "え /絵/ を削除します(yes/no)ye", cursor: nil)))
             XCTAssertEqual(events[5], .markedText(MarkedText(text: "え /絵/ を削除します(yes/no)yes", cursor: nil)))
+            XCTAssertEqual(events[6], .markedText(MarkedText(text: "", cursor: nil)))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e", withShift: true)))
@@ -1018,6 +1019,25 @@ final class StateMachineTests: XCTestCase {
         }
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertEqual(dictionary.userDictEntries["え"], [])
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    func testHandleSelectingUnregisterCancel() {
+        dictionary.userDictEntries = ["え": [Word("絵")]]
+
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(4).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText(text: "▽え", cursor: nil)))
+            XCTAssertEqual(events[1], .markedText(MarkedText(text: "▼絵", cursor: nil)))
+            XCTAssertEqual(events[2], .markedText(MarkedText(text: "え /絵/ を削除します(yes/no)", cursor: nil)))
+            XCTAssertEqual(events[3], .markedText(MarkedText(text: "▼絵", cursor: nil)))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "x", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertEqual(dictionary.userDictEntries["え"], [Word("絵")])
         wait(for: [expectation], timeout: 1.0)
     }
 

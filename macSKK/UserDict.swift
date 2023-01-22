@@ -78,8 +78,9 @@ class UserDict: DictProtocol {
     }
 
     /// ユーザー辞書にエントリを追加する
-    /// - Parameter yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
-    /// - Parameter word: SKK辞書の変換候補。
+    /// - Parameters:
+    ///   - yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
+    ///   - word: SKK辞書の変換候補。
     func add(yomi: String, word: Word) {
         if var words = userDictEntries[yomi] {
             let index = words.firstIndex { $0.word == word.word }
@@ -94,8 +95,10 @@ class UserDict: DictProtocol {
     }
 
     /// ユーザー辞書からエントリを削除する
-    /// - Parameter yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
-    /// - Parameter word: SKK辞書の変換候補。
+    /// - Parameters:
+    ///   - yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
+    ///   - word: SKK辞書の変換候補。
+    /// - Returns: エントリを削除できたかどうか
     func delete(yomi: String, word: Word) -> Bool {
         if var entries = userDictEntries[yomi] {
             if let index = entries.firstIndex(of: word) {
