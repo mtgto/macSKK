@@ -538,6 +538,24 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    func testHandleComposingOkuriN() {
+        dictionary.userDictEntries = ["あn": [Word("編")]]
+
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(4).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText(text: "▽あ", cursor: nil)))
+            XCTAssertEqual(events[1], .markedText(MarkedText(text: "▽あ*n", cursor: nil)))
+            XCTAssertEqual(events[2], .markedText(MarkedText(text: "▽あ*んd", cursor: nil)))
+            XCTAssertEqual(events[3], .markedText(MarkedText(text: "▼編んだ", cursor: nil)))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "d")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     func testHandleComposingOkuriCursor() {
         dictionary.userDictEntries = ["あu": [Word("会")]]
 

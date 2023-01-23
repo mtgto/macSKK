@@ -483,7 +483,9 @@ class StateMachine {
                         // 変換候補がないときは辞書登録へ
                         // カーソル位置がnilじゃないときはその前までで変換を試みる
                         let subText: [Romaji.Moji] = composing.subText()
-                        let yomiText = subText.map { $0.string(for: .hiragana) }.joined() + moji.firstRomaji
+                        let yomiText =
+                            subText.map { $0.string(for: .hiragana) }.joined()
+                            + (okuri?.first?.firstRomaji ?? moji.firstRomaji)
                         let newComposing = ComposingState(
                             isShift: true, text: subText, okuri: (okuri ?? []) + [moji], romaji: "")
                         let candidates = dictionary.refer(yomiText)
