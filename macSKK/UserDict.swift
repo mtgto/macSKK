@@ -5,6 +5,7 @@ import Combine
 import Foundation
 
 class UserDict: DictProtocol {
+    let dictionariesDirectoryURL: URL
     let fileURL: URL
     let fileHandle: FileHandle
     let source: DispatchSourceFileSystemObject
@@ -16,7 +17,14 @@ class UserDict: DictProtocol {
 
     init(dicts: [Dict], userDictEntries: [String: [Word]]? = nil) throws {
         self.dicts = dicts
-        fileURL = FileManager.default.homeDirectoryForCurrentUser.appending(path: "skk-jisyo.utf8")
+        dictionariesDirectoryURL = try FileManager.default.url(
+            for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false
+        ).appending(path: "Dictionaries")
+        if !FileManager.default.fileExists(atPath: dictionariesDirectoryURL.path) {
+            logger.log("辞書フォルダがないため作成します")
+            try FileManager.default.createDirectory(at: dictionariesDirectoryURL, withIntermediateDirectories: true)
+        }
+        fileURL = dictionariesDirectoryURL.appending(path: "skk-jisyo.utf8")
         if !FileManager.default.fileExists(atPath: fileURL.path()) {
             logger.log("ユーザー辞書ファイルがないため作成します")
             try Data().write(to: fileURL, options: .withoutOverwriting)
