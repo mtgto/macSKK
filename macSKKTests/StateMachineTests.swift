@@ -30,20 +30,26 @@ final class StateMachineTests: XCTestCase {
 
     func testHandleNormalRomaji() throws {
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(10).sink { events in
+        stateMachine.inputMethodEvent.collect(16).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText(text: "n", cursor: nil)))
             XCTAssertEqual(events[1], .fixedText("ん"))
             XCTAssertEqual(events[2], .markedText(MarkedText(text: "g", cursor: nil)))
             XCTAssertEqual(events[3], .fixedText("が"))
             XCTAssertEqual(events[4], .markedText(MarkedText(text: "f", cursor: nil)))
             XCTAssertEqual(events[5], .fixedText("ふ"))
-            XCTAssertEqual(events[6], .markedText(MarkedText(text: "b", cursor: nil)))
-            XCTAssertEqual(events[7], .markedText(MarkedText(text: "by", cursor: nil)))
-            XCTAssertEqual(events[8], .markedText(MarkedText(text: "n", cursor: nil)))
-            XCTAssertEqual(events[9], .fixedText("ん"))
+            XCTAssertEqual(events[6], .markedText(MarkedText(text: "d", cursor: nil)))
+            XCTAssertEqual(events[7], .markedText(MarkedText(text: "dh", cursor: nil)))
+            XCTAssertEqual(events[8], .fixedText("でぃ"))
+            XCTAssertEqual(events[9], .markedText(MarkedText(text: "t", cursor: nil)))
+            XCTAssertEqual(events[10], .markedText(MarkedText(text: "th", cursor: nil)))
+            XCTAssertEqual(events[11], .fixedText("てぃ"))
+            XCTAssertEqual(events[12], .markedText(MarkedText(text: "b", cursor: nil)))
+            XCTAssertEqual(events[13], .markedText(MarkedText(text: "by", cursor: nil)))
+            XCTAssertEqual(events[14], .markedText(MarkedText(text: "n", cursor: nil)))
+            XCTAssertEqual(events[15], .fixedText("ん"))
             expectation.fulfill()
         }.store(in: &cancellables)
-        "ngafubyn".forEach { char in
+        "ngafudhithibyn".forEach { char in
             XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: char)))
         }
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil, cursorPosition: .zero)))

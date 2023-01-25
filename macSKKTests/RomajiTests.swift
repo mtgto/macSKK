@@ -20,6 +20,7 @@ class RomajiTests: XCTestCase {
         XCTAssertEqual(
             Romaji.convert("kk"), Romaji.ConvertedMoji(input: "k", kakutei: Romaji.sokuon("k")),
             "同じ子音が連続した場合は促音が確定して子音ひとつが残る")
+        XCTAssertEqual(Romaji.convert("ff"), Romaji.ConvertedMoji(input: "f", kakutei: Romaji.sokuon("f")))
         XCTAssertEqual(Romaji.convert("tr"), Romaji.ConvertedMoji(input: "r", kakutei: nil), "異なる子音が連続した場合は最後の子音ひとつが残る")
         XCTAssertEqual(
             Romaji.convert("tsh"), Romaji.ConvertedMoji(input: "h", kakutei: nil),

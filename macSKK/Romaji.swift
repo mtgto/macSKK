@@ -267,12 +267,13 @@ struct Romaji: Equatable {
     static func convert(_ input: String) -> ConvertedMoji {
         let array = [
             "sh", "ts", "ky", "sy", "ty", "ch", "ny", "hy", "my", "ry", "gy", "zy", "dy", "by", "py", "th", "xk", "xt",
-            "xy", "xw", "wh", "vy", "kw", "gw", "jy", "cy", "dw", "hw", "fw", "xts",
+            "xy", "xw", "wh", "vy", "kw", "gw", "jy", "cy", "dw", "hw", "fw", "xts", "dh",
         ]
         if let moji = table[input] {
             return ConvertedMoji(input: "", kakutei: moji)
-        } else if ["kk", "ss", "tt", "cc", "hh", "mm", "yy", "rr", "ww", "gg", "zz", "jj", "dd", "bb", "pp"].contains(
-            where: { input.hasPrefix($0) })
+        } else if ["kk", "ss", "tt", "cc", "hh", "ff", "mm", "yy", "rr", "ww", "gg", "zz", "jj", "dd", "bb", "pp"]
+            .contains(
+                where: { input.hasPrefix($0) })
         {
             return ConvertedMoji(input: String(input.dropFirst()), kakutei: Romaji.sokuon(String(input.first!)))
         } else if input == "nn" {
