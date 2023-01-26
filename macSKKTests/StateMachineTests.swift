@@ -1020,6 +1020,40 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    func testHandleSelectingNum() {
+        dictionary.userDictEntries = ["あ": "123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".map { Word(String($0)) }]
+
+        let expectation = XCTestExpectation()
+        expectation.expectedFulfillmentCount = 2
+        stateMachine.inputMethodEvent.collect(8).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText(text: "▽あ", cursor: nil)))
+            XCTAssertEqual(events[1], .markedText(MarkedText(text: "▼1", cursor: nil)))
+            XCTAssertEqual(events[2], .markedText(MarkedText(text: "▼2", cursor: nil)))
+            XCTAssertEqual(events[3], .markedText(MarkedText(text: "▼3", cursor: nil)))
+            XCTAssertEqual(events[4], .markedText(MarkedText(text: "▼4", cursor: nil)), "変換候補パネルが表示開始")
+            XCTAssertEqual(events[5], .markedText(MarkedText(text: "▼5", cursor: nil)))
+            XCTAssertEqual(events[6], .markedText(MarkedText(text: "▼6", cursor: nil)))
+            XCTAssertEqual(events[7], .fixedText("5"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        stateMachine.candidateEvent.collect(4).sink { events in
+            XCTAssertNil(events[0])
+            XCTAssertEqual(events[1]?.selected.word, "4")
+            XCTAssertEqual(events[2]?.selected.word, "5")
+            XCTAssertEqual(events[3]?.selected.word, "6")
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .down, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .down, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "2")))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     func testHandleSelectingUnregister() {
         dictionary.userDictEntries = ["え": [Word("絵")]]
 

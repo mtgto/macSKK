@@ -625,14 +625,26 @@ class StateMachine {
                 updateCandidates(selecting: nil)
                 updateMarkedText()
                 return true
-            } else {
-                // 選択中候補で確定
-                dictionary.add(yomi: selecting.yomi, word: selecting.candidates[selecting.candidateIndex])
-                updateCandidates(selecting: nil)
-                addFixedText(selecting.fixedText())
-                state.inputMethod = .normal
-                return handleNormal(action, specialState: nil)
+            } else if selecting.candidateIndex >= inlineCandidateCount {
+                if let index = Int(input), 1 <= index && index <= 9 {
+                    let diff = index - 1 - (selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount
+                    if selecting.candidateIndex + diff < selecting.candidates.count {
+                        let newSelecting = selecting.addCandidateIndex(diff: diff)
+                        dictionary.add(
+                            yomi: newSelecting.yomi, word: newSelecting.candidates[newSelecting.candidateIndex])
+                        updateCandidates(selecting: nil)
+                        state.inputMethod = .normal
+                        addFixedText(newSelecting.fixedText())
+                        return true
+                    }
+                }
             }
+            // 選択中候補で確定
+            dictionary.add(yomi: selecting.yomi, word: selecting.candidates[selecting.candidateIndex])
+            updateCandidates(selecting: nil)
+            addFixedText(selecting.fixedText())
+            state.inputMethod = .normal
+            return handleNormal(action, specialState: nil)
         case .cancel:
             state.inputMethod = .composing(selecting.prev.composing)
             state.inputMode = selecting.prev.mode
