@@ -18,12 +18,14 @@ class DictTests: XCTestCase {
             cyrillic /а/б/в/г/д/е/ё/ж/з/и/й/к/л/м/н/о/п/р/с/т/у/ф/х/ц/ч/ш/щ/ъ/ы/ь/э/ю/я/
             greek /α/β/γ/δ/ε/ζ/η/θ/ι/κ/λ/μ/ν/ξ/ο/π/ρ/σ/τ/υ/φ/χ/ψ/ω/
             あ /阿/唖/亜/娃/
+            けい /京;10^16/
 
             """
         let dict = try Dict(source: source)
         XCTAssertEqual(dict.entries["あg"]?.map { $0.word }, ["挙", "揚", "上"])
         XCTAssertEqual(dict.entries["あb"]?.map { $0.word }, ["浴"])
         XCTAssertEqual(dict.entries["あ"]?.map { $0.word }, ["阿", "唖", "亜", "娃"])
+        XCTAssertEqual(dict.entries["けい"]?.map { $0.word }, ["京"])
     }
 
     func testParseSpecialSource() throws {

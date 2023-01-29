@@ -35,7 +35,7 @@ struct Dict: DictProtocol {
 
     init(source: String) throws {
         var dict: [String: [Word]] = [:]
-        let pattern = try Regex(#"^(\S+) (/(?:[^/^\n^\r]+/)+)$"#).anchorsMatchLineEndings()
+        let pattern = try Regex(#"^(\S+) (/(?:[^/\n\r]+/)+)$"#).anchorsMatchLineEndings()
         for match in source.matches(of: pattern) {
             guard let word = match.output[1].substring else { continue }
             guard let wordsText = match.output[2].substring else { continue }
