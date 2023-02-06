@@ -22,6 +22,8 @@ struct Romaji: Equatable {
                 return kana.toKatakana()
             case .hankaku:
                 return kana.toKatakana().toHankaku()
+            case .direct:  // Abbrevモード用
+                return firstRomaji
             default:
                 fatalError("Called Romaji.Moji.string from wrong mode \(mode)")
             }

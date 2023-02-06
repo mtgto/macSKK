@@ -219,6 +219,17 @@ class StateMachine {
             case .direct:
                 break
             }
+        } else if input == "/" && !action.shiftIsPressed() {
+            switch state.inputMode {
+            case .hiragana, .katakana, .hankaku:
+                state.inputMode = .direct
+                state.inputMethod = .composing(ComposingState(isShift: true, text: [], okuri: nil, romaji: ""))
+                inputMethodEventSubject.send(.modeChanged(.direct, action.cursorPosition))
+                updateMarkedText()
+                return true
+            case .eisu, .direct:
+                break
+            }
         }
 
         let isAlphabet = input.unicodeScalars.allSatisfy { CharacterSet.letters.contains($0) }
@@ -331,23 +342,33 @@ class StateMachine {
                 return true
             }
         case .stickyShift:
-            if let okuri {
-                // AquaSKKは送り仮名の末尾に"；"をつけて変換処理もしくは単語登録に遷移
-                state.inputMethod = .composing(
-                    ComposingState(
-                        isShift: isShift, text: text, okuri: okuri + [Romaji.symbolTable[";"]!], romaji: ""))
-                updateMarkedText()
+            if case .direct = state.inputMode {
+                return handleComposingPrintable(
+                    input: ";",
+                    converted: Romaji.convert(";"),
+                    action: action,
+                    composing: composing,
+                    specialState: specialState)
             } else {
-                // 空文字列のときは全角；を入力、それ以外のときは送り仮名モードへ
-                if text.isEmpty {
-                    state.inputMethod = .normal
-                    addFixedText("；")
-                } else {
-                    state.inputMethod = .composing(ComposingState(isShift: true, text: text, okuri: [], romaji: romaji))
+                if let okuri {
+                    // AquaSKKは送り仮名の末尾に"；"をつけて変換処理もしくは単語登録に遷移
+                    state.inputMethod = .composing(
+                        ComposingState(
+                            isShift: isShift, text: text, okuri: okuri + [Romaji.symbolTable[";"]!], romaji: ""))
                     updateMarkedText()
+                } else {
+                    // 空文字列のときは全角；を入力、それ以外のときは送り仮名モードへ
+                    if text.isEmpty {
+                        state.inputMethod = .normal
+                        addFixedText("；")
+                    } else {
+                        state.inputMethod = .composing(
+                            ComposingState(isShift: true, text: text, okuri: [], romaji: romaji))
+                        updateMarkedText()
+                    }
                 }
+                return true
             }
-            return true
         case .printable(let input):
             return handleComposingPrintable(
                 input: input,
@@ -373,9 +394,18 @@ class StateMachine {
             return true
         case .ctrlQ:
             if okuri == nil {
-                // 半角カタカナで確定する。
-                state.inputMethod = .normal
-                addFixedText(text.map { $0.string(for: .hankaku) }.joined())
+                if case .direct = state.inputMode {
+                    // 全角英数で確定する
+                    state.inputMethod = .normal
+                    addFixedText(text.map { $0.string(for: .eisu) }.joined())
+                    // TODO: AquaSKKはAbbrevに入る前のモードに戻しているのでそれに合わせる?
+                    state.inputMode = .hiragana
+                    inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
+                } else {
+                    // 半角カタカナで確定する。
+                    state.inputMethod = .normal
+                    addFixedText(text.map { $0.string(for: .hankaku) }.joined())
+                }
                 return true
             } else {
                 // 送り仮名があるときはなにもしない
@@ -547,6 +577,17 @@ class StateMachine {
                 }
                 updateMarkedText()
             }
+            return true
+        case .direct:
+            state.inputMethod = .composing(
+                ComposingState(
+                    isShift: isShift,
+                    text: text + [
+                        Romaji.Moji(firstRomaji: action.shiftIsPressed() ? input.uppercased() : input, kana: "")
+                    ],
+                    okuri: nil,
+                    romaji: ""))
+            updateMarkedText()
             return true
         default:
             fatalError("inputMode=\(state.inputMode), handleComposingで\(input)が入力された")

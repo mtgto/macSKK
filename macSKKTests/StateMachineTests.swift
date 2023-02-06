@@ -285,6 +285,21 @@ final class StateMachineTests: XCTestCase {
         XCTAssertFalse(stateMachine.handle(Action(keyEvent: .right, originalEvent: nil, cursorPosition: .zero)))
     }
 
+    func testHandleNormalAbbrev() {
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(4).sink { events in
+            XCTAssertEqual(events[0], .modeChanged(.direct, .zero))
+            XCTAssertEqual(events[1], .markedText(MarkedText(text: "▽", cursor: nil)))
+            XCTAssertEqual(events[2], .markedText(MarkedText(text: "▽a", cursor: nil)))
+            XCTAssertEqual(events[3], .markedText(MarkedText(text: "▽aA", cursor: nil)))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "/")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     func testHandleComposingNandQ() {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(6).sink { events in
