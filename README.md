@@ -1,6 +1,6 @@
 macSKK
 ====
-macSKKはmacOS用のSKK方式の日本語入力メソッドです。
+macSKKはmacOS用の[SKK](https://ja.wikipedia.org/wiki/SKK)方式の日本語入力メソッドです。
 
 macOS用のSKKにはすでに[AquaSKK](https://github.com/codefirst/aquaskk/)がありますが、いくつかやりたいことがあったため新たに作成しています。
 
@@ -13,11 +13,12 @@ macOS用のSKKにはすでに[AquaSKK](https://github.com/codefirst/aquaskk/)が
 
 TODO
 
-インストーラ形式で配布する予定です。
+Appleのソフトウェア公証を受けたアプリケーションバイナリをpkgインストーラ形式で配布する予定です。
 
 ## 開発
 
 Xcodeでビルドし、 `~/Library/Input Methods` に `macSKK.app` を配置してからキーボード環境設定でひらがななどを追加してください。
+
 辞書は `~/Library/Containers/net.mtgto.inputmethod.macSKK/Data/Documents/Dictionaries` に配置してください。
 ユーザー辞書は `~/Library/Containers/net.mtgto.inputmethod.macSKK/Data/Documents/Dictionaries/skk-jisyo.utf8` にUTF-8形式で保存されます。
 
