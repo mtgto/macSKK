@@ -120,6 +120,20 @@ struct ComposingState: Equatable, CursorProtocol {
         }
     }
 
+    /// 辞書を引く際の読みを返す。
+    /// カーソルがある場合はカーソルより左側の文字列だけを対象にする
+    func yomi(for mode: InputMode) -> String {
+        switch mode {
+        case .direct:  // Abbrev
+            return text.map { $0.firstRomaji }.joined()
+        case .hiragana, .katakana, .hankaku:
+            let newText: [Romaji.Moji] = romaji == "n" ? subText() + [Romaji.n] : subText()
+            return newText.map { $0.string(for: .hiragana) }.joined() + (okuri?.first?.firstRomaji ?? "")
+        case .eisu:
+            fatalError("InputMode \(mode) ではyomi(for: InputMode)は使用できない")
+        }
+    }
+
     // MARK: - CursorProtocol
     func moveCursorLeft() -> Self {
         let newCursor: Int

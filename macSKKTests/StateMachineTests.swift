@@ -100,7 +100,7 @@ final class StateMachineTests: XCTestCase {
 
     func testHandleNormalNoAlphabet() throws {
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(9).sink { events in
+        stateMachine.inputMethodEvent.collect(8).sink { events in
             XCTAssertEqual(events[0], .fixedText(";"))
             XCTAssertEqual(events[1], .fixedText("!"))
             XCTAssertEqual(events[2], .fixedText("@"))
@@ -108,8 +108,7 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[4], .fixedText("、"))
             XCTAssertEqual(events[5], .fixedText("。"))
             XCTAssertEqual(events[6], .fixedText("ー"))
-            XCTAssertEqual(events[7], .fixedText("/"))
-            XCTAssertEqual(events[8], .fixedText("5"))
+            XCTAssertEqual(events[7], .fixedText("5"))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ";")))
@@ -119,7 +118,6 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ",")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ".")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "-")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "/")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "5")))
         wait(for: [expectation], timeout: 1.0)
     }
@@ -745,6 +743,23 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .left, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .backspace, originalEvent: nil, cursorPosition: .zero)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    func testHandleComposingAbbrevSpace() {
+        dictionary.userDictEntries = ["b": [Word("美")]]
+
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(4).sink { events in
+            XCTAssertEqual(events[0], .modeChanged(.direct, .zero))
+            XCTAssertEqual(events[1], .markedText(MarkedText(text: "▽", cursor: nil)))
+            XCTAssertEqual(events[2], .markedText(MarkedText(text: "▽b", cursor: nil)))
+            XCTAssertEqual(events[3], .markedText(MarkedText(text: "▼美", cursor: nil)))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "/")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "b")))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
         wait(for: [expectation], timeout: 1.0)
     }
 

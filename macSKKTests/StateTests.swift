@@ -57,6 +57,24 @@ final class StateTests: XCTestCase {
         XCTAssertEqual(state.subText(), [Romaji.table["a"]!, Romaji.table["i"]!])
     }
 
+    func testComposingStateYomi() {
+        var state = ComposingState(
+            isShift: true,
+            text: [Romaji.table["a"]!, Romaji.table["i"]!],
+            okuri: nil,
+            romaji: "",
+            cursor: nil)
+        XCTAssertEqual(state.yomi(for: .hiragana), "あい")
+        XCTAssertEqual(state.yomi(for: .katakana), "あい")
+        XCTAssertEqual(state.yomi(for: .hankaku), "あい")
+        XCTAssertEqual(state.yomi(for: .direct), "ai")
+        state.cursor = 1
+        XCTAssertEqual(state.yomi(for: .hiragana), "あ")
+        state.okuri = [Romaji.table["u"]!]
+        state.cursor = nil
+        XCTAssertEqual(state.yomi(for: .katakana), "あいu")
+    }
+
     func testSelectingStateFixedText() throws {
         let selectingState = SelectingState(
             prev: SelectingState.PrevState(

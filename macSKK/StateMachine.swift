@@ -303,11 +303,17 @@ class StateMachine {
             updateMarkedText()
             return true
         case .space:
-            let converted = Romaji.convert(romaji + " ")
-            if converted.kakutei != nil {
-                return handleComposingPrintable(
-                    input: " ", converted: converted, action: action, composing: composing, specialState: specialState
-                )
+            if state.inputMode != .direct {
+                let converted = Romaji.convert(romaji + " ")
+                if converted.kakutei != nil {
+                    return handleComposingPrintable(
+                        input: " ",
+                        converted: converted,
+                        action: action,
+                        composing: composing,
+                        specialState: specialState
+                    )
+                }
             }
             if text.isEmpty {
                 addFixedText(" ")
@@ -316,8 +322,7 @@ class StateMachine {
             } else {
                 // 未確定ローマ字はn以外は入力されずに削除される. nだけは"ん"として変換する
                 // 変換候補がないときは辞書登録へ
-                let newText: [Romaji.Moji] = romaji == "n" ? composing.subText() + [Romaji.n] : composing.subText()
-                let yomiText = newText.map { $0.string(for: .hiragana) }.joined() + (okuri?.first?.firstRomaji ?? "")
+                let yomiText = composing.yomi(for: state.inputMode)
                 let candidates = dictionary.refer(yomiText)
                 if candidates.isEmpty {
                     if specialState != nil {
