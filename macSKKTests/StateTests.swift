@@ -10,11 +10,11 @@ final class StateTests: XCTestCase {
         var state = ComposingState(
             isShift: true, text: ["あ", "い"], okuri: nil, romaji: "", cursor: nil)
         state = state.appendText(Romaji.table["u"]!)
-        XCTAssertEqual(state.string(for: .hiragana), "あいう")
+        XCTAssertEqual(state.string(for: .hiragana, convertHatsuon: false), "あいう")
         state = state.moveCursorLeft()
         XCTAssertEqual(state.cursor, 2)
         state = state.appendText(Romaji.table["e"]!)
-        XCTAssertEqual(state.string(for: .hiragana), "あいえう")
+        XCTAssertEqual(state.string(for: .hiragana, convertHatsuon: false), "あいえう")
         XCTAssertEqual(state.cursor, 3)
         state = state.moveCursorRight()
         XCTAssertNil(state.cursor, "末尾まで移動したらカーソルはnilになる")

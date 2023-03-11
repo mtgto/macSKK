@@ -55,7 +55,7 @@ protocol SpecialStateProtocol: CursorProtocol {
 struct ComposingState: Equatable, CursorProtocol {
     /// (Sticky)Shiftによる未確定入力中かどうか。先頭に▽ついてる状態。
     var isShift: Bool
-    /// かな/カナならかなになっている文字列、abbrevなら入力した文字列. (Sticky)Shiftが押されたらそのあとは更新されない
+    /// かな/カナならかなになっているひらがなの文字列、abbrevなら入力した文字列.
     var text: [String]
     /// (Sticky)Shiftが押されたあとに入力されてかなになっている文字列。送り仮名モードになってなければnil
     var okuri: [Romaji.Moji]?
@@ -64,8 +64,10 @@ struct ComposingState: Equatable, CursorProtocol {
     /// カーソル位置。末尾のときはnil。先頭の▽分は含まないので非nilのときは[0, text.count)の範囲を取る。
     var cursor: Int?
 
-    func string(for mode: InputMode) -> String {
-        let newText: String = romaji == "n" ? text.joined() + Romaji.n.kana : text.joined()
+    /// text部分を指定の入力モードに合わせて文字列に変換する
+    /// - Parameter: convertHatsuon 入力未確定の送り仮名の一文字目がnだったら撥音「ん」としてあつかうかどうか
+    func string(for mode: InputMode, convertHatsuon: Bool) -> String {
+        let newText: String = convertHatsuon && romaji == "n" ? text.joined() + Romaji.n.kana : text.joined()
         switch mode {
         case .hiragana, .direct:
             return newText
@@ -73,19 +75,6 @@ struct ComposingState: Equatable, CursorProtocol {
             return newText.toKatakana()
         case .hankaku:
             return newText.toKatakana().toHankaku()
-        default:
-            fatalError("Called ComposingState#string from wrong mode \(mode)")
-        }
-    }
-
-    func displayText(for mode: InputMode) -> String {
-        switch mode {
-        case .hiragana, .direct:
-            return text.joined()
-        case .katakana:
-            return text.joined().toKatakana()
-        case .hankaku:
-            return text.joined().toKatakana().toHankaku()
         default:
             fatalError("Called ComposingState#string from wrong mode \(mode)")
         }
@@ -409,7 +398,7 @@ struct IMEState {
         case .normal:
             markedText += registerTextSuffix
         case .composing(let composing):
-            let displayText = composing.displayText(for: inputMode)
+            let displayText = composing.string(for: inputMode, convertHatsuon: false)
             let composingText: String
             if let okuri = composing.okuri {
                 composingText =

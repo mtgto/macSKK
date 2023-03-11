@@ -290,7 +290,7 @@ class StateMachine {
         switch action.keyEvent {
         case .enter:
             // 未確定ローマ字はn以外は入力されずに削除される. nだけは"ん"として変換する
-            let fixedText = composing.string(for: state.inputMode)
+            let fixedText = composing.string(for: state.inputMode, convertHatsuon: true)
             state.inputMethod = .normal
             addFixedText(fixedText)
             return true
@@ -383,7 +383,7 @@ class StateMachine {
                 specialState: specialState)
         case .ctrlJ:
             // 入力中文字列を確定させてひらがなモードにする
-            addFixedText(composing.string(for: state.inputMode))
+            addFixedText(composing.string(for: state.inputMode, convertHatsuon: true))
             state.inputMethod = .normal
             state.inputMode = .hiragana
             inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
@@ -409,7 +409,7 @@ class StateMachine {
                 } else {
                     // 半角カタカナで確定する。
                     state.inputMethod = .normal
-                    addFixedText(composing.displayText(for: .hankaku))
+                    addFixedText(composing.string(for: .hankaku, convertHatsuon: false))
                 }
                 return true
             } else {
@@ -486,7 +486,7 @@ class StateMachine {
                 switch state.inputMode {
                 case .hiragana, .katakana, .hankaku:
                     state.inputMethod = .normal
-                    addFixedText(composing.string(for: state.inputMode))
+                    addFixedText(composing.string(for: state.inputMode, convertHatsuon: true))
                 default:
                     fatalError("inputMode=\(state.inputMode), handleComposingでlが入力された")
                 }
