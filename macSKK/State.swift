@@ -56,7 +56,7 @@ struct ComposingState: Equatable, CursorProtocol {
     /// (Sticky)Shiftによる未確定入力中かどうか。先頭に▽ついてる状態。
     var isShift: Bool
     /// かな/カナならかなになっている文字列、abbrevなら入力した文字列. (Sticky)Shiftが押されたらそのあとは更新されない
-    var text: [Romaji.Moji]
+    var text: [String]
     /// (Sticky)Shiftが押されたあとに入力されてかなになっている文字列。送り仮名モードになってなければnil
     var okuri: [Romaji.Moji]?
     /// ローマ字モードで未確定部分。"k" や "ky" など最低あと1文字でかなに変換できる文字列。
@@ -65,19 +65,42 @@ struct ComposingState: Equatable, CursorProtocol {
     var cursor: Int?
 
     func string(for mode: InputMode) -> String {
-        let newText: [Romaji.Moji] = romaji == "n" ? text + [Romaji.n] : text
-        return newText.map { $0.string(for: mode) }.joined()
+        let newText: String = romaji == "n" ? text.joined() + Romaji.n.kana : text.joined()
+        switch mode {
+        case .hiragana, .direct:
+            return newText
+        case .katakana:
+            return newText.toKatakana()
+        case .hankaku:
+            return newText.toKatakana().toHankaku()
+        default:
+            fatalError("Called ComposingState#string from wrong mode \(mode)")
+        }
+    }
+
+    func displayText(for mode: InputMode) -> String {
+        switch mode {
+        case .hiragana, .direct:
+            return text.joined()
+        case .katakana:
+            return text.joined().toKatakana()
+        case .hankaku:
+            return text.joined().toKatakana().toHankaku()
+        default:
+            fatalError("Called ComposingState#string from wrong mode \(mode)")
+        }
     }
 
     /// text部に文字を追加する
     func appendText(_ moji: Romaji.Moji) -> ComposingState {
-        let newText: [Romaji.Moji]
+        let newText: [String]
         let newCursor: Int?
         if let cursor {
-            newText = text[0..<cursor] + [moji] + text[cursor...]
+            let mojiText: [String] = moji.kana.map { String($0) }
+            newText = text[0..<cursor] + mojiText + text[cursor...]
             newCursor = cursor + 1
         } else {
-            newText = text + [moji]
+            newText = text + moji.kana.map({ String($0) })
             newCursor = nil
         }
         return ComposingState(isShift: isShift, text: newText, okuri: okuri, romaji: romaji, cursor: newCursor)
@@ -112,7 +135,7 @@ struct ComposingState: Equatable, CursorProtocol {
     }
 
     /// カーソルより左のtext部分を返す。
-    func subText() -> [Romaji.Moji] {
+    func subText() -> [String] {
         if let cursor {
             return Array(text[0..<cursor])
         } else {
@@ -125,10 +148,10 @@ struct ComposingState: Equatable, CursorProtocol {
     func yomi(for mode: InputMode) -> String {
         switch mode {
         case .direct:  // Abbrev
-            return text.map { $0.firstRomaji }.joined()
+            return text.joined()
         case .hiragana, .katakana, .hankaku:
-            let newText: [Romaji.Moji] = romaji == "n" ? subText() + [Romaji.n] : subText()
-            return newText.map { $0.string(for: .hiragana) }.joined() + (okuri?.first?.firstRomaji ?? "")
+            let newText: [String] = romaji == "n" ? subText() + ["ん"] : subText()
+            return newText.joined() + (okuri?.first?.firstRomaji ?? "")
         case .eisu:
             fatalError("InputMode \(mode) ではyomi(for: InputMode)は使用できない")
         }
@@ -358,7 +381,7 @@ struct IMEState {
             case .register(let registerState):
                 let mode = registerState.prev.0
                 let composing = registerState.prev.1
-                var yomi = composing.text.map { $0.string(for: mode) }.joined()
+                var yomi = composing.text.joined()
                 if let okuri = composing.okuri {
                     yomi += "*" + okuri.map { $0.string(for: mode) }.joined()
                 }
@@ -386,7 +409,7 @@ struct IMEState {
         case .normal:
             markedText += registerTextSuffix
         case .composing(let composing):
-            let displayText = composing.text.map { $0.string(for: inputMode) }.joined()
+            let displayText = composing.displayText(for: inputMode)
             let composingText: String
             if let okuri = composing.okuri {
                 composingText =

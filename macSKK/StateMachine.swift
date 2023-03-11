@@ -240,7 +240,7 @@ class StateMachine {
                 if let moji = result.kakutei {
                     if action.shiftIsPressed() {
                         state.inputMethod = .composing(
-                            ComposingState(isShift: true, text: [moji], romaji: result.input))
+                            ComposingState(isShift: true, text: moji.kana.map { String($0) }, romaji: result.input))
                         updateMarkedText()
                     } else {
                         addFixedText(moji.string(for: state.inputMode))
@@ -402,14 +402,14 @@ class StateMachine {
                 if case .direct = state.inputMode {
                     // 全角英数で確定する
                     state.inputMethod = .normal
-                    addFixedText(text.map { $0.string(for: .eisu) }.joined())
+                    addFixedText(text.map { $0.toZenkaku() }.joined())
                     // TODO: AquaSKKはAbbrevに入る前のモードに戻しているのでそれに合わせる?
                     state.inputMode = .hiragana
                     inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
                 } else {
                     // 半角カタカナで確定する。
                     state.inputMethod = .normal
-                    addFixedText(text.map { $0.string(for: .hankaku) }.joined())
+                    addFixedText(composing.displayText(for: .hankaku))
                 }
                 return true
             } else {
@@ -453,9 +453,9 @@ class StateMachine {
                     state.inputMethod = .composing(ComposingState(isShift: true, text: [], okuri: nil, romaji: ""))
                     switch state.inputMode {
                     case .hiragana:
-                        addFixedText(text.map { $0.string(for: .hiragana) }.joined())
+                        addFixedText(text.joined())
                     case .katakana, .hankaku:
-                        addFixedText(text.map { $0.string(for: .katakana) }.joined())
+                        addFixedText(text.map { $0.toKatakana() }.joined())
                     default:
                         fatalError("inputMode=\(state.inputMode), handleComposingでShift-Qが入力された")
                     }
@@ -463,14 +463,13 @@ class StateMachine {
                 }
                 // ひらがな入力中ならカタカナ、カタカナ入力中ならひらがな、半角カタカナ入力中なら全角カタカナで確定する。
                 // 未確定ローマ字はn以外は入力されずに削除される. nだけは"ん"が入力されているとする
-                let newText: [Romaji.Moji] =
-                    composing.romaji == "n" ? composing.subText() + [Romaji.n] : composing.subText()
+                let newText: [String] = composing.romaji == "n" ? composing.subText() + ["ん"] : composing.subText()
                 state.inputMethod = .normal
                 switch state.inputMode {
                 case .hiragana, .hankaku:
-                    addFixedText(newText.map { $0.string(for: .katakana) }.joined())
+                    addFixedText(newText.map { $0.toKatakana() }.joined())
                 case .katakana:
-                    addFixedText(newText.map { $0.string(for: .hiragana) }.joined())
+                    addFixedText(newText.joined())
                 default:
                     fatalError("inputMode=\(state.inputMode), handleComposingでqが入力された")
                 }
@@ -487,7 +486,7 @@ class StateMachine {
                 switch state.inputMode {
                 case .hiragana, .katakana, .hankaku:
                     state.inputMethod = .normal
-                    addFixedText(text.map { $0.string(for: state.inputMode) }.joined())
+                    addFixedText(composing.string(for: state.inputMode))
                 default:
                     fatalError("inputMode=\(state.inputMode), handleComposingでlが入力された")
                 }
@@ -517,10 +516,8 @@ class StateMachine {
                         // 送り仮名が1文字以上確定した時点で変換を開始する
                         // 変換候補がないときは辞書登録へ
                         // カーソル位置がnilじゃないときはその前までで変換を試みる
-                        let subText: [Romaji.Moji] = composing.subText()
-                        let yomiText =
-                            subText.map { $0.string(for: .hiragana) }.joined()
-                            + (okuri?.first?.firstRomaji ?? moji.firstRomaji)
+                        let subText: [String] = composing.subText()
+                        let yomiText = subText.joined() + (okuri?.first?.firstRomaji ?? moji.firstRomaji)
                         let newComposing = ComposingState(
                             isShift: true, text: subText, okuri: (okuri ?? []) + [moji], romaji: "")
                         let candidates = dictionary.refer(yomiText)
@@ -561,7 +558,7 @@ class StateMachine {
                             state.inputMethod = .composing(
                                 ComposingState(
                                     isShift: true,
-                                    text: text + [moji],
+                                    text: text + [moji.kana],
                                     okuri: action.shiftIsPressed() ? [] : nil,
                                     romaji: converted.input))
                         }
@@ -587,9 +584,7 @@ class StateMachine {
             state.inputMethod = .composing(
                 ComposingState(
                     isShift: isShift,
-                    text: text + [
-                        Romaji.Moji(firstRomaji: action.shiftIsPressed() ? input.uppercased() : input, kana: "")
-                    ],
+                    text: text + [action.shiftIsPressed() ? input.uppercased() : input],
                     okuri: nil,
                     romaji: ""))
             updateMarkedText()
