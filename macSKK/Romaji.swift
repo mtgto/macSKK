@@ -285,7 +285,7 @@ struct Romaji: Equatable {
             return ConvertedMoji(input: "", kakutei: symbol)
         } else if let symbol = specialSymbolTable[input] {
             return ConvertedMoji(input: "", kakutei: symbol)
-        } else if ["nk", "ns", "nt", "nc", "nt", "nh", "nm", "nr", "nw", "ng", "nz", "nj", "nd", "nb", "np"].contains(
+        } else if ["nk", "ns", "nt", "nc", "nt", "nh", "nm", "nr", "nw", "ng", "nz", "nj", "nd", "nb", "np", "nf"].contains(
             where: { input.hasPrefix($0) })
         {
             return ConvertedMoji(input: String(input.dropFirst()), kakutei: Romaji.n)

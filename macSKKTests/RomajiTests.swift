@@ -25,5 +25,6 @@ class RomajiTests: XCTestCase {
         XCTAssertEqual(
             Romaji.convert("tsh"), Romaji.ConvertedMoji(input: "h", kakutei: nil),
             "続けられない子音が連続した場合は最後の子音だけ残る (shじゃなくてhだけ残す)")
+        XCTAssertEqual(Romaji.convert("nf"), Romaji.ConvertedMoji(input: "f", kakutei: Romaji.n))
     }
 }
