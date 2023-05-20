@@ -2,7 +2,7 @@ macSKK
 ====
 macSKKはmacOS用の[SKK](https://ja.wikipedia.org/wiki/SKK)方式の日本語入力メソッドです。
 
-macOS用のSKKにはすでに[AquaSKK](https://github.com/codefirst/aquaskk/)がありますが、いくつかやりたいことがあったため新たに作成しています。
+macOS用のSKK方式の日本語入力メソッドにはすでに[AquaSKK](https://github.com/codefirst/aquaskk/)がありますが、いくつかやりたいことがあったため新たに作成しています。
 
 ## 特徴
 
