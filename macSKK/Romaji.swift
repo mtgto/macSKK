@@ -204,7 +204,7 @@ struct Romaji: Equatable {
         "we": Moji(firstRomaji: "", kana: "うぇ"),
         "va": Moji(firstRomaji: "", kana: "う゛ぁ"),
         "vi": Moji(firstRomaji: "", kana: "う゛ぃ"),
-        "vu": Moji(firstRomaji: "", kana: "う゛ぅ"),
+        "vu": Moji(firstRomaji: "", kana: "う゛"),
         "ve": Moji(firstRomaji: "", kana: "う゛ぇ"),
         "vo": Moji(firstRomaji: "", kana: "う゛ぉ"),
         "vyu": Moji(firstRomaji: "", kana: "う゛ゅ"),
@@ -285,8 +285,9 @@ struct Romaji: Equatable {
             return ConvertedMoji(input: "", kakutei: symbol)
         } else if let symbol = specialSymbolTable[input] {
             return ConvertedMoji(input: "", kakutei: symbol)
-        } else if ["nk", "ns", "nt", "nc", "nt", "nh", "nm", "nr", "nw", "ng", "nz", "nj", "nd", "nb", "np", "nf"].contains(
-            where: { input.hasPrefix($0) })
+        } else if ["nk", "ns", "nt", "nc", "nt", "nh", "nm", "nr", "nw", "ng", "nz", "nj", "nd", "nb", "np", "nf"]
+            .contains(
+                where: { input.hasPrefix($0) })
         {
             return ConvertedMoji(input: String(input.dropFirst()), kakutei: Romaji.n)
         } else if array.contains(input) {

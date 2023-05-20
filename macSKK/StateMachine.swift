@@ -467,7 +467,7 @@ class StateMachine {
                 state.inputMethod = .normal
                 switch state.inputMode {
                 case .hiragana, .hankaku:
-                    addFixedText(newText.map { $0.toKatakana() }.joined())
+                    addFixedText(newText.joined().toKatakana())
                 case .katakana:
                     addFixedText(newText.joined())
                 default:
