@@ -170,6 +170,10 @@ class InputController: IMKInputController {
                     return .up
                 case "n":
                     return .down
+                case "a":
+                    return .ctrlA
+                case "e":
+                    return .ctrlE
                 default:
                     break
                 }

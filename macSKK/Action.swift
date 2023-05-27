@@ -40,6 +40,10 @@ struct Action {
         case up
         /// 下矢印キー or Ctrl-N
         case down
+        /// Ctrl-A
+        case ctrlA
+        /// Ctrl-E
+        case ctrlE
     }
 
     func shiftIsPressed() -> Bool {

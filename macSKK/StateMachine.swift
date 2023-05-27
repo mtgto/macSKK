@@ -181,6 +181,22 @@ class StateMachine {
             } else {
                 return false
             }
+        case .ctrlA:
+            if let specialState = state.specialState {
+                state.specialState = specialState.moveCursorFirst()
+                updateMarkedText()
+                return true
+            } else {
+                return false
+            }
+        case .ctrlE:
+            if let specialState = state.specialState {
+                state.specialState = specialState.moveCursorLast()
+                updateMarkedText()
+                return true
+            } else {
+                return false
+            }
         case .down, .up:
             return false
         }
@@ -428,6 +444,23 @@ class StateMachine {
         case .right:
             if romaji.isEmpty {
                 state.inputMethod = .composing(composing.moveCursorRight())
+            } else {
+                state.inputMethod = .composing(ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: ""))
+            }
+            updateMarkedText()
+            return true
+        case .ctrlA:
+            if romaji.isEmpty {
+                state.inputMethod = .composing(composing.moveCursorFirst())
+            } else {
+                // 未確定ローマ字があるときはローマ字を消す (AquaSKKと同じ)
+                state.inputMethod = .composing(ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: ""))
+            }
+            updateMarkedText()
+            return true
+        case .ctrlE:
+            if romaji.isEmpty {
+                state.inputMethod = .composing(composing.moveCursorLast())
             } else {
                 state.inputMethod = .composing(ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: ""))
             }
@@ -695,6 +728,10 @@ class StateMachine {
         case .left, .right:
             // AquaSKKと同様に何もしない (IMKCandidates表示時はそちらの移動に使われる)
             return true
+        case .ctrlA:
+            return false
+        case .ctrlE:
+            return false
         }
     }
 

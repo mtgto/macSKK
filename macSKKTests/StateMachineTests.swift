@@ -283,6 +283,11 @@ final class StateMachineTests: XCTestCase {
         XCTAssertFalse(stateMachine.handle(Action(keyEvent: .right, originalEvent: nil, cursorPosition: .zero)))
     }
 
+    func testHandleNormalCtrlACtrlE() {
+        XCTAssertFalse(stateMachine.handle(Action(keyEvent: .ctrlA, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertFalse(stateMachine.handle(Action(keyEvent: .ctrlE, originalEvent: nil, cursorPosition: .zero)))
+    }
+
     func testHandleNormalAbbrev() {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
@@ -767,6 +772,32 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .right, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "k", withShift: true)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    func testHandleComposingCtrlACtrlE() {
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(9).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText(text: "▽", cursor: nil)))
+            XCTAssertEqual(events[1], .markedText(MarkedText(text: "▽", cursor: nil)))
+            XCTAssertEqual(events[2], .markedText(MarkedText(text: "▽", cursor: nil)))
+            XCTAssertEqual(events[3], .markedText(MarkedText(text: "▽あ", cursor: nil)))
+            XCTAssertEqual(events[4], .markedText(MarkedText(text: "▽あい", cursor: nil)))
+            XCTAssertEqual(events[5], .markedText(MarkedText(text: "▽あい", cursor: 1)))
+            XCTAssertEqual(events[6], .markedText(MarkedText(text: "▽うあい", cursor: 2)))
+            XCTAssertEqual(events[7], .markedText(MarkedText(text: "▽うあい", cursor: nil)))
+            XCTAssertEqual(events[8], .markedText(MarkedText(text: "▽うあいえ", cursor: nil)))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .ctrlA, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .ctrlE, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .ctrlA, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u")))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .ctrlE, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e")))
         wait(for: [expectation], timeout: 1.0)
     }
 

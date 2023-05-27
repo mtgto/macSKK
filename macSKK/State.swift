@@ -44,6 +44,8 @@ enum InputMethodState: Equatable {
 protocol CursorProtocol {
     func moveCursorLeft() -> Self
     func moveCursorRight() -> Self
+    func moveCursorFirst() -> Self
+    func moveCursorLast() -> Self
 }
 
 protocol SpecialStateProtocol: CursorProtocol {
@@ -179,6 +181,26 @@ struct ComposingState: Equatable, CursorProtocol {
             return self
         }
     }
+
+    func moveCursorFirst() -> ComposingState {
+        if text.isEmpty {
+            return self
+        } else if isShift {
+            return ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: romaji, cursor: 0)
+        } else {
+            return self
+        }
+    }
+
+    func moveCursorLast() -> ComposingState {
+        if text.isEmpty {
+            return self
+        } else if isShift {
+            return ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: romaji, cursor: nil)
+        } else {
+            return self
+        }
+    }
 }
 
 /// 変換候補選択状態
@@ -273,6 +295,22 @@ struct RegisterState: SpecialStateProtocol {
             return self
         }
     }
+
+    func moveCursorFirst() -> Self {
+        if text.isEmpty {
+            return self
+        } else {
+            return RegisterState(prev: prev, yomi: yomi, text: text, cursor: 0)
+        }
+    }
+
+    func moveCursorLast() -> Self {
+        if text.isEmpty {
+            return self
+        } else {
+            return RegisterState(prev: prev, yomi: yomi, text: text, cursor: nil)
+        }
+    }
 }
 
 /// 辞書登録解除するかどうか判定状態
@@ -290,6 +328,7 @@ struct UnregisterState: SpecialStateProtocol {
         return UnregisterState(prev: prev, text: String(text.dropLast(1)))
     }
 
+    // MARK: - CursorProtocol
     func moveCursorLeft() -> Self {
         return self
     }
@@ -297,11 +336,21 @@ struct UnregisterState: SpecialStateProtocol {
     func moveCursorRight() -> Self {
         return self
     }
+
+    func moveCursorFirst() -> Self {
+        return self
+    }
+
+    func moveCursorLast() -> Self {
+        return self
+    }
 }
 
 /// 入力中に遷移する特別なモード
 enum SpecialState: SpecialStateProtocol {
+    /// 単語登録
     case register(RegisterState)
+    /// 単語登録解除
     case unregister(UnregisterState)
 
     func appendText(_ text: String) -> Self {
@@ -322,6 +371,7 @@ enum SpecialState: SpecialStateProtocol {
         }
     }
 
+    // MARK: - CursorProtocol
     func moveCursorLeft() -> Self {
         switch self {
         case .register(let registerState):
@@ -337,6 +387,24 @@ enum SpecialState: SpecialStateProtocol {
             return .register(registerState.moveCursorRight())
         case .unregister(let unregisterState):
             return .unregister(unregisterState.moveCursorRight())
+        }
+    }
+
+    func moveCursorFirst() -> SpecialState {
+        switch self {
+        case .register(let registerState):
+            return .register(registerState.moveCursorFirst())
+        case .unregister(let unregisterState):
+            return .unregister(unregisterState.moveCursorFirst())
+        }
+    }
+
+    func moveCursorLast() -> SpecialState {
+        switch self {
+        case .register(let registerState):
+            return .register(registerState.moveCursorLast())
+        case .unregister(let unregisterState):
+            return .unregister(unregisterState.moveCursorLast())
         }
     }
 }

@@ -81,6 +81,30 @@ final class StateTests: XCTestCase {
         XCTAssertEqual(state.yomi(for: .katakana), "あいu")
     }
 
+    func testComposingStateMoveCorsorEmptyText() {
+        var state = ComposingState(isShift: true, text: [], okuri: nil, romaji: "", cursor: nil)
+        state = state.moveCursorLeft()
+        XCTAssertNil(state.cursor)
+        state = state.moveCursorRight()
+        XCTAssertNil(state.cursor)
+        state = state.moveCursorFirst()
+        XCTAssertNil(state.cursor)
+        state = state.moveCursorLast()
+        XCTAssertNil(state.cursor)
+    }
+
+    func testComposingStateMoveCorsor() {
+        var state = ComposingState(isShift: true, text: ["あ", "い"], okuri: nil, romaji: "", cursor: nil)
+        state = state.moveCursorLeft()
+        XCTAssertEqual(state.cursor, 1)
+        state = state.moveCursorRight()
+        XCTAssertNil(state.cursor)
+        state = state.moveCursorFirst()
+        XCTAssertEqual(state.cursor, 0)
+        state = state.moveCursorLast()
+        XCTAssertNil(state.cursor)
+    }
+
     func testSelectingStateFixedText() throws {
         let selectingState = SelectingState(
             prev: SelectingState.PrevState(
