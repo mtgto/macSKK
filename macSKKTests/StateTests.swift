@@ -139,7 +139,8 @@ final class StateTests: XCTestCase {
 
     func testRegisterStateAppendText() throws {
         var state = RegisterState(
-            prev: (.hiragana, ComposingState(isShift: true, text: ["あ"], okuri: nil, romaji: "")),
+            prev: RegisterState.PrevState(
+                mode: .hiragana, composing: ComposingState(isShift: true, text: ["あ"], okuri: nil, romaji: "")),
             yomi: "あ", text: "")
         state = state.appendText("あ")
         XCTAssertEqual(state.appendText("い").text, "あい")
@@ -152,7 +153,8 @@ final class StateTests: XCTestCase {
 
     func testRegisterStateDropLast() throws {
         var state = RegisterState(
-            prev: (.hiragana, ComposingState(isShift: true, text: ["あ"], okuri: nil, romaji: "")),
+            prev: RegisterState.PrevState(
+                mode: .hiragana, composing: ComposingState(isShift: true, text: ["あ"], okuri: nil, romaji: "")),
             yomi: "あ", text: "あいう", cursor: nil)
         state = state.dropLast()
         XCTAssertEqual(state.text, "あい")
@@ -177,7 +179,8 @@ final class StateTests: XCTestCase {
             candidateIndex: 0,
             cursorPosition: .zero
         )
-        var state = UnregisterState(prev: (.hiragana, prevSelectingState), text: "")
+        var state = UnregisterState(
+            prev: UnregisterState.PrevState(mode: .hiragana, selecting: prevSelectingState), text: "")
         state = state.appendText("y")
         XCTAssertEqual(state.text, "y")
         state = state.appendText("e").moveCursorLeft().dropLast()

@@ -69,28 +69,29 @@ class StateMachine {
             if let specialState {
                 if case .register(let registerState) = specialState {
                     if registerState.text.isEmpty {
-                        state.inputMode = registerState.prev.0
-                        state.inputMethod = .composing(registerState.prev.1)
+                        state.inputMode = registerState.prev.mode
+                        state.inputMethod = .composing(registerState.prev.composing)
                         state.specialState = nil
                         updateMarkedText()
                     } else {
                         dictionary.add(yomi: registerState.yomi, word: Word(registerState.text))
                         state.specialState = nil
-                        state.inputMode = registerState.prev.0
+                        state.inputMode = registerState.prev.mode
                         addFixedText(registerState.text)
                     }
                     return true
                 } else if case .unregister(let unregisterState) = specialState {
                     if unregisterState.text == "yes" {
-                        let word = unregisterState.prev.1.candidates[unregisterState.prev.1.candidateIndex]
-                        _ = dictionary.delete(yomi: unregisterState.prev.1.yomi, word: word)
-                        state.inputMode = unregisterState.prev.0
+                        let word = unregisterState.prev.selecting.candidates[
+                            unregisterState.prev.selecting.candidateIndex]
+                        _ = dictionary.delete(yomi: unregisterState.prev.selecting.yomi, word: word)
+                        state.inputMode = unregisterState.prev.mode
                         state.inputMethod = .normal
                         state.specialState = nil
                         updateMarkedText()
                     } else {
-                        state.inputMode = unregisterState.prev.0
-                        state.inputMethod = .selecting(unregisterState.prev.1)
+                        state.inputMode = unregisterState.prev.mode
+                        state.inputMethod = .selecting(unregisterState.prev.selecting)
                         state.specialState = nil
                         updateMarkedText()
                     }
@@ -140,11 +141,11 @@ class StateMachine {
             if let specialState = state.specialState {
                 switch specialState {
                 case .register(let registerState):
-                    state.inputMode = registerState.prev.0
-                    state.inputMethod = .composing(registerState.prev.1)
+                    state.inputMode = registerState.prev.mode
+                    state.inputMethod = .composing(registerState.prev.composing)
                 case .unregister(let unregisterState):
-                    state.inputMode = unregisterState.prev.0
-                    state.inputMethod = .selecting(unregisterState.prev.1)
+                    state.inputMode = unregisterState.prev.mode
+                    state.inputMethod = .selecting(unregisterState.prev.selecting)
                 }
                 state.specialState = nil
                 updateMarkedText()
@@ -347,7 +348,9 @@ class StateMachine {
                     } else {
                         // 単語登録に遷移する
                         state.specialState = .register(
-                            RegisterState(prev: (state.inputMode, composing), yomi: yomiText))
+                            RegisterState(
+                                prev: RegisterState.PrevState(mode: state.inputMode, composing: composing),
+                                yomi: yomiText))
                         state.inputMethod = .normal
                         state.inputMode = .hiragana
                         inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
@@ -562,7 +565,7 @@ class StateMachine {
                                 // 単語登録に遷移する
                                 state.specialState = .register(
                                     RegisterState(
-                                        prev: (state.inputMode, newComposing),
+                                        prev: RegisterState.PrevState(mode: state.inputMode, composing: newComposing),
                                         yomi: yomiText
                                     ))
                                 state.inputMethod = .normal
@@ -674,7 +677,9 @@ class StateMachine {
                 } else {
                     state.specialState = .register(
                         RegisterState(
-                            prev: (selecting.prev.mode, selecting.prev.composing),
+                            prev: RegisterState.PrevState(
+                                mode: selecting.prev.mode,
+                                composing: selecting.prev.composing),
                             yomi: selecting.yomi))
                     state.inputMethod = .normal
                     state.inputMode = .hiragana
@@ -693,7 +698,8 @@ class StateMachine {
             return handleNormal(action, specialState: nil)
         case .printable(let input):
             if input == "x" && action.shiftIsPressed() {
-                state.specialState = .unregister(UnregisterState(prev: (state.inputMode, selecting)))
+                state.specialState = .unregister(
+                    UnregisterState(prev: UnregisterState.PrevState(mode: state.inputMode, selecting: selecting)))
                 state.inputMethod = .normal
                 state.inputMode = .direct
                 updateCandidates(selecting: nil)

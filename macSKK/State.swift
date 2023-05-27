@@ -239,8 +239,12 @@ struct SelectingState: Equatable {
 
 /// 辞書登録状態
 struct RegisterState: SpecialStateProtocol {
+    struct PrevState: Equatable {
+        let mode: InputMode
+        let composing: ComposingState
+    }
     /// 辞書登録状態に遷移する前の状態。
-    let prev: (InputMode, ComposingState)
+    let prev: PrevState
     /// 辞書登録する際の読み。ひらがなのみ、もしくは `ひらがな + アルファベット` もしくは `":" + アルファベット` (abbrev) のパターンがある
     let yomi: String
     /// 入力中の登録単語。変換中のように未確定の文字列は含まず確定済文字列のみが入る
@@ -315,8 +319,12 @@ struct RegisterState: SpecialStateProtocol {
 
 /// 辞書登録解除するかどうか判定状態
 struct UnregisterState: SpecialStateProtocol {
+    struct PrevState {
+        let mode: InputMode
+        let selecting: SelectingState
+    }
     /// 辞書登録解除状態に遷移する前の状態。
-    let prev: (InputMode, SelectingState)
+    let prev: PrevState
     /// 入力中の単語。変換中にはならず確定済文字列のみが入る
     var text: String = ""
 
@@ -436,8 +444,8 @@ struct IMEState {
         if let specialState {
             switch specialState {
             case .register(let registerState):
-                let mode = registerState.prev.0
-                let composing = registerState.prev.1
+                let mode = registerState.prev.mode
+                let composing = registerState.prev.composing
                 var yomi = composing.text.joined()
                 if let okuri = composing.okuri {
                     yomi += "*" + okuri.map { $0.string(for: mode) }.joined()
@@ -456,7 +464,7 @@ struct IMEState {
                     markedText += registerState.text
                 }
             case .unregister(let unregisterState):
-                let selectingState = unregisterState.prev.1
+                let selectingState = unregisterState.prev.selecting
                 markedText =
                     "\(selectingState.yomi) /\(selectingState.candidates[selectingState.candidateIndex].word)/ を削除します(yes/no)"
                 markedText += unregisterState.text
