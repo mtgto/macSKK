@@ -343,7 +343,8 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleComposingContainNumber() {
+    func testHandleComposingContainNumber() throws {
+        throw XCTSkip("日本語変換中は数字を入力できないようにしているため以下のテストはスキップ")
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText(text: "▽あ", cursor: nil)))
