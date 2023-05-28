@@ -605,7 +605,7 @@ class StateMachine {
                     }
                 }
                 updateMarkedText()
-            } else {  // result.kakutei == nil
+            } else {  // converted.kakutei == nil
                 if !text.isEmpty && okuri == nil && action.shiftIsPressed() {
                     state.inputMethod = .composing(
                         ComposingState(isShift: isShift, text: text, okuri: [], romaji: converted.input))
