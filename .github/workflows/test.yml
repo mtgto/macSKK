@@ -1,0 +1,21 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: macos-13
+    steps:
+    - uses: actions/checkout@v3
+    - name: test
+      run: |
+        set -o pipefail && \
+        xcodebuild -target macSKKTests -scheme macSKK test | xcpretty --report html
+    - uses: actions/upload-artifact@v3
+      with:
+        name: test-results
+        path: ./build/reports
