@@ -62,6 +62,7 @@ struct macSKKApp: App {
         do {
             dict = try Dict(contentsOf: url, encoding: .japaneseEUC)
         } catch {
+            // TODO: NotificationCenter経由でユーザーにエラー理由を通知する
             logger.error("Error while loading SKK-JISYO.L")
             return
         }
@@ -69,6 +70,7 @@ struct macSKKApp: App {
             dictionary = try UserDict(dicts: [dict])
             logger.info("Load \(dict.entries.count) entries")
         } catch {
+            // TODO: NotificationCenter経由でユーザーにエラー理由を通知する
             logger.error("Error while loading userDictionary: \(error)")
         }
     }
