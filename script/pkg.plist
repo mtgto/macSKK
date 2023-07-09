@@ -12,7 +12,7 @@
 		<key>BundleOverwriteAction</key>
 		<string>upgrade</string>
 		<key>RootRelativeBundlePath</key>
-		<string>macSKK.app</string>
+		<string>Library/Input Methods/macSKK.app</string>
 	</dict>
 </array>
 </plist>
