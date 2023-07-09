@@ -42,8 +42,11 @@ class InputModePanel: NSPanel {
         }
 
         alphaValue = 1.0
+        // Note: orderFront(nil) だと "Warning: Window NSWindow 0x13b72dbe0 ordered front from a non-active application
+        // and may order beneath the active application's windows." のようなエラーがConsole.appに出力される
+        // orderFrontRegardlessだとそのようなログが出ない
+        orderFrontRegardless()
         // フェードアウト
-        orderFront(nil)
         NSAnimationContext.runAnimationGroup { context in
             context.duration = 2.0
             context.timingFunction = CAMediaTimingFunction(name: .easeIn)
