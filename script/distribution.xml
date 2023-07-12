@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <installer-gui-script minSpecVersion="1">
-    <pkg-ref id="macSKK"/>
+    <pkg-ref id="net.mtgto.inputmethod.macSKK.installer"/>
     <allowed-os-versions>
       <os-version min="13.1"/>
     </allowed-os-versions>
@@ -13,9 +13,9 @@
         <line choice="skk-jisyo-l" />
     </choices-outline>
     <choice id="default" title="macSKK" enabled="false">
-        <pkg-ref id="net.mtgto.inputmethod.macSKK.app-pkg">app.pkg</pkg-ref>
+        <pkg-ref id="net.mtgto.inputmethod.macSKK.app">app.pkg</pkg-ref>
     </choice>
     <choice id="skk-jisyo-l" title="SKK-JISYO.L" start_selected="true" description="SKK辞書のうちもっとも大きなものです">
-        <pkg-ref id="net.mtgto.inputmethod.macSKK.dict-pkg">dict.pkg</pkg-ref>
+        <pkg-ref id="net.mtgto.inputmethod.macSKK.dict">dict.pkg</pkg-ref>
     </choice>
 </installer-gui-script>

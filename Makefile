@@ -1,14 +1,24 @@
+# インストーラ作成Makefile
+# 公証に必要なので先に "Developer ID Application" のCertificateを生成してインストールしておくこと。
+
+# 設定項目
+APPLE_ID := hogerappa@gmail.com
+APPLE_TEAM_ID := W3A6B7FDC7
+
 WORKDIR := script/work
 APP := build/Release/macSKK.app
 DICT := $(WORKDIR)/SKK-JISYO.L
 APP_PKG := $(WORKDIR)/app.pkg
 DICT_PKG := $(WORKDIR)/dict.pkg
 INSTALLER_PKG := $(WORKDIR)/macSKK.pkg
-APP_PKG_ID := net.mtgto.inputmethod.macSKK.app-pkg
-DICT_PKG_ID := net.mtgto.inputmethod.macSKK.dict-pkg
+UNSIGNED_PKG := $(WORKDIR)/macSKK-unsigned.pkg
+APP_PKG_ID := net.mtgto.inputmethod.macSKK.app
+DICT_PKG_ID := net.mtgto.inputmethod.macSKK.dict
+INSTALLER_PKG_ID := net.mtgto.inputmethod.macSKK.installer
+PRODUCT_SIGN_ID := "Developer ID Installer"
 
 all:
-	xcodebuild -project macSKK.xcodeproj -configuration Release build
+	xcodebuild -project macSKK.xcodeproj -configuration Release CODE_SIGN_IDENTITY="Developer ID Application" DEVELOPMENT_TEAM=$(APPLE_TEAM_ID) OTHER_CODE_SIGN_FLAGS="--timestamp" CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO CODE_SIGN_STYLE=Manual build
 
 # TODO: https://skk-dev.github.io/dict/SKK-JISYO.L.gz.md5 を保持しておいて更新されたときだけダウンロードするようにする
 $(DICT):
@@ -26,7 +36,12 @@ $(APP_PKG): $(APP)
 	pkgbuild --root $(WORKDIR)/app --component-plist script/app.plist --identifier $(APP_PKG_ID) $(APP_PKG)
 
 $(INSTALLER_PKG): $(APP_PKG) $(DICT_PKG)
-	productbuild --distribution script/distribution.xml --resources script --package-path $(WORKDIR) $(INSTALLER_PKG)
+	productbuild --distribution script/distribution.xml --resources script --package-path $(WORKDIR) --identifier $(INSTALLER_PKG_ID) $(UNSIGNED_PKG)
+	productsign --sign $(PRODUCT_SIGN_ID) $(UNSIGNED_PKG) $(INSTALLER_PKG)
+	#xcrun notarytool submit --wait $(INSTALLER_PKG) --team-id $(APPLE_TEAM_ID) --apple-id $(APPLE_ID)
+	#xcrun stapler staple $(INSTALLER_PKG)
+
+installer: $(INSTALLER_PKG)
 
 clean:
-	rm -r $(WORKDIR)
+	rm -r $(WORKDIR) build
