@@ -1,18 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <installer-gui-script minSpecVersion="1">
     <pkg-ref id="macSKK"/>
+    <allowed-os-versions>
+      <os-version min="13.1"/>
+    </allowed-os-versions>
     <title>macSKK</title>
     <license file="license.rtf"/>
     <domains enable_localSystem="true" enable_anywhere="false" enable_currentUserHome="true"/>
-    <options customize="never" require-scripts="false" hostArchitectures="x86_64,arm64"/>
+    <options customize="allow" require-scripts="false" hostArchitectures="x86_64,arm64"/>
     <choices-outline>
-        <line choice="default">
-            <line choice="macSKK"/>
-        </line>
+        <line choice="default" />
+        <line choice="skk-jisyo-l" />
     </choices-outline>
-    <choice id="default"/>
-    <choice id="macSKK" visible="false">
-        <pkg-ref id="macSKK"/>
+    <choice id="default" title="macSKK" enabled="false">
+        <pkg-ref id="net.mtgto.inputmethod.macSKK.app-pkg">app.pkg</pkg-ref>
     </choice>
-    <pkg-ref id="macSKK" version="0" onConclusion="none">macSKK.pkg</pkg-ref>
+    <choice id="skk-jisyo-l" title="SKK-JISYO.L" start_selected="true" description="SKK辞書のうちもっとも大きなものです">
+        <pkg-ref id="net.mtgto.inputmethod.macSKK.dict-pkg">dict.pkg</pkg-ref>
+    </choice>
 </installer-gui-script>
