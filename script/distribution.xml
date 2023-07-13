@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<installer-gui-script minSpecVersion="1">
-    <pkg-ref id="net.mtgto.inputmethod.macSKK.installer"/>
+<installer-gui-script minSpecVersion="2">
     <allowed-os-versions>
       <os-version min="13.1"/>
     </allowed-os-versions>
