@@ -1,6 +1,8 @@
 # インストーラ作成Makefile
 # 公証に必要なので先に "Developer ID Application" のCertificateを生成してインストールしておくこと。
 
+# TODO: dmgのファイル名やpkg自体にバージョン番号をつけたほうが管理しやすそう
+
 # 設定項目
 APPLE_ID := hogerappa@gmail.com
 APPLE_TEAM_ID := W3A6B7FDC7
@@ -10,8 +12,9 @@ APP := build/Release/macSKK.app
 DICT := $(WORKDIR)/SKK-JISYO.L
 APP_PKG := $(WORKDIR)/app.pkg
 DICT_PKG := $(WORKDIR)/dict.pkg
-INSTALLER_PKG := $(WORKDIR)/macSKK.pkg
+INSTALLER_PKG := $(WORKDIR)/pkg/macSKK.pkg
 UNSIGNED_PKG := $(WORKDIR)/macSKK-unsigned.pkg
+TARGET_DMG := $(WORKDIR)/macSKK.dmg
 APP_PKG_ID := net.mtgto.inputmethod.macSKK.app
 DICT_PKG_ID := net.mtgto.inputmethod.macSKK.dict
 INSTALLER_PKG_ID := net.mtgto.inputmethod.macSKK.installer
@@ -36,12 +39,16 @@ $(APP_PKG): $(APP)
 	pkgbuild --root $(WORKDIR)/app --component-plist script/app.plist --identifier $(APP_PKG_ID) $(APP_PKG)
 
 $(INSTALLER_PKG): $(APP_PKG) $(DICT_PKG)
+	mkdir -p $(WORKDIR)/pkg
 	productbuild --distribution script/distribution.xml --resources script --package-path $(WORKDIR) --identifier $(INSTALLER_PKG_ID) $(UNSIGNED_PKG)
 	productsign --sign $(PRODUCT_SIGN_ID) $(UNSIGNED_PKG) $(INSTALLER_PKG)
-	#xcrun notarytool submit --wait $(INSTALLER_PKG) --team-id $(APPLE_TEAM_ID) --apple-id $(APPLE_ID)
-	#xcrun stapler staple $(INSTALLER_PKG)
 
-installer: $(INSTALLER_PKG)
+$(TARGET_DMG): $(INSTALLER_PKG)
+	hdiutil create -srcfolder $(WORKDIR)/pkg -volname macSKK -fs HFS+ $(TARGET_DMG)
+	xcrun notarytool submit --wait $(TARGET_DMG) --team-id $(APPLE_TEAM_ID) --apple-id $(APPLE_ID)
+	xcrun stapler staple $(TARGET_DMG)
+
+release: $(TARGET_DMG)
 
 clean:
-	rm -r $(WORKDIR) build
+	rm -r $(WORKDIR) build $(WORKDIR)/pkg
