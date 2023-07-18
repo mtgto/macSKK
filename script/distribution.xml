@@ -5,7 +5,7 @@
     </allowed-os-versions>
     <title>macSKK</title>
     <license file="license.rtf"/>
-    <domains enable_localSystem="true" enable_anywhere="false" enable_currentUserHome="true"/>
+    <domains enable_localSystem="false" enable_anywhere="false" enable_currentUserHome="true"/>
     <options customize="allow" require-scripts="false" hostArchitectures="x86_64,arm64"/>
     <choices-outline>
         <line choice="default" />
