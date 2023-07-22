@@ -1122,6 +1122,40 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    func testHandleSelectingCtrlACtrlE() {
+        dictionary.userDictEntries = ["と": [Word("戸"), Word("都"), Word("徒"), Word("途"), Word("斗")]]
+
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(8).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText(text: "▽t", cursor: nil)))
+            XCTAssertEqual(events[1], .markedText(MarkedText(text: "▽と", cursor: nil)))
+            XCTAssertEqual(events[2], .markedText(MarkedText(text: "▼戸", cursor: nil)))
+            XCTAssertEqual(events[3], .markedText(MarkedText(text: "▼都", cursor: nil)))
+            XCTAssertEqual(events[4], .markedText(MarkedText(text: "▼徒", cursor: nil)))
+            XCTAssertEqual(events[5], .markedText(MarkedText(text: "▼途", cursor: nil)), "変換候補パネルが表示開始")
+            XCTAssertEqual(
+                events[6], .markedText(MarkedText(text: "▼斗", cursor: nil)), "Ctrl-eでは候補選択の現在のページの末尾候補が選択される")
+            XCTAssertEqual(
+                events[7], .markedText(MarkedText(text: "▼途", cursor: nil)), "Ctrl-aでは候補選択の現在のページの先頭候補が選択される")
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .ctrlE, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(
+            stateMachine.handle(Action(keyEvent: .ctrlA, originalEvent: nil, cursorPosition: .zero)),
+            "すでに先頭にいるのでinputMethodEventは送信されない")
+        XCTAssertTrue(
+            stateMachine.handle(Action(keyEvent: .ctrlE, originalEvent: nil, cursorPosition: .zero)),
+            "すでに末尾にいるのでinputMethodEventは送信されない")
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .ctrlA, originalEvent: nil, cursorPosition: .zero)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     func testHandleSelectingNum() {
         dictionary.userDictEntries = ["あ": "123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".map { Word(String($0)) }]
 

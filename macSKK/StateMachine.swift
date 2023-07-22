@@ -735,9 +735,28 @@ class StateMachine {
             // AquaSKKと同様に何もしない (IMKCandidates表示時はそちらの移動に使われる)
             return true
         case .ctrlA:
-            return false
+            // 現ページの先頭
+            let diff = -(selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount
+            if diff < 0 {
+                let newSelectingState = selecting.addCandidateIndex(diff: diff)
+                state.inputMethod = .selecting(newSelectingState)
+                updateCandidates(selecting: newSelectingState)
+                updateMarkedText()
+            }
+            return true
         case .ctrlE:
-            return false
+            // 現ページの末尾
+            let diff = min(
+                displayCandidateCount - (selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount,
+                selecting.candidates.count - selecting.candidateIndex - 1
+            )
+            if diff > 0 {
+                let newSelectingState = selecting.addCandidateIndex(diff: diff)
+                state.inputMethod = .selecting(newSelectingState)
+                updateCandidates(selecting: newSelectingState)
+                updateMarkedText()
+            }
+            return true
         }
     }
 
