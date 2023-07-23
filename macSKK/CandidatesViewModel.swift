@@ -4,6 +4,7 @@
 import Combine
 import Foundation
 
+@MainActor
 final class CandidatesViewModel: ObservableObject {
     @Published var candidates: [Word]
     @Published var selected: Word?

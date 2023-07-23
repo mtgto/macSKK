@@ -14,6 +14,9 @@ class InputController: IMKInputController {
     private let inputModePanel = InputModePanel()
     private let candidatesPanel = CandidatesPanel()
 
+    // CandidateViewModelに @MainActor をつけており、メンバ変数をここでsinkしたいため @MainActor と指定している
+    // AppleのAPIドキュメントにはメインスレッドであるとは書かれてないけど、まあ大丈夫じゃないかな
+    @MainActor
     override init!(server: IMKServer!, delegate: Any!, client inputClient: Any!) {
         super.init(server: server, delegate: delegate, client: inputClient)
 
@@ -67,6 +70,9 @@ class InputController: IMKInputController {
             }
         }.store(in: &cancellables)
         candidatesPanel.viewModel.$selected.compactMap { $0 }.sink { selected in
+            // TODO: 選択されている単語をSystemDictを使って引いてviewModel.$selectedに設定する
+            // バックグラウンドで引いて表示のときだけフォアグラウンドで処理をさせたい
+            // 一度引いた単語を二度引かないようにしたい
             self.stateMachine.didSelectCandidate(selected)
         }.store(in: &cancellables)
         candidatesPanel.viewModel.$doubleSelected.compactMap { $0 }.sink { doubleSelected in
