@@ -5,7 +5,7 @@ import SwiftUI
 
 struct SettingsView: View {
     enum Section {
-        case general, keyEvent
+        case general, keyEvent, systemDict
     }
     var body: some View {
         TabView {
@@ -19,6 +19,11 @@ struct SettingsView: View {
                     Label("KeyEvent", systemImage: "keyboard")
                 }
                 .tag(Section.keyEvent)
+            SystemDictView()
+                .tabItem {
+                    Label("SystemDict", systemImage: "book.closed.fill")
+                }
+                .tag(Section.systemDict)
         }
         .frame(minWidth: 640, minHeight: 360)
     }

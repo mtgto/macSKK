@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		CE40D9A12A6D0C2F00D44799 /* SystemDictView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE40D9A02A6D0C2F00D44799 /* SystemDictView.swift */; };
+		CE40D9A32A6D0C3900D44799 /* SystemDict.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE40D9A22A6D0C3900D44799 /* SystemDict.swift */; };
 		CE5ECF362957034B00E7BE7D /* macSKKApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE5ECF352957034B00E7BE7D /* macSKKApp.swift */; };
 		CE5ECF3A2957034D00E7BE7D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CE5ECF392957034D00E7BE7D /* Assets.xcassets */; };
 		CE5ECF3D2957034D00E7BE7D /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CE5ECF3C2957034D00E7BE7D /* Preview Assets.xcassets */; };
@@ -46,6 +48,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		CE40D9A02A6D0C2F00D44799 /* SystemDictView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemDictView.swift; sourceTree = "<group>"; };
+		CE40D9A22A6D0C3900D44799 /* SystemDict.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemDict.swift; sourceTree = "<group>"; };
 		CE5ECF322957034B00E7BE7D /* macSKK.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = macSKK.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CE5ECF352957034B00E7BE7D /* macSKKApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = macSKKApp.swift; sourceTree = "<group>"; };
 		CE5ECF392957034D00E7BE7D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -132,6 +136,7 @@
 				CEF08256296D8CBD00646366 /* CandidatesPanel.swift */,
 				CEF0825A296D8FF000646366 /* CandidatesView.swift */,
 				CEF0825C296DB58600646366 /* CandidatesViewModel.swift */,
+				CE40D9A22A6D0C3900D44799 /* SystemDict.swift */,
 				CEA78FAB2960401F00B67E25 /* String+Transform.swift */,
 				CEC376E929651DE000D9C432 /* Settings */,
 				CE5ECF392957034D00E7BE7D /* Assets.xcassets */,
@@ -171,6 +176,7 @@
 				CEC376E72965199500D9C432 /* SettingsView.swift */,
 				CEE3717429653112000DB2C3 /* GeneralView.swift */,
 				CEC376EA2965211200D9C432 /* KeyEventView.swift */,
+				CE40D9A02A6D0C2F00D44799 /* SystemDictView.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -308,6 +314,7 @@
 				CEA78FAC2960401F00B67E25 /* String+Transform.swift in Sources */,
 				CE84A3B929570C37009394C4 /* InputController.swift in Sources */,
 				CE84A3EB295DA715009394C4 /* Dict.swift in Sources */,
+				CE40D9A12A6D0C2F00D44799 /* SystemDictView.swift in Sources */,
 				CE84A3E7295DA4DA009394C4 /* Romaji.swift in Sources */,
 				CEF0825B296D8FF000646366 /* CandidatesView.swift in Sources */,
 				CE84A3E0295717CB009394C4 /* StateMachine.swift in Sources */,
@@ -317,6 +324,7 @@
 				CEF08257296D8CBD00646366 /* CandidatesPanel.swift in Sources */,
 				CE84A3DC2957174D009394C4 /* State.swift in Sources */,
 				CEE3717529653112000DB2C3 /* GeneralView.swift in Sources */,
+				CE40D9A32A6D0C3900D44799 /* SystemDict.swift in Sources */,
 				CEC376E82965199500D9C432 /* SettingsView.swift in Sources */,
 				CEC376EB2965211200D9C432 /* KeyEventView.swift in Sources */,
 				CEF0823A296BCDB000646366 /* InputModePanel.swift in Sources */,
