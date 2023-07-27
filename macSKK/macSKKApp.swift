@@ -21,12 +21,16 @@ struct macSKKApp: App {
                 logger.error("Error while loading userDictionary")
             }
         } else {
-            setupDictionaries()
-            if Bundle.main.bundleURL.deletingLastPathComponent().lastPathComponent == "Input Methods" {
-                guard let connectionName = Bundle.main.infoDictionary?["InputMethodConnectionName"] as? String else {
-                    fatalError("InputMethodConnectionName is not set")
+            do {
+                try setupDictionaries()
+                if Bundle.main.bundleURL.deletingLastPathComponent().lastPathComponent == "Input Methods" {
+                    guard let connectionName = Bundle.main.infoDictionary?["InputMethodConnectionName"] as? String else {
+                        fatalError("InputMethodConnectionName is not set")
+                    }
+                    server = IMKServer(name: connectionName, bundleIdentifier: Bundle.main.bundleIdentifier)
                 }
-                server = IMKServer(name: connectionName, bundleIdentifier: Bundle.main.bundleIdentifier)
+            } catch {
+                logger.error("辞書の読み込みに失敗しました")
             }
         }
     }
@@ -56,8 +60,9 @@ struct macSKKApp: App {
         }
     }
 
-    private func setupDictionaries() {
-        let url = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("SKK-JISYO.L")
+    private func setupDictionaries() throws {
+        // "~/Library/Containers/net.mtgto.inputmethod.macSKK/Data/Documents/Dictionaries"
+        let url = try FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false).appendingPathComponent("Dictionaries").appendingPathComponent("SKK-JISYO.L")
         let dict: Dict
         do {
             dict = try Dict(contentsOf: url, encoding: .japaneseEUC)
