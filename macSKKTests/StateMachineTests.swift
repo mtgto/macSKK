@@ -776,6 +776,23 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    func testHandleComposingCursor() {
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(5).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText(text: "▽あ", cursor: nil)))
+            XCTAssertEqual(events[1], .markedText(MarkedText(text: "▽あい", cursor: nil)))
+            XCTAssertEqual(events[2], .markedText(MarkedText(text: "▽あい", cursor: 2)))
+            XCTAssertEqual(events[3], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[4], .markedText(MarkedText(text: "[登録：あ]", cursor: nil)), "カーソル前までの文字列を登録時の読みとして使用する")
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .left, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     func testHandleComposingCtrlACtrlE() {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(9).sink { events in

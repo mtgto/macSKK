@@ -460,7 +460,7 @@ struct IMEState {
             case .register(let registerState):
                 let mode = registerState.prev.mode
                 let composing = registerState.prev.composing
-                var yomi = composing.text.joined()
+                var yomi = composing.subText().joined()
                 if let okuri = composing.okuri {
                     yomi += "*" + okuri.map { $0.string(for: mode) }.joined()
                 }
