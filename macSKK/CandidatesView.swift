@@ -45,7 +45,9 @@ struct CandidatesView: View {
 }
 
 struct CandidatesView_Previews: PreviewProvider {
-    private static let words: [Word] = (0..<9).map { Word(String(repeating: "例文\($0)", count: $0)) }
+    private static let words: [Word] = (1..<9).map {
+        Word(String(repeating: "例文\($0)", count: $0), annotation: "注釈\($0)")
+    }
 
     static var previews: some View {
         CandidatesView(candidates: CandidatesViewModel(candidates: words))

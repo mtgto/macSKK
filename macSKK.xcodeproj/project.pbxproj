@@ -162,10 +162,10 @@
 			children = (
 				CE84A3E8295DA504009394C4 /* RomajiTests.swift */,
 				CE84A3EC295DA818009394C4 /* DictTests.swift */,
-				CEA78FA9295EBCAC00B67E25 /* StateMachineTests.swift */,
-				CEA78FAD2961BA1D00B67E25 /* String+TransformTests.swift */,
-				CEA78FB129646CA100B67E25 /* UserDictTests.swift */,
 				CEF0823529685C0800646366 /* StateTests.swift */,
+				CEA78FA9295EBCAC00B67E25 /* StateMachineTests.swift */,
+				CEA78FB129646CA100B67E25 /* UserDictTests.swift */,
+				CEA78FAD2961BA1D00B67E25 /* String+TransformTests.swift */,
 			);
 			path = macSKKTests;
 			sourceTree = "<group>";
