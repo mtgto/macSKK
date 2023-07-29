@@ -66,6 +66,20 @@ struct ComposingState: Equatable, CursorProtocol {
     /// カーソル位置。末尾のときはnil。先頭の▽分は含まないので非nilのときは[0, text.count)の範囲を取る。
     var cursor: Int?
 
+    /// 現在の状態で別の状態に移行するための処理を行った結果を返す
+    /// 末尾がnで終わっていたら「ん」が入力されたものと見做す。それ以外の未確定部分はそのままにする
+    func trim() -> Self {
+        if romaji == "n" {
+            return ComposingState(
+                isShift: isShift,
+                text: text + [Romaji.n.kana],
+                romaji: "",
+                cursor: cursor)
+        } else {
+            return self
+        }
+    }
+
     /// text部分を指定の入力モードに合わせて文字列に変換する
     /// - Parameter: convertHatsuon 入力未確定の送り仮名の一文字目がnだったら撥音「ん」としてあつかうかどうか
     func string(for mode: InputMode, convertHatsuon: Bool) -> String {

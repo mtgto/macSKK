@@ -339,7 +339,8 @@ class StateMachine {
             } else {
                 // 未確定ローマ字はn以外は入力されずに削除される. nだけは"ん"として変換する
                 // 変換候補がないときは辞書登録へ
-                let yomiText = composing.yomi(for: state.inputMode)
+                let trimmedComposing = composing.trim()
+                let yomiText = trimmedComposing.yomi(for: state.inputMode)
                 let candidates = dictionary.refer(yomiText)
                 if candidates.isEmpty {
                     if specialState != nil {
@@ -349,7 +350,7 @@ class StateMachine {
                         // 単語登録に遷移する
                         state.specialState = .register(
                             RegisterState(
-                                prev: RegisterState.PrevState(mode: state.inputMode, composing: composing),
+                                prev: RegisterState.PrevState(mode: state.inputMode, composing: trimmedComposing),
                                 yomi: yomiText))
                         state.inputMethod = .normal
                         state.inputMode = .hiragana
@@ -358,7 +359,7 @@ class StateMachine {
                 } else {
                     state.inputMethod = .selecting(
                         SelectingState(
-                            prev: SelectingState.PrevState(mode: state.inputMode, composing: composing),
+                            prev: SelectingState.PrevState(mode: state.inputMode, composing: trimmedComposing),
                             yomi: yomiText, candidates: candidates, candidateIndex: 0,
                             cursorPosition: action.cursorPosition))
                 }
