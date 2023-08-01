@@ -22,19 +22,19 @@ struct CandidatesView: View {
                         Text(candidate.word)
                         Spacer()
                     }
-                    .background(candidate == candidates.selected ? Color.accentColor : nil)
+                    .background(candidate == candidates.selected?.word ? Color.accentColor : nil)
                     Spacer()
                 }
                 .frame(height: 20)
                 .contentShape(Rectangle())
                 .onTapGesture {
-                    if candidates.selected == candidate {
+                    if candidates.selected?.word == candidate {
                         candidates.doubleSelected = candidate
                     }
-                    candidates.selected = candidate
+                    candidates.selected = SelectedWord(word: candidate, systemAnnotation: nil)
                 }
                 .popover(
-                    isPresented: .constant(candidate == candidates.selected && candidate.annotation != nil),
+                    isPresented: .constant(candidate == candidates.selected?.word && candidate.annotation != nil),
                     arrowEdge: .trailing
                 ) {
                     Text(candidate.annotation!).padding()

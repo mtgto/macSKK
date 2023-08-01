@@ -19,7 +19,9 @@ final class CandidatesPanel: NSPanel {
 
     func setWords(_ words: [Word], selected: Word?) {
         viewModel.candidates = words
-        viewModel.selected = selected
+        if let selected {
+            viewModel.selected = SelectedWord(word: selected, systemAnnotation: nil)
+        }
     }
 
     func show(at point: NSPoint) {
