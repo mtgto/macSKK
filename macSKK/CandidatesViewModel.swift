@@ -21,7 +21,7 @@ final class CandidatesViewModel: ObservableObject {
     init(candidates: [Word]) {
         self.candidates = candidates
         if let first = candidates.first {
-            self.selected = SelectedWord(word: first)
+            self.selected = SelectedWord(word: first, systemAnnotation: nil)
         }
     }
 }

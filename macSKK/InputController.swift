@@ -13,6 +13,7 @@ class InputController: IMKInputController {
     private static let notFoundRange = NSRange(location: NSNotFound, length: NSNotFound)
     private let inputModePanel = InputModePanel()
     private let candidatesPanel = CandidatesPanel()
+    private let selectedWord = PassthroughSubject<Word, Never>()
 
     // CandidateViewModelに @MainActor をつけており、メンバ変数をここでsinkしたいため @MainActor と指定している
     // AppleのAPIドキュメントにはメインスレッドであるとは書かれてないけど、まあ大丈夫じゃないかな
@@ -77,6 +78,12 @@ class InputController: IMKInputController {
         }.store(in: &cancellables)
         candidatesPanel.viewModel.$doubleSelected.compactMap { $0 }.sink { doubleSelected in
             self.stateMachine.didDoubleSelectCandidate(doubleSelected)
+        }.store(in: &cancellables)
+        selectedWord.removeDuplicates().sink { word in
+            if let systemAnnotation = SystemDict.lookup(word.word) {
+                logger.info("システム辞書から取得した注釈を設定します")
+                self.candidatesPanel.viewModel.selected = SelectedWord(word: word, systemAnnotation: systemAnnotation)
+            }
         }.store(in: &cancellables)
     }
 

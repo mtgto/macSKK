@@ -37,7 +37,17 @@ struct CandidatesView: View {
                     isPresented: .constant(candidate == candidates.selected?.word && candidate.annotation != nil),
                     arrowEdge: .trailing
                 ) {
-                    Text(candidate.annotation!).padding()
+                    VStack {
+                        if let systemAnnotation = candidates.selected?.systemAnnotation {
+                            Text(systemAnnotation)
+                                .frame(idealWidth: 300, maxHeight: .infinity)
+                                .padding()
+                        } else {
+                            Text(candidate.annotation!)
+                                .frame(idealWidth: 300, maxHeight: .infinity)
+                                .padding()
+                        }
+                    }
                 }
             }
         }
@@ -50,6 +60,8 @@ struct CandidatesView_Previews: PreviewProvider {
     }
 
     static var previews: some View {
-        CandidatesView(candidates: CandidatesViewModel(candidates: words))
+        let viewModel = CandidatesViewModel(candidates: words)
+        viewModel.selected = SelectedWord(word: words.first!, systemAnnotation: String(repeating: "これはシステム辞書の注釈です。", count: 10))
+        return CandidatesView(candidates: viewModel)
     }
 }
