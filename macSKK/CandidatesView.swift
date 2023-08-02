@@ -7,6 +7,8 @@ import SwiftUI
 /// とりあえず10件ずつ縦に表示、スペースで次の10件が表示される
 struct CandidatesView: View {
     @ObservedObject var candidates: CandidatesViewModel
+    /// 一行の高さ
+    static let lineHeight: CGFloat = 20
 
     var body: some View {
         // Listではスクロールが生じるためForEachを使用
@@ -25,7 +27,7 @@ struct CandidatesView: View {
                     .background(candidate == candidates.selected?.word ? Color.accentColor : nil)
                     Spacer()
                 }
-                .frame(height: 20)
+                .frame(height: Self.lineHeight)
                 .contentShape(Rectangle())
                 .onTapGesture {
                     if candidates.selected?.word == candidate {
