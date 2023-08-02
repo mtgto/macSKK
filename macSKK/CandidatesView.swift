@@ -12,47 +12,50 @@ struct CandidatesView: View {
 
     var body: some View {
         // Listではスクロールが生じるためForEachを使用
-        VStack(alignment: .leading, spacing: 0) {
-            ForEach(candidates.candidates.indices, id: \.self) { index in
-                let candidate = candidates.candidates[index]
+        List(candidates.candidates.indices, id: \.self) { index in
+            let candidate = candidates.candidates[index]
+            HStack {
+                Text("\(index + 1)")
+                    .padding(EdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 0))
+                    .frame(width: 16)
+                Text(candidate.word)
+                    .padding(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 4))
+                Spacer()
+            }
+            .listRowInsets(EdgeInsets())
+            .listRowBackground(candidate == candidates.selected?.word ? Color.accentColor : nil)
+            .frame(height: Self.lineHeight)
+            .border(Color.red)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                if candidates.selected?.word == candidate {
+                    candidates.doubleSelected = candidate
+                }
+                candidates.selected = SelectedWord(word: candidate, systemAnnotation: nil)
+            }
+            /*
+            .popover(
+                isPresented: .constant(candidate == candidates.selected?.word && candidate.annotation != nil),
+                arrowEdge: .trailing
+            ) {
                 VStack {
-                    Spacer()
-                    HStack {
-                        Text("\(index + 1)")
-                            .padding(EdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 0))
-                            .frame(width: 16)
-                        Text(candidate.word)
-                        Spacer()
-                    }
-                    .background(candidate == candidates.selected?.word ? Color.accentColor : nil)
-                    Spacer()
-                }
-                .frame(height: Self.lineHeight)
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    if candidates.selected?.word == candidate {
-                        candidates.doubleSelected = candidate
-                    }
-                    candidates.selected = SelectedWord(word: candidate, systemAnnotation: nil)
-                }
-                .popover(
-                    isPresented: .constant(candidate == candidates.selected?.word && candidate.annotation != nil),
-                    arrowEdge: .trailing
-                ) {
-                    VStack {
-                        if let systemAnnotation = candidates.selected?.systemAnnotation {
-                            Text(systemAnnotation)
-                                .frame(idealWidth: 300, maxHeight: .infinity)
-                                .padding()
-                        } else {
-                            Text(candidate.annotation!)
-                                .frame(idealWidth: 300, maxHeight: .infinity)
-                                .padding()
-                        }
+                    if let systemAnnotation = candidates.selected?.systemAnnotation {
+                        Text(systemAnnotation)
+                            .frame(idealWidth: 300, maxHeight: .infinity)
+                            .padding()
+                    } else {
+                        Text(candidate.annotation!)
+                            .frame(idealWidth: 300, maxHeight: .infinity)
+                            .padding()
                     }
                 }
             }
+            */
         }
+        .listStyle(.plain)
+        .environment(\.defaultMinListRowHeight, Self.lineHeight)
+        .scrollDisabled(true)
+        .frame(minWidth: 100, maxHeight: CGFloat(candidates.candidates.count) * Self.lineHeight)
     }
 }
 
