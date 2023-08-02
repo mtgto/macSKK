@@ -10,6 +10,7 @@ struct CandidatesView: View {
     /// 一行の高さ
     static let lineHeight: CGFloat = 20
     @State private var selectedIndex: Int = 0
+    private let font: Font = .body
 
     var body: some View {
         // Listではスクロールが生じるためForEachを使用
@@ -18,15 +19,17 @@ struct CandidatesView: View {
                 let candidate = candidates.candidates[index]
                 HStack {
                     Text("\(index + 1)")
+                        .font(font)
                         .padding(EdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 0))
                         .frame(width: 16)
                     Text(candidate.word)
-                        //.fixedSize(horizontal: true, vertical: false)
+                        .font(font)
+                        .fixedSize(horizontal: true, vertical: false)
                         .padding(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 4))
                 }
                 .listRowInsets(EdgeInsets())
                 .frame(height: Self.lineHeight)
-                .border(Color.red)
+                // .border(Color.red) // Listの謎のInsetのデバッグ時に使用する
                 .contentShape(Rectangle())
             }
             /* popoverだと候補ウィンドウを表示してないときに表示しづらいので別ビューにする予定
@@ -51,8 +54,7 @@ struct CandidatesView: View {
         .listStyle(.plain)
         .environment(\.defaultMinListRowHeight, Self.lineHeight)
         .scrollDisabled(true)
-        .frame(width: 100, height: CGFloat(candidates.candidates.count) * Self.lineHeight)
-        //.frame(width: 500, height: 200)
+        .frame(width: minWidth(), height: CGFloat(candidates.candidates.count) * Self.lineHeight)
         .onChange(of: selectedIndex) { selectedIndex in
             let candidate = candidates.candidates[selectedIndex]
             if candidates.selected?.word == candidate {
@@ -60,6 +62,19 @@ struct CandidatesView: View {
             }
             candidates.selected = SelectedWord(word: candidate, systemAnnotation: nil)
         }
+    }
+
+    // 最長のテキストを表示するために必要なビューのサイズを返す
+    private func minWidth() -> CGFloat {
+        let width = candidates.candidates.map { candidate -> CGFloat in
+            let size = candidate.word.boundingRect(with: CGSize(width: .greatestFiniteMagnitude, height: Self.lineHeight),
+                                                   options: .usesLineFragmentOrigin,
+                                                   attributes: [.font: NSFont.preferredFont(forTextStyle: .body)])
+            // 未解決の余白(8px) + 添字(16px) + 余白(4px) + テキスト + 余白(4px) + 未解決の余白(24px)
+            // @see https://forums.swift.org/t/swiftui-list-horizontal-insets-macos/52985/5
+            return 16 + 4 + size.width + 4 + 22
+        }.max()
+        return width ?? 0
     }
 }
 

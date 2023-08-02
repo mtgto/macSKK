@@ -13,7 +13,6 @@ final class CandidatesPanel: NSPanel {
         super.init(contentRect: .zero, styleMask: [.nonactivatingPanel], backing: .buffered, defer: true)
         viewController.sizingOptions = .preferredContentSize
         contentViewController = viewController
-        minSize = CGSize(width: 320, height: CandidatesView.lineHeight)
     }
 
     func setWords(_ words: [Word], selected: Word?) {
@@ -31,6 +30,7 @@ final class CandidatesPanel: NSPanel {
             print("intrinsicContentSize = \(viewController.view.intrinsicContentSize)")
             print("frame = \(frame)")
             print("preferredContentSize = \(viewController.preferredContentSize)")
+            print("sizeThatFits = \(viewController.sizeThatFits(in: CGSize(width: 10000, height: 10000)))")
         } else {
             print("\(contentViewController!.className)")
         }
