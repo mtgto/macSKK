@@ -9,31 +9,27 @@ struct CandidatesView: View {
     @ObservedObject var candidates: CandidatesViewModel
     /// 一行の高さ
     static let lineHeight: CGFloat = 20
+    @State private var selectedIndex: Int = 0
 
     var body: some View {
         // Listではスクロールが生じるためForEachを使用
-        List(candidates.candidates.indices, id: \.self) { index in
-            let candidate = candidates.candidates[index]
-            HStack {
-                Text("\(index + 1)")
-                    .padding(EdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 0))
-                    .frame(width: 16)
-                Text(candidate.word)
-                    .padding(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 4))
-                Spacer()
-            }
-            .listRowInsets(EdgeInsets())
-            .listRowBackground(candidate == candidates.selected?.word ? Color.accentColor : nil)
-            .frame(height: Self.lineHeight)
-            .border(Color.red)
-            .contentShape(Rectangle())
-            .onTapGesture {
-                if candidates.selected?.word == candidate {
-                    candidates.doubleSelected = candidate
+        List(selection: $selectedIndex) {
+            ForEach(candidates.candidates.indices, id: \.self) { index in
+                let candidate = candidates.candidates[index]
+                HStack {
+                    Text("\(index + 1)")
+                        .padding(EdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 0))
+                        .frame(width: 16)
+                    Text(candidate.word)
+                        //.fixedSize(horizontal: true, vertical: false)
+                        .padding(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 4))
                 }
-                candidates.selected = SelectedWord(word: candidate, systemAnnotation: nil)
+                .listRowInsets(EdgeInsets())
+                .frame(height: Self.lineHeight)
+                .border(Color.red)
+                .contentShape(Rectangle())
             }
-            /*
+            /* popoverだと候補ウィンドウを表示してないときに表示しづらいので別ビューにする予定
             .popover(
                 isPresented: .constant(candidate == candidates.selected?.word && candidate.annotation != nil),
                 arrowEdge: .trailing
@@ -55,7 +51,15 @@ struct CandidatesView: View {
         .listStyle(.plain)
         .environment(\.defaultMinListRowHeight, Self.lineHeight)
         .scrollDisabled(true)
-        .frame(minWidth: 100, maxHeight: CGFloat(candidates.candidates.count) * Self.lineHeight)
+        .frame(width: 100, height: CGFloat(candidates.candidates.count) * Self.lineHeight)
+        //.frame(width: 500, height: 200)
+        .onChange(of: selectedIndex) { selectedIndex in
+            let candidate = candidates.candidates[selectedIndex]
+            if candidates.selected?.word == candidate {
+                candidates.doubleSelected = candidate
+            }
+            candidates.selected = SelectedWord(word: candidate, systemAnnotation: nil)
+        }
     }
 }
 
