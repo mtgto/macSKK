@@ -9,58 +9,67 @@ struct CandidatesView: View {
     @ObservedObject var candidates: CandidatesViewModel
     /// 一行の高さ
     static let lineHeight: CGFloat = 20
+    static let footerHeight: CGFloat = 20
     @State private var selectedIndex: Int = 0
     private let font: Font = .body
 
     var body: some View {
-        // Listではスクロールが生じるためForEachを使用
-        List(selection: $selectedIndex) {
-            ForEach(candidates.candidates.words.indices, id: \.self) { index in
-                let candidate = candidates.candidates.words[index]
-                HStack {
-                    Text("\(index + 1)")
-                        .font(font)
-                        .padding(EdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 0))
-                        .frame(width: 16)
-                    Text(candidate.word)
-                        .font(font)
-                        .fixedSize(horizontal: true, vertical: false)
-                        .padding(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 4))
-                }
-                .listRowInsets(EdgeInsets())
-                .frame(height: Self.lineHeight)
-                // .border(Color.red) // Listの謎のInsetのデバッグ時に使用する
-                .contentShape(Rectangle())
-            }
-            /* popoverだと候補ウィンドウを表示してないときに表示しづらいので別ビューにする予定
-            .popover(
-                isPresented: .constant(candidate == candidates.selected?.word && candidate.annotation != nil),
-                arrowEdge: .trailing
-            ) {
-                VStack {
-                    if let systemAnnotation = candidates.selected?.systemAnnotation {
-                        Text(systemAnnotation)
-                            .frame(idealWidth: 300, maxHeight: .infinity)
-                            .padding()
-                    } else {
-                        Text(candidate.annotation!)
-                            .frame(idealWidth: 300, maxHeight: .infinity)
-                            .padding()
+        VStack(spacing: 0) {
+            // Listではスクロールが生じるためForEachを使用
+            List(selection: $selectedIndex) {
+                ForEach(candidates.candidates.words.indices, id: \.self) { index in
+                    let candidate = candidates.candidates.words[index]
+                    HStack {
+                        Text("\(index + 1)")
+                            .font(font)
+                            .padding(EdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 0))
+                            .frame(width: 16)
+                        Text(candidate.word)
+                            .font(font)
+                            .fixedSize(horizontal: true, vertical: false)
+                            .padding(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 4))
                     }
+                    .listRowInsets(EdgeInsets())
+                    .frame(height: Self.lineHeight)
+                    // .border(Color.red) // Listの謎のInsetのデバッグ時に使用する
+                    .contentShape(Rectangle())
                 }
+                /* popoverだと候補ウィンドウを表示してないときに表示しづらいので別ビューにする予定
+                 .popover(
+                 isPresented: .constant(candidate == candidates.selected?.word && candidate.annotation != nil),
+                 arrowEdge: .trailing
+                 ) {
+                 VStack {
+                 if let systemAnnotation = candidates.selected?.systemAnnotation {
+                 Text(systemAnnotation)
+                 .frame(idealWidth: 300, maxHeight: .infinity)
+                 .padding()
+                 } else {
+                 Text(candidate.annotation!)
+                 .frame(idealWidth: 300, maxHeight: .infinity)
+                 .padding()
+                 }
+                 }
+                 }
+                 */
             }
-            */
-        }
-        .listStyle(.plain)
-        .environment(\.defaultMinListRowHeight, Self.lineHeight)
-        .scrollDisabled(true)
-        .frame(width: minWidth(), height: CGFloat(candidates.candidates.words.count) * Self.lineHeight)
-        .onChange(of: selectedIndex) { selectedIndex in
-            let candidate = candidates.candidates.words[selectedIndex]
-            if candidates.selected?.word == candidate {
-                candidates.doubleSelected = candidate
+            .listStyle(.plain)
+            .environment(\.defaultMinListRowHeight, Self.lineHeight)
+            .scrollDisabled(true)
+            .frame(width: minWidth(), height: CGFloat(candidates.candidates.words.count) * Self.lineHeight)
+            .onChange(of: selectedIndex) { selectedIndex in
+                let candidate = candidates.candidates.words[selectedIndex]
+                if candidates.selected?.word == candidate {
+                    candidates.doubleSelected = candidate
+                }
+                candidates.selected = SelectedWord(word: candidate, systemAnnotation: nil)
             }
-            candidates.selected = SelectedWord(word: candidate, systemAnnotation: nil)
+            HStack(alignment: .center, spacing: 0) {
+                Spacer()
+                Text("\(candidates.candidates.currentPage + 1) / \(candidates.candidates.totalPageCount)")
+                    .padding(EdgeInsets(top: 2, leading: 0, bottom: 2, trailing: 4))
+            }
+            .frame(width: minWidth(), height: Self.footerHeight)
         }
     }
 
