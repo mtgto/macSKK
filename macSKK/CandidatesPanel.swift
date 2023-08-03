@@ -8,15 +8,15 @@ final class CandidatesPanel: NSPanel {
     let viewModel: CandidatesViewModel
 
     init() {
-        viewModel = CandidatesViewModel(candidates: [])
+        viewModel = CandidatesViewModel(candidates: [], currentPage: 0, totalPageCount: 0)
         let viewController = NSHostingController(rootView: CandidatesView(candidates: viewModel))
         super.init(contentRect: .zero, styleMask: [.nonactivatingPanel], backing: .buffered, defer: true)
         viewController.sizingOptions = .preferredContentSize
         contentViewController = viewController
     }
 
-    func setWords(_ words: [Word], selected: Word?) {
-        viewModel.candidates = words
+    func setCandidates(_ candidates: CurrentCandidates, selected: Word?) {
+        viewModel.candidates = candidates
         if let selected {
             viewModel.selected = SelectedWord(word: selected, systemAnnotation: nil)
         }

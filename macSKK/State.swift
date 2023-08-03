@@ -437,7 +437,12 @@ struct MarkedText: Equatable {
 }
 
 struct Candidates: Equatable {
+    /// 現在表示される変換候補。全体の変換候補の一部。
     let words: [Word]
+    /// wordsが全体の変換候補表示の何ページ目かという数値 (0オリジン)
+    let currentPage: Int
+    /// 全体の変換候補表示の最大ページ数
+    let totalPageCount: Int
     let selected: Word
     let cursorPosition: NSRect
 }

@@ -784,12 +784,15 @@ class StateMachine {
     private func updateCandidates(selecting: SelectingState?) {
         if let selecting, selecting.candidateIndex >= inlineCandidateCount {
             var start = selecting.candidateIndex - inlineCandidateCount
+            let currentPage = start / displayCandidateCount
+            let totalPageCount = (selecting.candidates.count - inlineCandidateCount - 1) / displayCandidateCount + 1
             start = start - start % displayCandidateCount + inlineCandidateCount
-            let candidates = selecting.candidates[
-                start..<min(start + displayCandidateCount, selecting.candidates.count)]
+            let candidates = selecting.candidates[start..<min(start + displayCandidateCount, selecting.candidates.count)]
             candidateEventSubject.send(
                 Candidates(
                     words: Array(candidates),
+                    currentPage: currentPage,
+                    totalPageCount: totalPageCount,
                     selected: selecting.candidates[selecting.candidateIndex],
                     cursorPosition: selecting.cursorPosition))
         } else {

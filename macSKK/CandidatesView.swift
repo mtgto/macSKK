@@ -15,8 +15,8 @@ struct CandidatesView: View {
     var body: some View {
         // Listではスクロールが生じるためForEachを使用
         List(selection: $selectedIndex) {
-            ForEach(candidates.candidates.indices, id: \.self) { index in
-                let candidate = candidates.candidates[index]
+            ForEach(candidates.candidates.words.indices, id: \.self) { index in
+                let candidate = candidates.candidates.words[index]
                 HStack {
                     Text("\(index + 1)")
                         .font(font)
@@ -54,9 +54,9 @@ struct CandidatesView: View {
         .listStyle(.plain)
         .environment(\.defaultMinListRowHeight, Self.lineHeight)
         .scrollDisabled(true)
-        .frame(width: minWidth(), height: CGFloat(candidates.candidates.count) * Self.lineHeight)
+        .frame(width: minWidth(), height: CGFloat(candidates.candidates.words.count) * Self.lineHeight)
         .onChange(of: selectedIndex) { selectedIndex in
-            let candidate = candidates.candidates[selectedIndex]
+            let candidate = candidates.candidates.words[selectedIndex]
             if candidates.selected?.word == candidate {
                 candidates.doubleSelected = candidate
             }
@@ -66,7 +66,7 @@ struct CandidatesView: View {
 
     // 最長のテキストを表示するために必要なビューのサイズを返す
     private func minWidth() -> CGFloat {
-        let width = candidates.candidates.map { candidate -> CGFloat in
+        let width = candidates.candidates.words.map { candidate -> CGFloat in
             let size = candidate.word.boundingRect(with: CGSize(width: .greatestFiniteMagnitude, height: Self.lineHeight),
                                                    options: .usesLineFragmentOrigin,
                                                    attributes: [.font: NSFont.preferredFont(forTextStyle: .body)])
@@ -84,7 +84,7 @@ struct CandidatesView_Previews: PreviewProvider {
     }
 
     static var previews: some View {
-        let viewModel = CandidatesViewModel(candidates: words)
+        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3)
         viewModel.selected = SelectedWord(word: words.first!, systemAnnotation: String(repeating: "これはシステム辞書の注釈です。", count: 10))
         return CandidatesView(candidates: viewModel)
     }

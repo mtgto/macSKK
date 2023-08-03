@@ -24,7 +24,8 @@ struct macSKKApp: App {
             do {
                 try setupDictionaries()
                 if Bundle.main.bundleURL.deletingLastPathComponent().lastPathComponent == "Input Methods" {
-                    guard let connectionName = Bundle.main.infoDictionary?["InputMethodConnectionName"] as? String else {
+                    guard let connectionName = Bundle.main.infoDictionary?["InputMethodConnectionName"] as? String
+                    else {
                         fatalError("InputMethodConnectionName is not set")
                     }
                     server = IMKServer(name: connectionName, bundleIdentifier: Bundle.main.bundleIdentifier)
@@ -49,12 +50,13 @@ struct macSKKApp: App {
                     }
                 }.keyboardShortcut("S")
                 Button("Show CandidatesPanel") {
-                    panel.setWords([Word("こんにちは"), Word("こんばんは"), Word("おはようございます")], selected: nil)
+                    let words = [Word("こんにちは"), Word("こんばんは"), Word("おはようございます")]
+                    panel.setCandidates(CurrentCandidates(words: words, currentPage: 0, totalPageCount: 1), selected: words.first)
                     panel.show(at: NSPoint(x: 100, y: 600))
                 }
                 Button("Add Word") {
-                    panel.setWords(
-                        [Word("こんにちは"), Word("こんばんは"), Word("おはようございます"), Word("追加したよ")], selected: Word("追加したよ"))
+                    let words = [Word("こんにちは"), Word("こんばんは"), Word("おはようございます"), Word("追加したよ")]
+                    panel.setCandidates(CurrentCandidates(words: words, currentPage: 0, totalPageCount: 1), selected: words.last)
                 }
             }
         }
@@ -62,7 +64,12 @@ struct macSKKApp: App {
 
     private func setupDictionaries() throws {
         // "~/Library/Containers/net.mtgto.inputmethod.macSKK/Data/Documents/Dictionaries"
-        let url = try FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false).appendingPathComponent("Dictionaries").appendingPathComponent("SKK-JISYO.L")
+        let url = try FileManager.default.url(
+            for: .documentDirectory,
+            in: .userDomainMask,
+            appropriateFor: nil,
+            create: false
+        ).appendingPathComponent("Dictionaries").appendingPathComponent("SKK-JISYO.L")
         let dict: Dict
         do {
             dict = try Dict(contentsOf: url, encoding: .japaneseEUC)

@@ -64,7 +64,10 @@ class InputController: IMKInputController {
         }.store(in: &cancellables)
         stateMachine.candidateEvent.sink { candidates in
             if let candidates {
-                self.candidatesPanel.setWords(candidates.words, selected: candidates.selected)
+                let currentCandidates = CurrentCandidates(words: candidates.words,
+                                                          currentPage: candidates.currentPage,
+                                                          totalPageCount: candidates.totalPageCount)
+                self.candidatesPanel.setCandidates(currentCandidates, selected: candidates.selected)
                 self.candidatesPanel.show(at: candidates.cursorPosition.origin)
             } else {
                 self.candidatesPanel.orderOut(nil)
