@@ -7,7 +7,7 @@ enum InputMethodState: Equatable {
     /**
      * 直接入力 or 確定入力済で、下線がない状態
      *
-     * 単語登録中は "[登録：りんご]apple" のようになり、全体に下線がついている状態であってもnormalになる
+     * 単語登録中は "[登録：りんご]apple" のようになり、全体に下線がついている状態であってもShift入力前はnormalになる
      */
     case normal
 
@@ -21,12 +21,12 @@ enum InputMethodState: Equatable {
      * 例えば "(Shift)ara(Shift)tta" と入力した場合、次のように遷移します
      * (isShift, text, okuri, romaji)
      *
-     * 1. (true, "あ", nil, "")
-     * 2. (true, "あ", nil, "r")
-     * 3. (true, "あら", nil, "")
-     * 4. (true, "あら", "", "t") (Shift押して送り仮名モード)
-     * 5. (true, "あら", "っ", "t")
-     * 6. (true, "あら", "った", "") (ローマ字がなくなった瞬間に変換されて変換 or 辞書登録に遷移する)
+     * 1. (true, ["あ"], nil, "")
+     * 2. (true, ["あ"], nil, "r")
+     * 3. (true, ["あ", "ら"], nil, "")
+     * 4. (true, ["あ", "ら"], [], "t") (Shift押して送り仮名モード)
+     * 5. (true, ["あ", "ら"], ["っ"], "t")
+     * 6. (true, ["あ", "ら"], ["っ", "た"], "") (ローマ字がなくなった瞬間に変換されて変換 or 辞書登録に遷移する)
      *
      * abbrevモードの例 "/apple" と入力した場合、次のように遷移します
      *

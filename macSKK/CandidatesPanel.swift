@@ -4,6 +4,7 @@
 import Cocoa
 import SwiftUI
 
+/// 変換候補リストをフローティングモーダルで表示するパネル
 final class CandidatesPanel: NSPanel {
     let viewModel: CandidatesViewModel
 

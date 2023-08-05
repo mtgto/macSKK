@@ -3,7 +3,7 @@
 
 import Foundation
 
-// Dictionary Serviceを使ってシステム辞書から検索する
+/// Dictionary Serviceを使ってシステム辞書から検索する
 class SystemDict {
     class func lookup(_ word: String) -> String? {
         var dictionary: DCSDictionary? = nil
