@@ -28,33 +28,32 @@ struct CandidatesView: View {
                             .font(font)
                             .fixedSize(horizontal: true, vertical: false)
                             .padding(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 4))
+                        Spacer() // popoverをListの右に表示するために余白を入れる
                     }
                     .listRowInsets(EdgeInsets())
                     .frame(height: Self.lineHeight)
                     // .border(Color.red) // Listの謎のInsetのデバッグ時に使用する
                     .contentShape(Rectangle())
+                    .popover(
+                        isPresented: .constant(candidate == candidates.selected?.word && candidate.annotation != nil),
+                        arrowEdge: .trailing
+                    ) {
+                        VStack {
+                            if let systemAnnotation = candidates.selected?.systemAnnotation {
+                                Text(systemAnnotation)
+                                    .frame(idealWidth: 300, maxHeight: .infinity)
+                                    .padding()
+                            } else {
+                                Text(candidate.annotation!)
+                                    .frame(idealWidth: 300, maxHeight: .infinity)
+                                    .padding()
+                            }
+                        }
+                    }
                 }
-                /* popoverだと候補ウィンドウを表示してないときに表示しづらいので別ビューにする予定
-                 .popover(
-                 isPresented: .constant(candidate == candidates.selected?.word && candidate.annotation != nil),
-                 arrowEdge: .trailing
-                 ) {
-                 VStack {
-                 if let systemAnnotation = candidates.selected?.systemAnnotation {
-                 Text(systemAnnotation)
-                 .frame(idealWidth: 300, maxHeight: .infinity)
-                 .padding()
-                 } else {
-                 Text(candidate.annotation!)
-                 .frame(idealWidth: 300, maxHeight: .infinity)
-                 .padding()
-                 }
-                 }
-                 }
-                 */
             }
             .listStyle(.plain)
-            .environment(\.defaultMinListRowHeight, Self.lineHeight)
+            .environment(\.defaultMinListRowHeight, Self.lineHeight) // Listの行の上下の余白を削除
             .scrollDisabled(true)
             .frame(width: minWidth(), height: CGFloat(candidates.candidates.words.count) * Self.lineHeight)
             .onChange(of: selectedIndex) { selectedIndex in
