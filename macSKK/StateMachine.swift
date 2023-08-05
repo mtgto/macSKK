@@ -471,7 +471,7 @@ class StateMachine {
             updateMarkedText()
             return true
         case .up, .down:
-            return false
+            return true
         }
     }
 
