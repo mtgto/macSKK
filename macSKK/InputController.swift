@@ -64,9 +64,10 @@ class InputController: IMKInputController {
         }.store(in: &cancellables)
         stateMachine.candidateEvent.sink { candidates in
             if let candidates {
-                let currentCandidates = CurrentCandidates(words: candidates.words,
-                                                          currentPage: candidates.currentPage,
-                                                          totalPageCount: candidates.totalPageCount)
+                let currentCandidates = CurrentCandidates(
+                    words: candidates.words,
+                    currentPage: candidates.currentPage,
+                    totalPageCount: candidates.totalPageCount)
                 self.candidatesPanel.setCandidates(currentCandidates, selected: candidates.selected)
                 self.candidatesPanel.show(at: candidates.cursorPosition.origin)
             } else {
@@ -74,18 +75,17 @@ class InputController: IMKInputController {
             }
         }.store(in: &cancellables)
         candidatesPanel.viewModel.$selected.compactMap { $0 }.sink { selected in
-            // TODO: 選択されている単語をSystemDictを使って引いてviewModel.$selectedに設定する
-            // バックグラウンドで引いて表示のときだけフォアグラウンドで処理をさせたい
-            // 一度引いた単語を二度引かないようにしたい
             self.stateMachine.didSelectCandidate(selected)
+            // TODO: バックグラウンドで引いて表示のときだけフォアグラウンドで処理をさせたい
+            // TODO: 一度引いた単語を二度引かないようにしたい
+            self.selectedWord.send(selected)
         }.store(in: &cancellables)
         candidatesPanel.viewModel.$doubleSelected.compactMap { $0 }.sink { doubleSelected in
             self.stateMachine.didDoubleSelectCandidate(doubleSelected)
         }.store(in: &cancellables)
         selectedWord.removeDuplicates().sink { word in
             if let systemAnnotation = SystemDict.lookup(word.word) {
-                logger.info("システム辞書から取得した注釈を設定します")
-                self.candidatesPanel.viewModel.selectedSystemAnnotation = (word, systemAnnotation)
+                self.candidatesPanel.setSystemAnnotation(systemAnnotation, for: word)
             }
         }.store(in: &cancellables)
     }

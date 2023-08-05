@@ -50,13 +50,14 @@ struct macSKKApp: App {
                     }
                 }.keyboardShortcut("S")
                 Button("Show CandidatesPanel") {
-                    let words = [Word("こんにちは"), Word("こんばんは"), Word("おはようございます")]
+                    let words = [Word("こんにちは", annotation: "辞書の注釈"), Word("こんばんは"), Word("おはようございます")]
                     panel.setCandidates(CurrentCandidates(words: words, currentPage: 0, totalPageCount: 1), selected: words.first)
                     panel.show(at: NSPoint(x: 100, y: 600))
                 }
                 Button("Add Word") {
-                    let words = [Word("こんにちは"), Word("こんばんは"), Word("おはようございます"), Word("追加したよ")]
+                    let words = [Word("こんにちは"), Word("こんばんは"), Word("おはようございます"), Word("追加したよ", annotation: "辞書の注釈")]
                     panel.setCandidates(CurrentCandidates(words: words, currentPage: 0, totalPageCount: 1), selected: words.last)
+                    panel.viewModel.selectedSystemAnnotation = (words.last!, "これはシステム辞書の注釈です")
                 }
             }
         }

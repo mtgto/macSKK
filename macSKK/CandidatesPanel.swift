@@ -23,6 +23,12 @@ final class CandidatesPanel: NSPanel {
         }
     }
 
+    func setSystemAnnotation(_ systemAnnotation: String, for word: Word) {
+        if viewModel.selected == word {
+            viewModel.selectedSystemAnnotation = (word, systemAnnotation)
+        }
+    }
+
     func show(at point: NSPoint) {
         // TODO: もしスクリーン下にはみ出す場合は setOrigin を使って左下座標を指定する。
         setFrameTopLeftPoint(point)

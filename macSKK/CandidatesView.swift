@@ -24,7 +24,7 @@ struct CandidatesView: View {
                         .font(font)
                         .fixedSize(horizontal: true, vertical: false)
                         .padding(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 4))
-                    Spacer() // popoverをListの右に表示するために余白を入れる
+                    Spacer()  // popoverをListの右に表示するために余白を入れる
                 }
                 .listRowInsets(EdgeInsets())
                 .frame(height: Self.lineHeight)
@@ -48,7 +48,7 @@ struct CandidatesView: View {
                 }
             }
             .listStyle(.plain)
-            .environment(\.defaultMinListRowHeight, Self.lineHeight) // Listの行の上下の余白を削除
+            .environment(\.defaultMinListRowHeight, Self.lineHeight)  // Listの行の上下の余白を削除
             .scrollDisabled(true)
             .frame(width: minWidth(), height: CGFloat(candidates.candidates.words.count) * Self.lineHeight)
             HStack(alignment: .center, spacing: 0) {
@@ -63,9 +63,10 @@ struct CandidatesView: View {
     // 最長のテキストを表示するために必要なビューのサイズを返す
     private func minWidth() -> CGFloat {
         let width = candidates.candidates.words.map { candidate -> CGFloat in
-            let size = candidate.word.boundingRect(with: CGSize(width: .greatestFiniteMagnitude, height: Self.lineHeight),
-                                                   options: .usesLineFragmentOrigin,
-                                                   attributes: [.font: NSFont.preferredFont(forTextStyle: .body)])
+            let size = candidate.word.boundingRect(
+                with: CGSize(width: .greatestFiniteMagnitude, height: Self.lineHeight),
+                options: .usesLineFragmentOrigin,
+                attributes: [.font: NSFont.preferredFont(forTextStyle: .body)])
             // 未解決の余白(8px) + 添字(16px) + 余白(4px) + テキスト + 余白(4px) + 未解決の余白(22px)
             // @see https://forums.swift.org/t/swiftui-list-horizontal-insets-macos/52985/5
             return 16 + 4 + size.width + 4 + 22
