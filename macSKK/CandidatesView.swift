@@ -10,44 +10,39 @@ struct CandidatesView: View {
     /// 一行の高さ
     static let lineHeight: CGFloat = 20
     static let footerHeight: CGFloat = 20
-    @State private var selectedIndex: Int = 0
     private let font: Font = .body
 
     var body: some View {
         VStack(spacing: 0) {
-            // Listではスクロールが生じるためForEachを使用
-            List(selection: $selectedIndex) {
-                ForEach(candidates.candidates.words.indices, id: \.self) { index in
-                    let candidate = candidates.candidates.words[index]
-                    HStack {
-                        Text("\(index + 1)")
-                            .font(font)
-                            .padding(EdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 0))
-                            .frame(width: 16)
-                        Text(candidate.word)
-                            .font(font)
-                            .fixedSize(horizontal: true, vertical: false)
-                            .padding(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 4))
-                        Spacer() // popoverをListの右に表示するために余白を入れる
-                    }
-                    .listRowInsets(EdgeInsets())
-                    .frame(height: Self.lineHeight)
-                    // .border(Color.red) // Listの謎のInsetのデバッグ時に使用する
-                    .contentShape(Rectangle())
-                    .popover(
-                        isPresented: .constant(candidate == candidates.selected?.word && candidate.annotation != nil),
-                        arrowEdge: .trailing
-                    ) {
-                        VStack {
-                            if let systemAnnotation = candidates.selected?.systemAnnotation {
-                                Text(systemAnnotation)
-                                    .frame(idealWidth: 300, maxHeight: .infinity)
-                                    .padding()
-                            } else {
-                                Text(candidate.annotation!)
-                                    .frame(idealWidth: 300, maxHeight: .infinity)
-                                    .padding()
-                            }
+            List(Array(candidates.candidates.words.enumerated()), id: \.element, selection: $candidates.selected) { index, candidate in
+                HStack {
+                    Text("\(index + 1)")
+                        .font(font)
+                        .padding(EdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 0))
+                        .frame(width: 16)
+                    Text(candidate.word)
+                        .font(font)
+                        .fixedSize(horizontal: true, vertical: false)
+                        .padding(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 4))
+                    Spacer() // popoverをListの右に表示するために余白を入れる
+                }
+                .listRowInsets(EdgeInsets())
+                .frame(height: Self.lineHeight)
+                // .border(Color.red) // Listの謎のInsetのデバッグ時に使用する
+                .contentShape(Rectangle())
+                .popover(
+                    isPresented: .constant(candidate == candidates.selected && candidate.annotation != nil),
+                    arrowEdge: .trailing
+                ) {
+                    VStack {
+                        if candidate == candidates.selectedSystemAnnotation?.0, let systemAnnotation = candidates.selectedSystemAnnotation?.1 {
+                            Text(systemAnnotation)
+                                .frame(idealWidth: 300, maxHeight: .infinity)
+                                .padding()
+                        } else {
+                            Text(candidate.annotation!)
+                                .frame(idealWidth: 300, maxHeight: .infinity)
+                                .padding()
                         }
                     }
                 }
@@ -56,13 +51,6 @@ struct CandidatesView: View {
             .environment(\.defaultMinListRowHeight, Self.lineHeight) // Listの行の上下の余白を削除
             .scrollDisabled(true)
             .frame(width: minWidth(), height: CGFloat(candidates.candidates.words.count) * Self.lineHeight)
-            .onChange(of: selectedIndex) { selectedIndex in
-                let candidate = candidates.candidates.words[selectedIndex]
-                if candidates.selected?.word == candidate {
-                    candidates.doubleSelected = candidate
-                }
-                candidates.selected = SelectedWord(word: candidate, systemAnnotation: nil)
-            }
             HStack(alignment: .center, spacing: 0) {
                 Spacer()
                 Text("\(candidates.candidates.currentPage + 1) / \(candidates.candidates.totalPageCount)")
@@ -78,7 +66,7 @@ struct CandidatesView: View {
             let size = candidate.word.boundingRect(with: CGSize(width: .greatestFiniteMagnitude, height: Self.lineHeight),
                                                    options: .usesLineFragmentOrigin,
                                                    attributes: [.font: NSFont.preferredFont(forTextStyle: .body)])
-            // 未解決の余白(8px) + 添字(16px) + 余白(4px) + テキスト + 余白(4px) + 未解決の余白(24px)
+            // 未解決の余白(8px) + 添字(16px) + 余白(4px) + テキスト + 余白(4px) + 未解決の余白(22px)
             // @see https://forums.swift.org/t/swiftui-list-horizontal-insets-macos/52985/5
             return 16 + 4 + size.width + 4 + 22
         }.max()
@@ -93,7 +81,8 @@ struct CandidatesView_Previews: PreviewProvider {
 
     static var previews: some View {
         let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3)
-        viewModel.selected = SelectedWord(word: words.first!, systemAnnotation: String(repeating: "これはシステム辞書の注釈です。", count: 10))
+        viewModel.selected = words.first
+        viewModel.selectedSystemAnnotation = (words.first!, String(repeating: "これはシステム辞書の注釈です。", count: 10))
         return CandidatesView(candidates: viewModel)
     }
 }

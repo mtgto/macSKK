@@ -73,7 +73,7 @@ class InputController: IMKInputController {
                 self.candidatesPanel.orderOut(nil)
             }
         }.store(in: &cancellables)
-        candidatesPanel.viewModel.$selected.compactMap { $0?.word }.sink { selected in
+        candidatesPanel.viewModel.$selected.compactMap { $0 }.sink { selected in
             // TODO: 選択されている単語をSystemDictを使って引いてviewModel.$selectedに設定する
             // バックグラウンドで引いて表示のときだけフォアグラウンドで処理をさせたい
             // 一度引いた単語を二度引かないようにしたい
@@ -85,7 +85,7 @@ class InputController: IMKInputController {
         selectedWord.removeDuplicates().sink { word in
             if let systemAnnotation = SystemDict.lookup(word.word) {
                 logger.info("システム辞書から取得した注釈を設定します")
-                self.candidatesPanel.viewModel.selected = SelectedWord(word: word, systemAnnotation: systemAnnotation)
+                self.candidatesPanel.viewModel.selectedSystemAnnotation = (word, systemAnnotation)
             }
         }.store(in: &cancellables)
     }

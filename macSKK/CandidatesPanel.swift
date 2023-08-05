@@ -19,7 +19,7 @@ final class CandidatesPanel: NSPanel {
     func setCandidates(_ candidates: CurrentCandidates, selected: Word?) {
         viewModel.candidates = candidates
         if let selected {
-            viewModel.selected = SelectedWord(word: selected, systemAnnotation: nil)
+            viewModel.selected = selected
         }
     }
 
