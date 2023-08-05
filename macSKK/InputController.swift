@@ -52,6 +52,10 @@ class InputController: IMKInputController {
                 if let cursor = markedText.cursor {
                     cursorRange = NSRange(location: cursor, length: 0)
                 } else {
+                    // Thingsのメモ欄などで最初の一文字をShift押しながら入力すると "▽あ" が直接入力されてしまうことがあるのを回避するワークグラウンド
+                    if markedText.text.count == 2 && markedText.text.hasPrefix("▽") {
+                        textInput.setMarkedText("▽", selectionRange: Self.notFoundRange, replacementRange: Self.notFoundRange)
+                    }
                     cursorRange = NSRange(location: markedText.text.count, length: 0)
                 }
                 attributedText.addAttributes([.cursor: NSCursor.iBeam], range: cursorRange)
