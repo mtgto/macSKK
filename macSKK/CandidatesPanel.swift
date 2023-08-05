@@ -10,7 +10,7 @@ final class CandidatesPanel: NSPanel {
 
     init() {
         viewModel = CandidatesViewModel(candidates: [], currentPage: 0, totalPageCount: 0)
-        let viewController = NSHostingController(rootView: CandidatesView(candidates: viewModel))
+        let viewController = NSHostingController(rootView: CandidatesView(candidates: self.viewModel))
         super.init(contentRect: .zero, styleMask: [.nonactivatingPanel], backing: .buffered, defer: true)
         viewController.sizingOptions = .preferredContentSize
         contentViewController = viewController
@@ -18,15 +18,11 @@ final class CandidatesPanel: NSPanel {
 
     func setCandidates(_ candidates: CurrentCandidates, selected: Word?) {
         viewModel.candidates = candidates
-        if let selected {
-            viewModel.selected = selected
-        }
+        viewModel.selected = selected
     }
 
     func setSystemAnnotation(_ systemAnnotation: String, for word: Word) {
-        if viewModel.selected == word {
-            viewModel.selectedSystemAnnotation = (word, systemAnnotation)
-        }
+        viewModel.systemAnnotations.updateValue(systemAnnotation, forKey: word)
     }
 
     func show(at point: NSPoint) {

@@ -73,6 +73,7 @@ class InputController: IMKInputController {
                     currentPage: candidates.currentPage,
                     totalPageCount: candidates.totalPageCount)
                 self.candidatesPanel.setCandidates(currentCandidates, selected: candidates.selected)
+                self.selectedWord.send(candidates.selected)
                 self.candidatesPanel.show(at: candidates.cursorPosition.origin)
             } else {
                 self.candidatesPanel.orderOut(nil)
@@ -88,7 +89,7 @@ class InputController: IMKInputController {
             self.stateMachine.didDoubleSelectCandidate(doubleSelected)
         }.store(in: &cancellables)
         selectedWord.removeDuplicates().sink { word in
-            if let systemAnnotation = SystemDict.lookup(word.word) {
+            if let systemAnnotation = SystemDict.lookup(word.word), !systemAnnotation.isEmpty {
                 self.candidatesPanel.setSystemAnnotation(systemAnnotation, for: word)
             }
         }.store(in: &cancellables)

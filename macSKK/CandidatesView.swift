@@ -6,7 +6,7 @@ import SwiftUI
 /// 変換候補ビュー
 /// とりあえず10件ずつ縦に表示、スペースで次の10件が表示される
 struct CandidatesView: View {
-    @ObservedObject var candidates: CandidatesViewModel
+    @StateObject var candidates: CandidatesViewModel
     /// 一行の高さ
     static let lineHeight: CGFloat = 20
     static let footerHeight: CGFloat = 20
@@ -31,11 +31,11 @@ struct CandidatesView: View {
                 // .border(Color.red) // Listの謎のInsetのデバッグ時に使用する
                 .contentShape(Rectangle())
                 .popover(
-                    isPresented: .constant(candidate == candidates.selected && candidate.annotation != nil),
+                    isPresented: .constant(candidate == candidates.selected && (candidate.annotation != nil || candidates.systemAnnotations[candidate] != nil)),
                     arrowEdge: .trailing
                 ) {
                     VStack {
-                        if candidate == candidates.selectedSystemAnnotation?.0, let systemAnnotation = candidates.selectedSystemAnnotation?.1 {
+                        if let systemAnnotation = candidates.systemAnnotations[candidate] {
                             Text(systemAnnotation)
                                 .frame(idealWidth: 300, maxHeight: .infinity)
                                 .padding()
@@ -83,7 +83,7 @@ struct CandidatesView_Previews: PreviewProvider {
     static var previews: some View {
         let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3)
         viewModel.selected = words.first
-        viewModel.selectedSystemAnnotation = (words.first!, String(repeating: "これはシステム辞書の注釈です。", count: 10))
+        viewModel.systemAnnotations = [words.first!: String(repeating: "これはシステム辞書の注釈です。", count: 10)]
         return CandidatesView(candidates: viewModel)
     }
 }

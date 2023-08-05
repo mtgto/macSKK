@@ -21,7 +21,7 @@ final class CandidatesViewModel: ObservableObject {
     /// 二回連続で同じ値がセットされた (マウスで選択されたとき)
     @Published var doubleSelected: Word?
     /// 選択中の変換候補のシステム辞書での注釈
-    @Published var selectedSystemAnnotation: (Word, String)?
+    @Published var systemAnnotations = Dictionary<Word, String>()
 
     init(candidates: [Word], currentPage: Int, totalPageCount: Int) {
         self.candidates = CurrentCandidates(words: candidates, currentPage: currentPage, totalPageCount: totalPageCount)

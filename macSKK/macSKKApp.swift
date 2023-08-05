@@ -57,7 +57,7 @@ struct macSKKApp: App {
                 Button("Add Word") {
                     let words = [Word("こんにちは"), Word("こんばんは"), Word("おはようございます"), Word("追加したよ", annotation: "辞書の注釈")]
                     panel.setCandidates(CurrentCandidates(words: words, currentPage: 0, totalPageCount: 1), selected: words.last)
-                    panel.viewModel.selectedSystemAnnotation = (words.last!, "これはシステム辞書の注釈です")
+                    panel.viewModel.systemAnnotations = [words.last!: "これはシステム辞書の注釈です"]
                 }
             }
         }
@@ -81,7 +81,7 @@ struct macSKKApp: App {
         }
         do {
             dictionary = try UserDict(dicts: [dict])
-            logger.info("Load \(dict.entries.count) entries")
+            logger.log("SKK-JISYO.Lから \(dict.entries.count) エントリ読み込みました")
         } catch {
             // TODO: NotificationCenter経由でユーザーにエラー理由を通知する
             logger.error("Error while loading userDictionary: \(error)")
