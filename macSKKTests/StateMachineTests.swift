@@ -303,6 +303,23 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    func testHandleNormalOptionModifier() {
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(1).sink { events in
+            XCTAssertEqual(events[0], .fixedText("Ω"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+
+        let event = generateNSEvent(
+            characters: "Ω",
+            charactersIgnoringModifiers: "z",
+            modifierFlags: [.option])
+        let action = Action(keyEvent: .printable("z"), originalEvent: event, cursorPosition: .zero)
+
+        XCTAssertTrue(stateMachine.handle(action))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     func testHandleComposingNandQ() {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(6).sink { events in

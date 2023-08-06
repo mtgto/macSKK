@@ -53,6 +53,13 @@ struct Action {
         return event.modifierFlags.contains(.shift)
     }
 
+    func optionIsPressed() -> Bool {
+        guard let event = originalEvent else {
+            return false
+        }
+        return event.modifierFlags.contains(.option)
+    }
+
     /// Option-Shift-E (´) のように入力したキーコードを元に整形された文字列を返す
     func characters() -> String? {
         return originalEvent?.characters
