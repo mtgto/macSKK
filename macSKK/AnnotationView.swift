@@ -14,7 +14,9 @@ struct AnnotationView: View {
                 Text("システム辞書")
                     .font(.headline)
                 Text(systemAnnotation)
-                    .lineLimit(nil)
+                    // FIXME: .textSelectionを有効にするとpopover内のテキスト選択ができるようになるが、
+                    // ダークモードでは文字色が白から黒に変わってしまう問題がある。
+                    .textSelection(.enabled)
                     .fixedSize(horizontal: false, vertical: true)
                     .layoutPriority(1)
                     .padding(.leading)
@@ -23,7 +25,7 @@ struct AnnotationView: View {
                 Text("SKK辞書")
                     .font(.headline)
                 Text(annotation)
-                    .lineLimit(nil)
+                    .textSelection(.enabled)
                     .fixedSize(horizontal: false, vertical: true)
                     .layoutPriority(1)
                     .padding(.leading)
