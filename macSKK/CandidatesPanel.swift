@@ -10,10 +10,7 @@ final class CandidatesPanel: NSPanel {
 
     init() {
         viewModel = CandidatesViewModel(candidates: [], currentPage: 0, totalPageCount: 0)
-        // AnnotationViewでtextSelectionを有効にするとpopover内のテキスト選択ができるようになるが、
-        // ダークモードでは選択時のTextの文字色が白から黒に変わってしまうためライトモードに固定している
         let rootView = CandidatesView(candidates: self.viewModel)
-            .preferredColorScheme(.light)
         let viewController = NSHostingController(rootView: rootView)
         super.init(contentRect: .zero, styleMask: [.nonactivatingPanel], backing: .buffered, defer: true)
         viewController.sizingOptions = .preferredContentSize

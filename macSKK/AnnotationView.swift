@@ -7,6 +7,7 @@ import SwiftUI
 struct AnnotationView: View {
     @Binding var annotation: String?
     @Binding var systemAnnotation: String?
+    @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
         VStack(alignment: .leading) {
@@ -14,9 +15,9 @@ struct AnnotationView: View {
                 Text("システム辞書")
                     .font(.headline)
                 Text(systemAnnotation)
-                    // FIXME: .textSelectionを有効にするとpopover内のテキスト選択ができるようになるが、
-                    // ダークモードでは文字色が白から黒に変わってしまう問題がある。
                     .textSelection(.enabled)
+                    // ↓ ダークモードではテキスト選択時に文字色が白から黒に変わってしまう問題があるので暫定対処
+                    .foregroundColor(colorScheme == .dark ? .white : nil)
                     .fixedSize(horizontal: false, vertical: true)
                     .layoutPriority(1)
                     .padding(.leading)
@@ -26,6 +27,7 @@ struct AnnotationView: View {
                     .font(.headline)
                 Text(annotation)
                     .textSelection(.enabled)
+                    .foregroundColor(colorScheme == .dark ? .white : nil)
                     .fixedSize(horizontal: false, vertical: true)
                     .layoutPriority(1)
                     .padding(.leading)
