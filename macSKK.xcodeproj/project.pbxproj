@@ -27,6 +27,7 @@
 		CEA78FAE2961BA1D00B67E25 /* String+TransformTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA78FAD2961BA1D00B67E25 /* String+TransformTests.swift */; };
 		CEA78FB02964209B00B67E25 /* UserDict.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA78FAF2964209B00B67E25 /* UserDict.swift */; };
 		CEA78FB229646CA100B67E25 /* UserDictTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA78FB129646CA100B67E25 /* UserDictTests.swift */; };
+		CEB0888C2A7F342000EFD1E3 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = CEB0888B2A7F342000EFD1E3 /* Credits.rtf */; };
 		CEC376E82965199500D9C432 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEC376E72965199500D9C432 /* SettingsView.swift */; };
 		CEC376EB2965211200D9C432 /* KeyEventView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEC376EA2965211200D9C432 /* KeyEventView.swift */; };
 		CEE3717529653112000DB2C3 /* GeneralView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEE3717429653112000DB2C3 /* GeneralView.swift */; };
@@ -72,6 +73,7 @@
 		CEA78FAD2961BA1D00B67E25 /* String+TransformTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+TransformTests.swift"; sourceTree = "<group>"; };
 		CEA78FAF2964209B00B67E25 /* UserDict.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDict.swift; sourceTree = "<group>"; };
 		CEA78FB129646CA100B67E25 /* UserDictTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDictTests.swift; sourceTree = "<group>"; };
+		CEB0888B2A7F342000EFD1E3 /* Credits.rtf */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.rtf; path = Credits.rtf; sourceTree = "<group>"; };
 		CEC376E72965199500D9C432 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		CEC376EA2965211200D9C432 /* KeyEventView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyEventView.swift; sourceTree = "<group>"; };
 		CEE3717429653112000DB2C3 /* GeneralView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralView.swift; sourceTree = "<group>"; };
@@ -144,6 +146,7 @@
 				CE5ECF3E2957034D00E7BE7D /* macSKK.entitlements */,
 				CE5ECF632957077D00E7BE7D /* InfoPlist.strings */,
 				CE84A3E4295D9F3E009394C4 /* Localizable.strings */,
+				CEB0888B2A7F342000EFD1E3 /* Credits.rtf */,
 				CE5ECF3B2957034D00E7BE7D /* Preview Content */,
 			);
 			path = macSKK;
@@ -267,6 +270,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CEB0888C2A7F342000EFD1E3 /* Credits.rtf in Resources */,
 				CE5ECF3D2957034D00E7BE7D /* Preview Assets.xcassets in Resources */,
 				CE84A3E5295D9F3E009394C4 /* Localizable.strings in Resources */,
 				CE5ECF642957077D00E7BE7D /* InfoPlist.strings in Resources */,
