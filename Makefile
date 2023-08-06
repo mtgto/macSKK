@@ -20,15 +20,20 @@ APP_PKG_ID := net.mtgto.inputmethod.macSKK.app
 DICT_PKG_ID := net.mtgto.inputmethod.macSKK.dict
 PRODUCT_SIGN_ID := "Developer ID Installer"
 
+.PHONY: all $(DICT)
+
 $(APP):
 	xcodebuild -project macSKK.xcodeproj -configuration Release CODE_SIGN_IDENTITY="Developer ID Application" DEVELOPMENT_TEAM=$(APPLE_TEAM_ID) OTHER_CODE_SIGN_FLAGS="--timestamp --options=runtime" CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO CODE_SIGN_STYLE=Manual build
 
 all: $(APP)
 
-# TODO: https://skk-dev.github.io/dict/SKK-JISYO.L.gz.md5 を保持しておいて更新されたときだけダウンロードするようにする
 $(DICT):
-	curl https://skk-dev.github.io/dict/SKK-JISYO.L.gz -o $(WORKDIR)/SKK-JISYO.L.gz
-	gzip --decompress $(WORKDIR)/SKK-JISYO.L.gz
+	$(eval DICT_DIGEST_LATEST := $(shell curl --silent https://skk-dev.github.io/dict/SKK-JISYO.L.gz.md5 | cut -w -f 1))
+	$(eval DICT_DIGEST := $(shell if [ -f $(WORKDIR)/SKK-JISYO.L.gz ]; then md5 -q $(WORKDIR)/SKK-JISYO.L.gz; else echo NA; fi))
+	if [ $(DICT_DIGEST) != $(DICT_DIGEST_LATEST) ]; then \
+		curl https://skk-dev.github.io/dict/SKK-JISYO.L.gz -o $(WORKDIR)/SKK-JISYO.L.gz; \
+		gzip --decompress --force $(WORKDIR)/SKK-JISYO.L.gz; \
+	fi
 
 $(DICT_PKG): $(DICT)
 	mkdir -p $(WORKDIR)/dict/Library/Containers/net.mtgto.inputmethod.macSKK/Data
