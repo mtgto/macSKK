@@ -199,7 +199,11 @@ class StateMachine {
                 return false
             }
         case .down, .up:
-            return false
+            if state.specialState != nil {
+                return true
+            } else {
+                return false
+            }
         case .ctrlY:
             if case .register = state.specialState {
                 if let text = Pasteboard.getString() {

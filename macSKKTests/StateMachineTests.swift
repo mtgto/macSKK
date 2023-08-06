@@ -139,6 +139,11 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    func testHandleNormalUpDown() throws {
+        XCTAssertFalse(stateMachine.handle(Action(keyEvent: .up, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertFalse(stateMachine.handle(Action(keyEvent: .down, originalEvent: nil, cursorPosition: .zero)))
+    }
+
     func testHandleNormalPrintable() throws {
         stateMachine = StateMachine(initialState: IMEState(inputMode: .direct))
         let expectation = XCTestExpectation()
@@ -1050,6 +1055,22 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    func testHandleRegisteringUpDown() {
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(3).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText(text: "▽い", cursor: nil)))
+            XCTAssertEqual(events[1], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[2], .markedText(MarkedText(text: "[登録：い]", cursor: nil)))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .up, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .down, originalEvent: nil, cursorPosition: .zero)))
+        Pasteboard.stringForTest = nil
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     func testHandleRegisteringCtrlY() {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
@@ -1322,6 +1343,8 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e", withShift: true)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "x", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .up, originalEvent: nil, cursorPosition: .zero)), "上キーやC-pは無視")
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .down, originalEvent: nil, cursorPosition: .zero)), "下キーやC-nは無視")
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .ctrlJ, originalEvent: nil, cursorPosition: .zero)))
         "yes".forEach { character in
             XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: character)))
