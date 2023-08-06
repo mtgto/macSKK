@@ -34,17 +34,7 @@ struct CandidatesView: View {
                     isPresented: .constant(candidate == candidates.selected && (candidate.annotation != nil || candidates.systemAnnotations[candidate] != nil)),
                     arrowEdge: .trailing
                 ) {
-                    VStack {
-                        if let systemAnnotation = candidates.systemAnnotations[candidate] {
-                            Text(systemAnnotation)
-                                .frame(idealWidth: 300, maxHeight: .infinity)
-                                .padding()
-                        } else {
-                            Text(candidate.annotation!)
-                                .frame(idealWidth: 300, maxHeight: .infinity)
-                                .padding()
-                        }
-                    }
+                    AnnotationView(annotation: .constant(candidate.annotation), systemAnnotation: $candidates.systemAnnotations[candidate])
                 }
             }
             .listStyle(.plain)
