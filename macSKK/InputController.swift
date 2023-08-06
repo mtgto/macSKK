@@ -195,6 +195,8 @@ class InputController: IMKInputController {
                     return .ctrlA
                 case "e":
                     return .ctrlE
+                case "y":
+                    return .ctrlY
                 default:
                     break
                 }

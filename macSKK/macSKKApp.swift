@@ -8,6 +8,10 @@ import os
 let logger: Logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "main")
 var dictionary: UserDict!
 
+func isTest() -> Bool {
+    return ProcessInfo.processInfo.environment["MACSKK_IS_TEST"] == "1"
+}
+
 @main
 struct macSKKApp: App {
     private var server: IMKServer!
@@ -86,9 +90,5 @@ struct macSKKApp: App {
             // TODO: NotificationCenter経由でユーザーにエラー理由を通知する
             logger.error("Error while loading userDictionary: \(error)")
         }
-    }
-
-    private func isTest() -> Bool {
-        return ProcessInfo.processInfo.environment["MACSKK_IS_TEST"] == "1"
     }
 }

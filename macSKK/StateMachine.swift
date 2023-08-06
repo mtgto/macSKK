@@ -47,7 +47,7 @@ class StateMachine {
         }
     }
 
-    /// 処理されないキーイベントを処理するかどうかを返す
+    /// macSKKで取り扱わないキーイベントを処理するかどうかを返す
     func handleUnhandledEvent(_ event: NSEvent) -> Bool {
         if state.specialState != nil {
             return true
@@ -200,6 +200,17 @@ class StateMachine {
             }
         case .down, .up:
             return false
+        case .ctrlY:
+            if case .register = state.specialState {
+                if let text = Pasteboard.getString() {
+                    addFixedText(text)
+                    return true
+                } else {
+                    return false
+                }
+            } else {
+                return false
+            }
         }
     }
 
@@ -470,7 +481,7 @@ class StateMachine {
             }
             updateMarkedText()
             return true
-        case .up, .down:
+        case .up, .down, .ctrlY:
             return true
         }
     }
@@ -757,6 +768,8 @@ class StateMachine {
                 updateCandidates(selecting: newSelectingState)
                 updateMarkedText()
             }
+            return true
+        case .ctrlY:
             return true
         }
     }
