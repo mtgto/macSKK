@@ -7,7 +7,6 @@ import SwiftUI
 struct AnnotationView: View {
     @Binding var annotation: String?
     @Binding var systemAnnotation: String?
-    static let idealWidth: CGFloat = 300
 
     var body: some View {
         VStack(alignment: .leading) {
@@ -15,17 +14,22 @@ struct AnnotationView: View {
                 Text("システム辞書")
                     .font(.headline)
                 Text(systemAnnotation)
-                    .frame(idealWidth: Self.idealWidth)
+                    .lineLimit(nil)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .layoutPriority(1)
                     .padding(.leading)
             }
             if let annotation {
                 Text("SKK辞書")
                     .font(.headline)
                 Text(annotation)
-                    .frame(idealWidth: Self.idealWidth)
+                    .lineLimit(nil)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .layoutPriority(1)
                     .padding(.leading)
             }
-        }.padding()
+        }
+        .padding()
     }
 }
 
@@ -34,10 +38,14 @@ struct AnnotationView_Previews: PreviewProvider {
         AnnotationView(
             annotation: .constant(String(repeating: "これは辞書の注釈です。", count: 3)),
             systemAnnotation: .constant(nil)
-        ).previewDisplayName("SKK辞書の注釈のみ")
+        )
+        .frame(width: 300)
+        .previewDisplayName("SKK辞書の注釈のみ")
         AnnotationView(
             annotation: .constant("これは辞書の注釈です"),
-            systemAnnotation: .constant(String(repeating: "これはシステム辞書の注釈です", count: 5))
-        ).previewDisplayName("SKK辞書の注釈 & システム辞書の注釈")
+            systemAnnotation: .constant(String(repeating: "これはシステム辞書の注釈です。", count: 10))
+        )
+        .frame(width: 300)
+        .previewDisplayName("SKK辞書の注釈 & システム辞書の注釈")
     }
 }

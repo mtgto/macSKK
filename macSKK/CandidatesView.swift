@@ -34,7 +34,11 @@ struct CandidatesView: View {
                     isPresented: .constant(candidate == candidates.selected && (candidate.annotation != nil || candidates.systemAnnotations[candidate] != nil)),
                     arrowEdge: .trailing
                 ) {
-                    AnnotationView(annotation: .constant(candidate.annotation), systemAnnotation: $candidates.systemAnnotations[candidate])
+                    AnnotationView(
+                        annotation: .constant(candidate.annotation),
+                        systemAnnotation: $candidates.systemAnnotations[candidate]
+                    )
+                    .frame(width: 300, alignment: .topLeading)
                 }
             }
             .listStyle(.plain)
