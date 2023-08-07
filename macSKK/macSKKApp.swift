@@ -53,6 +53,7 @@ struct macSKKApp: App {
                         print(error)
                     }
                 }.keyboardShortcut("S")
+                #if DEBUG
                 Button("Show CandidatesPanel") {
                     let words = [Word("こんにちは", annotation: "辞書の注釈"), Word("こんばんは"), Word("おはようございます")]
                     panel.setCandidates(CurrentCandidates(words: words, currentPage: 0, totalPageCount: 1), selected: words.first)
@@ -63,6 +64,7 @@ struct macSKKApp: App {
                     panel.setCandidates(CurrentCandidates(words: words, currentPage: 0, totalPageCount: 1), selected: words.last)
                     panel.viewModel.systemAnnotations = [words.last!: String(repeating: "これはシステム辞書の注釈です。", count: 5)]
                 }
+                #endif
             }
         }
     }

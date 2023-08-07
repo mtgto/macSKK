@@ -9,6 +9,7 @@ struct SettingsView: View {
     }
     var body: some View {
         TabView {
+            #if DEBUG
             GeneralView()
                 .tabItem {
                     Label("General", systemImage: "gearshape")
@@ -24,6 +25,9 @@ struct SettingsView: View {
                     Label("SystemDict", systemImage: "book.closed.fill")
                 }
                 .tag(Section.systemDict)
+            #else
+                Text("TODO")
+            #endif
         }
         .frame(minWidth: 640, minHeight: 360)
     }

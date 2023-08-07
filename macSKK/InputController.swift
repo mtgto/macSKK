@@ -27,9 +27,12 @@ class InputController: IMKInputController {
         preferenceMenu.addItem(
             withTitle: NSLocalizedString("MenuItemSaveDict", comment: "Save User Dictionary"),
             action: #selector(saveDict), keyEquivalent: "")
+        #if DEBUG
+        // デバッグ用
         preferenceMenu.addItem(
             withTitle: "Show Panel",
             action: #selector(showPanel), keyEquivalent: "")
+        #endif
 
         guard let textInput = inputClient as? IMKTextInput else {
             return
@@ -126,8 +129,8 @@ class InputController: IMKInputController {
 
     override func setValue(_ value: Any!, forTag tag: Int, client sender: Any!) {
         guard let value = value as? String else { return }
-        logger.log("setValue \(value, privacy: .public)")
         guard let inputMode = InputMode(rawValue: value) else { return }
+        logger.debug("入力モードが変更されました \(inputMode.rawValue)")
         stateMachine.setMode(inputMode)
         guard let textInput = sender as? IMKTextInput else {
             logger.warning("setValueの引数clientがIMKTextInputではありません")
@@ -152,6 +155,7 @@ class InputController: IMKInputController {
         do {
             try dictionary.save()
         } catch {
+            // TODO: NotificationCenterでユーザーに通知する
             logger.error("ユーザー辞書保存中にエラーが発生しました")
         }
     }
