@@ -1,11 +1,13 @@
 # インストーラ作成Makefile
 # 公証に必要なので先に "Developer ID Application" のCertificateを生成してインストールしておくこと。
-
-# TODO: dmgのファイル名やpkg自体にバージョン番号をつけたほうが管理しやすそう
+# 公証のためのApp Passwordは先にKeychainに入れておくこと. 次のコマンドで実行できる
+# xcrun notarytool store-credentials $(CREDENTIALS_PROFILE) --apple-id $(APPLE_ID) --team-id $(APPLE_TEAM_ID)
+# See https://developer.apple.com/documentation/technotes/tn3147-migrating-to-the-latest-notarization-tool#Save-credentials-in-the-keychain
 
 # 設定項目
-APPLE_ID := hogerappa@gmail.com
+#APPLE_ID := hogerappa@gmail.com
 APPLE_TEAM_ID := W3A6B7FDC7
+CREDENTIALS_PROFILE := macSKK
 VERSION := 0.1.0
 
 WORKDIR := script/work
@@ -32,7 +34,7 @@ $(DICT):
 	$(eval DICT_DIGEST := $(shell if [ -f $(WORKDIR)/SKK-JISYO.L.gz ]; then md5 -q $(WORKDIR)/SKK-JISYO.L.gz; else echo NA; fi))
 	if [ $(DICT_DIGEST) != $(DICT_DIGEST_LATEST) ]; then \
 		curl https://skk-dev.github.io/dict/SKK-JISYO.L.gz -o $(WORKDIR)/SKK-JISYO.L.gz; \
-		gzip --decompress --force $(WORKDIR)/SKK-JISYO.L.gz; \
+		gzip --decompress --keep --force $(WORKDIR)/SKK-JISYO.L.gz; \
 	fi
 
 $(DICT_PKG): $(DICT)
@@ -49,15 +51,17 @@ $(INSTALLER_PKG): $(APP_PKG) $(DICT_PKG)
 	mkdir -p $(WORKDIR)/pkg
 	productbuild --distribution script/distribution.xml --resources script --package-path $(WORKDIR) $(UNSIGNED_PKG)
 	productsign --sign $(PRODUCT_SIGN_ID) $(UNSIGNED_PKG) $(INSTALLER_PKG)
-	xcrun notarytool submit --wait $(INSTALLER_PKG) --team-id $(APPLE_TEAM_ID) --apple-id $(APPLE_ID)
+	# store-credentialsしてある場合はキーチェーンの情報を使うのでAPPLE_IDは不要。
+	# 将来、公証をGitHub Actionsなどで実行することになったらApp Passwordを使うようにするかも。
+	#xcrun notarytool submit $(INSTALLER_PKG) --team-id $(APPLE_TEAM_ID) --apple-id $(APPLE_ID) --wait
+	xcrun notarytool submit $(INSTALLER_PKG) -p $(CREDENTIALS_PROFILE) --wait
 	xcrun stapler staple $(INSTALLER_PKG)
 
 $(TARGET_DMG): $(INSTALLER_PKG)
+	if [ -f $(TARGET_DMG) ]; then rm $(TARGET_DMG); fi
 	hdiutil create -srcfolder $(WORKDIR)/pkg -volname macSKK -fs HFS+ $(TARGET_DMG)
-	xcrun notarytool submit --wait $(TARGET_DMG) --team-id $(APPLE_TEAM_ID) --apple-id $(APPLE_ID)
-	xcrun stapler staple $(TARGET_DMG)
 
-release: $(INSTALLER_PKG)
+release: $(TARGET_DMG)
 
 clean:
 	rm -r $(WORKDIR) build
