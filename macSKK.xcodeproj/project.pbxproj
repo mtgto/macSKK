@@ -78,6 +78,8 @@
 		CEB0888B2A7F342000EFD1E3 /* Credits.rtf */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.rtf; path = Credits.rtf; sourceTree = "<group>"; };
 		CEB0888D2A7F393600EFD1E3 /* AnnotationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnotationView.swift; sourceTree = "<group>"; };
 		CEB0888F2A7F73B400EFD1E3 /* Pasteboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Pasteboard.swift; sourceTree = "<group>"; };
+		CEB088922A81342E00EFD1E3 /* macSKK-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "macSKK-Bridging-Header.h"; sourceTree = "<group>"; };
+		CEB088952A81353400EFD1E3 /* DictionaryServiceExtention.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DictionaryServiceExtention.h; sourceTree = "<group>"; };
 		CEC376E72965199500D9C432 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		CEC376EA2965211200D9C432 /* KeyEventView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyEventView.swift; sourceTree = "<group>"; };
 		CEE3717429653112000DB2C3 /* GeneralView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralView.swift; sourceTree = "<group>"; };
@@ -147,6 +149,8 @@
 				CEB0888F2A7F73B400EFD1E3 /* Pasteboard.swift */,
 				CEA78FAB2960401F00B67E25 /* String+Transform.swift */,
 				CEC376E929651DE000D9C432 /* Settings */,
+				CEB088922A81342E00EFD1E3 /* macSKK-Bridging-Header.h */,
+				CEB088952A81353400EFD1E3 /* DictionaryServiceExtention.h */,
 				CE5ECF392957034D00E7BE7D /* Assets.xcassets */,
 				CE5ECF612957061A00E7BE7D /* Info.plist */,
 				CE5ECF3E2957034D00E7BE7D /* macSKK.entitlements */,
@@ -243,6 +247,7 @@
 				TargetAttributes = {
 					CE5ECF312957034B00E7BE7D = {
 						CreatedOnToolsVersion = 14.2;
+						LastSwiftMigration = 1430;
 					};
 					CE5ECF422957034D00E7BE7D = {
 						CreatedOnToolsVersion = 14.2;
@@ -487,6 +492,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = macSKK/macSKK.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -507,6 +513,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = net.mtgto.inputmethod.macSKK;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "macSKK/macSKK-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
@@ -516,6 +524,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = macSKK/macSKK.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -536,6 +545,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = net.mtgto.inputmethod.macSKK;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "macSKK/macSKK-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
