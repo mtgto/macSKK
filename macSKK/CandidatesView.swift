@@ -6,7 +6,7 @@ import SwiftUI
 /// 変換候補ビュー
 /// とりあえず10件ずつ縦に表示、スペースで次の10件が表示される
 struct CandidatesView: View {
-    @StateObject var candidates: CandidatesViewModel
+    @ObservedObject var candidates: CandidatesViewModel
     /// 一行の高さ
     static let lineHeight: CGFloat = 20
     static let footerHeight: CGFloat = 20
@@ -30,16 +30,6 @@ struct CandidatesView: View {
                 .frame(height: Self.lineHeight)
                 // .border(Color.red) // Listの謎のInsetのデバッグ時に使用する
                 .contentShape(Rectangle())
-                .popover(
-                    isPresented: .constant(candidate == candidates.selected && (candidate.annotation != nil || candidates.systemAnnotations[candidate] != nil)),
-                    arrowEdge: .trailing
-                ) {
-                    AnnotationView(
-                        annotation: .constant(candidate.annotation),
-                        systemAnnotation: $candidates.systemAnnotations[candidate]
-                    )
-                    .frame(width: 300, alignment: .topLeading)
-                }
             }
             .listStyle(.plain)
             .environment(\.defaultMinListRowHeight, Self.lineHeight)  // Listの行の上下の余白を削除
@@ -51,6 +41,20 @@ struct CandidatesView: View {
                     .padding(EdgeInsets(top: 2, leading: 0, bottom: 2, trailing: 4))
             }
             .frame(width: minWidth(), height: Self.footerHeight)
+        }
+        .popover(
+            isPresented: $candidates.popoverIsPresented,
+            attachmentAnchor: .rect(.rect(CGRect(x: 0,
+                                                 y: CGFloat(candidates.selectedIndex ?? 0) * Self.lineHeight,
+                                                 width: minWidth(),
+                                                 height: Self.lineHeight))),
+            arrowEdge: .trailing
+        ) {
+            AnnotationView(
+                annotation: $candidates.selectedSystemAnnotation,
+                systemAnnotation: $candidates.selectedAnnotation
+            )
+            .frame(width: 300, alignment: .topLeading)
         }
     }
 
