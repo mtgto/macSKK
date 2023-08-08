@@ -26,7 +26,6 @@ final class CandidatesViewModel: ObservableObject {
     @Published var selectedIndex: Int?
     @Published var selectedSystemAnnotation: String?
     @Published var selectedAnnotation: String?
-    @Published var viewIsAppeared: Bool = false
     private var cancellables: Set<AnyCancellable> = []
 
     init(candidates: [Word], currentPage: Int, totalPageCount: Int) {
@@ -35,12 +34,12 @@ final class CandidatesViewModel: ObservableObject {
             self.selected = first
         }
 
-        $selected.combineLatest($systemAnnotations, $viewIsAppeared).sink { (selected, systemAnnotations, viewIsAppeared) in
+        $selected.combineLatest($systemAnnotations).sink { (selected, systemAnnotations) in
             if let selected {
                 self.selectedIndex = self.candidates.words.firstIndex(of: selected)
                 self.selectedAnnotation = selected.annotation
                 self.selectedSystemAnnotation = systemAnnotations[selected]
-                self.popoverIsPresented = viewIsAppeared && (self.selectedAnnotation ?? self.selectedSystemAnnotation) != nil
+                self.popoverIsPresented = (self.selectedAnnotation ?? self.selectedSystemAnnotation) != nil
             }
         }
         .store(in: &cancellables)

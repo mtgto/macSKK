@@ -56,9 +56,6 @@ struct CandidatesView: View {
             )
             .frame(width: 300, alignment: .topLeading)
         }
-        .onAppear {
-            candidates.viewIsAppeared = true
-        }
     }
 
     // 最長のテキストを表示するために必要なビューのサイズを返す
