@@ -22,11 +22,27 @@ final class CandidatesViewModel: ObservableObject {
     @Published var doubleSelected: Word?
     /// 選択中の変換候補のシステム辞書での注釈
     @Published var systemAnnotations = Dictionary<Word, String>()
+    @Published var popoverIsPresented: Bool = false
+    @Published var selectedIndex: Int?
+    @Published var selectedSystemAnnotation: String?
+    @Published var selectedAnnotation: String?
+    @Published var viewIsAppeared: Bool = false
+    private var cancellables: Set<AnyCancellable> = []
 
     init(candidates: [Word], currentPage: Int, totalPageCount: Int) {
         self.candidates = CurrentCandidates(words: candidates, currentPage: currentPage, totalPageCount: totalPageCount)
         if let first = candidates.first {
             self.selected = first
         }
+
+        $selected.combineLatest($systemAnnotations, $viewIsAppeared).sink { (selected, systemAnnotations, viewIsAppeared) in
+            if let selected {
+                self.selectedIndex = self.candidates.words.firstIndex(of: selected)
+                self.selectedAnnotation = selected.annotation
+                self.selectedSystemAnnotation = systemAnnotations[selected]
+                self.popoverIsPresented = viewIsAppeared && (self.selectedAnnotation ?? self.selectedSystemAnnotation) != nil
+            }
+        }
+        .store(in: &cancellables)
     }
 }
