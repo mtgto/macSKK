@@ -5,8 +5,9 @@ import Foundation
 
 /// Dictionary Serviceを使ってシステム辞書から検索する
 class SystemDict {
+    private static let dictionary: DCSDictionary? = findSystemJapaneseDict()
+
     class func lookup(_ word: String) -> String? {
-        let dictionary: DCSDictionary? = findSystemJapaneseDict()
         if let result = DCSCopyTextDefinition(dictionary, word as NSString, CFRangeMake(0, word.count)) {
             return result.takeRetainedValue() as String
         }
@@ -18,9 +19,15 @@ class SystemDict {
             logger.error("システム辞書が見つかりません")
             return nil
         }
-        return dictionaries.first { dict in
-            // DCSDictionaryGetNameだと"スーパー大辞林"
-            return DCSDictionaryGetIdentifier(dict) == "com.apple.dictionary.ja.Daijirin"
+        let dictionary = dictionaries.first {
+            // DCSDictionaryGetNameは "スーパー大辞林"
+            DCSDictionaryGetIdentifier($0) == "com.apple.dictionary.ja.Daijirin"
+        }
+        if let dictionary {
+            return dictionary
+        } else {
+            logger.warning("スーパー大辞林が利用可能な辞書にありませんでした")
+            return nil
         }
     }
 }
