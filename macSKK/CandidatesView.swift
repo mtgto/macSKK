@@ -42,7 +42,6 @@ struct CandidatesView: View {
             }
             .frame(width: minWidth(), height: Self.footerHeight)
         }
-        .frame(width: minWidth(), height: CGFloat(candidates.candidates.words.count) * Self.lineHeight + Self.footerHeight)
         .popover(
             isPresented: $candidates.popoverIsPresented,
             attachmentAnchor: .rect(.rect(CGRect(x: 0,
@@ -63,7 +62,7 @@ struct CandidatesView: View {
     }
 
     // 最長のテキストを表示するために必要なビューのサイズを返す
-    private func minWidth() -> CGFloat {
+    func minWidth() -> CGFloat {
         let width = candidates.candidates.words.map { candidate -> CGFloat in
             let size = candidate.word.boundingRect(
                 with: CGSize(width: .greatestFiniteMagnitude, height: Self.lineHeight),

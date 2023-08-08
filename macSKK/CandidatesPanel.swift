@@ -13,8 +13,6 @@ final class CandidatesPanel: NSPanel {
         let rootView = CandidatesView(candidates: self.viewModel)
         let viewController = NSHostingController(rootView: rootView)
         super.init(contentRect: .zero, styleMask: [.nonactivatingPanel], backing: .buffered, defer: true)
-        //viewController.sizingOptions = .preferredContentSize
-        viewController.sizingOptions = .standardBounds
         contentViewController = viewController
     }
 
@@ -30,15 +28,17 @@ final class CandidatesPanel: NSPanel {
     func show(at point: NSPoint) {
         // TODO: もしスクリーン下にはみ出す場合は setOrigin を使って左下座標を指定する。
         if let viewController = contentViewController as? NSHostingController<CandidatesView> {
+            #if DEBUG
             print("content size = \(viewController.sizeThatFits(in: CGSize(width: Int.max, height: Int.max)))")
             print("intrinsicContentSize = \(viewController.view.intrinsicContentSize)")
             print("frame = \(frame)")
             print("preferredContentSize = \(viewController.preferredContentSize)")
             print("sizeThatFits = \(viewController.sizeThatFits(in: CGSize(width: 10000, height: 10000)))")
-        } else {
-            print("\(contentViewController!.className)")
+            #endif
+            let width = viewController.rootView.minWidth()
+            let height = CGFloat(self.viewModel.candidates.words.count) * CandidatesView.lineHeight + CandidatesView.footerHeight
+            setContentSize(NSSize(width: width, height: height))
         }
-        setContentSize(NSSize(width: 300, height: 300))
         setFrameTopLeftPoint(point)
         level = .floating
         orderFrontRegardless()
