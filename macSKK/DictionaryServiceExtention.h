@@ -8,4 +8,4 @@ NSArray * _Nonnull DCSGetActiveDictionaries();
 // Dictionary.appで無効になっているものを含めて利用可能な辞書を返す
 NSSet * _Nonnull DCSCopyAvailableDictionaries();
 NSString * _Nullable DCSDictionaryGetName(DCSDictionaryRef _Nullable dictID);
-NSString * _Nullable DCSDictionaryGetShortName(DCSDictionaryRef _Nullable dictID);
+NSString * _Nullable DCSDictionaryGetIdentifier(DCSDictionaryRef _Nullable dictID);

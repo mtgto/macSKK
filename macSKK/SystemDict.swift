@@ -19,7 +19,8 @@ class SystemDict {
             return nil
         }
         return dictionaries.first { dict in
-            return DCSDictionaryGetName(dict) == "スーパー大辞林"
+            // DCSDictionaryGetNameだと"スーパー大辞林"
+            return DCSDictionaryGetIdentifier(dict) == "com.apple.dictionary.ja.Daijirin"
         }
     }
 }
