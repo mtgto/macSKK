@@ -42,6 +42,7 @@ struct CandidatesView: View {
             }
             .frame(width: minWidth(), height: Self.footerHeight)
         }
+        .frame(width: minWidth(), height: CGFloat(candidates.candidates.words.count) * Self.lineHeight + Self.footerHeight)
         .popover(
             isPresented: $candidates.popoverIsPresented,
             attachmentAnchor: .rect(.rect(CGRect(x: 0,
@@ -51,8 +52,8 @@ struct CandidatesView: View {
             arrowEdge: .trailing
         ) {
             AnnotationView(
-                annotation: $candidates.selectedSystemAnnotation,
-                systemAnnotation: $candidates.selectedAnnotation
+                annotation: $candidates.selectedAnnotation,
+                systemAnnotation: $candidates.selectedSystemAnnotation
             )
             .frame(width: 300, alignment: .topLeading)
         }

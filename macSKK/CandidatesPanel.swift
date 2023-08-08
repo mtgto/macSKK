@@ -13,6 +13,7 @@ final class CandidatesPanel: NSPanel {
         let rootView = CandidatesView(candidates: self.viewModel)
         let viewController = NSHostingController(rootView: rootView)
         super.init(contentRect: .zero, styleMask: [.nonactivatingPanel], backing: .buffered, defer: true)
+        //viewController.sizingOptions = .preferredContentSize
         viewController.sizingOptions = .standardBounds
         contentViewController = viewController
     }
@@ -28,7 +29,6 @@ final class CandidatesPanel: NSPanel {
 
     func show(at point: NSPoint) {
         // TODO: もしスクリーン下にはみ出す場合は setOrigin を使って左下座標を指定する。
-        setFrameTopLeftPoint(point)
         if let viewController = contentViewController as? NSHostingController<CandidatesView> {
             print("content size = \(viewController.sizeThatFits(in: CGSize(width: Int.max, height: Int.max)))")
             print("intrinsicContentSize = \(viewController.view.intrinsicContentSize)")
@@ -38,6 +38,8 @@ final class CandidatesPanel: NSPanel {
         } else {
             print("\(contentViewController!.className)")
         }
+        setContentSize(NSSize(width: 300, height: 300))
+        setFrameTopLeftPoint(point)
         level = .floating
         orderFrontRegardless()
     }
