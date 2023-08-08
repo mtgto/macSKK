@@ -13,7 +13,7 @@ final class CandidatesPanel: NSPanel {
         let rootView = CandidatesView(candidates: self.viewModel)
         let viewController = NSHostingController(rootView: rootView)
         super.init(contentRect: .zero, styleMask: [.nonactivatingPanel], backing: .buffered, defer: true)
-        viewController.sizingOptions = .preferredContentSize
+        viewController.sizingOptions = .standardBounds
         contentViewController = viewController
     }
 
