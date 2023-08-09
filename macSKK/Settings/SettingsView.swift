@@ -11,12 +11,12 @@ struct SettingsView: View {
 
     var body: some View {
         TabView {
-            #if DEBUG
             GeneralView(settingsViewModel: settingsViewModel)
                 .tabItem {
                     Label("General", systemImage: "gearshape")
                 }
                 .tag(Section.general)
+            #if DEBUG
             KeyEventView()
                 .tabItem {
                     Label("KeyEvent", systemImage: "keyboard")

@@ -8,30 +8,31 @@ struct GeneralView: View {
     @StateObject var settingsViewModel: SettingsViewModel
 
     var body: some View {
-        Form {
-            LabeledContent("現在のバージョン:") {
-                Text(Bundle.main.infoDictionary!["CFBundleShortVersionString"] as! String)
-                if let latestRelease = settingsViewModel.latestRelease {
-                    Text("(最新バージョン: \(latestRelease.version))")
-                        .padding(.leading)
+        VStack {
+            Form {
+                LabeledContent("現在のバージョン:") {
+                    Text(Bundle.main.infoDictionary!["CFBundleShortVersionString"] as! String)
+                    if let latestRelease = settingsViewModel.latestRelease {
+                        Text("(最新バージョン: \(latestRelease.version))")
+                            .padding(.leading)
+                    }
+                }
+                Button("アップデートを確認…") {
+                    Task {
+                        let releases = try await UpdateChecker().fetch()
+                        settingsViewModel.latestRelease = releases.first
+                    }
+                }
+                .disabled(settingsViewModel.fetchingRelease)
+                Button("リリースページを開く") {
+                    if let url = URL(string: "https://github.com/mtgto/macSKK/releases") {
+                        openURL(url)
+                    }
                 }
             }
-
-            Button("アップデートを確認…") {
-                Task {
-                    let releases = try await UpdateChecker().fetch()
-                    settingsViewModel.latestRelease = releases.first
-                }
-            }
-            .disabled(settingsViewModel.fetchingRelease)
-
-            Button("リリースページを開く") {
-                if let url = URL(string: "https://github.com/mtgto/macSKK/releases") {
-                    openURL(url)
-                }
-            }
+            .padding()
+            Spacer()
         }
-        .padding()
     }
 }
 
