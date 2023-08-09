@@ -3,10 +3,6 @@
 
 import Foundation
 
-enum XPCError: Error {
-    case invalidProxy // remoteObjectProxyが想定したプロトコルを満たしていない
-}
-
 struct UpdateChecker {
     func callSampleXPC() async throws -> String {
         let service = NSXPCConnection(serviceName: "net.mtgto.inputmethod.macSKK.FetchUpdateService")
@@ -16,15 +12,11 @@ struct UpdateChecker {
         defer {
             service.invalidate()
         }
-        
-        return try await withCheckedThrowingContinuation { continuation in
-            guard let proxy = service.remoteObjectProxy as? FetchUpdateServiceProtocol else {
-                continuation.resume(throwing: XPCError.invalidProxy)
-                return
-            }
-            proxy.uppercase(string: "hello") { aString in
-                continuation.resume(returning: aString)
-            }
+
+        guard let proxy = service.remoteObjectProxy as? FetchUpdateServiceProtocol else {
+            return "ERROR"
         }
+        let response = try await proxy.fetch()
+        return String(data: response, encoding: .utf8) ?? "ERROR2"
     }
 }
