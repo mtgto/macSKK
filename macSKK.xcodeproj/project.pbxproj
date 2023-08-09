@@ -37,6 +37,8 @@
 		CED7CA302A8394F7004EF988 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED7CA2F2A8394F7004EF988 /* main.swift */; };
 		CED7CA352A8394F7004EF988 /* FetchUpdateService.xpc in Embed XPC Services */ = {isa = PBXBuildFile; fileRef = CED7CA292A8394F7004EF988 /* FetchUpdateService.xpc */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		CED7CA3A2A839505004EF988 /* FetchUpdateServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED7CA2B2A8394F7004EF988 /* FetchUpdateServiceProtocol.swift */; };
+		CED7CA3C2A839603004EF988 /* UpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED7CA3B2A839603004EF988 /* UpdateChecker.swift */; };
+		CED7CA3E2A8397E4004EF988 /* UpdateCheckerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED7CA3D2A8397E4004EF988 /* UpdateCheckerTests.swift */; };
 		CEE3717529653112000DB2C3 /* GeneralView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEE3717429653112000DB2C3 /* GeneralView.swift */; };
 		CEF0823629685C0800646366 /* StateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF0823529685C0800646366 /* StateTests.swift */; };
 		CEF0823A296BCDB000646366 /* InputModePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF08239296BCDB000646366 /* InputModePanel.swift */; };
@@ -114,6 +116,8 @@
 		CED7CA2F2A8394F7004EF988 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		CED7CA312A8394F7004EF988 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CED7CA322A8394F7004EF988 /* FetchUpdateService.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FetchUpdateService.entitlements; sourceTree = "<group>"; };
+		CED7CA3B2A839603004EF988 /* UpdateChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateChecker.swift; sourceTree = "<group>"; };
+		CED7CA3D2A8397E4004EF988 /* UpdateCheckerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateCheckerTests.swift; sourceTree = "<group>"; };
 		CEE3717429653112000DB2C3 /* GeneralView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralView.swift; sourceTree = "<group>"; };
 		CEF0823529685C0800646366 /* StateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateTests.swift; sourceTree = "<group>"; };
 		CEF08239296BCDB000646366 /* InputModePanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputModePanel.swift; sourceTree = "<group>"; };
@@ -188,6 +192,7 @@
 				CEF0825C296DB58600646366 /* CandidatesViewModel.swift */,
 				CE40D9A22A6D0C3900D44799 /* SystemDict.swift */,
 				CEB0888F2A7F73B400EFD1E3 /* Pasteboard.swift */,
+				CED7CA3B2A839603004EF988 /* UpdateChecker.swift */,
 				CEA78FAB2960401F00B67E25 /* String+Transform.swift */,
 				CEC376E929651DE000D9C432 /* Settings */,
 				CEB088922A81342E00EFD1E3 /* macSKK-Bridging-Header.h */,
@@ -220,6 +225,7 @@
 				CEA78FA9295EBCAC00B67E25 /* StateMachineTests.swift */,
 				CEA78FB129646CA100B67E25 /* UserDictTests.swift */,
 				CEA78FAD2961BA1D00B67E25 /* String+TransformTests.swift */,
+				CED7CA3D2A8397E4004EF988 /* UpdateCheckerTests.swift */,
 			);
 			path = macSKKTests;
 			sourceTree = "<group>";
@@ -416,6 +422,7 @@
 				CE84A3E7295DA4DA009394C4 /* Romaji.swift in Sources */,
 				CEF0825B296D8FF000646366 /* CandidatesView.swift in Sources */,
 				CE84A3E0295717CB009394C4 /* StateMachine.swift in Sources */,
+				CED7CA3C2A839603004EF988 /* UpdateChecker.swift in Sources */,
 				CE5ECF362957034B00E7BE7D /* macSKKApp.swift in Sources */,
 				CE84A3DE29571797009394C4 /* Action.swift in Sources */,
 				CED7CA3A2A839505004EF988 /* FetchUpdateServiceProtocol.swift in Sources */,
@@ -440,6 +447,7 @@
 				CE84A3E9295DA504009394C4 /* RomajiTests.swift in Sources */,
 				CEA78FAA295EBCAC00B67E25 /* StateMachineTests.swift in Sources */,
 				CEF0823629685C0800646366 /* StateTests.swift in Sources */,
+				CED7CA3E2A8397E4004EF988 /* UpdateCheckerTests.swift in Sources */,
 				CEA78FB229646CA100B67E25 /* UserDictTests.swift in Sources */,
 				CEA78FAE2961BA1D00B67E25 /* String+TransformTests.swift in Sources */,
 			);
@@ -700,7 +708,7 @@
 				INFOPLIST_FILE = FetchUpdateService/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = FetchUpdateService;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				MACOSX_DEPLOYMENT_TARGET = 13.3;
+				MACOSX_DEPLOYMENT_TARGET = 13.1;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = net.mtgto.inputmethod.macSKK.FetchUpdateService;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -721,7 +729,7 @@
 				INFOPLIST_FILE = FetchUpdateService/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = FetchUpdateService;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				MACOSX_DEPLOYMENT_TARGET = 13.3;
+				MACOSX_DEPLOYMENT_TARGET = 13.1;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = net.mtgto.inputmethod.macSKK.FetchUpdateService;
 				PRODUCT_NAME = "$(TARGET_NAME)";
