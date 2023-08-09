@@ -25,21 +25,26 @@ final class CandidatesPanel: NSPanel {
         viewModel.systemAnnotations.updateValue(systemAnnotation, forKey: word)
     }
 
-    func show(at point: NSPoint) {
+    func show(cursorPosition: NSRect) {
         // TODO: もしスクリーン下にはみ出す場合は setOrigin を使って左下座標を指定する。
-        if let viewController = contentViewController as? NSHostingController<CandidatesView> {
-            #if DEBUG
-            print("content size = \(viewController.sizeThatFits(in: CGSize(width: Int.max, height: Int.max)))")
-            print("intrinsicContentSize = \(viewController.view.intrinsicContentSize)")
-            print("frame = \(frame)")
-            print("preferredContentSize = \(viewController.preferredContentSize)")
-            print("sizeThatFits = \(viewController.sizeThatFits(in: CGSize(width: 10000, height: 10000)))")
-            #endif
-            let width = viewController.rootView.minWidth()
-            let height = CGFloat(self.viewModel.candidates.words.count) * CandidatesView.lineHeight + CandidatesView.footerHeight
-            setContentSize(NSSize(width: width, height: height))
+        guard let viewController = contentViewController as? NSHostingController<CandidatesView> else {
+            fatalError("ビューコントローラの状態が壊れている")
         }
-        setFrameTopLeftPoint(point)
+        #if DEBUG
+        print("content size = \(viewController.sizeThatFits(in: CGSize(width: Int.max, height: Int.max)))")
+        print("intrinsicContentSize = \(viewController.view.intrinsicContentSize)")
+        print("frame = \(frame)")
+        print("preferredContentSize = \(viewController.preferredContentSize)")
+        print("sizeThatFits = \(viewController.sizeThatFits(in: CGSize(width: 10000, height: 10000)))")
+        #endif
+        let width = viewController.rootView.minWidth()
+        let height = CGFloat(self.viewModel.candidates.words.count) * CandidatesView.lineHeight + CandidatesView.footerHeight
+        setContentSize(NSSize(width: width, height: height))
+        if cursorPosition.origin.y > height {
+            setFrameTopLeftPoint(cursorPosition.origin)
+        } else {
+            setFrameOrigin(CGPoint(x: cursorPosition.origin.x, y: cursorPosition.origin.y + cursorPosition.size.height))
+        }
         level = .floating
         orderFrontRegardless()
     }

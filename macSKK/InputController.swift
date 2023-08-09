@@ -77,7 +77,7 @@ class InputController: IMKInputController {
                     totalPageCount: candidates.totalPageCount)
                 self.candidatesPanel.setCandidates(currentCandidates, selected: candidates.selected)
                 self.selectedWord.send(candidates.selected)
-                self.candidatesPanel.show(at: candidates.cursorPosition.origin)
+                self.candidatesPanel.show(cursorPosition: candidates.cursorPosition)
             } else {
                 self.candidatesPanel.orderOut(nil)
             }
