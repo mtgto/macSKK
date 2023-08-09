@@ -40,6 +40,7 @@
 		CED7CA3C2A839603004EF988 /* UpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED7CA3B2A839603004EF988 /* UpdateChecker.swift */; };
 		CED7CA3E2A8397E4004EF988 /* UpdateCheckerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED7CA3D2A8397E4004EF988 /* UpdateCheckerTests.swift */; };
 		CED7CA592A83CD67004EF988 /* releases.atom in Resources */ = {isa = PBXBuildFile; fileRef = CED7CA582A83CD67004EF988 /* releases.atom */; };
+		CED7CA5B2A83DE7F004EF988 /* SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED7CA5A2A83DE7F004EF988 /* SettingsViewModel.swift */; };
 		CEE3717529653112000DB2C3 /* GeneralView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEE3717429653112000DB2C3 /* GeneralView.swift */; };
 		CEF0823629685C0800646366 /* StateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF0823529685C0800646366 /* StateTests.swift */; };
 		CEF0823A296BCDB000646366 /* InputModePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF08239296BCDB000646366 /* InputModePanel.swift */; };
@@ -120,6 +121,7 @@
 		CED7CA3B2A839603004EF988 /* UpdateChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateChecker.swift; sourceTree = "<group>"; };
 		CED7CA3D2A8397E4004EF988 /* UpdateCheckerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateCheckerTests.swift; sourceTree = "<group>"; };
 		CED7CA582A83CD67004EF988 /* releases.atom */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = releases.atom; sourceTree = "<group>"; };
+		CED7CA5A2A83DE7F004EF988 /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewModel.swift; sourceTree = "<group>"; };
 		CEE3717429653112000DB2C3 /* GeneralView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralView.swift; sourceTree = "<group>"; };
 		CEF0823529685C0800646366 /* StateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateTests.swift; sourceTree = "<group>"; };
 		CEF08239296BCDB000646366 /* InputModePanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputModePanel.swift; sourceTree = "<group>"; };
@@ -240,6 +242,7 @@
 				CEE3717429653112000DB2C3 /* GeneralView.swift */,
 				CEC376EA2965211200D9C432 /* KeyEventView.swift */,
 				CE40D9A02A6D0C2F00D44799 /* SystemDictView.swift */,
+				CED7CA5A2A83DE7F004EF988 /* SettingsViewModel.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -427,6 +430,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CEF0825D296DB58600646366 /* CandidatesViewModel.swift in Sources */,
+				CED7CA5B2A83DE7F004EF988 /* SettingsViewModel.swift in Sources */,
 				CEA78FAC2960401F00B67E25 /* String+Transform.swift in Sources */,
 				CE84A3B929570C37009394C4 /* InputController.swift in Sources */,
 				CE84A3EB295DA715009394C4 /* Dict.swift in Sources */,

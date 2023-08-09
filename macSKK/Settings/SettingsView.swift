@@ -7,10 +7,12 @@ struct SettingsView: View {
     enum Section {
         case general, keyEvent, systemDict
     }
+    @StateObject var settingsViewModel: SettingsViewModel
+
     var body: some View {
         TabView {
             #if DEBUG
-            GeneralView()
+            GeneralView(settingsViewModel: settingsViewModel)
                 .tabItem {
                     Label("General", systemImage: "gearshape")
                 }
@@ -35,6 +37,6 @@ struct SettingsView: View {
 
 struct SettingsView_Previews: PreviewProvider {
     static var previews: some View {
-        SettingsView()
+        SettingsView(settingsViewModel: SettingsViewModel())
     }
 }

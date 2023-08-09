@@ -4,13 +4,41 @@
 import SwiftUI
 
 struct GeneralView: View {
+    @Environment(\.openURL) private var openURL
+    @StateObject var settingsViewModel: SettingsViewModel
+
     var body: some View {
-        Text( /*@START_MENU_TOKEN@*/"Hello, World!" /*@END_MENU_TOKEN@*/)
+        Form {
+            LabeledContent("現在のバージョン:") {
+                Text(Bundle.main.infoDictionary!["CFBundleShortVersionString"] as! String)
+                if let latestRelease = settingsViewModel.latestRelease {
+                    Text("(最新バージョン: \(latestRelease.version))")
+                        .padding(.leading)
+                }
+            }
+
+            Button("アップデートを確認…") {
+                Task {
+                    let releases = try await UpdateChecker().fetch()
+                    settingsViewModel.latestRelease = releases.first
+                }
+            }
+            .disabled(settingsViewModel.fetchingRelease)
+
+            Button("リリースページを開く") {
+                if let url = URL(string: "https://github.com/mtgto/macSKK/releases") {
+                    openURL(url)
+                }
+            }
+        }
+        .padding()
     }
 }
 
 struct GeneralView_Previews: PreviewProvider {
     static var previews: some View {
-        GeneralView()
+        let viewModel = SettingsViewModel()
+        viewModel.latestRelease = Release(version: "1.0.0", updated: Date(), url: URL(string: "https://example.com")!)
+        return GeneralView(settingsViewModel: viewModel)
     }
 }
