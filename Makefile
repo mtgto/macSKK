@@ -1,5 +1,6 @@
 # インストーラ作成Makefile
 # 公証に必要なので先に "Developer ID Application" のCertificateを生成してインストールしておくこと。
+# pbxprojファイルからバージョン (MARKETING_VERSION) を取得するのにjqを使っているのでインストールしておくこと。
 # 公証のためのApp Passwordは先にKeychainに入れておくこと. 次のコマンドで実行できる
 # xcrun notarytool store-credentials $(CREDENTIALS_PROFILE) --apple-id $(APPLE_ID) --team-id $(APPLE_TEAM_ID)
 # See https://developer.apple.com/documentation/technotes/tn3147-migrating-to-the-latest-notarization-tool#Save-credentials-in-the-keychain
@@ -8,7 +9,7 @@
 #APPLE_ID := hogerappa@gmail.com
 APPLE_TEAM_ID := W3A6B7FDC7
 CREDENTIALS_PROFILE := macSKK
-VERSION := 0.1.0
+VERSION := $(shell xcodebuild -project macSKK.xcodeproj -target macSKK -showBuildSettings -json | jq -r '.[0].buildSettings.MARKETING_VERSION')
 
 WORKDIR := script/work
 APP := build/Release/macSKK.app
@@ -59,6 +60,7 @@ $(INSTALLER_PKG): $(APP_PKG) $(DICT_PKG)
 
 $(TARGET_DMG): $(INSTALLER_PKG)
 	if [ -f $(TARGET_DMG) ]; then rm $(TARGET_DMG); fi
+	cp LICENSE $(WORKDIR)/pkg
 	hdiutil create -srcfolder $(WORKDIR)/pkg -volname macSKK -fs HFS+ $(TARGET_DMG)
 
 release: $(TARGET_DMG)
