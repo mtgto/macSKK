@@ -32,6 +32,11 @@
 		CEB088902A7F73B400EFD1E3 /* Pasteboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEB0888F2A7F73B400EFD1E3 /* Pasteboard.swift */; };
 		CEC376E82965199500D9C432 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEC376E72965199500D9C432 /* SettingsView.swift */; };
 		CEC376EB2965211200D9C432 /* KeyEventView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEC376EA2965211200D9C432 /* KeyEventView.swift */; };
+		CED7CA2C2A8394F7004EF988 /* FetchUpdateServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED7CA2B2A8394F7004EF988 /* FetchUpdateServiceProtocol.swift */; };
+		CED7CA2E2A8394F7004EF988 /* FetchUpdateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED7CA2D2A8394F7004EF988 /* FetchUpdateService.swift */; };
+		CED7CA302A8394F7004EF988 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED7CA2F2A8394F7004EF988 /* main.swift */; };
+		CED7CA352A8394F7004EF988 /* FetchUpdateService.xpc in Embed XPC Services */ = {isa = PBXBuildFile; fileRef = CED7CA292A8394F7004EF988 /* FetchUpdateService.xpc */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		CED7CA3A2A839505004EF988 /* FetchUpdateServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED7CA2B2A8394F7004EF988 /* FetchUpdateServiceProtocol.swift */; };
 		CEE3717529653112000DB2C3 /* GeneralView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEE3717429653112000DB2C3 /* GeneralView.swift */; };
 		CEF0823629685C0800646366 /* StateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF0823529685C0800646366 /* StateTests.swift */; };
 		CEF0823A296BCDB000646366 /* InputModePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF08239296BCDB000646366 /* InputModePanel.swift */; };
@@ -48,7 +53,28 @@
 			remoteGlobalIDString = CE5ECF312957034B00E7BE7D;
 			remoteInfo = macSKK;
 		};
+		CED7CA332A8394F7004EF988 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CE5ECF2A2957034B00E7BE7D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = CED7CA282A8394F7004EF988;
+			remoteInfo = FetchUpdateService;
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		CED7CA392A8394F7004EF988 /* Embed XPC Services */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/XPCServices";
+			dstSubfolderSpec = 16;
+			files = (
+				CED7CA352A8394F7004EF988 /* FetchUpdateService.xpc in Embed XPC Services */,
+			);
+			name = "Embed XPC Services";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		CE40D9A02A6D0C2F00D44799 /* SystemDictView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemDictView.swift; sourceTree = "<group>"; };
@@ -82,6 +108,12 @@
 		CEB088952A81353400EFD1E3 /* DictionaryServiceExtention.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DictionaryServiceExtention.h; sourceTree = "<group>"; };
 		CEC376E72965199500D9C432 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		CEC376EA2965211200D9C432 /* KeyEventView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyEventView.swift; sourceTree = "<group>"; };
+		CED7CA292A8394F7004EF988 /* FetchUpdateService.xpc */ = {isa = PBXFileReference; explicitFileType = "wrapper.xpc-service"; includeInIndex = 0; path = FetchUpdateService.xpc; sourceTree = BUILT_PRODUCTS_DIR; };
+		CED7CA2B2A8394F7004EF988 /* FetchUpdateServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchUpdateServiceProtocol.swift; sourceTree = "<group>"; };
+		CED7CA2D2A8394F7004EF988 /* FetchUpdateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchUpdateService.swift; sourceTree = "<group>"; };
+		CED7CA2F2A8394F7004EF988 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		CED7CA312A8394F7004EF988 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		CED7CA322A8394F7004EF988 /* FetchUpdateService.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FetchUpdateService.entitlements; sourceTree = "<group>"; };
 		CEE3717429653112000DB2C3 /* GeneralView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralView.swift; sourceTree = "<group>"; };
 		CEF0823529685C0800646366 /* StateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateTests.swift; sourceTree = "<group>"; };
 		CEF08239296BCDB000646366 /* InputModePanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputModePanel.swift; sourceTree = "<group>"; };
@@ -105,6 +137,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		CED7CA262A8394F7004EF988 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -112,6 +151,7 @@
 			isa = PBXGroup;
 			children = (
 				CE5ECF342957034B00E7BE7D /* macSKK */,
+				CED7CA2A2A8394F7004EF988 /* FetchUpdateService */,
 				CE5ECF462957034D00E7BE7D /* macSKKTests */,
 				CE5ECF332957034B00E7BE7D /* Products */,
 			);
@@ -125,6 +165,7 @@
 			children = (
 				CE5ECF322957034B00E7BE7D /* macSKK.app */,
 				CE5ECF432957034D00E7BE7D /* macSKKTests.xctest */,
+				CED7CA292A8394F7004EF988 /* FetchUpdateService.xpc */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -194,6 +235,18 @@
 			path = Settings;
 			sourceTree = "<group>";
 		};
+		CED7CA2A2A8394F7004EF988 /* FetchUpdateService */ = {
+			isa = PBXGroup;
+			children = (
+				CED7CA2B2A8394F7004EF988 /* FetchUpdateServiceProtocol.swift */,
+				CED7CA2D2A8394F7004EF988 /* FetchUpdateService.swift */,
+				CED7CA2F2A8394F7004EF988 /* main.swift */,
+				CED7CA312A8394F7004EF988 /* Info.plist */,
+				CED7CA322A8394F7004EF988 /* FetchUpdateService.entitlements */,
+			);
+			path = FetchUpdateService;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -205,10 +258,12 @@
 				CE5ECF2F2957034B00E7BE7D /* Frameworks */,
 				CE5ECF302957034B00E7BE7D /* Resources */,
 				CE5ECF602957050200E7BE7D /* Update Info.plist */,
+				CED7CA392A8394F7004EF988 /* Embed XPC Services */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				CED7CA342A8394F7004EF988 /* PBXTargetDependency */,
 			);
 			name = macSKK;
 			packageProductDependencies = (
@@ -235,6 +290,23 @@
 			productReference = CE5ECF432957034D00E7BE7D /* macSKKTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		CED7CA282A8394F7004EF988 /* FetchUpdateService */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CED7CA362A8394F7004EF988 /* Build configuration list for PBXNativeTarget "FetchUpdateService" */;
+			buildPhases = (
+				CED7CA252A8394F7004EF988 /* Sources */,
+				CED7CA262A8394F7004EF988 /* Frameworks */,
+				CED7CA272A8394F7004EF988 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = FetchUpdateService;
+			productName = FetchUpdateService;
+			productReference = CED7CA292A8394F7004EF988 /* FetchUpdateService.xpc */;
+			productType = "com.apple.product-type.xpc-service";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -242,7 +314,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1420;
+				LastSwiftUpdateCheck = 1430;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					CE5ECF312957034B00E7BE7D = {
@@ -252,6 +324,9 @@
 					CE5ECF422957034D00E7BE7D = {
 						CreatedOnToolsVersion = 14.2;
 						TestTargetID = CE5ECF312957034B00E7BE7D;
+					};
+					CED7CA282A8394F7004EF988 = {
+						CreatedOnToolsVersion = 14.3.1;
 					};
 				};
 			};
@@ -272,6 +347,7 @@
 			targets = (
 				CE5ECF312957034B00E7BE7D /* macSKK */,
 				CE5ECF422957034D00E7BE7D /* macSKKTests */,
+				CED7CA282A8394F7004EF988 /* FetchUpdateService */,
 			);
 		};
 /* End PBXProject section */
@@ -290,6 +366,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		CE5ECF412957034D00E7BE7D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CED7CA272A8394F7004EF988 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -335,6 +418,7 @@
 				CE84A3E0295717CB009394C4 /* StateMachine.swift in Sources */,
 				CE5ECF362957034B00E7BE7D /* macSKKApp.swift in Sources */,
 				CE84A3DE29571797009394C4 /* Action.swift in Sources */,
+				CED7CA3A2A839505004EF988 /* FetchUpdateServiceProtocol.swift in Sources */,
 				CEA78FB02964209B00B67E25 /* UserDict.swift in Sources */,
 				CEF08257296D8CBD00646366 /* CandidatesPanel.swift in Sources */,
 				CEB088902A7F73B400EFD1E3 /* Pasteboard.swift in Sources */,
@@ -361,6 +445,16 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		CED7CA252A8394F7004EF988 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CED7CA2C2A8394F7004EF988 /* FetchUpdateServiceProtocol.swift in Sources */,
+				CED7CA2E2A8394F7004EF988 /* FetchUpdateService.swift in Sources */,
+				CED7CA302A8394F7004EF988 /* main.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -368,6 +462,11 @@
 			isa = PBXTargetDependency;
 			target = CE5ECF312957034B00E7BE7D /* macSKK */;
 			targetProxy = CE5ECF442957034D00E7BE7D /* PBXContainerItemProxy */;
+		};
+		CED7CA342A8394F7004EF988 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = CED7CA282A8394F7004EF988 /* FetchUpdateService */;
+			targetProxy = CED7CA332A8394F7004EF988 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -490,6 +589,7 @@
 		CE5ECF582957034D00E7BE7D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_MODULES = YES;
@@ -522,6 +622,7 @@
 		CE5ECF592957034D00E7BE7D /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_MODULES = YES;
@@ -588,6 +689,48 @@
 			};
 			name = Release;
 		};
+		CED7CA372A8394F7004EF988 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = FetchUpdateService/FetchUpdateService.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = FetchUpdateService/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = FetchUpdateService;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				MACOSX_DEPLOYMENT_TARGET = 13.3;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = net.mtgto.inputmethod.macSKK.FetchUpdateService;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		CED7CA382A8394F7004EF988 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = FetchUpdateService/FetchUpdateService.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = FetchUpdateService/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = FetchUpdateService;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				MACOSX_DEPLOYMENT_TARGET = 13.3;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = net.mtgto.inputmethod.macSKK.FetchUpdateService;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -614,6 +757,15 @@
 			buildConfigurations = (
 				CE5ECF5B2957034D00E7BE7D /* Debug */,
 				CE5ECF5C2957034D00E7BE7D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		CED7CA362A8394F7004EF988 /* Build configuration list for PBXNativeTarget "FetchUpdateService" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CED7CA372A8394F7004EF988 /* Debug */,
+				CED7CA382A8394F7004EF988 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
