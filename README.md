@@ -57,6 +57,23 @@ SKK辞書は `~/Library/Containers/net.mtgto.inputmethod.macSKK/Data/Documents/D
 現在は `SKK-JISYO.L` のみ読み込みます。環境設定で使用する辞書を設定可能にする予定です。
 ユーザー辞書は `~/Library/Containers/net.mtgto.inputmethod.macSKK/Data/Documents/Dictionaries/skk-jisyo.utf8` にUTF-8形式で保存されます。
 
+### バージョンアップ
+
+`X.Y.Z` 形式のバージョン (MARKETING_VERSION) とビルド番号 (CURRENT_PROJECT_VERSION) の更新が必要です。
+
+#### ビルド番号
+
+メジャー、マイナー、パッチ、どのバージョンアップでも1ずつインクリメントしてください。
+Xcodeから手動でやってもいいし、`agvtool`でもいいです。
+
+```console
+agvtool next-version
+```
+
+#### MARKETING_VERSIONの更新
+
+`Info.plist`に`CFBundleShortVersionString`で管理するのではなくpbxprojに`MARKETING_VERSION`で管理する形式だと`agvtool next-marketing-version` が使えないみたいなのでXcodeで手動で変えてください。
+
 ## ライセンス
 
 macSKKはGNU一般公衆ライセンスv3またはそれ移行のバージョンの条項の元で配布されるフリー・ソフトウェアです。
