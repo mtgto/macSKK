@@ -7,10 +7,9 @@ import XCTest
 
 final class UpdateCheckerTests: XCTestCase {
     func testParseDocument() throws {
-        let updateChecker = UpdateChecker()
         let xml = Bundle(for: Self.self).url(forResource: "releases", withExtension: "atom")!
         let doc = try XMLDocument(contentsOf: xml)
-        let releases = try updateChecker.parseDocument(doc)
+        let releases = try UpdateChecker().parseDocument(doc)
         XCTAssertEqual(releases.count, 2)
         XCTAssertEqual(releases.first?.version, ReleaseVersion(major: 0, minor: 1, patch: 1))
         XCTAssertEqual(releases.first?.url.absoluteString, "https://github.com/mtgto/macSKK/releases/tag/0.1.1")

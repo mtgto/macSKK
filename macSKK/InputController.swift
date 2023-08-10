@@ -170,10 +170,8 @@ class InputController: IMKInputController {
         fetchUpdateMenuItem.isEnabled = false
         Task {
             do {
-                let releases = try await UpdateChecker.shared.fetch()
-                if let latest = releases.first {
-                    logger.log("最新のリリースは \(latest.version.description, privacy: .public) です")
-                }
+                let latest = try await LatestReleaseFetcher.shared.fetch()
+                logger.log("最新のリリースは \(latest.version.description, privacy: .public) です")
             } catch {
                 logger.log("エラーが起きました")
             }
