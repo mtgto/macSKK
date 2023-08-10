@@ -10,26 +10,40 @@ struct GeneralView: View {
     var body: some View {
         VStack {
             Form {
-                LabeledContent("現在のバージョン:") {
-                    Text(Bundle.main.infoDictionary!["CFBundleShortVersionString"] as! String)
-                    if let latestRelease = settingsViewModel.latestRelease {
-                        Text("(最新バージョン: \(latestRelease.version.description))")
-                            .padding(.leading)
+                Section {
+                    LabeledContent("現在のバージョン:") {
+                        Text(Bundle.main.infoDictionary!["CFBundleShortVersionString"] as! String)
+                        if let latestRelease = settingsViewModel.latestRelease {
+                            Text("(最新バージョン: \(latestRelease.version.description))")
+                                .padding(.leading)
+                        }
                     }
-                }
-                Button("アップデートを確認…") {
-                    Task {
-                        let releases = try await UpdateChecker().fetch()
-                        settingsViewModel.latestRelease = releases.first
+                    HStack {
+                        Spacer()
+                        Button("アップデートを確認…") {
+                            fetchReleases()
+                        }
+                        .disabled(settingsViewModel.fetchingRelease)
+                        if settingsViewModel.fetchingRelease {
+                            ProgressView()
+                                .progressViewStyle(.circular)
+                                .controlSize(.small)
+                                .padding(.leading)
+                        }
                     }
-                }
-                .disabled(settingsViewModel.fetchingRelease)
-                Button("リリースページを開く") {
-                    if let url = URL(string: "https://github.com/mtgto/macSKK/releases") {
-                        openURL(url)
+                } footer: {
+                    VStack(alignment: .trailing) {
+                        HStack {
+                            Button("リリースページを開く") {
+                                if let url = URL(string: "https://github.com/mtgto/macSKK/releases") {
+                                    openURL(url)
+                                }
+                            }
+                        }
                     }
                 }
             }
+            .formStyle(.grouped)
             .padding()
             Spacer()
         }

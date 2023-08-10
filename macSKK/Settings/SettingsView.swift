@@ -4,34 +4,62 @@
 import SwiftUI
 
 struct SettingsView: View {
-    enum Section {
+    enum Section: CaseIterable {
         case general, keyEvent, systemDict
     }
     @StateObject var settingsViewModel: SettingsViewModel
+    @State private var selectedSection: Section = .general
 
     var body: some View {
-        TabView {
-            GeneralView(settingsViewModel: settingsViewModel)
-                .tabItem {
-                    Label("General", systemImage: "gearshape")
+        NavigationSplitView(columnVisibility: .constant(.all)) {
+            List(Section.allCases, id: \.self, selection: $selectedSection) { section in
+                NavigationLink(value: section) {
+                    switch section {
+                    case .general:
+                        Label("General", systemImage: "gearshape")
+                    case .keyEvent:
+                        Label("KeyEvent", systemImage: "keyboard")
+                    case .systemDict:
+                        Label("SystemDict", systemImage: "book.closed.fill")
+                    }
                 }
-                .tag(Section.general)
-            #if DEBUG
-            KeyEventView()
-                .tabItem {
-                    Label("KeyEvent", systemImage: "keyboard")
-                }
-                .tag(Section.keyEvent)
-            SystemDictView()
-                .tabItem {
-                    Label("SystemDict", systemImage: "book.closed.fill")
-                }
-                .tag(Section.systemDict)
-            #else
-                Text("TODO")
-            #endif
+            }
+            .listStyle(.sidebar)
+            .navigationSplitViewColumnWidth(215)
+        } detail: {
+            switch selectedSection {
+            case .general:
+                GeneralView(settingsViewModel: settingsViewModel)
+                    .navigationTitle("General")
+            case .keyEvent:
+                KeyEventView()
+                    .navigationTitle("KeyEvent")
+            case .systemDict:
+                SystemDictView()
+                    .navigationTitle("SystemDict")
+            }
+        }
+        .task(id: selectedSection) {
+            updateWindowAndToolbar()
         }
         .frame(minWidth: 640, minHeight: 360)
+    }
+
+    // ウィンドウのスタイルの変更とツールバーからサイドバー切り替えのボタンを削除する
+    func updateWindowAndToolbar() {
+        if let window = NSApp.windows.first(where: { $0.identifier?.rawValue == "com_apple_SwiftUI_Settings_window" }) {
+            window.titleVisibility = .visible
+            window.titlebarAppearsTransparent = true
+            window.styleMask = [.titled, .closable, .fullSizeContentView, .unifiedTitleAndToolbar]
+            window.toolbarStyle = .unified
+            // サイドバー切り替えボタンの削除はmacOS 14からはAPIが用意されるぽい
+            // https://developer.apple.com/documentation/swiftui/view/toolbar(removing:)
+            if let toolbar = window.toolbar {
+                if let index = toolbar.items.firstIndex(where: { $0.itemIdentifier.rawValue == "com.apple.SwiftUI.navigationSplitView.toggleSidebar" }) {
+                    toolbar.removeItem(at: index)
+                }
+            }
+        }
     }
 }
 
