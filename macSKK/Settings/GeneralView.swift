@@ -13,7 +13,7 @@ struct GeneralView: View {
                 LabeledContent("現在のバージョン:") {
                     Text(Bundle.main.infoDictionary!["CFBundleShortVersionString"] as! String)
                     if let latestRelease = settingsViewModel.latestRelease {
-                        Text("(最新バージョン: \(latestRelease.version))")
+                        Text("(最新バージョン: \(latestRelease.version.description))")
                             .padding(.leading)
                     }
                 }
@@ -39,7 +39,9 @@ struct GeneralView: View {
 struct GeneralView_Previews: PreviewProvider {
     static var previews: some View {
         let viewModel = SettingsViewModel()
-        viewModel.latestRelease = Release(version: "1.0.0", updated: Date(), url: URL(string: "https://example.com")!)
+        viewModel.latestRelease = Release(version: ReleaseVersion(major: 1, minor: 0, patch: 0),
+                                          updated: Date(),
+                                          url: URL(string: "https://example.com")!)
         return GeneralView(settingsViewModel: viewModel)
     }
 }

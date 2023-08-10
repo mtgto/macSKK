@@ -3,12 +3,6 @@
 
 import Foundation
 
-struct Release {
-    let version: String /// X.Y.Z形式のバージョン番号
-    let updated: Date
-    let url: URL
-}
-
 struct UpdateChecker {
     func callSampleXPC() async throws -> String {
         let service = NSXPCConnection(serviceName: "net.mtgto.inputmethod.macSKK.FetchUpdateService")
@@ -51,7 +45,7 @@ struct UpdateChecker {
     }
 
     func parseEntryNode(_ node: XMLNode) throws -> Release? {
-        guard let version = try node.nodes(forXPath: "title").first?.stringValue else {
+        guard let version = try node.nodes(forXPath: "title").first?.stringValue.flatMap({ ReleaseVersion(string: $0) }) else {
             logger.warning("リリース情報のXMLが不正です (title)")
             return nil
         }

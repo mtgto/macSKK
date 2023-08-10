@@ -12,9 +12,9 @@ final class UpdateCheckerTests: XCTestCase {
         let doc = try XMLDocument(contentsOf: xml)
         let releases = try updateChecker.parseDocument(doc)
         XCTAssertEqual(releases.count, 2)
-        XCTAssertEqual(releases.first?.version, "0.1.1")
+        XCTAssertEqual(releases.first?.version, ReleaseVersion(major: 0, minor: 1, patch: 1))
         XCTAssertEqual(releases.first?.url.absoluteString, "https://github.com/mtgto/macSKK/releases/tag/0.1.1")
         XCTAssertEqual(releases.first?.updated, ISO8601DateFormatter().date(from: "2023-08-09T09:21:49Z"))
-        XCTAssertEqual(releases[1].version, "0.1.0")
+        XCTAssertEqual(releases[1].version, ReleaseVersion(major: 0, minor: 1, patch: 0))
     }
 }
