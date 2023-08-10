@@ -9,6 +9,7 @@ import InputMethodKit
 class InputController: IMKInputController {
     private let stateMachine = StateMachine()
     private let preferenceMenu = NSMenu()
+    private let fetchUpdateMenuItem: NSMenuItem
     private var cancellables: Set<AnyCancellable> = []
     private static let notFoundRange = NSRange(location: NSNotFound, length: NSNotFound)
     private let inputModePanel = InputModePanel()
@@ -19,20 +20,23 @@ class InputController: IMKInputController {
     // AppleのAPIドキュメントにはメインスレッドであるとは書かれてないけど、まあ大丈夫じゃないかな
     @MainActor
     override init!(server: IMKServer!, delegate: Any!, client inputClient: Any!) {
-        super.init(server: server, delegate: delegate, client: inputClient)
-
         preferenceMenu.addItem(
             withTitle: NSLocalizedString("MenuItemPreference", comment: "Preferences…"),
             action: #selector(showSettings), keyEquivalent: "")
         preferenceMenu.addItem(
             withTitle: NSLocalizedString("MenuItemSaveDict", comment: "Save User Dictionary"),
             action: #selector(saveDict), keyEquivalent: "")
+        fetchUpdateMenuItem = preferenceMenu.addItem(
+            withTitle: NSLocalizedString("MenuCheckUpdate", comment: "Check For Update…"),
+            action: #selector(fetchUpdate), keyEquivalent: "")
         #if DEBUG
         // デバッグ用
         preferenceMenu.addItem(
             withTitle: "Show Panel",
             action: #selector(showPanel), keyEquivalent: "")
         #endif
+
+        super.init(server: server, delegate: delegate, client: inputClient)
 
         guard let textInput = inputClient as? IMKTextInput else {
             return
@@ -157,6 +161,23 @@ class InputController: IMKInputController {
         } catch {
             // TODO: NotificationCenterでユーザーに通知する
             logger.error("ユーザー辞書保存中にエラーが発生しました")
+        }
+    }
+
+    @objc func fetchUpdate() {
+        logger.log("最新のリリースを取得開始します")
+        // FIXME: MenuItem#isEnabledを変更しても入力ソースメニュー内の表示は変わってなさそう?
+        fetchUpdateMenuItem.isEnabled = false
+        Task {
+            do {
+                let releases = try await UpdateChecker.shared.fetch()
+                if let latest = releases.first {
+                    logger.log("最新のリリースは \(latest.version.description, privacy: .public) です")
+                }
+            } catch {
+                logger.log("エラーが起きました")
+            }
+            fetchUpdateMenuItem.isEnabled = true
         }
     }
 
