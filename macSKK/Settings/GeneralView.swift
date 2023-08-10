@@ -34,6 +34,12 @@ struct GeneralView: View {
             Spacer()
         }
     }
+
+    private func fetchReleases() {
+        Task {
+            try await settingsViewModel.fetchReleases()
+        }
+    }
 }
 
 struct GeneralView_Previews: PreviewProvider {
