@@ -4,6 +4,10 @@
 import Combine
 import Foundation
 
+/*
+// これをObservableObjectにする?
+// どうすればUserDefaultsとグローバル変数dictionaryのdictsと同期させる方法がまだよくわかってない
+// @AppStorageを使う…?
 struct DictSetting: Hashable, Equatable {
     let dict: FileDict
     let enabled: Bool
@@ -16,6 +20,7 @@ struct DictSetting: Hashable, Equatable {
         lhs.dict.fileURL == rhs.dict.fileURL
     }
 }
+*/
 
 @MainActor
 final class SettingsViewModel: ObservableObject {
@@ -23,8 +28,10 @@ final class SettingsViewModel: ObservableObject {
     @Published var latestRelease: Release? = nil
     /// リリースの確認中かどうか
     @Published var fetchingRelease: Bool = false
+    /// すべての利用可能なSKK辞書
+    @Published var fileDicts: [FileDict] = []
     /// ユーザー辞書の設定
-    @Published var dictSettings: [DictSetting] = []
+    @Published var dictSettings: [FileDict: Bool] = [:]
 
     /**
      * リリースの確認を行う

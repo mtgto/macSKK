@@ -25,12 +25,21 @@ protocol DictProtocol {
     func refer(_ word: String) -> [Word]
 }
 
-struct FileDict: DictProtocol {
+/// 実ファイルをもつSKK辞書
+struct FileDict: DictProtocol, Hashable, Identifiable {
+    let id: String
     let fileURL: URL
+    // FIXME: URLResourceのfileResourceIdentifierKeyをidとして使ってもいいかもしれない。
+    // FIXME: ただしこの値は再起動したら同一性が保証されなくなるのでIDとしての永続化はできない
+    // FIXME: iCloud Documentsとかでてくるとディレクトリが複数になるけど、ひとまずファイル名だけもっておけばよさそう。
+    let encoding: String.Encoding
     let entries: [String: [Word]]
-    
+
     init(contentsOf fileURL: URL, encoding: String.Encoding) throws {
+        // iCloud Documents使うときには辞書フォルダが複数になりうるけど、それまではひとまずファイル名をIDとして使う
+        self.id = fileURL.lastPathComponent
         self.fileURL = fileURL
+        self.encoding = encoding
         let source = try String(contentsOf: fileURL, encoding: encoding)
         let memoryDict = try MemoryDict(source: source)
         entries = memoryDict.entries
@@ -40,9 +49,14 @@ struct FileDict: DictProtocol {
     func refer(_ word: String) -> [Word] {
         return entries[word] ?? []
     }
+
+    // MARK: Hashable
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
 }
 
-/// 実ファイルをもたない辞書
+/// 実ファイルをもたないSKK辞書
 struct MemoryDict: DictProtocol {
     let entries: [String: [Word]]
 
@@ -61,16 +75,16 @@ struct MemoryDict: DictProtocol {
         }
         entries = dict
     }
-    
+
     init(entries: [String: [Word]]) {
         self.entries = entries
     }
-    
+
     // MARK: DictProtocol
     func refer(_ word: String) -> [Word] {
         return entries[word] ?? []
     }
-    
+
     static func decode(_ word: String) -> String {
         if word.hasPrefix(#"(concat ""#) && word.hasSuffix(#"")"#) {
             return String(word.dropFirst(9).dropLast(2).replacingOccurrences(of: "\\057", with: "/"))

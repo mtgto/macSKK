@@ -78,6 +78,7 @@ struct macSKKApp: App {
             appropriateFor: nil,
             create: false
         ).appendingPathComponent("Dictionaries").appendingPathComponent("SKK-JISYO.L")
+        // TODO: Dictionariesフォルダのファイルのうち、UserDefaultsで有効になっているものだけ読み込む
         let dict: FileDict
         do {
             dict = try FileDict(contentsOf: url, encoding: .japaneseEUC)

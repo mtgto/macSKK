@@ -11,9 +11,9 @@ struct DictionariesView: View {
         // 詳細はシートでエンコーディング、エントリ数が見れる
         // エントリ一覧が検索できてもいいかもしれない
         Form {
-            ForEach($settingsViewModel.dictSettings, id: \.self) { dictSetting in
-                //Toggle("SKK-JISYO.L", isOn: dictSetting.enabled)
-                Text("SKK-JISYO.L")
+            ForEach($settingsViewModel.fileDicts, id: \.self) { fileDict in
+                //Toggle(fileDict.id, isOn: settingsViewModel.dictSettings[fileDict])
+                Text(fileDict.id)
             }
         }
     }
@@ -21,6 +21,9 @@ struct DictionariesView: View {
 
 struct DictionariesView_Previews: PreviewProvider {
     static var previews: some View {
-        DictionariesView(settingsViewModel: SettingsViewModel())
+        let fileDict = try! FileDict(contentsOf: Bundle.main.url(forResource: "SKK-JISYO.sample", withExtension: "utf-8")!, encoding: .utf8)
+        let settings = SettingsViewModel()
+        settings.fileDicts = [fileDict]
+        return DictionariesView(settingsViewModel: settings)
     }
 }
