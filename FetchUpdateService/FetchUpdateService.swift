@@ -8,11 +8,6 @@ import os
 let logger: Logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "main")
 
 class FetchUpdateService: NSObject, FetchUpdateServiceProtocol {
-    @objc func uppercase(string: String, with reply: @escaping (String) -> Void) {
-        let response = string.uppercased()
-        reply(response)
-    }
-
     @objc func fetch() async throws -> Data {
         let request = URLRequest(url: URL(string: "https://github.com/mtgto/macSKK/releases.atom")!)
         URLSession.shared.dataTask(with: request)

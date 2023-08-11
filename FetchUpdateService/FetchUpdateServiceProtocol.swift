@@ -10,9 +10,6 @@ public enum FetchUpdateServiceError: Error {
 }
 
 @objc protocol FetchUpdateServiceProtocol {
-    /// Replace the API of this protocol with an API appropriate to the service you are vending.
-    func uppercase(string: String, with reply: @escaping (String) -> Void)
-
     /// GitHubのリリースページからリリース情報を取得してAtom (XML) を返す
     func fetch() async throws -> Data
 }
