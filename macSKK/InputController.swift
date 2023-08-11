@@ -9,7 +9,6 @@ import InputMethodKit
 class InputController: IMKInputController {
     private let stateMachine = StateMachine()
     private let preferenceMenu = NSMenu()
-    private let fetchUpdateMenuItem: NSMenuItem
     private var cancellables: Set<AnyCancellable> = []
     private static let notFoundRange = NSRange(location: NSNotFound, length: NSNotFound)
     private let inputModePanel = InputModePanel()
@@ -26,9 +25,6 @@ class InputController: IMKInputController {
         preferenceMenu.addItem(
             withTitle: NSLocalizedString("MenuItemSaveDict", comment: "Save User Dictionary"),
             action: #selector(saveDict), keyEquivalent: "")
-        fetchUpdateMenuItem = preferenceMenu.addItem(
-            withTitle: NSLocalizedString("MenuCheckUpdate", comment: "Check For Update…"),
-            action: #selector(fetchUpdate), keyEquivalent: "")
         #if DEBUG
         // デバッグ用
         preferenceMenu.addItem(
@@ -161,56 +157,6 @@ class InputController: IMKInputController {
         } catch {
             // TODO: NotificationCenterでユーザーに通知する
             logger.error("ユーザー辞書保存中にエラーが発生しました")
-        }
-    }
-
-    @objc func fetchUpdate() {
-        logger.log("最新のリリースを取得開始します")
-        // FIXME: MenuItem#isEnabledを変更しても入力ソースメニュー内の表示は変わってなさそう?
-        fetchUpdateMenuItem.isEnabled = false
-        Task {
-            do {
-                let latest = try await LatestReleaseFetcher.shared.fetch()
-                logger.log("最新のリリースを取得しました。最新のバージョンは \(latest.version.description, privacy: .public) です")
-                let currentVersionString = Bundle.main.infoDictionary!["CFBundleShortVersionString"] as! String
-                let current = ReleaseVersion(string: currentVersionString)!
-                if latest.version > current {
-                    await MainActor.run {
-                        let alert = NSAlert()
-                        alert.alertStyle = .informational
-                        alert.window.level = .floating
-                        alert.messageText = NSLocalizedString("AlertMessageFoundNewRelease", comment: "Found New Release!")
-                        alert.informativeText = String(format: NSLocalizedString("AlertInfoFoundNewRelease", comment: "macSKK %@ is now available. Would you like to download it now?"), currentVersionString)
-                        alert.addButton(withTitle: NSLocalizedString("ButtonOpenReleasePage", comment: "Open Release Page in Browser"))
-                        alert.addButton(withTitle: NSLocalizedString("ButtonCancel", comment: "Cancel"))
-                        if alert.runModal() == .alertFirstButtonReturn {
-                            if let url = URL(string: "https://github.com/mtgto/macSKK/releases") {
-                                NSWorkspace.shared.open(url)
-                            }
-                        }
-                    }
-                } else {
-                    await MainActor.run {
-                        let alert = NSAlert()
-                        alert.alertStyle = .informational
-                        alert.window.level = .floating
-                        alert.messageText = NSLocalizedString("AlertMessageNoNewRelease", comment: "You're up to date!")
-                        alert.informativeText = String(format: NSLocalizedString("AlertInfoNoNewRelease", comment: "macSKK %@ is currently the newest version available."), currentVersionString)
-                        _ = alert.runModal()
-                    }
-                }
-            } catch {
-                logger.error("最新のリリースを取得中にエラーが起きました")
-                await MainActor.run {
-                    let alert = NSAlert()
-                    alert.alertStyle = .critical
-                    alert.window.level = .floating
-                    alert.messageText = NSLocalizedString("AlertMessageGeneralError", comment: "Error")
-                    alert.informativeText = NSLocalizedString("AlertInfoGeneralError", comment: "An error occurred. Please try again later.")
-                    _ = alert.runModal()
-                }
-            }
-            fetchUpdateMenuItem.isEnabled = true
         }
     }
 
