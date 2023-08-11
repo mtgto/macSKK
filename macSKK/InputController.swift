@@ -171,9 +171,38 @@ class InputController: IMKInputController {
         Task {
             do {
                 let latest = try await LatestReleaseFetcher.shared.fetch()
-                logger.log("最新のリリースは \(latest.version.description, privacy: .public) です")
+                logger.log("最新のリリースを取得しました。最新のバージョンは \(latest.version.description, privacy: .public) です")
+                let currentVersionString = Bundle.main.infoDictionary!["CFBundleShortVersionString"] as! String
+                let current = ReleaseVersion(string: currentVersionString)!
+                if latest.version > current {
+                    await MainActor.run {
+                        let alert = NSAlert()
+                        alert.messageText = NSLocalizedString("AlertMessageFoundNewRelease", comment: "Found New Release!")
+                        alert.informativeText = String(format: NSLocalizedString("AlertInfoFoundNewRelease", comment: "macSKK %@ is now available. Would you like to download it now?"), currentVersionString)
+                        alert.addButton(withTitle: NSLocalizedString("ButtonOpenReleasePage", comment: "Open Release Page in Browser"))
+                        alert.addButton(withTitle: NSLocalizedString("ButtonCancel", comment: "Cancel"))
+                        if alert.runModal() == .alertFirstButtonReturn {
+                            if let url = URL(string: "https://github.com/mtgto/macSKK/releases") {
+                                NSWorkspace.shared.open(url)
+                            }
+                        }
+                    }
+                } else {
+                    await MainActor.run {
+                        let alert = NSAlert()
+                        alert.messageText = NSLocalizedString("AlertMessageNoNewRelease", comment: "You're up to date!")
+                        alert.informativeText = String(format: NSLocalizedString("AlertInfoNoNewRelease", comment: "macSKK %@ is currently the newest version available."), currentVersionString)
+                        _ = alert.runModal()
+                    }
+                }
             } catch {
-                logger.log("エラーが起きました")
+                logger.error("最新のリリースを取得中にエラーが起きました")
+                await MainActor.run {
+                    let alert = NSAlert()
+                    alert.messageText = NSLocalizedString("AlertMessageGeneralError", comment: "Error")
+                    alert.informativeText = NSLocalizedString("AlertInfoGeneralError", comment: "An error occurred. Please try again later.")
+                    _ = alert.runModal()
+                }
             }
             fetchUpdateMenuItem.isEnabled = true
         }

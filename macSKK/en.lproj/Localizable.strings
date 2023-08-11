@@ -5,5 +5,7 @@
 "AlertInfoFoundNewRelease" = "macSKK %@ is now available. Would you like to download it now?";
 "AlertMessageNoNewRelease" = "You're up to date!";
 "AlertInfoNoNewRelease" = "macSKK %@ is currently the newest version available.";
+"AlertMessageGeneralError" = "Error";
+"AlertInfoGeneralError" = "An error occurred. Please try again later.";
 "ButtonCancel" = "Cancel";
 "ButtonOpenReleasePage" = "Open Release Page in Browser";
