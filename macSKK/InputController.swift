@@ -177,6 +177,8 @@ class InputController: IMKInputController {
                 if latest.version > current {
                     await MainActor.run {
                         let alert = NSAlert()
+                        alert.alertStyle = .informational
+                        alert.window.level = .floating
                         alert.messageText = NSLocalizedString("AlertMessageFoundNewRelease", comment: "Found New Release!")
                         alert.informativeText = String(format: NSLocalizedString("AlertInfoFoundNewRelease", comment: "macSKK %@ is now available. Would you like to download it now?"), currentVersionString)
                         alert.addButton(withTitle: NSLocalizedString("ButtonOpenReleasePage", comment: "Open Release Page in Browser"))
@@ -190,6 +192,8 @@ class InputController: IMKInputController {
                 } else {
                     await MainActor.run {
                         let alert = NSAlert()
+                        alert.alertStyle = .informational
+                        alert.window.level = .floating
                         alert.messageText = NSLocalizedString("AlertMessageNoNewRelease", comment: "You're up to date!")
                         alert.informativeText = String(format: NSLocalizedString("AlertInfoNoNewRelease", comment: "macSKK %@ is currently the newest version available."), currentVersionString)
                         _ = alert.runModal()
@@ -199,6 +203,8 @@ class InputController: IMKInputController {
                 logger.error("最新のリリースを取得中にエラーが起きました")
                 await MainActor.run {
                     let alert = NSAlert()
+                    alert.alertStyle = .critical
+                    alert.window.level = .floating
                     alert.messageText = NSLocalizedString("AlertMessageGeneralError", comment: "Error")
                     alert.informativeText = NSLocalizedString("AlertInfoGeneralError", comment: "An error occurred. Please try again later.")
                     _ = alert.runModal()
