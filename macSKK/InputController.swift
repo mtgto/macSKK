@@ -19,8 +19,6 @@ class InputController: IMKInputController {
     // AppleのAPIドキュメントにはメインスレッドであるとは書かれてないけど、まあ大丈夫じゃないかな
     @MainActor
     override init!(server: IMKServer!, delegate: Any!, client inputClient: Any!) {
-        super.init(server: server, delegate: delegate, client: inputClient)
-
         preferenceMenu.addItem(
             withTitle: NSLocalizedString("MenuItemPreference", comment: "Preferences…"),
             action: #selector(showSettings), keyEquivalent: "")
@@ -33,6 +31,8 @@ class InputController: IMKInputController {
             withTitle: "Show Panel",
             action: #selector(showPanel), keyEquivalent: "")
         #endif
+
+        super.init(server: server, delegate: delegate, client: inputClient)
 
         guard let textInput = inputClient as? IMKTextInput else {
             return

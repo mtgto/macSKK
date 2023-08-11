@@ -16,6 +16,7 @@ func isTest() -> Bool {
 struct macSKKApp: App {
     private var server: IMKServer!
     private var panel: CandidatesPanel! = CandidatesPanel()
+    @StateObject var settingsViewModel = SettingsViewModel()
 
     init() {
         if isTest() {
@@ -42,7 +43,7 @@ struct macSKKApp: App {
 
     var body: some Scene {
         Settings {
-            SettingsView()
+            SettingsView(settingsViewModel: settingsViewModel)
         }
         .commands {
             CommandGroup(after: .appSettings) {

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/" xml:lang="en-US">
+  <id>tag:github.com,2008:https://github.com/mtgto/macSKK/releases</id>
+  <link type="text/html" rel="alternate" href="https://github.com/mtgto/macSKK/releases"/>
+  <link type="application/atom+xml" rel="self" href="https://github.com/mtgto/macSKK/releases.atom"/>
+  <title>Release notes from macSKK</title>
+  <updated>2023-08-09T07:56:43Z</updated>
+  <entry>
+    <id>tag:github.com,2008:Repository/409931049/0.1.1</id>
+    <updated>2023-08-09T09:21:49Z</updated>
+    <link rel="alternate" type="text/html" href="https://github.com/mtgto/macSKK/releases/tag/0.1.1"/>
+    <title>0.1.1</title>
+    <content type="html">&lt;ul&gt;
+&lt;li&gt;内蔵の辞書で国語辞書を優先して使用するように修正 (&lt;a class=&quot;issue-link js-issue-link&quot; data-error-text=&quot;Failed to load title&quot; data-id=&quot;1839735464&quot; data-permission-text=&quot;Title is private&quot; data-url=&quot;https://github.com/mtgto/macSKK/issues/3&quot; data-hovercard-type=&quot;pull_request&quot; data-hovercard-url=&quot;/mtgto/macSKK/pull/3/hovercard&quot; href=&quot;https://github.com/mtgto/macSKK/pull/3&quot;&gt;#3&lt;/a&gt;)&lt;/li&gt;
+&lt;li&gt;変換候補の注釈の表示が離れたところに表示されてしまうことがあるのを修正 (&lt;a class=&quot;issue-link js-issue-link&quot; data-error-text=&quot;Failed to load title&quot; data-id=&quot;1841201493&quot; data-permission-text=&quot;Title is private&quot; data-url=&quot;https://github.com/mtgto/macSKK/issues/4&quot; data-hovercard-type=&quot;pull_request&quot; data-hovercard-url=&quot;/mtgto/macSKK/pull/4/hovercard&quot; href=&quot;https://github.com/mtgto/macSKK/pull/4&quot;&gt;#4&lt;/a&gt;)&lt;/li&gt;
+&lt;li&gt;テキスト入力部がスクリーン下部の場合に変換候補が見切れていたのを修正&lt;/li&gt;
+&lt;/ul&gt;</content>
+    <author>
+      <name>mtgto</name>
+    </author>
+    <media:thumbnail height="30" width="30" url="https://avatars.githubusercontent.com/u/1213991?s=60&amp;v=4"/>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Repository/409931049/0.1.0</id>
+    <updated>2023-08-07T08:30:50Z</updated>
+    <link rel="alternate" type="text/html" href="https://github.com/mtgto/macSKK/releases/tag/0.1.0"/>
+    <title>0.1.0</title>
+    <content type="html">&lt;p&gt;初回リリース&lt;/p&gt;
+&lt;p&gt;とりあえず作者の環境で普段使いはできているけどまだ環境設定もほとんどないため、使う場合は自己責任でお願いします。&lt;/p&gt;</content>
+    <author>
+      <name>mtgto</name>
+    </author>
+    <media:thumbnail height="30" width="30" url="https://avatars.githubusercontent.com/u/1213991?s=60&amp;v=4"/>
+  </entry>
+</feed>
