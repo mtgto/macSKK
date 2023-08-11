@@ -10,20 +10,26 @@ struct DictionariesView: View {
         // 辞書のファイル名と有効かどうかのトグル + 詳細表示のiボタン
         // 詳細はシートでエンコーディング、エントリ数が見れる
         // エントリ一覧が検索できてもいいかもしれない
-        Form {
-            ForEach($settingsViewModel.fileDicts, id: \.self) { fileDict in
-                //Toggle(fileDict.id, isOn: settingsViewModel.dictSettings[fileDict])
-                Text(fileDict.id)
+        VStack {
+            Form {
+                ForEach($settingsViewModel.fileDicts) { fileDict in
+                    Toggle(fileDict.id, isOn: fileDict.enabled)
+                        .toggleStyle(.switch)
+                }
             }
+            .formStyle(.grouped)
+            Spacer()
         }
     }
 }
 
 struct DictionariesView_Previews: PreviewProvider {
     static var previews: some View {
-        let fileDict = try! FileDict(contentsOf: Bundle.main.url(forResource: "SKK-JISYO.sample", withExtension: "utf-8")!, encoding: .utf8)
-        let settings = SettingsViewModel()
-        settings.fileDicts = [fileDict]
+        let dictSettings = [
+            DictSetting(filename: "SKK-JISYO.L", enabled: true, encoding: .japaneseEUC),
+            DictSetting(filename: "SKK-JISYO.sample.utf-8", enabled: false, encoding: .utf8)
+        ]
+        let settings = SettingsViewModel(dictSettings: dictSettings)
         return DictionariesView(settingsViewModel: settings)
     }
 }

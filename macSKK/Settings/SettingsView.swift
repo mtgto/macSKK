@@ -6,7 +6,7 @@ import SwiftUI
 struct SettingsView: View {
     // rawValueはLocalizable.stringsのキー名
     enum Section: String, CaseIterable {
-        case dictionaries = "SettingsNameKeyDictionaries"
+        case dictionaries = "SettingsNameDictionaries"
         case general = "SettingsNameGeneral"
         #if DEBUG
         case keyEvent = "SettingsNameKeyEvent"
@@ -16,7 +16,7 @@ struct SettingsView: View {
         var localizedStringKey: LocalizedStringKey { LocalizedStringKey(rawValue) }
     }
     @StateObject var settingsViewModel: SettingsViewModel
-    @State private var selectedSection: Section = .general
+    @State private var selectedSection: Section = .dictionaries
 
     var body: some View {
         NavigationSplitView(columnVisibility: .constant(.all)) {

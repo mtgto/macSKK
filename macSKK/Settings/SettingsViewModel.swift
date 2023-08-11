@@ -4,23 +4,23 @@
 import Combine
 import Foundation
 
-/*
 // これをObservableObjectにする?
 // どうすればUserDefaultsとグローバル変数dictionaryのdictsと同期させる方法がまだよくわかってない
 // @AppStorageを使う…?
-struct DictSetting: Hashable, Equatable {
-    let dict: FileDict
-    let enabled: Bool
+final class DictSetting: ObservableObject, Identifiable {
+    typealias ID = String
+    @Published var filename: String
+    @Published var enabled: Bool
+    @Published var encoding: String.Encoding
     
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(dict.fileURL)
-    }
+    var id: String { filename }
     
-    static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.dict.fileURL == rhs.dict.fileURL
+    init(filename: String, enabled: Bool, encoding: String.Encoding) {
+        self.filename = filename
+        self.enabled = enabled
+        self.encoding = encoding
     }
 }
-*/
 
 @MainActor
 final class SettingsViewModel: ObservableObject {
@@ -28,10 +28,16 @@ final class SettingsViewModel: ObservableObject {
     @Published var latestRelease: Release? = nil
     /// リリースの確認中かどうか
     @Published var fetchingRelease: Bool = false
-    /// すべての利用可能なSKK辞書
-    @Published var fileDicts: [FileDict] = []
-    /// ユーザー辞書の設定
-    @Published var dictSettings: [FileDict: Bool] = [:]
+    /// すべての利用可能なSKK辞書の設定
+    @Published var fileDicts: [DictSetting] = []
+
+    init(dictSettings: [DictSetting] = []) {
+        self.fileDicts = dictSettings
+        self.fileDicts = [
+            DictSetting(filename: "SKK-JISYO.L", enabled: true, encoding: .japaneseEUC),
+            DictSetting(filename: "SKK-JISYO.sample.utf-8", enabled: false, encoding: .utf8)
+        ]
+    }
 
     /**
      * リリースの確認を行う
