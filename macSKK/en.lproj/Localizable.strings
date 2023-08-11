@@ -1,3 +1,9 @@
 "MenuItemPreference" = "Preferences…";
 "MenuItemSaveDict" = "Save User Dictionary";
 "MenuCheckUpdate" = "Check For Update…";
+"AlertMessageFoundNewRelease" = "A new version of macSKK is available!";
+"AlertInfoFoundNewRelease" = "macSKK %@ is now available. Would you like to download it now?";
+"AlertMessageNoNewRelease" = "You're up to date!";
+"AlertInfoNoNewRelease" = "macSKK %@ is currently the newest version available.";
+"ButtonCancel" = "Cancel";
+"ButtonOpenReleasePage" = "Open Release Page in Browser";

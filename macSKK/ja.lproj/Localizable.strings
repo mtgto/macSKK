@@ -1,3 +1,9 @@
 "MenuItemPreference" = "設定…";
 "MenuItemSaveDict" = "ユーザー辞書を今すぐ保存";
 "MenuCheckUpdate" = "更新の確認…";
+"AlertMessageFoundNewRelease" = "新しいバージョンのmacSKKが入手できます!";
+"AlertInfoFoundNewRelease" = "macSKK %@ が利用可能です。ダウンロードしますか?";
+"AlertMessageNoNewRelease" = "最新版を使用しています";
+"AlertInfoNoNewRelease" = "macSKK %@ は現在利用可能な最新のバージョンです。";
+"ButtonCancel" = "キャンセル";
+"ButtonOpenReleasePage" = "リリースページを開く";
