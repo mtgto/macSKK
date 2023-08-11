@@ -4,8 +4,15 @@
 import SwiftUI
 
 struct SettingsView: View {
-    enum Section: CaseIterable {
-        case general, keyEvent, systemDict
+    // rawValueはLocalizable.stringsのキー名
+    enum Section: String, CaseIterable {
+        case general = "SettingsNameGeneral"
+        #if DEBUG
+        case keyEvent = "SettingsNameKeyEvent"
+        case systemDict = "SettingsNameSystemDict"
+        #endif
+
+        var localizedStringKey: LocalizedStringKey { LocalizedStringKey(rawValue) }
     }
     @StateObject var settingsViewModel: SettingsViewModel
     @State private var selectedSection: Section = .general
@@ -16,11 +23,11 @@ struct SettingsView: View {
                 NavigationLink(value: section) {
                     switch section {
                     case .general:
-                        Label("General", systemImage: "gearshape")
+                        Label(section.localizedStringKey, systemImage: "gearshape")
                     case .keyEvent:
-                        Label("KeyEvent", systemImage: "keyboard")
+                        Label(section.localizedStringKey, systemImage: "keyboard")
                     case .systemDict:
-                        Label("SystemDict", systemImage: "book.closed.fill")
+                        Label(section.localizedStringKey, systemImage: "book.closed.fill")
                     }
                 }
             }
@@ -30,13 +37,13 @@ struct SettingsView: View {
             switch selectedSection {
             case .general:
                 GeneralView(settingsViewModel: settingsViewModel)
-                    .navigationTitle("General")
+                    .navigationTitle(selectedSection.localizedStringKey)
             case .keyEvent:
                 KeyEventView()
-                    .navigationTitle("KeyEvent")
+                    .navigationTitle(selectedSection.localizedStringKey)
             case .systemDict:
                 SystemDictView()
-                    .navigationTitle("SystemDict")
+                    .navigationTitle(selectedSection.localizedStringKey)
             }
         }
         .task(id: selectedSection) {

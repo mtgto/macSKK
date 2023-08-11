@@ -1,2 +1,5 @@
 "MenuItemPreference" = "設定…";
 "MenuItemSaveDict" = "ユーザー辞書を今すぐ保存";
+"SettingsNameGeneral" = "一般";
+"SettingsNameKeyEvent" = "キーイベント";
+"SettingsNameSystemDict" = "システム辞書";
