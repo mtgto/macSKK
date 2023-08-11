@@ -65,19 +65,6 @@ struct macSKKApp: App {
                     panel.setCandidates(CurrentCandidates(words: words, currentPage: 0, totalPageCount: 1), selected: words.last)
                     panel.viewModel.systemAnnotations = [words.last!: String(repeating: "これはシステム辞書の注釈です。", count: 5)]
                 }
-                Button("Alert") {
-                    let alert = NSAlert()
-                    alert.messageText = NSLocalizedString("AlertMessageFoundNewRelease", comment: "Found New Release!")
-                    alert.informativeText = String(format: NSLocalizedString("AlertInfoFoundNewRelease", comment: "macSKK %@ is now available. Would you like to download it now?"), "1.0.0")
-                    alert.addButton(withTitle: NSLocalizedString("ButtonOpenReleasePage", comment: "Open Release Page in Browser"))
-                    alert.addButton(withTitle: NSLocalizedString("ButtonCancel", comment: "Cancel"))
-                    let result = alert.runModal()
-                    if result == .alertFirstButtonReturn {
-                        print("Push OK")
-                    } else if result == .alertSecondButtonReturn {
-                        print("Cancel")
-                    }
-                }
                 #endif
             }
         }

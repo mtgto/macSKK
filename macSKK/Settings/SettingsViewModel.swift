@@ -10,10 +10,6 @@ final class SettingsViewModel: ObservableObject {
     @Published var latestRelease: Release? = nil
     /// リリースの確認中かどうか
     @Published var fetchingRelease: Bool = false
-    
-    enum FetchReleasesError: Error {
-        case tooEarly
-    }
 
     /**
      * リリースの確認を行う
