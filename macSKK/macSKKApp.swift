@@ -78,9 +78,9 @@ struct macSKKApp: App {
             appropriateFor: nil,
             create: false
         ).appendingPathComponent("Dictionaries").appendingPathComponent("SKK-JISYO.L")
-        let dict: Dict
+        let dict: FileDict
         do {
-            dict = try Dict(contentsOf: url, encoding: .japaneseEUC)
+            dict = try FileDict(contentsOf: url, encoding: .japaneseEUC)
         } catch {
             // TODO: NotificationCenter経由でユーザーにエラー理由を通知する
             logger.error("Error while loading SKK-JISYO.L")

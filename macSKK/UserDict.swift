@@ -10,12 +10,12 @@ class UserDict: DictProtocol {
     let fileHandle: FileHandle
     let source: DispatchSourceFileSystemObject
     /// 有効になっている辞書
-    let dicts: [Dict]
+    let dicts: [DictProtocol]
     var userDictEntries: [String: [Word]] = [:]
     private let savePublisher = PassthroughSubject<Void, Never>()
     private var cancellables: Set<AnyCancellable> = []
 
-    init(dicts: [Dict], userDictEntries: [String: [Word]]? = nil) throws {
+    init(dicts: [DictProtocol], userDictEntries: [String: [Word]]? = nil) throws {
         self.dicts = dicts
         dictionariesDirectoryURL = try FileManager.default.url(
             for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false
@@ -68,7 +68,7 @@ class UserDict: DictProtocol {
     private func load() throws {
         try fileHandle.seek(toOffset: 0)
         if let data = try fileHandle.readToEnd(), let source = String(data: data, encoding: .utf8) {
-            let userDict = try Dict(source: source)
+            let userDict = try MemoryDict(source: source)
             userDictEntries = userDict.entries
             logger.log("ユーザー辞書から \(userDict.entries.count) エントリ読み込みました")
         }

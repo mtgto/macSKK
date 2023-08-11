@@ -1,5 +1,6 @@
 "MenuItemPreference" = "Preferences…";
 "MenuItemSaveDict" = "Save User Dictionary";
 "SettingsNameGeneral" = "General";
+"SettingsNameDictionaries" = "Dictionaries";
 "SettingsNameKeyEvent" = "Key Event";
 "SettingsNameSystemDict" = "System Dict";

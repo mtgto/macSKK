@@ -26,8 +26,8 @@ final class UserDictTests: XCTestCase {
     }
 
     func testRefer() throws {
-        let dict1 = Dict(entries: ["い": [Word("胃"), Word("伊")]])
-        let dict2 = Dict(entries: ["い": [Word("胃"), Word("意")]])
+        let dict1 = MemoryDict(entries: ["い": [Word("胃"), Word("伊")]])
+        let dict2 = MemoryDict(entries: ["い": [Word("胃"), Word("意")]])
         let userDict = try UserDict(dicts: [dict1, dict2], userDictEntries: ["い": [Word("井"), Word("伊")]])
         XCTAssertEqual(userDict.refer("い").map { $0.word }, ["井", "伊", "胃", "意"])
     }

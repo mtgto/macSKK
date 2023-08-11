@@ -6,6 +6,7 @@ import SwiftUI
 struct SettingsView: View {
     // rawValueはLocalizable.stringsのキー名
     enum Section: String, CaseIterable {
+        case dictionaries = "SettingsNameKeyDictionaries"
         case general = "SettingsNameGeneral"
         #if DEBUG
         case keyEvent = "SettingsNameKeyEvent"
@@ -24,6 +25,8 @@ struct SettingsView: View {
                     switch section {
                     case .general:
                         Label(section.localizedStringKey, systemImage: "gearshape")
+                    case .dictionaries:
+                        Label(section.localizedStringKey, systemImage: "books.vertical")
                     case .keyEvent:
                         Label(section.localizedStringKey, systemImage: "keyboard")
                     case .systemDict:
@@ -37,6 +40,9 @@ struct SettingsView: View {
             switch selectedSection {
             case .general:
                 GeneralView(settingsViewModel: settingsViewModel)
+                    .navigationTitle(selectedSection.localizedStringKey)
+            case .dictionaries:
+                DictionariesView(settingsViewModel: settingsViewModel)
                     .navigationTitle(selectedSection.localizedStringKey)
             case .keyEvent:
                 KeyEventView()
