@@ -55,25 +55,29 @@ final class SettingsViewModel: ObservableObject {
         $fileDicts.receive(on: DispatchQueue.global()).filter({ !$0.isEmpty }).sink { dictSettings in
             dictSettings.forEach { dictSetting in
                 if let dict = dictionary.fileDict(id: dictSetting.id) {
-                    if !dictSetting.enabled {
+                    if dictSetting.enabled {
+                        if dictSetting.encoding != dict.encoding {
+                            // encodingを変えて読み込み直す
+                            let fileURL = dictionariesDirectoryUrl.appendingPathComponent(dictSetting.filename)
+                            do {
+                                logger.log("\(dictSetting.filename)を読み込みます")
+                                let fileDict = try FileDict(contentsOf: fileURL, encoding: dictSetting.encoding)
+                                logger.log("\(dictSetting.filename)から \(fileDict.entries.count) エントリ読み込みました")
+                                dictionary.replateDict(fileDict)
+                            } catch {
+                                logger.log("SKK辞書 \(dictSetting.filename) の読み込みに失敗しました: \(error)")
+                            }
+                        }
+                    } else {
                         // dictをdictionaryから削除する
                         _ = dictionary.deleteDict(id: dictSetting.id)
                         logger.log("SKK辞書 \(dictSetting.filename) を無効化しました")
-                    } else if dictSetting.encoding != dict.encoding {
-                        // encodingを変えて読み込み直す
-                        let fileURL = dictionariesDirectoryUrl.appendingPathComponent(dictSetting.filename)
-                        do {
-                            let fileDict = try FileDict(contentsOf: fileURL, encoding: dictSetting.encoding)
-                            logger.log("\(dictSetting.filename)から \(fileDict.entries.count) エントリ読み込みました")
-                            dictionary.replateDict(fileDict)
-                        } catch {
-                            logger.log("SKK辞書 \(dictSetting.filename) の読み込みに失敗しました: \(error)")
-                        }
                     }
                 } else if dictSetting.enabled {
                     // dictSettingsの設定でFileDictを読み込んでdictionaryに追加
                     let fileURL = dictionariesDirectoryUrl.appendingPathComponent(dictSetting.filename)
                     do {
+                        logger.log("\(dictSetting.filename)を読み込みます")
                         let fileDict = try FileDict(contentsOf: fileURL, encoding: dictSetting.encoding)
                         dictionary.appendDict(fileDict)
                         logger.log("\(dictSetting.filename)から \(fileDict.entries.count) エントリ読み込みました")
@@ -81,7 +85,7 @@ final class SettingsViewModel: ObservableObject {
                         logger.log("SKK辞書 \(dictSetting.filename) の読み込みに失敗しました: \(error)")
                     }
                 } else {
-                    logger.log("SKK辞書 \(dictSetting.filename) は無効なので読み込みをスキップします")
+                    logger.debug("SKK辞書 \(dictSetting.filename) は無効なので読み込みをスキップします")
                 }
             }
             // dictSettingsをUserDefaultsに永続化する
