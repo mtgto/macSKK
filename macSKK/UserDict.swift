@@ -148,6 +148,10 @@ class UserDict: DictProtocol {
         return nil
     }
 
+    func appendDict(_ fileDict: FileDict) {
+        dicts.append(fileDict)
+    }
+
     func deleteDict(id: FileDict.ID) -> Bool {
         let index = dicts.firstIndex(where: { dict in
             if let fileDict = dict as? FileDict {
@@ -162,6 +166,20 @@ class UserDict: DictProtocol {
             return true
         } else {
             return false
+        }
+    }
+
+    func replateDict(_ fileDict: FileDict) {
+        let index = dicts.firstIndex(where: { dict in
+            if let dict = dict as? FileDict {
+                if dict.id == fileDict.id {
+                    return true
+                }
+            }
+            return false
+        })
+        if let index {
+            dicts[index] = fileDict
         }
     }
 

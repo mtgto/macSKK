@@ -31,7 +31,7 @@ struct DictionariesView_Previews: PreviewProvider {
             DictSetting(filename: "SKK-JISYO.L", enabled: true, encoding: .japaneseEUC),
             DictSetting(filename: "SKK-JISYO.sample.utf-8", enabled: false, encoding: .utf8)
         ]
-        let settings = SettingsViewModel(dictSettings: dictSettings)
+        let settings = try! SettingsViewModel(dictSettings: dictSettings)
         return DictionariesView(settingsViewModel: settings)
     }
 }

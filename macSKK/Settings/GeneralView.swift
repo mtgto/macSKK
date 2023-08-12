@@ -58,7 +58,7 @@ struct GeneralView: View {
 
 struct GeneralView_Previews: PreviewProvider {
     static var previews: some View {
-        let viewModel = SettingsViewModel()
+        let viewModel = try! SettingsViewModel(dictSettings: [])
         viewModel.latestRelease = Release(version: ReleaseVersion(major: 1, minor: 0, patch: 0),
                                           updated: Date(),
                                           url: URL(string: "https://example.com")!)
