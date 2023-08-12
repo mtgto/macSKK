@@ -106,7 +106,10 @@ struct macSKKApp: App {
             }
         }
         guard let dictSettings else {
+            // 再起動してもおそらく同じ理由でこけるので、リセットしちゃう
+            // TODO: Notification Center経由でユーザーにも破壊的処理が起きたことを通知してある
             logger.error("環境設定の辞書設定が壊れています")
+            UserDefaults.standard.removeObject(forKey: "dictionaries")
             return
         }
         try settingsViewModel.setDictSettings(dictSettings)

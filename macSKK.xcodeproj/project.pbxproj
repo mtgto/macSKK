@@ -249,8 +249,8 @@
 				CEA78FB129646CA100B67E25 /* UserDictTests.swift */,
 				CEA78FAD2961BA1D00B67E25 /* String+TransformTests.swift */,
 				CED7CA3D2A8397E4004EF988 /* UpdateCheckerTests.swift */,
-				CED7CA572A83BFE9004EF988 /* fixture */,
 				CE6DBA902A846C1700F5A227 /* ReleaseVersionTests.swift */,
+				CED7CA572A83BFE9004EF988 /* fixture */,
 			);
 			path = macSKKTests;
 			sourceTree = "<group>";

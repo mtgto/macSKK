@@ -40,6 +40,17 @@ final class UserDictTests: XCTestCase {
         XCTAssertFalse(userDict.delete(yomi: "あr", word: Word("在")))
     }
 
+    func testAppendDict() throws {
+        let userDict = try UserDict(dicts: [])
+        let fileURL = Bundle(for: Self.self).url(forResource: "SKK-JISYO.test", withExtension: "utf8")!
+        let fileDict = try FileDict(contentsOf: fileURL, encoding: .utf8)
+        userDict.appendDict(fileDict)
+        XCTAssertEqual(userDict.dicts.count, 1)
+        // FIXME: ほんとはIDが同じで中身が異なる辞書を作って、それを追加すると置換になることをテストしたい
+        userDict.appendDict(fileDict)
+        XCTAssertEqual(userDict.dicts.count, 1, "同じIDをもつ辞書を追加しても個数は増えない")
+    }
+
     func testDeleteDict() throws {
         let fileURL = Bundle(for: Self.self).url(forResource: "SKK-JISYO.test", withExtension: "utf8")!
         let fileDict = try FileDict(contentsOf: fileURL, encoding: .utf8)

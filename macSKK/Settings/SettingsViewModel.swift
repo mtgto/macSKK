@@ -62,11 +62,11 @@ final class SettingsViewModel: ObservableObject {
 
     init(dictionariesDirectoryUrl: URL) throws {
         self.dictionariesDirectoryUrl = dictionariesDirectoryUrl
-        // SKK-JISYO.Lのようにファイルの読み込みが遅いのでバックグラウンドで処理
+        // SKK-JISYO.Lのようなファイルの読み込みが遅いのでバックグラウンドで処理
         $fileDicts.receive(on: DispatchQueue.global()).filter({ !$0.isEmpty }).sink { dictSettings in
             dictSettings.forEach { dictSetting in
                 if dictSetting.enabled {
-                    // 辞書が有効化された、もしくは辞書のエンコーディング設定が変わったら読み込む
+                    // 無効だった辞書が有効化された、もしくは辞書のエンコーディング設定が変わったら読み込む
                     let dict = dictionary.fileDict(id: dictSetting.id)
                     if dictSetting.encoding != dict?.encoding {
                         let fileURL = dictionariesDirectoryUrl.appendingPathComponent(dictSetting.filename)
