@@ -17,7 +17,7 @@ func isTest() -> Bool {
 struct macSKKApp: App {
     private var server: IMKServer!
     private var panel: CandidatesPanel! = CandidatesPanel()
-    @StateObject var settingsViewModel = SettingsViewModel()
+    @ObservedObject var settingsViewModel = SettingsViewModel()
     private var cancellables: Set<AnyCancellable> = []
     /// SKK辞書を配置するディレクトリ
     /// "~/Library/Containers/net.mtgto.inputmethod.macSKK/Data/Documents/Dictionaries"
@@ -62,7 +62,10 @@ struct macSKKApp: App {
         //
         //     }
         //     .store(in: &cancellables)
+        // TODO: 警告がでるので、StateObjectやめるかどうか考える
+        // Accessing StateObject's object without being installed on a View. This will create a new instance each time.
         settingsViewModel.$fileDicts
+            .filter { !$0.isEmpty && dictionary != nil }
             .sink { dictSettings in
                 // 差分があれば更新する
                 dictSettings.forEach { dictSetting in
@@ -139,8 +142,10 @@ struct macSKKApp: App {
                                                         options: [.skipsHiddenFiles, .skipsSubdirectoryDescendants])
         guard let enumerator else {
             logger.error("辞書フォルダのファイル一覧が取得できません")
+            dictionary = try UserDict(dicts: [])
             return
         }
+        var userDicts: [FileDict] = []
         for case let fileURL as URL in enumerator {
             guard let resourceValues = try? fileURL.resourceValues(forKeys: resourceKeys),
                 let isDirectory = resourceValues.isDirectory,
@@ -152,27 +157,29 @@ struct macSKKApp: App {
                 continue
             }
             if let setting = fileDictSettings.first(where: { $0.filename == filename }) {
+                if !setting.enabled {
+                    logger.log("\(filename) は読み込みをスキップします")
+                    continue
+                }
                 let dict: FileDict
                 do {
                     dict = try FileDict(contentsOf: fileURL, encoding: setting.encoding)
+                    userDicts.append(dict)
+                    logger.log("\(setting.filename, privacy: .public)から \(dict.entries.count) エントリ読み込みました")
                 } catch {
                     // TODO: NotificationCenter経由でユーザーにエラー理由を通知する
                     logger.error("SKK辞書 \(setting.filename) の読み込みに失敗しました: \(error)")
-                    return
-                }
-                do {
-                    dictionary = try UserDict(dicts: [dict])
-                    logger.log("\(setting.filename)から \(dict.entries.count) エントリ読み込みました")
-                } catch {
-                    // TODO: NotificationCenter経由でユーザーにエラー理由を通知する
-                    logger.error("SKK辞書 \(setting.filename) の読み込みに失敗しました: \(error)")
+                    continue
                 }
             } else {
                 // FIXME: 起動時にだけSKK辞書ファイルを検査するんじゃなくてディレクトリを監視自体を監視しておいたほうがよさそう
                 // UserDefaultsの辞書設定に存在しないファイルが見つかったのでデフォルトEUC-JPにしておく
+                logger.log("新しい辞書らしきファイル \(filename, privacy: .public) がみつかりました")
                 fileDictSettings.append(FileDictSetting(filename: filename, encoding: .japaneseEUC, enabled: false))
             }
         }
+        dictionary = try UserDict(dicts: userDicts)
+        UserDefaults.standard.set(fileDictSettings.map { $0.encode() }, forKey: "dictionaries")
         settingsViewModel.fileDicts = fileDictSettings.map {
             DictSetting(filename: $0.filename, enabled: $0.enabled, encoding: $0.encoding)
         }

@@ -40,14 +40,14 @@ struct FileDictSetting {
     init?(_ dictionary: [String: Any]) {
         guard let filename = dictionary["filename"] as? String else { return nil }
         self.filename = filename
-        guard let encodingRawString = dictionary["encoding"] as? String, let encodingRaw = UInt(encodingRawString) else { return nil }
-        self.encoding = String.Encoding(rawValue: encodingRaw)
+        guard let encoding = dictionary["encoding"] as? UInt else { return nil }
+        self.encoding = String.Encoding(rawValue: encoding)
         guard let enabled = dictionary["enabled"] as? Bool else { return nil }
         self.enabled = enabled
     }
 
     func encode() -> [String: Any] {
-        ["filename": filename, "encoding": String(encoding.rawValue), "enabled": enabled]
+        ["filename": filename, "encoding": encoding.rawValue, "enabled": enabled]
     }
 }
 
