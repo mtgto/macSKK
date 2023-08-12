@@ -85,9 +85,6 @@ final class SettingsViewModel: ObservableObject {
             // dictSettingsをUserDefaultsに永続化する
         }
         .store(in: &cancellables)
-        if !isTest() {
-            try watchDictionariesDirectory()
-        }
     }
 
     // PreviewProvider用
@@ -105,6 +102,17 @@ final class SettingsViewModel: ObservableObject {
         source?.cancel()
     }
 
+    // fileDictsが設定されてから呼び出すこと。
+    // じゃないとSKK-JISYO.Lのようなファイルが refreshDictionariesDirectoryでfileDictsにない辞書ディレクトリにあるファイルとして
+    // enabled=falseでfileDictsに追加されてしまい、読み込みスキップされたというログがでてしまうため。
+    // FIXME: 辞書設定が設定されたイベントをsinkして設定されたときに一回だけsetupEventsを実行する、とかのほうがよさそう。
+    func setupEvents() throws {
+        if !isTest() {
+            try watchDictionariesDirectory()
+            refreshDictionariesDirectory()
+        }
+    }
+
     /// 辞書ディレクトリを監視して変更があった場合にfileDictsを更新する
     /// DictSettingが変更されてないときは辞書ファイルの再読み込みは行なわない (需要があれば今後やるかも)
     func watchDictionariesDirectory() throws {
@@ -117,48 +125,7 @@ final class SettingsViewModel: ObservableObject {
         let source = DispatchSource.makeFileSystemObjectSource(fileDescriptor: fileDescriptor, eventMask: [.write, .delete])
         source.setEventHandler {
             logger.log("辞書ディレクトリでファイルイベントが発生しました")
-            // 辞書ディレクトリ直下にあるファイル一覧(シンボリックリンク、サブディレクトリは探索しない)
-            let resourceKeys: Set<URLResourceKey> = [.isDirectoryKey, .nameKey]
-            let enumerator = FileManager.default.enumerator(at: self.dictionariesDirectoryUrl,
-                                                            includingPropertiesForKeys: Array(resourceKeys),
-                                                            options: [.skipsHiddenFiles, .skipsSubdirectoryDescendants])
-            guard let enumerator else {
-                logger.error("辞書フォルダのファイル一覧が取得できません")
-                return
-            }
-
-            var userDicts: [FileDict] = []
-            for case let fileURL as URL in enumerator {
-                guard let resourceValues = try? fileURL.resourceValues(forKeys: resourceKeys),
-                      let isDirectory = resourceValues.isDirectory,
-                      let filename = resourceValues.name
-                else {
-                    continue
-                }
-                if isDirectory || filename == UserDict.userDictFilename {
-                    continue
-                }
-                if let setting = self.fileDicts.first(where: { $0.filename == filename }) {
-                    if !setting.enabled {
-                        logger.log("\(filename) は読み込みをスキップします")
-                        continue
-                    }
-                    do {
-                        let dict = try FileDict(contentsOf: fileURL, encoding: setting.encoding)
-                        userDicts.append(dict)
-                        logger.log("\(setting.filename)から \(dict.entries.count) エントリ読み込みました")
-                    } catch {
-                        // TODO: NotificationCenter経由でユーザーにエラー理由を通知する
-                        logger.error("SKK辞書 \(setting.filename) の読み込みに失敗しました: \(error)")
-                        continue
-                    }
-                } else {
-                    // FIXME: 起動時にだけSKK辞書ファイルを検査するんじゃなくてディレクトリを監視自体を監視しておいたほうがよさそう
-                    // UserDefaultsの辞書設定に存在しないファイルが見つかったのでデフォルトEUC-JPにしておく
-                    logger.log("新しい辞書らしきファイル \(filename) がみつかりました")
-                    self.fileDicts.append(DictSetting(filename: filename, enabled: false, encoding: .japaneseEUC))
-                }
-            }
+            self.refreshDictionariesDirectory()
         }
         source.setCancelHandler {
             logger.log("辞書ディレクトリの監視がキャンセルされました")
@@ -166,6 +133,55 @@ final class SettingsViewModel: ObservableObject {
         }
         self.source = source
         source.activate()
+    }
+
+    /// 辞書ディレクトリを見て辞書設定と同期します。起動時とディレクトリのイベント時に実行します。
+    /// - ディレクトリにあって辞書設定にないファイルができている場合は、enabled=false, encoding=euc-jpで辞書設定に追加し、UserDefaultsを更新する
+    /// - ディレクトリになくて辞書設定にあるファイルができている場合は、読み込み辞書から設定を削除する? enabled=falseにする?
+    func refreshDictionariesDirectory() {
+        // 辞書ディレクトリ直下にあるファイル一覧をみていく。シンボリックリンク、サブディレクトリは探索しない。
+        let resourceKeys: Set<URLResourceKey> = [.isDirectoryKey, .nameKey]
+        let enumerator = FileManager.default.enumerator(at: self.dictionariesDirectoryUrl,
+                                                        includingPropertiesForKeys: Array(resourceKeys),
+                                                        options: [.skipsHiddenFiles, .skipsSubdirectoryDescendants])
+        guard let enumerator else {
+            logger.error("辞書フォルダのファイル一覧が取得できません")
+            return
+        }
+
+        var userDicts: [FileDict] = []
+        for case let fileURL as URL in enumerator {
+            guard let resourceValues = try? fileURL.resourceValues(forKeys: resourceKeys),
+                  let isDirectory = resourceValues.isDirectory,
+                  let filename = resourceValues.name
+            else {
+                continue
+            }
+            if isDirectory || filename == UserDict.userDictFilename {
+                continue
+            }
+            if let setting = self.fileDicts.first(where: { $0.filename == filename }) {
+                if !setting.enabled {
+                    logger.log("\(filename) は読み込みをスキップします")
+                    continue
+                }
+                do {
+                    let dict = try FileDict(contentsOf: fileURL, encoding: setting.encoding)
+                    userDicts.append(dict)
+                    logger.log("\(setting.filename)から \(dict.entries.count) エントリ読み込みました")
+                } catch {
+                    // TODO: NotificationCenter経由でユーザーにエラー理由を通知する
+                    logger.error("SKK辞書 \(setting.filename) の読み込みに失敗しました: \(error)")
+                    continue
+                }
+            } else {
+                // FIXME: 起動時にだけSKK辞書ファイルを検査するんじゃなくてディレクトリを監視自体を監視しておいたほうがよさそう
+                // UserDefaultsの辞書設定に存在しないファイルが見つかったのでデフォルトEUC-JPにしておく
+                logger.log("新しい辞書らしきファイル \(filename) がみつかりました")
+                self.fileDicts.append(DictSetting(filename: filename, enabled: false, encoding: .japaneseEUC))
+            }
+        }
+        // FIXME: 辞書設定があってファイルがない場合に辞書設定のenabled=falseにしておく?
     }
 
     /**

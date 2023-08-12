@@ -57,6 +57,13 @@ struct macSKKApp: App {
                 logger.error("辞書の読み込みに失敗しました")
             }
         }
+        // setupDictionaries後に辞書ファイルの読み込みを開始する
+        do {
+            try settingsViewModel.setupEvents()
+        } catch {
+            logger.error("辞書フォルダの読み込みとイベントハンドラの登録に失敗しました: \(error)")
+        }
+
         // 設定が変更されたfileDictだけを見る
         // settingsViewModel.$fileDicts
         //     .zip(settingsViewModel.$fileDicts.dropFirst())
@@ -122,6 +129,7 @@ struct macSKKApp: App {
     }
 
     private func setupUserDefaults() {
+        UserDefaults.standard.removeObject(forKey: "dictionaries")
         UserDefaults.standard.register(defaults: [
             "dictionaries": [
                 DictSetting(filename: "SKK-JISYO.L", enabled: true, encoding: .japaneseEUC).encode()
