@@ -62,8 +62,6 @@ struct macSKKApp: App {
         //
         //     }
         //     .store(in: &cancellables)
-        // TODO: 警告がでるので、StateObjectやめるかどうか考える
-        // Accessing StateObject's object without being installed on a View. This will create a new instance each time.
         settingsViewModel.$fileDicts
             .filter { !$0.isEmpty && dictionary != nil }
             .sink { dictSettings in

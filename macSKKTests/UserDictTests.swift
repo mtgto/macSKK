@@ -39,4 +39,14 @@ final class UserDictTests: XCTestCase {
         XCTAssertFalse(userDict.delete(yomi: "いいい", word: Word("いいい")))
         XCTAssertFalse(userDict.delete(yomi: "あr", word: Word("在")))
     }
+
+    func testDeleteDict() throws {
+        let fileURL = Bundle(for: Self.self).url(forResource: "SKK-JISYO.test", withExtension: "utf8")!
+        let fileDict = try FileDict(contentsOf: fileURL, encoding: .utf8)
+        let userDict = try UserDict(dicts: [fileDict])
+        XCTAssertFalse(userDict.deleteDict(id: "foo"))
+        XCTAssertEqual(userDict.dicts.count, 1)
+        XCTAssertTrue(userDict.deleteDict(id: "SKK-JISYO.test.utf8"), "idはファイル名")
+        XCTAssertEqual(userDict.dicts.count, 0)
+    }
 }

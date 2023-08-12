@@ -11,7 +11,7 @@ class UserDict: DictProtocol {
     let fileHandle: FileHandle
     let source: DispatchSourceFileSystemObject
     /// 有効になっている辞書
-    let dicts: [DictProtocol]
+    private(set) var dicts: [DictProtocol]
     var userDictEntries: [String: [Word]] = [:]
     private let savePublisher = PassthroughSubject<Void, Never>()
     private var cancellables: Set<AnyCancellable> = []
@@ -146,6 +146,23 @@ class UserDict: DictProtocol {
             }
         }
         return nil
+    }
+
+    func deleteDict(id: FileDict.ID) -> Bool {
+        let index = dicts.firstIndex(where: { dict in
+            if let fileDict = dict as? FileDict {
+                if fileDict.id == id {
+                    return true
+                }
+            }
+            return false
+        })
+        if let index {
+            dicts.remove(at: index)
+            return true
+        } else {
+            return false
+        }
     }
 
     private func serializeWords(_ words: [Word]) -> String {
