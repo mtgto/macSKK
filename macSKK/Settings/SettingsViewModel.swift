@@ -3,6 +3,7 @@
 
 import Combine
 import Foundation
+import SwiftUI
 
 // これをObservableObjectにする?
 // どうすればUserDefaultsとグローバル変数dictionaryのdictsと同期させる方法がまだよくわかってない

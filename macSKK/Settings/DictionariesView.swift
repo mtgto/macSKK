@@ -13,8 +13,10 @@ struct DictionariesView: View {
         VStack {
             Form {
                 ForEach($settingsViewModel.fileDicts) { fileDict in
+                    // テキストを二行にして、ファイル名と二行目にエンコーディングとエントリ数を出したい
                     Toggle(fileDict.id, isOn: fileDict.enabled)
                         .toggleStyle(.switch)
+                    // Switchの右にiボタン置いてシートでエンコーディングを変更できるようにしたい?
                 }
             }
             .formStyle(.grouped)

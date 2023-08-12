@@ -5,6 +5,7 @@ import Combine
 import Foundation
 
 class UserDict: DictProtocol {
+    static let userDictFilename = "skk-jisyo.utf8"
     let dictionariesDirectoryURL: URL
     let fileURL: URL
     let fileHandle: FileHandle
@@ -24,7 +25,7 @@ class UserDict: DictProtocol {
             logger.log("辞書フォルダがないため作成します")
             try FileManager.default.createDirectory(at: dictionariesDirectoryURL, withIntermediateDirectories: true)
         }
-        fileURL = dictionariesDirectoryURL.appending(path: "skk-jisyo.utf8")
+        fileURL = dictionariesDirectoryURL.appending(path: Self.userDictFilename)
         if !FileManager.default.fileExists(atPath: fileURL.path()) {
             logger.log("ユーザー辞書ファイルがないため作成します")
             try Data().write(to: fileURL, options: .withoutOverwriting)
@@ -134,6 +135,17 @@ class UserDict: DictProtocol {
         return userDictEntries.map { entry in
             return "\(entry.key) /\(serializeWords(entry.value))/"
         }.joined(separator: "\n")
+    }
+
+    func fileDict(id: FileDict.ID) -> FileDict? {
+        for dict in dicts {
+            if let fileDict = dict as? FileDict {
+                if fileDict.id == id {
+                    return fileDict
+                }
+            }
+        }
+        return nil
     }
 
     private func serializeWords(_ words: [Word]) -> String {

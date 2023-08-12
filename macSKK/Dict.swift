@@ -25,6 +25,32 @@ protocol DictProtocol {
     func refer(_ word: String) -> [Word]
 }
 
+// UserDefaultsに書き込む形式
+struct FileDictSetting {
+    let filename: String
+    let encoding: String.Encoding
+    let enabled: Bool
+
+    init(filename: String, encoding: String.Encoding, enabled: Bool) {
+        self.filename = filename
+        self.encoding = encoding
+        self.enabled = enabled
+    }
+
+    init?(_ dictionary: [String: Any]) {
+        guard let filename = dictionary["filename"] as? String else { return nil }
+        self.filename = filename
+        guard let encoding = dictionary["encoding"] as? UInt else { return nil }
+        self.encoding = String.Encoding(rawValue: encoding)
+        guard let enabled = dictionary["enabled"] as? Bool else { return nil }
+        self.enabled = enabled
+    }
+
+    func encode() -> [String: Any] {
+        ["filename": filename, "encoding": encoding.rawValue, "enabled": enabled]
+    }
+}
+
 /// 実ファイルをもつSKK辞書
 struct FileDict: DictProtocol, Hashable, Identifiable {
     let id: String

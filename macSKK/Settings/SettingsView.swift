@@ -15,7 +15,7 @@ struct SettingsView: View {
 
         var localizedStringKey: LocalizedStringKey { LocalizedStringKey(rawValue) }
     }
-    @StateObject var settingsViewModel: SettingsViewModel
+    @ObservedObject var settingsViewModel: SettingsViewModel
     @State private var selectedSection: Section = .dictionaries
 
     var body: some View {
