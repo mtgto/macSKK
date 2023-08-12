@@ -51,6 +51,7 @@ final class SettingsViewModel: ObservableObject {
 
     init(dictionariesDirectoryUrl: URL) throws {
         self.dictionariesDirectoryUrl = dictionariesDirectoryUrl
+        // TODO: 別スレッドで読み込む
         $fileDicts.sink { dictSettings in
             dictSettings.forEach { dictSetting in
                 if let dict = dictionary.fileDict(id: dictSetting.id) {
@@ -106,7 +107,8 @@ final class SettingsViewModel: ObservableObject {
     // じゃないとSKK-JISYO.Lのようなファイルが refreshDictionariesDirectoryでfileDictsにない辞書ディレクトリにあるファイルとして
     // enabled=falseでfileDictsに追加されてしまい、読み込みスキップされたというログがでてしまうため。
     // FIXME: 辞書設定が設定されたイベントをsinkして設定されたときに一回だけsetupEventsを実行する、とかのほうがよさそう。
-    func setupEvents() throws {
+    func setDictSettings(_ dictSettings: [DictSetting]) throws {
+        self.fileDicts = dictSettings
         if !isTest() {
             try watchDictionariesDirectory()
             refreshDictionariesDirectory()
@@ -161,6 +163,10 @@ final class SettingsViewModel: ObservableObject {
                 continue
             }
             if let setting = self.fileDicts.first(where: { $0.filename == filename }) {
+                // dictionaryにすでにsetting.filenameが読み込まれていたらスキップする
+                if dictionary.fileDict(id: setting.id) != nil {
+                    continue
+                }
                 if !setting.enabled {
                     logger.log("\(filename) は読み込みをスキップします")
                     continue
