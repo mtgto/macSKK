@@ -91,7 +91,7 @@ final class SettingsViewModel: ObservableObject {
     //// 利用可能な辞書の読み込み状態
     @Published var dictLoadingStatuses: [DictSetting.ID: LoadStatus] = [:]
     // 辞書ディレクトリ
-    private let dictionariesDirectoryUrl: URL
+    let dictionariesDirectoryUrl: URL
     private var source: DispatchSourceFileSystemObject?
     private var cancellables = Set<AnyCancellable>()
 

@@ -14,28 +14,35 @@ struct DictionariesView: View {
         // エントリ一覧が検索できてもいいかもしれない
         VStack {
             Form {
-                ForEach($settingsViewModel.fileDicts) { fileDict in
-                    HStack(alignment: .top) {
-                        Toggle(isOn: fileDict.enabled) {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(fileDict.id)
-                                    .font(.body)
-                                Text(loadingStatus(of: fileDict.wrappedValue))
-                                    .font(.footnote)
+                Section {
+                    ForEach($settingsViewModel.fileDicts) { fileDict in
+                        HStack(alignment: .top) {
+                            Toggle(isOn: fileDict.enabled) {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(fileDict.id)
+                                        .font(.body)
+                                    Text(loadingStatus(of: fileDict.wrappedValue))
+                                        .font(.footnote)
+                                }
                             }
+                            .toggleStyle(.switch)
+                            Button {
+                                // selectedIndex = index
+                                selectedEncoding = fileDict.encoding.wrappedValue
+                                selectedDictSetting = fileDict.wrappedValue
+                            } label: {
+                                Image(systemName: "info.circle")
+                                    .resizable()
+                                    .frame(width: 16, height: 16)
+                            }
+                            .buttonStyle(.borderless)
                         }
-                        .toggleStyle(.switch)
-                        // Switchの右にiボタン置いてシートでエンコーディングを変更できるようにしたい?
-                        Button {
-                            // selectedIndex = index
-                            selectedEncoding = fileDict.encoding.wrappedValue
-                            selectedDictSetting = fileDict.wrappedValue
-                        } label: {
-                            Image(systemName: "info.circle")
-                                .resizable()
-                                .frame(width: 16, height: 16)
-                        }
-                        .buttonStyle(.borderless)
+                    }
+                } footer: {
+                    Button {
+                        NSWorkspace.shared.open(settingsViewModel.dictionariesDirectoryUrl)
+                    } label: {
+                        Text("辞書フォルダをFinderで表示")
                     }
                 }
             }
@@ -47,6 +54,9 @@ struct DictionariesView: View {
                     encoding: $selectedEncoding
                 )
             }
+            Text("辞書を追加したい場合は辞書フォルダに辞書ファイルを置き、この画面で有効化してください。")
+                .font(.subheadline)
+                .padding([.bottom, .leading, .trailing])
             Spacer()
         }
     }
