@@ -21,6 +21,19 @@ final class DictSetting: ObservableObject, Identifiable {
         self.enabled = enabled
         self.encoding = encoding
     }
+
+    init?(_ dictionary: [String: Any]) {
+        guard let filename = dictionary["filename"] as? String else { return nil }
+        self.filename = filename
+        guard let enabled = dictionary["enabled"] as? Bool else { return nil }
+        self.enabled = enabled
+        guard let encoding = dictionary["encoding"] as? UInt else { return nil }
+        self.encoding = String.Encoding(rawValue: encoding)
+    }
+
+    func encode() -> [String: Any] {
+        ["filename": filename, "enabled": enabled, "encoding": encoding.rawValue]
+    }
 }
 
 @MainActor

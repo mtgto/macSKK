@@ -116,21 +116,21 @@ struct macSKKApp: App {
     private func setupUserDefaults() {
         UserDefaults.standard.register(defaults: [
             "dictionaries": [
-                FileDictSetting(filename: "SKK-JISYO.L", encoding: .japaneseEUC, enabled: true).encode()
+                DictSetting(filename: "SKK-JISYO.L", enabled: true, encoding: .japaneseEUC).encode()
             ],
         ])
     }
 
     // Dictionariesフォルダのファイルのうち、UserDefaultsで有効になっているものだけ読み込む
     private func setupDictionaries() throws {
-        let fileDictSettings = UserDefaults.standard.array(forKey: "dictionaries")?.compactMap { obj in
+        let dictSettings = UserDefaults.standard.array(forKey: "dictionaries")?.compactMap { obj in
             if let setting = obj as? [String: Any] {
-                return FileDictSetting(setting)
+                return DictSetting(setting)
             } else {
                 return nil
             }
         }
-        guard var fileDictSettings else {
+        guard var dictSettings else {
             logger.error("環境設定の辞書設定が壊れています")
             return
         }
@@ -156,14 +156,13 @@ struct macSKKApp: App {
             if isDirectory || filename == UserDict.userDictFilename {
                 continue
             }
-            if let setting = fileDictSettings.first(where: { $0.filename == filename }) {
+            if let setting = dictSettings.first(where: { $0.filename == filename }) {
                 if !setting.enabled {
                     logger.log("\(filename) は読み込みをスキップします")
                     continue
                 }
-                let dict: FileDict
                 do {
-                    dict = try FileDict(contentsOf: fileURL, encoding: setting.encoding)
+                    let dict = try FileDict(contentsOf: fileURL, encoding: setting.encoding)
                     userDicts.append(dict)
                     logger.log("\(setting.filename, privacy: .public)から \(dict.entries.count) エントリ読み込みました")
                 } catch {
@@ -175,12 +174,12 @@ struct macSKKApp: App {
                 // FIXME: 起動時にだけSKK辞書ファイルを検査するんじゃなくてディレクトリを監視自体を監視しておいたほうがよさそう
                 // UserDefaultsの辞書設定に存在しないファイルが見つかったのでデフォルトEUC-JPにしておく
                 logger.log("新しい辞書らしきファイル \(filename, privacy: .public) がみつかりました")
-                fileDictSettings.append(FileDictSetting(filename: filename, encoding: .japaneseEUC, enabled: false))
+                dictSettings.append(DictSetting(filename: filename, enabled: false, encoding: .japaneseEUC))
             }
         }
         dictionary = try UserDict(dicts: userDicts)
-        UserDefaults.standard.set(fileDictSettings.map { $0.encode() }, forKey: "dictionaries")
-        settingsViewModel.fileDicts = fileDictSettings.map {
+        UserDefaults.standard.set(dictSettings.map { $0.encode() }, forKey: "dictionaries")
+        settingsViewModel.fileDicts = dictSettings.map {
             DictSetting(filename: $0.filename, enabled: $0.enabled, encoding: $0.encoding)
         }
     }
