@@ -37,6 +37,7 @@
 		CEB0888E2A7F393600EFD1E3 /* AnnotationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEB0888D2A7F393600EFD1E3 /* AnnotationView.swift */; };
 		CEB088902A7F73B400EFD1E3 /* Pasteboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEB0888F2A7F73B400EFD1E3 /* Pasteboard.swift */; };
 		CEB141702A8773DB005E7252 /* SKK-JISYO.test.utf8 in Resources */ = {isa = PBXBuildFile; fileRef = CEB1416F2A8773DB005E7252 /* SKK-JISYO.test.utf8 */; };
+		CEB141722A87D16C005E7252 /* DictionaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEB141712A87D16C005E7252 /* DictionaryView.swift */; };
 		CEC376E82965199500D9C432 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEC376E72965199500D9C432 /* SettingsView.swift */; };
 		CEC376EB2965211200D9C432 /* KeyEventView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEC376EA2965211200D9C432 /* KeyEventView.swift */; };
 		CED7CA2C2A8394F7004EF988 /* FetchUpdateServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED7CA2B2A8394F7004EF988 /* FetchUpdateServiceProtocol.swift */; };
@@ -125,6 +126,7 @@
 		CEB088922A81342E00EFD1E3 /* macSKK-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "macSKK-Bridging-Header.h"; sourceTree = "<group>"; };
 		CEB088952A81353400EFD1E3 /* DictionaryServiceExtention.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DictionaryServiceExtention.h; sourceTree = "<group>"; };
 		CEB1416F2A8773DB005E7252 /* SKK-JISYO.test.utf8 */ = {isa = PBXFileReference; lastKnownFileType = text; path = "SKK-JISYO.test.utf8"; sourceTree = "<group>"; };
+		CEB141712A87D16C005E7252 /* DictionaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryView.swift; sourceTree = "<group>"; };
 		CEC376E72965199500D9C432 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		CEC376EA2965211200D9C432 /* KeyEventView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyEventView.swift; sourceTree = "<group>"; };
 		CED7CA292A8394F7004EF988 /* FetchUpdateService.xpc */ = {isa = PBXFileReference; explicitFileType = "wrapper.xpc-service"; includeInIndex = 0; path = FetchUpdateService.xpc; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -261,6 +263,7 @@
 				CED7CA5A2A83DE7F004EF988 /* SettingsViewModel.swift */,
 				CEC376E72965199500D9C432 /* SettingsView.swift */,
 				CE6DBACC2A864A3B00F5A227 /* DictionariesView.swift */,
+				CEB141712A87D16C005E7252 /* DictionaryView.swift */,
 				CEE3717429653112000DB2C3 /* GeneralView.swift */,
 				CEC376EA2965211200D9C432 /* KeyEventView.swift */,
 				CE40D9A02A6D0C2F00D44799 /* SystemDictView.swift */,
@@ -454,6 +457,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CEB141722A87D16C005E7252 /* DictionaryView.swift in Sources */,
 				CEF0825D296DB58600646366 /* CandidatesViewModel.swift in Sources */,
 				CE6DBA8D2A845CE400F5A227 /* Release.swift in Sources */,
 				CED7CA5B2A83DE7F004EF988 /* SettingsViewModel.swift in Sources */,

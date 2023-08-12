@@ -45,6 +45,41 @@ enum LoadStatus {
     case fail(Error)
 }
 
+/// 辞書のエンコーディングとして利用可能なもの
+enum AllowedEncoding: CaseIterable, CustomStringConvertible {
+    case utf8
+    case eucjp
+
+    init?(encoding: String.Encoding) {
+        switch encoding {
+        case .utf8:
+            self = .utf8
+        case .japaneseEUC:
+            self = .eucjp
+        default:
+            return nil
+        }
+    }
+
+    var encoding: String.Encoding {
+        switch self {
+        case .utf8:
+            return .utf8
+        case .eucjp:
+            return .japaneseEUC
+        }
+    }
+
+    var description: String {
+        switch self {
+        case .utf8:
+            return "UTF-8"
+        case .eucjp:
+            return "EUC-JP"
+        }
+    }
+}
+
 @MainActor
 final class SettingsViewModel: ObservableObject {
     /// CheckUpdaterで取得した最新のリリース。取得前はnil

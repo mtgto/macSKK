@@ -5,6 +5,8 @@ import SwiftUI
 
 struct DictionariesView: View {
     @ObservedObject var settingsViewModel: SettingsViewModel
+    @State private var selectedDictSetting: DictSetting?
+    @State private var selectedEncoding: String.Encoding = .utf8
 
     var body: some View {
         // 辞書のファイル名と有効かどうかのトグル + 詳細表示のiボタン
@@ -13,22 +15,38 @@ struct DictionariesView: View {
         VStack {
             Form {
                 ForEach($settingsViewModel.fileDicts) { fileDict in
-                    // テキストを二行にして、ファイル名と二行目にエンコーディングとエントリ数/読み込み状態/エラーを出したい
-                    Toggle(isOn: fileDict.enabled) {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(fileDict.id)
-                                .font(.headline)
-                            HStack {
+                    HStack(alignment: .top) {
+                        Toggle(isOn: fileDict.enabled) {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(fileDict.id)
+                                    .font(.body)
                                 Text(loadingStatus(of: fileDict.wrappedValue))
-                                    .font(.subheadline)
+                                    .font(.footnote)
                             }
                         }
+                        .toggleStyle(.switch)
+                        // Switchの右にiボタン置いてシートでエンコーディングを変更できるようにしたい?
+                        Button {
+                            // selectedIndex = index
+                            selectedEncoding = fileDict.encoding.wrappedValue
+                            selectedDictSetting = fileDict.wrappedValue
+                        } label: {
+                            Image(systemName: "info.circle")
+                                .resizable()
+                                .frame(width: 16, height: 16)
+                        }
+                        .buttonStyle(.borderless)
                     }
-                    .toggleStyle(.switch)
-                    // Switchの右にiボタン置いてシートでエンコーディングを変更できるようにしたい?
                 }
             }
             .formStyle(.grouped)
+            .sheet(item: $selectedDictSetting) { dictSetting in
+                DictionaryView(
+                    dictSetting: $selectedDictSetting,
+                    filename: .constant(dictSetting.filename),
+                    encoding: $selectedEncoding
+                )
+            }
             Spacer()
         }
     }
