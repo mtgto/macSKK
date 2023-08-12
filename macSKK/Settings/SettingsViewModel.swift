@@ -85,7 +85,9 @@ final class SettingsViewModel: ObservableObject {
             // dictSettingsをUserDefaultsに永続化する
         }
         .store(in: &cancellables)
-        try setupDictionariesDirectory()
+        if !isTest() {
+            try watchDictionariesDirectory()
+        }
     }
 
     // PreviewProvider用
@@ -99,9 +101,13 @@ final class SettingsViewModel: ObservableObject {
         self.fileDicts = dictSettings
     }
 
+    deinit {
+        source?.cancel()
+    }
+
     /// 辞書ディレクトリを監視して変更があった場合にfileDictsを更新する
     /// DictSettingが変更されてないときは辞書ファイルの再読み込みは行なわない (需要があれば今後やるかも)
-    func setupDictionariesDirectory() throws {
+    func watchDictionariesDirectory() throws {
         // dictionaryDirectoryUrl直下のファイルを監視してfileDictsにないファイルがあればfileDictsに追加する
         let fileDescriptor = open(dictionariesDirectoryUrl.path(percentEncoded: true), O_EVTONLY)
         if fileDescriptor < 0 {
