@@ -31,9 +31,18 @@ final class DictSetting: ObservableObject, Identifiable {
         self.encoding = String.Encoding(rawValue: encoding)
     }
 
+    // UserDefaults用にDictionaryにシリアライズ
     func encode() -> [String: Any] {
         ["filename": filename, "enabled": enabled, "encoding": encoding.rawValue]
     }
+}
+
+/// 辞書の読み込み状態
+enum LoadStatus {
+    /// 正常に読み込み済み。引数は辞書がもっているエントリ数
+    case loaded(Int)
+    case loading
+    case fail(Error)
 }
 
 @MainActor
@@ -44,6 +53,8 @@ final class SettingsViewModel: ObservableObject {
     @Published var fetchingRelease: Bool = false
     /// すべての利用可能なSKK辞書の設定
     @Published var fileDicts: [DictSetting] = []
+    //// 利用可能な辞書の読み込み状態
+    @Published var dictLoadingStatuses: [DictSetting.ID: LoadStatus] = [:]
     // 辞書ディレクトリ
     private let dictionariesDirectoryUrl: URL
     private var source: DispatchSourceFileSystemObject?
@@ -61,10 +72,20 @@ final class SettingsViewModel: ObservableObject {
                             let fileURL = dictionariesDirectoryUrl.appendingPathComponent(dictSetting.filename)
                             do {
                                 logger.log("\(dictSetting.filename)を読み込みます")
+                                DispatchQueue.main.async {
+                                    self.dictLoadingStatuses[dictSetting.id] = .loading
+                                }
                                 let fileDict = try FileDict(contentsOf: fileURL, encoding: dictSetting.encoding)
                                 logger.log("\(dictSetting.filename)から \(fileDict.entries.count) エントリ読み込みました")
                                 dictionary.replateDict(fileDict)
+                                DispatchQueue.main.async {
+                                    self.dictLoadingStatuses[dictSetting.id] = .loaded(fileDict.entries.count)
+                                }
                             } catch {
+                                DispatchQueue.main.async {
+                                    self.dictLoadingStatuses[dictSetting.id] = .fail(error)
+                                    dictSetting.enabled = false
+                                }
                                 logger.log("SKK辞書 \(dictSetting.filename) の読み込みに失敗しました: \(error)")
                             }
                         }
@@ -78,11 +99,21 @@ final class SettingsViewModel: ObservableObject {
                     let fileURL = dictionariesDirectoryUrl.appendingPathComponent(dictSetting.filename)
                     do {
                         logger.log("\(dictSetting.filename)を読み込みます")
+                        DispatchQueue.main.async {
+                            self.dictLoadingStatuses[dictSetting.id] = .loading
+                        }
                         let fileDict = try FileDict(contentsOf: fileURL, encoding: dictSetting.encoding)
                         dictionary.appendDict(fileDict)
+                        DispatchQueue.main.async {
+                            self.dictLoadingStatuses[dictSetting.id] = .loaded(fileDict.entries.count)
+                        }
                         logger.log("\(dictSetting.filename)から \(fileDict.entries.count) エントリ読み込みました")
                     } catch {
-                        logger.log("SKK辞書 \(dictSetting.filename) の読み込みに失敗しました: \(error)")
+                        DispatchQueue.main.async {
+                            self.dictLoadingStatuses[dictSetting.id] = .fail(error)
+                            dictSetting.enabled = false
+                        }
+                        logger.log("SKK辞書 \(dictSetting.filename) の読み込みに失敗しました!: \(error)")
                         // FIXME: dictSetting.enabledをfalseにしたほうがよい?
                         // FIXME: 環境設定の辞書設定画面で読み込みエラー理由が表示できるとよさそう
                     }
@@ -170,7 +201,9 @@ final class SettingsViewModel: ObservableObject {
             if self.fileDicts.first(where: { $0.filename == filename }) == nil {
                 // UserDefaultsの辞書設定に存在しないファイルが見つかったので辞書設定に無効化状態で追加
                 logger.log("新しい辞書らしきファイル \(filename) がみつかりました")
-                self.fileDicts.append(DictSetting(filename: filename, enabled: false, encoding: .japaneseEUC))
+                DispatchQueue.main.async {
+                    self.fileDicts.append(DictSetting(filename: filename, enabled: false, encoding: .japaneseEUC))
+                }
             }
         }
     }
