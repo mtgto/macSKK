@@ -83,9 +83,9 @@ final class SettingsViewModel: ObservableObject {
                         logger.log("\(dictSetting.filename)から \(fileDict.entries.count) エントリ読み込みました")
                     } catch {
                         logger.log("SKK辞書 \(dictSetting.filename) の読み込みに失敗しました: \(error)")
+                        // FIXME: dictSetting.enabledをfalseにしたほうがよい?
+                        // FIXME: 環境設定の辞書設定画面で読み込みエラー理由が表示できるとよさそう
                     }
-                } else {
-                    logger.debug("SKK辞書 \(dictSetting.filename) は無効なので読み込みをスキップします")
                 }
             }
             // dictSettingsをUserDefaultsに永続化する
@@ -157,7 +157,6 @@ final class SettingsViewModel: ObservableObject {
             return
         }
 
-        var userDicts: [FileDict] = []
         for case let fileURL as URL in enumerator {
             guard let resourceValues = try? fileURL.resourceValues(forKeys: resourceKeys),
                   let isDirectory = resourceValues.isDirectory,
@@ -168,32 +167,12 @@ final class SettingsViewModel: ObservableObject {
             if isDirectory || filename == UserDict.userDictFilename {
                 continue
             }
-            if let setting = self.fileDicts.first(where: { $0.filename == filename }) {
-                // dictionaryにすでにsetting.filenameが読み込まれていたらスキップする
-                if dictionary.fileDict(id: setting.id) != nil {
-                    continue
-                }
-                if !setting.enabled {
-                    logger.log("\(filename) は読み込みをスキップします")
-                    continue
-                }
-                do {
-                    let dict = try FileDict(contentsOf: fileURL, encoding: setting.encoding)
-                    userDicts.append(dict)
-                    logger.log("\(setting.filename)から \(dict.entries.count) エントリ読み込みました")
-                } catch {
-                    // TODO: NotificationCenter経由でユーザーにエラー理由を通知する
-                    logger.error("SKK辞書 \(setting.filename) の読み込みに失敗しました: \(error)")
-                    continue
-                }
-            } else {
-                // FIXME: 起動時にだけSKK辞書ファイルを検査するんじゃなくてディレクトリを監視自体を監視しておいたほうがよさそう
-                // UserDefaultsの辞書設定に存在しないファイルが見つかったのでデフォルトEUC-JPにしておく
+            if self.fileDicts.first(where: { $0.filename == filename }) == nil {
+                // UserDefaultsの辞書設定に存在しないファイルが見つかったので辞書設定に無効化状態で追加
                 logger.log("新しい辞書らしきファイル \(filename) がみつかりました")
                 self.fileDicts.append(DictSetting(filename: filename, enabled: false, encoding: .japaneseEUC))
             }
         }
-        // FIXME: 辞書設定があってファイルがない場合に辞書設定のenabled=falseにしておく?
     }
 
     /**
