@@ -65,61 +65,36 @@ final class SettingsViewModel: ObservableObject {
         // SKK-JISYO.Lのようにファイルの読み込みが遅いのでバックグラウンドで処理
         $fileDicts.receive(on: DispatchQueue.global()).filter({ !$0.isEmpty }).sink { dictSettings in
             dictSettings.forEach { dictSetting in
-                if let dict = dictionary.fileDict(id: dictSetting.id) {
-                    if dictSetting.enabled {
-                        if dictSetting.encoding != dict.encoding {
-                            // encodingを変えて読み込み直す
-                            let fileURL = dictionariesDirectoryUrl.appendingPathComponent(dictSetting.filename)
-                            do {
-                                logger.log("\(dictSetting.filename)を読み込みます")
-                                DispatchQueue.main.async {
-                                    self.dictLoadingStatuses[dictSetting.id] = .loading
-                                }
-                                let fileDict = try FileDict(contentsOf: fileURL, encoding: dictSetting.encoding)
-                                logger.log("\(dictSetting.filename)から \(fileDict.entries.count) エントリ読み込みました")
-                                dictionary.replateDict(fileDict)
-                                DispatchQueue.main.async {
-                                    self.dictLoadingStatuses[dictSetting.id] = .loaded(fileDict.entries.count)
-                                }
-                            } catch {
-                                DispatchQueue.main.async {
-                                    self.dictLoadingStatuses[dictSetting.id] = .fail(error)
-                                    dictSetting.enabled = false
-                                }
-                                logger.log("SKK辞書 \(dictSetting.filename) の読み込みに失敗しました: \(error)")
+                if dictSetting.enabled {
+                    // 辞書が有効化された、もしくは辞書のエンコーディング設定が変わったら読み込む
+                    let dict = dictionary.fileDict(id: dictSetting.id)
+                    if dictSetting.encoding != dict?.encoding {
+                        let fileURL = dictionariesDirectoryUrl.appendingPathComponent(dictSetting.filename)
+                        do {
+                            logger.log("SKK辞書 \(dictSetting.filename)を読み込みます")
+                            DispatchQueue.main.async {
+                                self.dictLoadingStatuses[dictSetting.id] = .loading
                             }
+                            let fileDict = try FileDict(contentsOf: fileURL, encoding: dictSetting.encoding)
+                            dictionary.appendDict(fileDict)
+                            DispatchQueue.main.async {
+                                self.dictLoadingStatuses[dictSetting.id] = .loaded(fileDict.entries.count)
+                            }
+                            logger.log("SKK辞書 \(dictSetting.filename)から \(fileDict.entries.count) エントリ読み込みました")
+                        } catch {
+                            DispatchQueue.main.async {
+                                self.dictLoadingStatuses[dictSetting.id] = .fail(error)
+                                dictSetting.enabled = false
+                            }
+                            logger.log("SKK辞書 \(dictSetting.filename) の読み込みに失敗しました!: \(error)")
                         }
-                    } else {
-                        // dictをdictionaryから削除する
-                        _ = dictionary.deleteDict(id: dictSetting.id)
-                        logger.log("SKK辞書 \(dictSetting.filename) を無効化しました")
                     }
-                } else if dictSetting.enabled {
-                    // dictSettingsの設定でFileDictを読み込んでdictionaryに追加
-                    let fileURL = dictionariesDirectoryUrl.appendingPathComponent(dictSetting.filename)
-                    do {
-                        logger.log("\(dictSetting.filename)を読み込みます")
-                        DispatchQueue.main.async {
-                            self.dictLoadingStatuses[dictSetting.id] = .loading
-                        }
-                        let fileDict = try FileDict(contentsOf: fileURL, encoding: dictSetting.encoding)
-                        dictionary.appendDict(fileDict)
-                        DispatchQueue.main.async {
-                            self.dictLoadingStatuses[dictSetting.id] = .loaded(fileDict.entries.count)
-                        }
-                        logger.log("\(dictSetting.filename)から \(fileDict.entries.count) エントリ読み込みました")
-                    } catch {
-                        DispatchQueue.main.async {
-                            self.dictLoadingStatuses[dictSetting.id] = .fail(error)
-                            dictSetting.enabled = false
-                        }
-                        logger.log("SKK辞書 \(dictSetting.filename) の読み込みに失敗しました!: \(error)")
-                        // FIXME: dictSetting.enabledをfalseにしたほうがよい?
-                        // FIXME: 環境設定の辞書設定画面で読み込みエラー理由が表示できるとよさそう
+                } else {
+                    if dictionary.deleteDict(id: dictSetting.id) {
+                        logger.log("SKK辞書 \(dictSetting.filename) を無効化しました")
                     }
                 }
             }
-            // dictSettingsをUserDefaultsに永続化する
             UserDefaults.standard.set(self.fileDicts.map { $0.encode() }, forKey: "dictionaries")
         }
         .store(in: &cancellables)
@@ -200,7 +175,7 @@ final class SettingsViewModel: ObservableObject {
             }
             if self.fileDicts.first(where: { $0.filename == filename }) == nil {
                 // UserDefaultsの辞書設定に存在しないファイルが見つかったので辞書設定に無効化状態で追加
-                logger.log("新しい辞書らしきファイル \(filename) がみつかりました")
+                logger.log("新しいSKK辞書らしきファイル \(filename) がみつかりました")
                 DispatchQueue.main.async {
                     self.fileDicts.append(DictSetting(filename: filename, enabled: false, encoding: .japaneseEUC))
                 }

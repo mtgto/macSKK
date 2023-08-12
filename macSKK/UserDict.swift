@@ -148,8 +148,21 @@ class UserDict: DictProtocol {
         return nil
     }
 
+    /// ファイル辞書を追加する。すでに追加済だった場合はさしかえる。
     func appendDict(_ fileDict: FileDict) {
-        dicts.append(fileDict)
+        let index = dicts.firstIndex(where: { dict in
+            if let dict = dict as? FileDict {
+                if dict.id == fileDict.id {
+                    return true
+                }
+            }
+            return false
+        })
+        if let index {
+            dicts[index] = fileDict
+        } else {
+            dicts.append(fileDict)
+        }
     }
 
     func deleteDict(id: FileDict.ID) -> Bool {
@@ -166,20 +179,6 @@ class UserDict: DictProtocol {
             return true
         } else {
             return false
-        }
-    }
-
-    func replateDict(_ fileDict: FileDict) {
-        let index = dicts.firstIndex(where: { dict in
-            if let dict = dict as? FileDict {
-                if dict.id == fileDict.id {
-                    return true
-                }
-            }
-            return false
-        })
-        if let index {
-            dicts[index] = fileDict
         }
     }
 
