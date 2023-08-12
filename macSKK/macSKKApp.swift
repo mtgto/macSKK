@@ -113,7 +113,7 @@ struct macSKKApp: App {
     private func setupUserDefaults() {
         UserDefaults.standard.register(defaults: [
             "dictionaries": [
-                FileDictSetting(filename: "SKK-JISYO.L", encoding: .japaneseEUC, enabled: true)
+                FileDictSetting(filename: "SKK-JISYO.L", encoding: .japaneseEUC, enabled: true).encode()
             ],
         ])
     }
