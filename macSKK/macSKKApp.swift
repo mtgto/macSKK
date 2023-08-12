@@ -89,7 +89,6 @@ struct macSKKApp: App {
     }
 
     private func setupUserDefaults() {
-        UserDefaults.standard.removeObject(forKey: "dictionaries")
         UserDefaults.standard.register(defaults: [
             "dictionaries": [
                 DictSetting(filename: "SKK-JISYO.L", enabled: true, encoding: .japaneseEUC).encode()

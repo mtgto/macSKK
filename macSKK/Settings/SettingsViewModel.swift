@@ -51,13 +51,14 @@ final class SettingsViewModel: ObservableObject {
 
     init(dictionariesDirectoryUrl: URL) throws {
         self.dictionariesDirectoryUrl = dictionariesDirectoryUrl
-        // TODO: 別スレッドで読み込む
-        $fileDicts.sink { dictSettings in
+        // SKK-JISYO.Lのようにファイルの読み込みが遅いのでバックグラウンドで処理
+        $fileDicts.receive(on: DispatchQueue.global()).filter({ !$0.isEmpty }).sink { dictSettings in
             dictSettings.forEach { dictSetting in
                 if let dict = dictionary.fileDict(id: dictSetting.id) {
                     if !dictSetting.enabled {
                         // dictをdictionaryから削除する
                         _ = dictionary.deleteDict(id: dictSetting.id)
+                        logger.log("SKK辞書 \(dictSetting.filename) を無効化しました")
                     } else if dictSetting.encoding != dict.encoding {
                         // encodingを変えて読み込み直す
                         let fileURL = dictionariesDirectoryUrl.appendingPathComponent(dictSetting.filename)
@@ -84,6 +85,7 @@ final class SettingsViewModel: ObservableObject {
                 }
             }
             // dictSettingsをUserDefaultsに永続化する
+            UserDefaults.standard.set(self.fileDicts.map { $0.encode() }, forKey: "dictionaries")
         }
         .store(in: &cancellables)
     }
