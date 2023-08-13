@@ -130,7 +130,7 @@ final class SettingsViewModel: ObservableObject {
         }
         .store(in: &cancellables)
 
-        loadStatusPublisher.sink { (id, status) in
+        loadStatusPublisher.receive(on: RunLoop.main).sink { (id, status) in
             self.dictLoadingStatuses[id] = status
         }.store(in: &cancellables)
     }
