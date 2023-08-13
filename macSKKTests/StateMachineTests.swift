@@ -1410,14 +1410,19 @@ final class StateMachineTests: XCTestCase {
 
     func testCommitCompositionNormal() {
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(3).sink { events in
+        stateMachine.inputMethodEvent.collect(4).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText(text: "k", cursor: nil)))
             XCTAssertEqual(events[1], .markedText(MarkedText(text: "", cursor: nil)))
-            XCTAssertEqual(events[2], .fixedText(""))
+            XCTAssertEqual(events[2], .markedText(MarkedText(text: "n", cursor: nil)))
+            XCTAssertEqual(events[3], .markedText(MarkedText(text: "", cursor: nil)), "nが未確定になってても空文字列になる")
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "k")))
         stateMachine.commitComposition()
+        XCTAssertEqual(stateMachine.state.inputMethod, .normal)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n")))
+        stateMachine.commitComposition()
+        XCTAssertEqual(stateMachine.state.inputMethod, .normal)
         wait(for: [expectation], timeout: 1.0)
     }
 

@@ -796,7 +796,8 @@ class StateMachine {
 
     /// 現在の入力中文字列を確定して状態を入力前に戻す。カーソル位置が文字列の途中でも末尾にあるものとして扱う
     /// - 状態がNormalおよびローマ字未確定入力中
-    ///   - 空文字列を確定させる
+    ///   - 空文字列で確定させる
+    ///   - nだけ入力してるときも空文字列 (仮)
     /// - 状態がComposing (未確定)
     ///   - "▽" より後ろの文字列を確定で入力する
     /// - 状態がSelecting (変換候補選択中)
@@ -812,15 +813,18 @@ class StateMachine {
             case .unregister:
                 break
             }
-        }
-
-        switch state.inputMethod {
-        case .normal:
-            return
-        case .composing(let composing):
-            return
-        case .selecting(let selectiong):
-            return
+        } else {
+            switch state.inputMethod {
+            case .normal:
+                return
+            case .composing(let composing):
+                let fixedText = composing.string(for: state.inputMode, convertHatsuon: false)
+                state.inputMethod = .normal
+                addFixedText(fixedText)
+                return
+            case .selecting(let selectiong):
+                return
+            }
         }
     }
 
