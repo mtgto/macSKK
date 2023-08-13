@@ -6,12 +6,8 @@ import SwiftUI
 struct DictionariesView: View {
     @ObservedObject var settingsViewModel: SettingsViewModel
     @State private var selectedDictSetting: DictSetting?
-    @State private var selectedEncoding: String.Encoding = .utf8
 
     var body: some View {
-        // 辞書のファイル名と有効かどうかのトグル + 詳細表示のiボタン
-        // 詳細はシートでエンコーディング、エントリ数が見れる
-        // エントリ一覧が検索できてもいいかもしれない
         VStack {
             Form {
                 Section {
@@ -27,8 +23,6 @@ struct DictionariesView: View {
                             }
                             .toggleStyle(.switch)
                             Button {
-                                // selectedIndex = index
-                                selectedEncoding = fileDict.encoding.wrappedValue
                                 selectedDictSetting = fileDict.wrappedValue
                             } label: {
                                 Image(systemName: "info.circle")
@@ -51,8 +45,8 @@ struct DictionariesView: View {
             .sheet(item: $selectedDictSetting) { dictSetting in
                 DictionaryView(
                     dictSetting: $selectedDictSetting,
-                    filename: .constant(dictSetting.filename),
-                    encoding: $selectedEncoding
+                    filename: dictSetting.filename,
+                    encoding: dictSetting.encoding
                 )
             }
             Text("SettingsNoteDictionaries")

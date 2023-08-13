@@ -5,8 +5,8 @@ import SwiftUI
 
 struct DictionaryView: View {
     @Binding var dictSetting: DictSetting?
-    @Binding var filename: String
-    @Binding var encoding: String.Encoding
+    let filename: String
+    @State var encoding: String.Encoding
 
     var body: some View {
         VStack {
@@ -20,6 +20,7 @@ struct DictionaryView: View {
                             Text(allowedEncoding.description).tag(allowedEncoding.encoding)
                         }
                     }
+                    .pickerStyle(.radioGroup)
                 }
             }
             .formStyle(.grouped)
@@ -28,6 +29,7 @@ struct DictionaryView: View {
                 Spacer()
                 Button {
                     dictSetting?.encoding = encoding
+                    // このビューを閉じる
                     dictSetting = nil
                 } label: {
                     Text("Done")
@@ -44,6 +46,6 @@ struct DictionaryView: View {
 
 struct DictionaryView_Previews: PreviewProvider {
     static var previews: some View {
-        DictionaryView(dictSetting: .constant(nil), filename: .constant("SKK-JISYO.sample.utf-8"), encoding: .constant(.utf8))
+        DictionaryView(dictSetting: .constant(nil), filename: "SKK-JISYO.sample.utf-8", encoding: .utf8)
     }
 }
