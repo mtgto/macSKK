@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2022 mtgto <hogerappa@gmail.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import Combine
 import InputMethodKit
 import SwiftUI
 import os
@@ -18,7 +17,6 @@ struct macSKKApp: App {
     private var server: IMKServer!
     private var panel: CandidatesPanel! = CandidatesPanel()
     @ObservedObject var settingsViewModel: SettingsViewModel
-    private var cancellables: Set<AnyCancellable> = []
     /// SKK辞書を配置するディレクトリ
     /// "~/Library/Containers/net.mtgto.inputmethod.macSKK/Data/Documents/Dictionaries"
     private let dictionariesDirectoryUrl: URL
