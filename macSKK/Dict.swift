@@ -25,13 +25,40 @@ protocol DictProtocol {
     func refer(_ word: String) -> [Word]
 }
 
-struct Dict: DictProtocol {
+/// 実ファイルをもつSKK辞書
+struct FileDict: DictProtocol, Identifiable {
+    let id: String
+    let fileURL: URL
+    // FIXME: URLResourceのfileResourceIdentifierKeyをidとして使ってもいいかもしれない。
+    // FIXME: ただしこの値は再起動したら同一性が保証されなくなるのでIDとしての永続化はできない
+    // FIXME: iCloud Documentsとかでてくるとディレクトリが複数になるけど、ひとまずファイル名だけもっておけばよさそう。
+    let encoding: String.Encoding
     let entries: [String: [Word]]
 
-    init(contentsOf url: URL, encoding: String.Encoding) throws {
-        let source = try String(contentsOf: url, encoding: encoding)
-        try self.init(source: source)
+    init(contentsOf fileURL: URL, encoding: String.Encoding) throws {
+        // iCloud Documents使うときには辞書フォルダが複数になりうるけど、それまではひとまずファイル名をIDとして使う
+        self.id = fileURL.lastPathComponent
+        self.fileURL = fileURL
+        self.encoding = encoding
+        let source = try String(contentsOf: fileURL, encoding: encoding)
+        let memoryDict = try MemoryDict(source: source)
+        entries = memoryDict.entries
     }
+
+    // MARK: DictProtocol
+    func refer(_ word: String) -> [Word] {
+        return entries[word] ?? []
+    }
+
+    // MARK: Hashable
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+}
+
+/// 実ファイルをもたないSKK辞書
+struct MemoryDict: DictProtocol {
+    let entries: [String: [Word]]
 
     init(source: String) throws {
         var dict: [String: [Word]] = [:]
@@ -41,8 +68,8 @@ struct Dict: DictProtocol {
             guard let wordsText = match.output[2].substring else { continue }
             let words = wordsText.split(separator: Character("/")).map { word -> Word in
                 let words = word.split(separator: Character(";"), maxSplits: 1)
-                let annotation = words.count == 2 ? Dict.decode(String(words[1])) : nil
-                return Word(Dict.decode(String(words[0])), annotation: annotation)
+                let annotation = words.count == 2 ? Self.decode(String(words[1])) : nil
+                return Word(Self.decode(String(words[0])), annotation: annotation)
             }
             dict[String(word)] = words
         }
@@ -53,6 +80,7 @@ struct Dict: DictProtocol {
         self.entries = entries
     }
 
+    // MARK: DictProtocol
     func refer(_ word: String) -> [Word] {
         return entries[word] ?? []
     }

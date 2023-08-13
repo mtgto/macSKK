@@ -5,17 +5,18 @@ import Combine
 import Foundation
 
 class UserDict: DictProtocol {
+    static let userDictFilename = "skk-jisyo.utf8"
     let dictionariesDirectoryURL: URL
     let fileURL: URL
     let fileHandle: FileHandle
     let source: DispatchSourceFileSystemObject
     /// 有効になっている辞書
-    let dicts: [Dict]
+    private(set) var dicts: [DictProtocol]
     var userDictEntries: [String: [Word]] = [:]
     private let savePublisher = PassthroughSubject<Void, Never>()
     private var cancellables: Set<AnyCancellable> = []
 
-    init(dicts: [Dict], userDictEntries: [String: [Word]]? = nil) throws {
+    init(dicts: [DictProtocol], userDictEntries: [String: [Word]]? = nil) throws {
         self.dicts = dicts
         dictionariesDirectoryURL = try FileManager.default.url(
             for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false
@@ -24,7 +25,7 @@ class UserDict: DictProtocol {
             logger.log("辞書フォルダがないため作成します")
             try FileManager.default.createDirectory(at: dictionariesDirectoryURL, withIntermediateDirectories: true)
         }
-        fileURL = dictionariesDirectoryURL.appending(path: "skk-jisyo.utf8")
+        fileURL = dictionariesDirectoryURL.appending(path: Self.userDictFilename)
         if !FileManager.default.fileExists(atPath: fileURL.path()) {
             logger.log("ユーザー辞書ファイルがないため作成します")
             try Data().write(to: fileURL, options: .withoutOverwriting)
@@ -68,7 +69,7 @@ class UserDict: DictProtocol {
     private func load() throws {
         try fileHandle.seek(toOffset: 0)
         if let data = try fileHandle.readToEnd(), let source = String(data: data, encoding: .utf8) {
-            let userDict = try Dict(source: source)
+            let userDict = try MemoryDict(source: source)
             userDictEntries = userDict.entries
             logger.log("ユーザー辞書から \(userDict.entries.count) エントリ読み込みました")
         }
@@ -134,6 +135,51 @@ class UserDict: DictProtocol {
         return userDictEntries.map { entry in
             return "\(entry.key) /\(serializeWords(entry.value))/"
         }.joined(separator: "\n")
+    }
+
+    func fileDict(id: FileDict.ID) -> FileDict? {
+        for dict in dicts {
+            if let fileDict = dict as? FileDict {
+                if fileDict.id == id {
+                    return fileDict
+                }
+            }
+        }
+        return nil
+    }
+
+    /// ファイル辞書を追加する。すでに追加済だった場合はさしかえる。
+    func appendDict(_ fileDict: FileDict) {
+        let index = dicts.firstIndex(where: { dict in
+            if let dict = dict as? FileDict {
+                if dict.id == fileDict.id {
+                    return true
+                }
+            }
+            return false
+        })
+        if let index {
+            dicts[index] = fileDict
+        } else {
+            dicts.append(fileDict)
+        }
+    }
+
+    func deleteDict(id: FileDict.ID) -> Bool {
+        let index = dicts.firstIndex(where: { dict in
+            if let fileDict = dict as? FileDict {
+                if fileDict.id == id {
+                    return true
+                }
+            }
+            return false
+        })
+        if let index {
+            dicts.remove(at: index)
+            return true
+        } else {
+            return false
+        }
     }
 
     private func serializeWords(_ words: [Word]) -> String {

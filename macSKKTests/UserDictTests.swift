@@ -26,8 +26,8 @@ final class UserDictTests: XCTestCase {
     }
 
     func testRefer() throws {
-        let dict1 = Dict(entries: ["い": [Word("胃"), Word("伊")]])
-        let dict2 = Dict(entries: ["い": [Word("胃"), Word("意")]])
+        let dict1 = MemoryDict(entries: ["い": [Word("胃"), Word("伊")]])
+        let dict2 = MemoryDict(entries: ["い": [Word("胃"), Word("意")]])
         let userDict = try UserDict(dicts: [dict1, dict2], userDictEntries: ["い": [Word("井"), Word("伊")]])
         XCTAssertEqual(userDict.refer("い").map { $0.word }, ["井", "伊", "胃", "意"])
     }
@@ -38,5 +38,26 @@ final class UserDictTests: XCTestCase {
         XCTAssertEqual(userDict.userDictEntries["あr"], [Word("有")])
         XCTAssertFalse(userDict.delete(yomi: "いいい", word: Word("いいい")))
         XCTAssertFalse(userDict.delete(yomi: "あr", word: Word("在")))
+    }
+
+    func testAppendDict() throws {
+        let userDict = try UserDict(dicts: [])
+        let fileURL = Bundle(for: Self.self).url(forResource: "SKK-JISYO.test", withExtension: "utf8")!
+        let fileDict = try FileDict(contentsOf: fileURL, encoding: .utf8)
+        userDict.appendDict(fileDict)
+        XCTAssertEqual(userDict.dicts.count, 1)
+        // FIXME: ほんとはIDが同じで中身が異なる辞書を作って、それを追加すると置換になることをテストしたい
+        userDict.appendDict(fileDict)
+        XCTAssertEqual(userDict.dicts.count, 1, "同じIDをもつ辞書を追加しても個数は増えない")
+    }
+
+    func testDeleteDict() throws {
+        let fileURL = Bundle(for: Self.self).url(forResource: "SKK-JISYO.test", withExtension: "utf8")!
+        let fileDict = try FileDict(contentsOf: fileURL, encoding: .utf8)
+        let userDict = try UserDict(dicts: [fileDict])
+        XCTAssertFalse(userDict.deleteDict(id: "foo"))
+        XCTAssertEqual(userDict.dicts.count, 1)
+        XCTAssertTrue(userDict.deleteDict(id: "SKK-JISYO.test.utf8"), "idはファイル名")
+        XCTAssertEqual(userDict.dicts.count, 0)
     }
 }

@@ -16,9 +16,25 @@ func isTest() -> Bool {
 struct macSKKApp: App {
     private var server: IMKServer!
     private var panel: CandidatesPanel! = CandidatesPanel()
-    @StateObject var settingsViewModel = SettingsViewModel()
+    @ObservedObject var settingsViewModel: SettingsViewModel
+    /// SKK辞書を配置するディレクトリ
+    /// "~/Library/Containers/net.mtgto.inputmethod.macSKK/Data/Documents/Dictionaries"
+    private let dictionariesDirectoryUrl: URL
 
     init() {
+        do {
+            dictionary = try UserDict(dicts: [])
+            dictionariesDirectoryUrl = try FileManager.default.url(
+                for: .documentDirectory,
+                in: .userDomainMask,
+                appropriateFor: nil,
+                create: false
+            ).appendingPathComponent("Dictionaries")
+            settingsViewModel = try SettingsViewModel(dictionariesDirectoryUrl: dictionariesDirectoryUrl)
+        } catch {
+            fatalError("辞書設定でエラーが発生しました: \(error)")
+        }
+        setupUserDefaults()
         if isTest() {
             do {
                 dictionary = try UserDict(dicts: [])
@@ -70,28 +86,34 @@ struct macSKKApp: App {
         }
     }
 
+    private func setupUserDefaults() {
+        UserDefaults.standard.register(defaults: [
+            "dictionaries": [
+                DictSetting(filename: "SKK-JISYO.L", enabled: true, encoding: .japaneseEUC).encode()
+            ],
+        ])
+    }
+
+    // Dictionariesフォルダのファイルのうち、UserDefaultsで有効になっているものだけ読み込む
     private func setupDictionaries() throws {
-        // "~/Library/Containers/net.mtgto.inputmethod.macSKK/Data/Documents/Dictionaries"
-        let url = try FileManager.default.url(
-            for: .documentDirectory,
-            in: .userDomainMask,
-            appropriateFor: nil,
-            create: false
-        ).appendingPathComponent("Dictionaries").appendingPathComponent("SKK-JISYO.L")
-        let dict: Dict
-        do {
-            dict = try Dict(contentsOf: url, encoding: .japaneseEUC)
-        } catch {
-            // TODO: NotificationCenter経由でユーザーにエラー理由を通知する
-            logger.error("Error while loading SKK-JISYO.L")
+        let dictSettings = UserDefaults.standard.array(forKey: "dictionaries")?.compactMap { obj in
+            if let setting = obj as? [String: Any] {
+                return DictSetting(setting)
+            } else {
+                return nil
+            }
+        }
+        guard let dictSettings else {
+            // 再起動してもおそらく同じ理由でこけるので、リセットしちゃう
+            // TODO: Notification Center経由でユーザーにも破壊的処理が起きたことを通知してある
+            logger.error("環境設定の辞書設定が壊れています")
+            UserDefaults.standard.removeObject(forKey: "dictionaries")
             return
         }
-        do {
-            dictionary = try UserDict(dicts: [dict])
-            logger.log("SKK-JISYO.Lから \(dict.entries.count) エントリ読み込みました")
-        } catch {
-            // TODO: NotificationCenter経由でユーザーにエラー理由を通知する
-            logger.error("Error while loading userDictionary: \(error)")
-        }
+        try settingsViewModel.setDictSettings(dictSettings)
+    }
+
+    private func loadFileDict(fileURL: URL, encoding: String.Encoding) throws -> FileDict {
+        return try FileDict(contentsOf: fileURL, encoding: encoding)
     }
 }

@@ -6,7 +6,8 @@ import SwiftUI
 struct SettingsView: View {
     // rawValueはLocalizable.stringsのキー名
     enum Section: String, CaseIterable {
-        case general = "SettingsNameGeneral"
+        case dictionaries = "SettingsNameDictionaries"
+        case softwareUpdate = "SettingsNameSoftwareUpdate"
         #if DEBUG
         case keyEvent = "SettingsNameKeyEvent"
         case systemDict = "SettingsNameSystemDict"
@@ -14,16 +15,18 @@ struct SettingsView: View {
 
         var localizedStringKey: LocalizedStringKey { LocalizedStringKey(rawValue) }
     }
-    @StateObject var settingsViewModel: SettingsViewModel
-    @State private var selectedSection: Section = .general
+    @ObservedObject var settingsViewModel: SettingsViewModel
+    @State private var selectedSection: Section = .dictionaries
 
     var body: some View {
         NavigationSplitView(columnVisibility: .constant(.all)) {
             List(Section.allCases, id: \.self, selection: $selectedSection) { section in
                 NavigationLink(value: section) {
                     switch section {
-                    case .general:
-                        Label(section.localizedStringKey, systemImage: "gearshape")
+                    case .dictionaries:
+                        Label(section.localizedStringKey, systemImage: "books.vertical")
+                    case .softwareUpdate:
+                        Label(section.localizedStringKey, systemImage: "gear.badge")
                     case .keyEvent:
                         Label(section.localizedStringKey, systemImage: "keyboard")
                     case .systemDict:
@@ -35,8 +38,11 @@ struct SettingsView: View {
             .navigationSplitViewColumnWidth(215)
         } detail: {
             switch selectedSection {
-            case .general:
-                GeneralView(settingsViewModel: settingsViewModel)
+            case .dictionaries:
+                DictionariesView(settingsViewModel: settingsViewModel)
+                    .navigationTitle(selectedSection.localizedStringKey)
+            case .softwareUpdate:
+                SoftwareUpdateView(settingsViewModel: settingsViewModel)
                     .navigationTitle(selectedSection.localizedStringKey)
             case .keyEvent:
                 KeyEventView()
@@ -72,6 +78,6 @@ struct SettingsView: View {
 
 struct SettingsView_Previews: PreviewProvider {
     static var previews: some View {
-        SettingsView(settingsViewModel: SettingsViewModel())
+        SettingsView(settingsViewModel: try! SettingsViewModel(dictSettings: []))
     }
 }

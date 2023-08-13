@@ -18,6 +18,8 @@
 		CE6DBA912A846C1700F5A227 /* ReleaseVersionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE6DBA902A846C1700F5A227 /* ReleaseVersionTests.swift */; };
 		CE6DBAB02A85AA1200F5A227 /* LatestReleaseFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE6DBAAF2A85AA1200F5A227 /* LatestReleaseFetcher.swift */; };
 		CE6DBAC42A85BF3E00F5A227 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = CE6DBAC62A85BF3E00F5A227 /* Localizable.strings */; };
+		CE6DBACD2A864A3B00F5A227 /* DictionariesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE6DBACC2A864A3B00F5A227 /* DictionariesView.swift */; };
+		CE6DBACF2A8663E600F5A227 /* SKK-JISYO.sample.utf-8 in Resources */ = {isa = PBXBuildFile; fileRef = CE6DBACE2A8663E600F5A227 /* SKK-JISYO.sample.utf-8 */; };
 		CE84A3B929570C37009394C4 /* InputController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE84A3B829570C37009394C4 /* InputController.swift */; };
 		CE84A3DC2957174D009394C4 /* State.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE84A3DB2957174D009394C4 /* State.swift */; };
 		CE84A3DE29571797009394C4 /* Action.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE84A3DD29571797009394C4 /* Action.swift */; };
@@ -34,6 +36,8 @@
 		CEB0888C2A7F342000EFD1E3 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = CEB0888B2A7F342000EFD1E3 /* Credits.rtf */; };
 		CEB0888E2A7F393600EFD1E3 /* AnnotationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEB0888D2A7F393600EFD1E3 /* AnnotationView.swift */; };
 		CEB088902A7F73B400EFD1E3 /* Pasteboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEB0888F2A7F73B400EFD1E3 /* Pasteboard.swift */; };
+		CEB141702A8773DB005E7252 /* SKK-JISYO.test.utf8 in Resources */ = {isa = PBXBuildFile; fileRef = CEB1416F2A8773DB005E7252 /* SKK-JISYO.test.utf8 */; };
+		CEB141722A87D16C005E7252 /* DictionaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEB141712A87D16C005E7252 /* DictionaryView.swift */; };
 		CEC376E82965199500D9C432 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEC376E72965199500D9C432 /* SettingsView.swift */; };
 		CEC376EB2965211200D9C432 /* KeyEventView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEC376EA2965211200D9C432 /* KeyEventView.swift */; };
 		CED7CA2C2A8394F7004EF988 /* FetchUpdateServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED7CA2B2A8394F7004EF988 /* FetchUpdateServiceProtocol.swift */; };
@@ -45,7 +49,7 @@
 		CED7CA3E2A8397E4004EF988 /* UpdateCheckerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED7CA3D2A8397E4004EF988 /* UpdateCheckerTests.swift */; };
 		CED7CA592A83CD67004EF988 /* releases.atom in Resources */ = {isa = PBXBuildFile; fileRef = CED7CA582A83CD67004EF988 /* releases.atom */; };
 		CED7CA5B2A83DE7F004EF988 /* SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED7CA5A2A83DE7F004EF988 /* SettingsViewModel.swift */; };
-		CEE3717529653112000DB2C3 /* GeneralView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEE3717429653112000DB2C3 /* GeneralView.swift */; };
+		CEE3717529653112000DB2C3 /* SoftwareUpdateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEE3717429653112000DB2C3 /* SoftwareUpdateView.swift */; };
 		CEF0823629685C0800646366 /* StateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF0823529685C0800646366 /* StateTests.swift */; };
 		CEF0823A296BCDB000646366 /* InputModePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF08239296BCDB000646366 /* InputModePanel.swift */; };
 		CEF08257296D8CBD00646366 /* CandidatesPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF08256296D8CBD00646366 /* CandidatesPanel.swift */; };
@@ -101,6 +105,8 @@
 		CE6DBAAF2A85AA1200F5A227 /* LatestReleaseFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LatestReleaseFetcher.swift; sourceTree = "<group>"; };
 		CE6DBAC52A85BF3E00F5A227 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		CE6DBAC72A85BF6B00F5A227 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Localizable.strings; sourceTree = "<group>"; };
+		CE6DBACC2A864A3B00F5A227 /* DictionariesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionariesView.swift; sourceTree = "<group>"; };
+		CE6DBACE2A8663E600F5A227 /* SKK-JISYO.sample.utf-8 */ = {isa = PBXFileReference; lastKnownFileType = text; path = "SKK-JISYO.sample.utf-8"; sourceTree = "<group>"; };
 		CE84A3B829570C37009394C4 /* InputController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputController.swift; sourceTree = "<group>"; };
 		CE84A3DB2957174D009394C4 /* State.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = State.swift; sourceTree = "<group>"; };
 		CE84A3DD29571797009394C4 /* Action.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Action.swift; sourceTree = "<group>"; };
@@ -119,6 +125,8 @@
 		CEB0888F2A7F73B400EFD1E3 /* Pasteboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Pasteboard.swift; sourceTree = "<group>"; };
 		CEB088922A81342E00EFD1E3 /* macSKK-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "macSKK-Bridging-Header.h"; sourceTree = "<group>"; };
 		CEB088952A81353400EFD1E3 /* DictionaryServiceExtention.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DictionaryServiceExtention.h; sourceTree = "<group>"; };
+		CEB1416F2A8773DB005E7252 /* SKK-JISYO.test.utf8 */ = {isa = PBXFileReference; lastKnownFileType = text; path = "SKK-JISYO.test.utf8"; sourceTree = "<group>"; };
+		CEB141712A87D16C005E7252 /* DictionaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryView.swift; sourceTree = "<group>"; };
 		CEC376E72965199500D9C432 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		CEC376EA2965211200D9C432 /* KeyEventView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyEventView.swift; sourceTree = "<group>"; };
 		CED7CA292A8394F7004EF988 /* FetchUpdateService.xpc */ = {isa = PBXFileReference; explicitFileType = "wrapper.xpc-service"; includeInIndex = 0; path = FetchUpdateService.xpc; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -131,7 +139,7 @@
 		CED7CA3D2A8397E4004EF988 /* UpdateCheckerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateCheckerTests.swift; sourceTree = "<group>"; };
 		CED7CA582A83CD67004EF988 /* releases.atom */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = releases.atom; sourceTree = "<group>"; };
 		CED7CA5A2A83DE7F004EF988 /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewModel.swift; sourceTree = "<group>"; };
-		CEE3717429653112000DB2C3 /* GeneralView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralView.swift; sourceTree = "<group>"; };
+		CEE3717429653112000DB2C3 /* SoftwareUpdateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoftwareUpdateView.swift; sourceTree = "<group>"; };
 		CEF0823529685C0800646366 /* StateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateTests.swift; sourceTree = "<group>"; };
 		CEF08239296BCDB000646366 /* InputModePanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputModePanel.swift; sourceTree = "<group>"; };
 		CEF08256296D8CBD00646366 /* CandidatesPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CandidatesPanel.swift; sourceTree = "<group>"; };
@@ -228,6 +236,7 @@
 			isa = PBXGroup;
 			children = (
 				CE5ECF3C2957034D00E7BE7D /* Preview Assets.xcassets */,
+				CE6DBACE2A8663E600F5A227 /* SKK-JISYO.sample.utf-8 */,
 			);
 			path = "Preview Content";
 			sourceTree = "<group>";
@@ -242,8 +251,8 @@
 				CEA78FB129646CA100B67E25 /* UserDictTests.swift */,
 				CEA78FAD2961BA1D00B67E25 /* String+TransformTests.swift */,
 				CED7CA3D2A8397E4004EF988 /* UpdateCheckerTests.swift */,
-				CED7CA572A83BFE9004EF988 /* fixture */,
 				CE6DBA902A846C1700F5A227 /* ReleaseVersionTests.swift */,
+				CED7CA572A83BFE9004EF988 /* fixture */,
 			);
 			path = macSKKTests;
 			sourceTree = "<group>";
@@ -251,11 +260,13 @@
 		CEC376E929651DE000D9C432 /* Settings */ = {
 			isa = PBXGroup;
 			children = (
+				CED7CA5A2A83DE7F004EF988 /* SettingsViewModel.swift */,
 				CEC376E72965199500D9C432 /* SettingsView.swift */,
-				CEE3717429653112000DB2C3 /* GeneralView.swift */,
+				CE6DBACC2A864A3B00F5A227 /* DictionariesView.swift */,
+				CEB141712A87D16C005E7252 /* DictionaryView.swift */,
+				CEE3717429653112000DB2C3 /* SoftwareUpdateView.swift */,
 				CEC376EA2965211200D9C432 /* KeyEventView.swift */,
 				CE40D9A02A6D0C2F00D44799 /* SystemDictView.swift */,
-				CED7CA5A2A83DE7F004EF988 /* SettingsViewModel.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -276,6 +287,7 @@
 			isa = PBXGroup;
 			children = (
 				CED7CA582A83CD67004EF988 /* releases.atom */,
+				CEB1416F2A8773DB005E7252 /* SKK-JISYO.test.utf8 */,
 			);
 			path = fixture;
 			sourceTree = "<group>";
@@ -393,6 +405,7 @@
 			files = (
 				CEB0888C2A7F342000EFD1E3 /* Credits.rtf in Resources */,
 				CE5ECF3D2957034D00E7BE7D /* Preview Assets.xcassets in Resources */,
+				CE6DBACF2A8663E600F5A227 /* SKK-JISYO.sample.utf-8 in Resources */,
 				CE6DBAC42A85BF3E00F5A227 /* Localizable.strings in Resources */,
 				CE5ECF642957077D00E7BE7D /* InfoPlist.strings in Resources */,
 				CE5ECF3A2957034D00E7BE7D /* Assets.xcassets in Resources */,
@@ -403,6 +416,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CEB141702A8773DB005E7252 /* SKK-JISYO.test.utf8 in Resources */,
 				CED7CA592A83CD67004EF988 /* releases.atom in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -443,6 +457,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CEB141722A87D16C005E7252 /* DictionaryView.swift in Sources */,
 				CEF0825D296DB58600646366 /* CandidatesViewModel.swift in Sources */,
 				CE6DBA8D2A845CE400F5A227 /* Release.swift in Sources */,
 				CED7CA5B2A83DE7F004EF988 /* SettingsViewModel.swift in Sources */,
@@ -462,12 +477,13 @@
 				CE6DBA8F2A845E8B00F5A227 /* ReleaseVersion.swift in Sources */,
 				CEB088902A7F73B400EFD1E3 /* Pasteboard.swift in Sources */,
 				CE84A3DC2957174D009394C4 /* State.swift in Sources */,
-				CEE3717529653112000DB2C3 /* GeneralView.swift in Sources */,
+				CEE3717529653112000DB2C3 /* SoftwareUpdateView.swift in Sources */,
 				CE40D9A32A6D0C3900D44799 /* SystemDict.swift in Sources */,
 				CEB0888E2A7F393600EFD1E3 /* AnnotationView.swift in Sources */,
 				CEC376E82965199500D9C432 /* SettingsView.swift in Sources */,
 				CEC376EB2965211200D9C432 /* KeyEventView.swift in Sources */,
 				CE6DBAB02A85AA1200F5A227 /* LatestReleaseFetcher.swift in Sources */,
+				CE6DBACD2A864A3B00F5A227 /* DictionariesView.swift in Sources */,
 				CEF0823A296BCDB000646366 /* InputModePanel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
