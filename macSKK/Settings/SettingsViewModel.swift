@@ -85,7 +85,7 @@ final class SettingsViewModel: ObservableObject {
     /// リリースの確認中かどうか
     @Published var fetchingRelease: Bool = false
     /// すべての利用可能なSKK辞書の設定
-    @Published var fileDicts: [DictSetting] = []
+    @Published var dictSettings: [DictSetting] = []
     //// 利用可能な辞書の読み込み状態
     @Published var dictLoadingStatuses: [DictSetting.ID: LoadStatus] = [:]
     // 辞書ディレクトリ
@@ -99,7 +99,7 @@ final class SettingsViewModel: ObservableObject {
     init(dictionariesDirectoryUrl: URL) throws {
         self.dictionariesDirectoryUrl = dictionariesDirectoryUrl
         // SKK-JISYO.Lのようなファイルの読み込みが遅いのでバックグラウンドで処理
-        $fileDicts.filter({ !$0.isEmpty }).receive(on: DispatchQueue.global()).sink { dictSettings in
+        $dictSettings.filter({ !$0.isEmpty }).receive(on: DispatchQueue.global()).sink { dictSettings in
             dictSettings.forEach { dictSetting in
                 if dictSetting.enabled {
                     // 無効だった辞書が有効化された、もしくは辞書のエンコーディング設定が変わったら読み込む
@@ -126,7 +126,7 @@ final class SettingsViewModel: ObservableObject {
                     }
                 }
             }
-            UserDefaults.standard.set(self.fileDicts.map { $0.encode() }, forKey: "dictionaries")
+            UserDefaults.standard.set(self.dictSettings.map { $0.encode() }, forKey: "dictionaries")
         }
         .store(in: &cancellables)
 
@@ -143,7 +143,7 @@ final class SettingsViewModel: ObservableObject {
             appropriateFor: nil,
             create: false
         ).appendingPathComponent("Dictionaries")
-        self.fileDicts = dictSettings
+        self.dictSettings = dictSettings
     }
 
     deinit {
@@ -155,7 +155,7 @@ final class SettingsViewModel: ObservableObject {
     // enabled=falseでfileDictsに追加されてしまい、読み込みスキップされたというログがでてしまうため。
     // FIXME: 辞書設定が設定されたイベントをsinkして設定されたときに一回だけsetupEventsを実行する、とかのほうがよさそう。
     func setDictSettings(_ dictSettings: [DictSetting]) throws {
-        self.fileDicts = dictSettings
+        self.dictSettings = dictSettings
         if !isTest() {
             try watchDictionariesDirectory()
             refreshDictionariesDirectory()
@@ -208,11 +208,11 @@ final class SettingsViewModel: ObservableObject {
             if isDirectory || filename == UserDict.userDictFilename {
                 continue
             }
-            if self.fileDicts.first(where: { $0.filename == filename }) == nil {
+            if self.dictSettings.first(where: { $0.filename == filename }) == nil {
                 // UserDefaultsの辞書設定に存在しないファイルが見つかったので辞書設定に無効化状態で追加
                 logger.log("新しいSKK辞書らしきファイル \(filename) がみつかりました")
                 DispatchQueue.main.async {
-                    self.fileDicts.append(DictSetting(filename: filename, enabled: false, encoding: .japaneseEUC))
+                    self.dictSettings.append(DictSetting(filename: filename, enabled: false, encoding: .japaneseEUC))
                 }
             }
         }

@@ -11,19 +11,19 @@ struct DictionariesView: View {
         VStack {
             Form {
                 Section {
-                    ForEach($settingsViewModel.fileDicts) { fileDict in
+                    ForEach($settingsViewModel.dictSettings) { dictSetting in
                         HStack(alignment: .top) {
-                            Toggle(isOn: fileDict.enabled) {
+                            Toggle(isOn: dictSetting.enabled) {
                                 VStack(alignment: .leading, spacing: 2) {
-                                    Text(fileDict.id)
+                                    Text(dictSetting.id)
                                         .font(.body)
-                                    Text(loadingStatus(of: fileDict.wrappedValue))
+                                    Text(loadingStatus(of: dictSetting.wrappedValue))
                                         .font(.footnote)
                                 }
                             }
                             .toggleStyle(.switch)
                             Button {
-                                selectedDictSetting = fileDict.wrappedValue
+                                selectedDictSetting = dictSetting.wrappedValue
                             } label: {
                                 Image(systemName: "info.circle")
                                     .resizable()
