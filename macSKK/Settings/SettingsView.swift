@@ -20,17 +20,19 @@ struct SettingsView: View {
 
     var body: some View {
         NavigationSplitView(columnVisibility: .constant(.all)) {
-            List(Section.allCases, id: \.self, selection: $selectedSection) { section in
+            List(Section.allCases, id: \.rawValue, selection: $selectedSection) { section in
                 NavigationLink(value: section) {
                     switch section {
                     case .dictionaries:
                         Label(section.localizedStringKey, systemImage: "books.vertical")
                     case .softwareUpdate:
                         Label(section.localizedStringKey, systemImage: "gear.badge")
+                    #if DEBUG
                     case .keyEvent:
                         Label(section.localizedStringKey, systemImage: "keyboard")
                     case .systemDict:
                         Label(section.localizedStringKey, systemImage: "book.closed.fill")
+                    #endif
                     }
                 }
             }
@@ -44,12 +46,14 @@ struct SettingsView: View {
             case .softwareUpdate:
                 SoftwareUpdateView(settingsViewModel: settingsViewModel)
                     .navigationTitle(selectedSection.localizedStringKey)
+            #if DEBUG
             case .keyEvent:
                 KeyEventView()
                     .navigationTitle(selectedSection.localizedStringKey)
             case .systemDict:
                 SystemDictView()
                     .navigationTitle(selectedSection.localizedStringKey)
+            #endif
             }
         }
         .task(id: selectedSection) {
