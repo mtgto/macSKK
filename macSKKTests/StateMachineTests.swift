@@ -68,6 +68,11 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    func testHandleNormalEnter() throws {
+        // 未入力状態ならfalse
+        XCTAssertFalse(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil, cursorPosition: .zero)))
+    }
+
     func testHandleNormalSpecialSymbol() throws {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(18).sink { events in
@@ -401,19 +406,27 @@ final class StateMachineTests: XCTestCase {
 
     func testHandleComposingEnter() {
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(9).sink { events in
-            XCTAssertEqual(events[0], .markedText(MarkedText(text: "▽", cursor: nil)))
-            XCTAssertEqual(events[1], .markedText(MarkedText(text: "▽s", cursor: nil)))
-            XCTAssertEqual(events[2], .markedText(MarkedText(text: "▽す", cursor: nil)))
-            XCTAssertEqual(events[3], .markedText(MarkedText(text: "▽す*", cursor: nil)))
-            XCTAssertEqual(events[4], .markedText(MarkedText(text: "▽す*s", cursor: nil)))
-            XCTAssertEqual(events[5], .fixedText("す"))
-            XCTAssertEqual(events[6], .markedText(MarkedText(text: "t", cursor: nil)))
+        stateMachine.inputMethodEvent.collect(13).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText(text: "k", cursor: nil)))
+            XCTAssertEqual(events[1], .markedText(MarkedText(text: "", cursor: nil)))
+            XCTAssertEqual(events[2], .markedText(MarkedText(text: "n", cursor: nil)))
+            XCTAssertEqual(events[3], .fixedText("ん"))
+            XCTAssertEqual(events[4], .markedText(MarkedText(text: "▽", cursor: nil)))
+            XCTAssertEqual(events[5], .markedText(MarkedText(text: "▽s", cursor: nil)))
+            XCTAssertEqual(events[6], .markedText(MarkedText(text: "▽す", cursor: nil)))
+            XCTAssertEqual(events[7], .markedText(MarkedText(text: "▽す*", cursor: nil)))
+            XCTAssertEqual(events[8], .markedText(MarkedText(text: "▽す*s", cursor: nil)))
+            XCTAssertEqual(events[9], .fixedText("す"))
+            XCTAssertEqual(events[10], .markedText(MarkedText(text: "t", cursor: nil)))
             XCTAssertEqual(
-                events[7], .markedText(MarkedText(text: "▽た", cursor: nil)), "ローマ字1文字目はシフトなし、2文字目シフトありだと入力開始")
-            XCTAssertEqual(events[8], .fixedText("た"))
+                events[11], .markedText(MarkedText(text: "▽た", cursor: nil)), "ローマ字1文字目はシフトなし、2文字目シフトありだと入力開始")
+            XCTAssertEqual(events[12], .fixedText("た"))
             expectation.fulfill()
         }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "k")))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n")))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "s")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u")))
