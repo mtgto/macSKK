@@ -5,9 +5,6 @@ import Combine
 import Foundation
 import SwiftUI
 
-// これをObservableObjectにする?
-// どうすればUserDefaultsとグローバル変数dictionaryのdictsと同期させる方法がまだよくわかってない
-// @AppStorageを使う…?
 final class DictSetting: ObservableObject, Identifiable {
     typealias ID = String
     @Published var filename: String
