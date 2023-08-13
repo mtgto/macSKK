@@ -506,26 +506,35 @@ class StateMachine {
                     switch state.inputMode {
                     case .hiragana:
                         addFixedText(text.joined())
+                        return true
                     case .katakana, .hankaku:
                         addFixedText(text.map { $0.toKatakana() }.joined())
+                        return true
+                    case .direct:
+                        // 普通にqを入力させる
+                        break
                     default:
                         fatalError("inputMode=\(state.inputMode), handleComposingでShift-Qが入力された")
                     }
-                    return true
+                } else {
+                    // ひらがな入力中ならカタカナ、カタカナ入力中ならひらがな、半角カタカナ入力中なら全角カタカナで確定する。
+                    // 未確定ローマ字はn以外は入力されずに削除される. nだけは"ん"が入力されているとする
+                    let newText: [String] = composing.romaji == "n" ? composing.subText() + ["ん"] : composing.subText()
+                    state.inputMethod = .normal
+                    switch state.inputMode {
+                    case .hiragana, .hankaku:
+                        addFixedText(newText.joined().toKatakana())
+                        return true
+                    case .katakana:
+                        addFixedText(newText.joined())
+                        return true
+                    case .direct:
+                        // 普通にqを入力させる
+                        break
+                    default:
+                        fatalError("inputMode=\(state.inputMode), handleComposingでqが入力された")
+                    }
                 }
-                // ひらがな入力中ならカタカナ、カタカナ入力中ならひらがな、半角カタカナ入力中なら全角カタカナで確定する。
-                // 未確定ローマ字はn以外は入力されずに削除される. nだけは"ん"が入力されているとする
-                let newText: [String] = composing.romaji == "n" ? composing.subText() + ["ん"] : composing.subText()
-                state.inputMethod = .normal
-                switch state.inputMode {
-                case .hiragana, .hankaku:
-                    addFixedText(newText.joined().toKatakana())
-                case .katakana:
-                    addFixedText(newText.joined())
-                default:
-                    fatalError("inputMode=\(state.inputMode), handleComposingでqが入力された")
-                }
-                return true
             } else {
                 // 送り仮名があるときはローマ字部分をリセットする
                 state.inputMethod = .composing(
