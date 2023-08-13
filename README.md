@@ -54,8 +54,10 @@ Mac App Storeでインプットメソッドを配布することができない�
 Xcodeでビルドし、 `~/Library/Input Methods` に `macSKK.app` を配置してからシステム設定→キーボード→入力ソースで `ひらがな (macSKK)` などを追加してください。
 
 SKK辞書は `~/Library/Containers/net.mtgto.inputmethod.macSKK/Data/Documents/Dictionaries` に配置してください。
-現在は `SKK-JISYO.L` のみ読み込みます。環境設定で使用する辞書を設定可能にする予定です。
+その後で環境設定から使用する辞書を有効に切り替えてください。
+
 ユーザー辞書は `~/Library/Containers/net.mtgto.inputmethod.macSKK/Data/Documents/Dictionaries/skk-jisyo.utf8` にUTF-8形式で保存されます。
+ユーザー辞書はテキストエディタで更新可能です。別プロセスでユーザー辞書が更新された場合はmacSKKが自動で再読み込みを行います。
 
 ### バージョンアップ
 
