@@ -26,7 +26,7 @@ protocol DictProtocol {
 }
 
 /// 実ファイルをもつSKK辞書
-struct FileDict: DictProtocol, Hashable, Identifiable {
+struct FileDict: DictProtocol, Identifiable {
     let id: String
     let fileURL: URL
     // FIXME: URLResourceのfileResourceIdentifierKeyをidとして使ってもいいかもしれない。
