@@ -7,7 +7,7 @@ struct SettingsView: View {
     // rawValueはLocalizable.stringsのキー名
     enum Section: String, CaseIterable {
         case dictionaries = "SettingsNameDictionaries"
-        case general = "SettingsNameGeneral"
+        case softwareUpdate = "SettingsNameSoftwareUpdate"
         #if DEBUG
         case keyEvent = "SettingsNameKeyEvent"
         case systemDict = "SettingsNameSystemDict"
@@ -23,10 +23,10 @@ struct SettingsView: View {
             List(Section.allCases, id: \.self, selection: $selectedSection) { section in
                 NavigationLink(value: section) {
                     switch section {
-                    case .general:
-                        Label(section.localizedStringKey, systemImage: "gearshape")
                     case .dictionaries:
                         Label(section.localizedStringKey, systemImage: "books.vertical")
+                    case .softwareUpdate:
+                        Label(section.localizedStringKey, systemImage: "gear.badge")
                     case .keyEvent:
                         Label(section.localizedStringKey, systemImage: "keyboard")
                     case .systemDict:
@@ -38,11 +38,11 @@ struct SettingsView: View {
             .navigationSplitViewColumnWidth(215)
         } detail: {
             switch selectedSection {
-            case .general:
-                GeneralView(settingsViewModel: settingsViewModel)
-                    .navigationTitle(selectedSection.localizedStringKey)
             case .dictionaries:
                 DictionariesView(settingsViewModel: settingsViewModel)
+                    .navigationTitle(selectedSection.localizedStringKey)
+            case .softwareUpdate:
+                SoftwareUpdateView(settingsViewModel: settingsViewModel)
                     .navigationTitle(selectedSection.localizedStringKey)
             case .keyEvent:
                 KeyEventView()

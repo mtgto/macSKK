@@ -3,7 +3,7 @@
 
 import SwiftUI
 
-struct GeneralView: View {
+struct SoftwareUpdateView: View {
     @Environment(\.openURL) private var openURL
     @StateObject var settingsViewModel: SettingsViewModel
 
@@ -32,13 +32,9 @@ struct GeneralView: View {
                         }
                     }
                 } footer: {
-                    VStack(alignment: .trailing) {
-                        HStack {
-                            Button("リリースページを開く") {
-                                if let url = URL(string: "https://github.com/mtgto/macSKK/releases") {
-                                    openURL(url)
-                                }
-                            }
+                    Button("リリースページを開く") {
+                        if let url = URL(string: "https://github.com/mtgto/macSKK/releases") {
+                            openURL(url)
                         }
                     }
                 }
@@ -56,12 +52,12 @@ struct GeneralView: View {
     }
 }
 
-struct GeneralView_Previews: PreviewProvider {
+struct SoftwareUpdateView_Previews: PreviewProvider {
     static var previews: some View {
         let viewModel = try! SettingsViewModel(dictSettings: [])
         viewModel.latestRelease = Release(version: ReleaseVersion(major: 1, minor: 0, patch: 0),
                                           updated: Date(),
                                           url: URL(string: "https://example.com")!)
-        return GeneralView(settingsViewModel: viewModel)
+        return SoftwareUpdateView(settingsViewModel: viewModel)
     }
 }
