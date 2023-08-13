@@ -794,6 +794,36 @@ class StateMachine {
         state.inputMode = mode
     }
 
+    /// 現在の入力中文字列を確定して状態を入力前に戻す。カーソル位置が文字列の途中でも末尾にあるものとして扱う
+    /// - 状態がNormalおよびローマ字未確定入力中
+    ///   - 空文字列を確定させる
+    /// - 状態がComposing (未確定)
+    ///   - "▽" より後ろの文字列を確定で入力する
+    /// - 状態がSelecting (変換候補選択中)
+    ///   - 現在選択中の変換候補の "▼" より後ろの文字列を確定で入力する
+    /// - 状態が上記でないときは仮で次のように実装してみる。いろんなソフトで不具合があるかどうかを見る
+    ///   - 状態がRegister (単語登録中) なら 空文字列で確定する
+    ///   - 状態がUnregister (ユーザー辞書から削除するか質問中) なら削除に移行する前の "▼" より後ろの文字列を確定で入力する
+    func commitComposition() {
+        if let specialState = state.specialState {
+            switch specialState {
+            case .register:
+                break
+            case .unregister:
+                break
+            }
+        }
+
+        switch state.inputMethod {
+        case .normal:
+            return
+        case .composing(let composing):
+            return
+        case .selecting(let selectiong):
+            return
+        }
+    }
+
     private func addFixedText(_ text: String) {
         if let specialState = state.specialState {
             // state.markedTextを更新してinputMethodEventSubjectにstate.displayText()をsendする

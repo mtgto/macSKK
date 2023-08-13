@@ -1408,6 +1408,19 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    func testCommitCompositionNormal() {
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(3).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText(text: "k", cursor: nil)))
+            XCTAssertEqual(events[1], .markedText(MarkedText(text: "", cursor: nil)))
+            XCTAssertEqual(events[2], .fixedText(""))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "k")))
+        stateMachine.commitComposition()
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     private func nextInputMethodEvent() async -> InputMethodEvent {
         var cancellation: Cancellable?
         let cancel = { cancellation?.cancel() }
