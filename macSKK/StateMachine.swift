@@ -639,7 +639,7 @@ class StateMachine {
             state.inputMethod = .composing(
                 ComposingState(
                     isShift: isShift,
-                    text: text + [action.shiftIsPressed() ? input.uppercased() : input],
+                    text: text + [action.characters() ?? ""],
                     okuri: nil,
                     romaji: ""))
             updateMarkedText()
