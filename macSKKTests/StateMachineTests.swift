@@ -160,13 +160,17 @@ final class StateMachineTests: XCTestCase {
     func testHandleNormalPrintableEisu() throws {
         stateMachine = StateMachine(initialState: IMEState(inputMode: .eisu))
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(2).sink { events in
+        stateMachine.inputMethodEvent.collect(4).sink { events in
             XCTAssertEqual(events[0], .fixedText("ａ"))
             XCTAssertEqual(events[1], .fixedText("Ａ"))
+            XCTAssertEqual(events[2], .fixedText("ｌ"))
+            XCTAssertEqual(events[3], .fixedText("Ｌ"))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "l")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "l", withShift: true)))
         wait(for: [expectation], timeout: 1.0)
     }
 
@@ -296,15 +300,17 @@ final class StateMachineTests: XCTestCase {
 
     func testHandleNormalAbbrev() {
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(4).sink { events in
+        stateMachine.inputMethodEvent.collect(5).sink { events in
             XCTAssertEqual(events[0], .modeChanged(.direct, .zero))
             XCTAssertEqual(events[1], .markedText(MarkedText(text: "▽", cursor: nil)))
             XCTAssertEqual(events[2], .markedText(MarkedText(text: "▽a", cursor: nil)))
-            XCTAssertEqual(events[3], .markedText(MarkedText(text: "▽aA", cursor: nil)))
+            XCTAssertEqual(events[3], .markedText(MarkedText(text: "▽al", cursor: nil)))
+            XCTAssertEqual(events[4], .markedText(MarkedText(text: "▽alA", cursor: nil)))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "/")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "l")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
         wait(for: [expectation], timeout: 1.0)
     }

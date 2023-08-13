@@ -539,10 +539,13 @@ class StateMachine {
                 case .hiragana, .katakana, .hankaku:
                     state.inputMethod = .normal
                     addFixedText(composing.string(for: state.inputMode, convertHatsuon: true))
+                    return handleNormal(action, specialState: specialState)
+                case .direct:
+                    // 普通にlを入力させる
+                    break
                 default:
                     fatalError("inputMode=\(state.inputMode), handleComposingでlが入力された")
                 }
-                return handleNormal(action, specialState: specialState)
             } else {
                 // 送り仮名があるときはローマ字部分をリセットする
                 state.inputMethod = .composing(
