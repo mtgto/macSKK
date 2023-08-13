@@ -4,3 +4,14 @@
 "SettingsNameDictionaries" = "辞書";
 "SettingsNameKeyEvent" = "キーイベント";
 "SettingsNameSystemDict" = "システム辞書";
+"SettingsOpenDictionaryFolder" = "辞書フォルダをFinderで表示";
+"SettingsNoteDictionaries" = "辞書を追加したい場合は辞書フォルダに辞書ファイルを置き、この画面で有効化してください。";
+"LoadingStatusLoaded" = "%d エントリ";
+"LoadingStatusLoading" = "読み込み中…";
+"LoadingStatusError" = "エラー: %@";
+"LoadingStatusDisabled" = "無効";
+"LoadingStatusUnknown" = "不明";
+"Done" = "完了";
+"Filename" = "ファイル名";
+"Dictionary Setting" = "辞書の設定";
+"Encoding" = "エンコーディング";

@@ -11,11 +11,11 @@ struct DictionaryView: View {
     var body: some View {
         VStack {
             Form {
-                Section("辞書の設定") {
-                    LabeledContent("ファイル名") {
+                Section("Dictionary Setting") {
+                    LabeledContent("Filename") {
                         Text(filename)
                     }
-                    Picker("エンコーディング", selection: $encoding) {
+                    Picker("Encoding", selection: $encoding) {
                         ForEach(AllowedEncoding.allCases, id: \.encoding) { allowedEncoding in
                             Text(allowedEncoding.description).tag(allowedEncoding.encoding)
                         }
@@ -25,23 +25,16 @@ struct DictionaryView: View {
             .formStyle(.grouped)
             Divider()
             HStack {
-                Button {
-                    // TODO: 実装
-                } label: {
-                    Text("Finderで表示")
-                        .padding([.leading, .trailing])
-                }
-                .padding()
                 Spacer()
                 Button {
                     dictSetting?.encoding = encoding
                     dictSetting = nil
                 } label: {
-                    Text("完了")
+                    Text("Done")
                         .padding([.leading, .trailing])
                 }
                 .keyboardShortcut(.defaultAction)
-                .padding()
+                .padding([.trailing, .bottom, .top])
             }
             Spacer()
         }

@@ -42,6 +42,7 @@ enum LoadStatus {
     /// 正常に読み込み済み。引数は辞書がもっているエントリ数
     case loaded(Int)
     case loading
+    case disabled
     case fail(Error)
 }
 
@@ -127,6 +128,9 @@ final class SettingsViewModel: ObservableObject {
                 } else {
                     if dictionary.deleteDict(id: dictSetting.id) {
                         logger.log("SKK辞書 \(dictSetting.filename) を無効化しました")
+                        DispatchQueue.main.async {
+                            self.dictLoadingStatuses[dictSetting.id] = .disabled
+                        }
                     }
                 }
             }

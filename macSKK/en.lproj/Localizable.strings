@@ -4,3 +4,14 @@
 "SettingsNameDictionaries" = "Dictionaries";
 "SettingsNameKeyEvent" = "Key Event";
 "SettingsNameSystemDict" = "System Dict";
+"SettingsOpenDictionaryFolder" = "Show Dictionaries in Finder";
+"SettingsNoteDictionaries" = "If you want to add a dictionary, place your dictionary file in the dictionary folder and activate it on this panel.";
+"LoadingStatusLoaded" = "%d entries";
+"LoadingStatusLoading" = "Loading…";
+"LoadingStatusError" = "Error: %@";
+"LoadingStatusDisabled" = "Disabled";
+"LoadingStatusUnknown" = "Unknown";
+"Done" = "Done";
+"Filename" = "Filename";
+"Dictionary Setting" = "Dictionary Setting";
+"Encoding" = "Encoding";

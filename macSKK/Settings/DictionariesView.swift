@@ -42,8 +42,9 @@ struct DictionariesView: View {
                     Button {
                         NSWorkspace.shared.open(settingsViewModel.dictionariesDirectoryUrl)
                     } label: {
-                        Text("辞書フォルダをFinderで表示")
+                        Text("SettingsOpenDictionaryFolder")
                     }
+                    .padding(.top)
                 }
             }
             .formStyle(.grouped)
@@ -54,7 +55,7 @@ struct DictionariesView: View {
                     encoding: $selectedEncoding
                 )
             }
-            Text("辞書を追加したい場合は辞書フォルダに辞書ファイルを置き、この画面で有効化してください。")
+            Text("SettingsNoteDictionaries")
                 .font(.subheadline)
                 .padding([.bottom, .leading, .trailing])
             Spacer()
@@ -65,16 +66,19 @@ struct DictionariesView: View {
         if let status = settingsViewModel.dictLoadingStatuses[setting.id] {
             switch status {
             case .loaded(let count):
-                return "\(count)エントリ"
+                return String(format: NSLocalizedString("LoadingStatusLoaded", comment: "%d エントリ"), count)
             case .loading:
-                return "読み込み中…"
+                return NSLocalizedString("LoadingStatusLoading", comment: "読み込み中…")
+            case .disabled:
+                return NSLocalizedString("LoadingStatusDisabled", comment: "無効")
             case .fail(let error):
-                return "エラー: \(error.localizedDescription)"
+                return String(format: NSLocalizedString("LoadingStatusError", comment: "エラー: %@"), error as NSError)
             }
         } else if !setting.enabled {
-            return "未使用"
+            // 元々無効になっていて、設定を今回の起動で切り替えてない辞書
+            return NSLocalizedString("LoadingStatusDisabled", comment: "無効")
         } else {
-            return "不明"
+            return NSLocalizedString("LoadingStatusUnknown", comment: "不明")
         }
     }
 }
