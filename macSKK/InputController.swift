@@ -129,7 +129,6 @@ class InputController: IMKInputController {
 
     /// クライアントが入力中状態を即座に確定してほしいときに呼ばれる
     override func commitComposition(_ sender: Any!) {
-        logger.log("commitCompositionが呼ばれた")
         // 現在未確定の入力を強制的に確定させて状態を入力前の状態にする
         stateMachine.commitComposition()
     }
