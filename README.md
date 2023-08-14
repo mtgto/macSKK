@@ -35,16 +35,16 @@ Universal Binaryでビルドしていますが、動作確認はApple Silicon環
 
 ## インストール
 
-Mac App Storeでインプットメソッドを配布することができないため、[Appleのソフトウェア公証](https://support.apple.com/ja-jp/guide/security/sec3ad8e6e53/1/web/1)を受けたアプリケーションバイナリを[GitHub Releases](https://github.com/mtgto/macSKK/releases/latest)で配布しています。
+2023年現在、Mac App Storeではインプットメソッドを配布することができないため、[Appleのソフトウェア公証](https://support.apple.com/ja-jp/guide/security/sec3ad8e6e53/1/web/1)を受けたアプリケーションバイナリを[GitHub Releases](https://github.com/mtgto/macSKK/releases/latest)で配布しています。
 
 インストール後、システム設定→キーボード→入力ソースから「ひらがな (macSKK)」と「ABC (macSKK)」を追加してください。カタカナ、全角英数、半角カナは追加しなくても問題ありません。
 もしインストール直後に表示されなかったり、さしかえても反映されない場合はログアウト & ログインを試してみてください。
 
 ## アンインストール
 
-インストーラにアンインストーラを同梱予定です (TODO)。
+インストーラにアンインストーラを同梱予定です。
 
-手動で行うには、以下のファイルを削除してください。
+手動で行うには、システム設定→キーボード→入力ソースから「ひらがな (macSKK)」「ABC (macSKK)」を削除後、以下のファイルを削除してください。
 
 - `~/Library/Input Methods/macSKK.app`
 - `~/Library/Containers/net.mtgto.inputmethod.macSKK`
