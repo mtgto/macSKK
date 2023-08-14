@@ -76,9 +76,7 @@ $(TARGET_DSYM_ARCHIVE): $(APP)
 	rm -f $(TARGET_DSYM_ARCHIVE)
 	pushd $(XCARCHIVE)/dSYMs; zip ../../../../$(TARGET_DSYM_ARCHIVE) -r .; popd
 
-release: $(TARGET_DMG)
-
-hoge: $(TARGET_DSYM_ARCHIVE)
+release: $(TARGET_DMG) $(TARGET_DSYM_ARCHIVE)
 
 clean:
 	rm -rf $(WORKDIR) build
