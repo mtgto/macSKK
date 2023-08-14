@@ -810,12 +810,9 @@ class StateMachine {
     ///   - 状態がUnregister (ユーザー辞書から削除するか質問中) なら削除に移行する前の "▼" より後ろの文字列を確定で入力する
     func commitComposition() {
         if let specialState = state.specialState {
-            switch specialState {
-            case .register:
-                break
-            case .unregister:
-                break
-            }
+            state.inputMethod = .normal
+            state.specialState = nil
+            addFixedText("")
         } else {
             switch state.inputMethod {
             case .normal:
