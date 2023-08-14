@@ -795,6 +795,8 @@ class StateMachine {
     }
 
     /// 現在の入力中文字列を確定して状態を入力前に戻す。カーソル位置が文字列の途中でも末尾にあるものとして扱う
+    ///
+    /// 仕様はどうあるべきか検討中。不明なものは仮としている。
     /// - 状態がNormalおよびローマ字未確定入力中
     ///   - 空文字列で確定させる
     ///   - nだけ入力してるときも空文字列 (仮)
@@ -802,6 +804,7 @@ class StateMachine {
     ///   - "▽" より後ろの文字列を確定で入力する
     /// - 状態がSelecting (変換候補選択中)
     ///   - 現在選択中の変換候補の "▼" より後ろの文字列を確定で入力する
+    ///   - ユーザー辞書には登録しない (仮)
     /// - 状態が上記でないときは仮で次のように実装してみる。いろんなソフトで不具合があるかどうかを見る
     ///   - 状態がRegister (単語登録中) なら 空文字列で確定する
     ///   - 状態がUnregister (ユーザー辞書から削除するか質問中) なら削除に移行する前の "▼" より後ろの文字列を確定で入力する
@@ -821,9 +824,11 @@ class StateMachine {
                 let fixedText = composing.string(for: state.inputMode, convertHatsuon: false)
                 state.inputMethod = .normal
                 addFixedText(fixedText)
-                return
-            case .selecting(let selectiong):
-                return
+            case .selecting(let selecting):
+                // エンター押したときと違って辞書登録はスキップ (仮)
+                updateCandidates(selecting: nil)
+                state.inputMethod = .normal
+                addFixedText(selecting.fixedText())
             }
         }
     }
