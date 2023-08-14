@@ -183,6 +183,7 @@
 			indentWidth = 4;
 			sourceTree = "<group>";
 			tabWidth = 4;
+			usesTabs = 0;
 			wrapsLines = 1;
 		};
 		CE5ECF332957034B00E7BE7D /* Products */ = {
