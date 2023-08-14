@@ -12,23 +12,31 @@ CREDENTIALS_PROFILE := macSKK
 VERSION := $(shell xcodebuild -project macSKK.xcodeproj -target macSKK -showBuildSettings -json | jq -r '.[0].buildSettings.MARKETING_VERSION')
 
 WORKDIR := script/work
-APP := build/Release/macSKK.app
+XCARCHIVE := $(WORKDIR)/macSKK-$(VERSION).xcarchive
+APP := "$(WORKDIR)/export/macSKK.app"
+DSYMS := $(XCARCHIVE)/dSYMs
 DICT := $(WORKDIR)/SKK-JISYO.L
 APP_PKG := $(WORKDIR)/app.pkg
 DICT_PKG := $(WORKDIR)/dict.pkg
 INSTALLER_PKG := $(WORKDIR)/pkg/macSKK-$(VERSION).pkg
 UNSIGNED_PKG := $(WORKDIR)/macSKK-unsigned-$(VERSION).pkg
+# 最終成果物
 TARGET_DMG := $(WORKDIR)/macSKK-$(VERSION).dmg
+# ビルド時に生成されたdSYM (XPCのdSYMを含む)
+TARGET_DSYM_ARCHIVE := $(WORKDIR)/macSKK-$(VERSION)-dSYMs.zip
 APP_PKG_ID := net.mtgto.inputmethod.macSKK.app
 DICT_PKG_ID := net.mtgto.inputmethod.macSKK.dict
 PRODUCT_SIGN_ID := "Developer ID Installer"
 
 .PHONY: all $(DICT)
 
-$(APP):
-	xcodebuild -project macSKK.xcodeproj -configuration Release CODE_SIGN_IDENTITY="Developer ID Application" DEVELOPMENT_TEAM=$(APPLE_TEAM_ID) OTHER_CODE_SIGN_FLAGS="--timestamp --options=runtime" CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO CODE_SIGN_STYLE=Manual build
+$(XCARCHIVE):
+	xcodebuild -project macSKK.xcodeproj -scheme macSKK -configuration Release CODE_SIGN_IDENTITY="Developer ID Application" DEVELOPMENT_TEAM=$(APPLE_TEAM_ID) OTHER_CODE_SIGN_FLAGS="--timestamp --options=runtime" CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO CODE_SIGN_STYLE=Manual -archivePath $(XCARCHIVE) archive
 
-all: $(APP)
+$(APP): $(XCARCHIVE)
+	xcodebuild -exportArchive -archivePath $(XCARCHIVE) -exportOptionsPlist script/export-options.plist -exportPath $(WORKDIR)/export
+
+all: $(XCARCHIVE)
 
 $(DICT):
 	$(eval DICT_DIGEST_LATEST := $(shell curl --silent https://skk-dev.github.io/dict/SKK-JISYO.L.gz.md5 | cut -w -f 1))
@@ -63,7 +71,14 @@ $(TARGET_DMG): $(INSTALLER_PKG)
 	cp LICENSE $(WORKDIR)/pkg
 	hdiutil create -srcfolder $(WORKDIR)/pkg -volname macSKK -fs HFS+ $(TARGET_DMG)
 
+# zipが-rするときの作業ディレクトリを指定できないので雑な相対指定をしている
+$(TARGET_DSYM_ARCHIVE): $(APP)
+	rm -f $(TARGET_DSYM_ARCHIVE)
+	pushd $(XCARCHIVE)/dSYMs; zip ../../../../$(TARGET_DSYM_ARCHIVE) -r .; popd
+
 release: $(TARGET_DMG)
 
+hoge: $(TARGET_DSYM_ARCHIVE)
+
 clean:
-	rm -r $(WORKDIR) build
+	rm -rf $(WORKDIR) build
