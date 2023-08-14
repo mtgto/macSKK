@@ -1408,6 +1408,85 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    func testCommitCompositionComposing() {
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(6).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText(text: "k", cursor: nil)))
+            XCTAssertEqual(events[1], .markedText(MarkedText(text: "", cursor: nil)))
+            XCTAssertEqual(events[2], .markedText(MarkedText(text: "n", cursor: nil)))
+            XCTAssertEqual(events[3], .markedText(MarkedText(text: "", cursor: nil)), "nが未確定になってても空文字列になる")
+            XCTAssertEqual(events[4], .markedText(MarkedText(text: "▽い", cursor: nil)))
+            XCTAssertEqual(events[5], .fixedText("い"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "k")))
+        stateMachine.commitComposition()
+        XCTAssertEqual(stateMachine.state.inputMethod, .normal)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n")))
+        stateMachine.commitComposition()
+        XCTAssertEqual(stateMachine.state.inputMethod, .normal)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i", withShift: true)))
+        stateMachine.commitComposition()
+        XCTAssertEqual(stateMachine.state.inputMethod, .normal)
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    func testCommitCompositionSelecting() {
+        dictionary.userDictEntries = ["え": [Word("絵")]]
+
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(3).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText(text: "▽え", cursor: nil)))
+            XCTAssertEqual(events[1], .markedText(MarkedText(text: "▼絵", cursor: nil)))
+            XCTAssertEqual(events[2], .fixedText("絵"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
+        stateMachine.commitComposition()
+        XCTAssertEqual(stateMachine.state.inputMethod, .normal)
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    func testCommitCompositionRegister() {
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(4).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText(text: "▽お", cursor: nil)))
+            XCTAssertEqual(events[1], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[2], .markedText(MarkedText(text: "[登録：お]", cursor: nil)))
+            XCTAssertEqual(events[3], .markedText(MarkedText(text: "", cursor: nil)))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertNotNil(stateMachine.state.specialState)
+        stateMachine.commitComposition()
+        XCTAssertNil(stateMachine.state.specialState)
+        XCTAssertEqual(stateMachine.state.inputMethod, .normal)
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    func testCommitCompositionUnregister() {
+        dictionary.userDictEntries = ["お": [Word("尾")]]
+
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(4).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText(text: "▽お", cursor: nil)))
+            XCTAssertEqual(events[1], .markedText(MarkedText(text: "▼尾", cursor: nil)))
+            XCTAssertEqual(events[2], .markedText(MarkedText(text: "お /尾/ を削除します(yes/no)", cursor: nil)))
+            XCTAssertEqual(events[3], .markedText(MarkedText(text: "", cursor: nil)))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "x", withShift: true)))
+        XCTAssertNotNil(stateMachine.state.specialState)
+        stateMachine.commitComposition()
+        XCTAssertNil(stateMachine.state.specialState)
+        XCTAssertEqual(stateMachine.state.inputMethod, .normal)
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     private func nextInputMethodEvent() async -> InputMethodEvent {
         var cancellation: Cancellable?
         let cancel = { cancellation?.cancel() }

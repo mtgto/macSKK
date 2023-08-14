@@ -127,6 +127,12 @@ class InputController: IMKInputController {
         super.deactivateServer(sender)
     }
 
+    /// クライアントが入力中状態を即座に確定してほしいときに呼ばれる
+    override func commitComposition(_ sender: Any!) {
+        // 現在未確定の入力を強制的に確定させて状態を入力前の状態にする
+        stateMachine.commitComposition()
+    }
+
     override func setValue(_ value: Any!, forTag tag: Int, client sender: Any!) {
         guard let value = value as? String else { return }
         guard let inputMode = InputMode(rawValue: value) else { return }

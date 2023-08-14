@@ -794,6 +794,44 @@ class StateMachine {
         state.inputMode = mode
     }
 
+    /// 現在の入力中文字列を確定して状態を入力前に戻す。カーソル位置が文字列の途中でも末尾にあるものとして扱う
+    ///
+    /// 仕様はどうあるべきか検討中。不明なものは仮としている。
+    /// - 状態がNormalおよびローマ字未確定入力中
+    ///   - 空文字列で確定させる
+    ///   - nだけ入力してるときも空文字列 (仮)
+    /// - 状態がComposing (未確定)
+    ///   - "▽" より後ろの文字列を確定で入力する
+    /// - 状態がSelecting (変換候補選択中)
+    ///   - 現在選択中の変換候補の "▼" より後ろの文字列を確定で入力する
+    ///   - ユーザー辞書には登録しない (仮)
+    /// - 状態が上記でないときは仮で次のように実装してみる。いろんなソフトで不具合があるかどうかを見る
+    ///   - 状態がRegister (単語登録中)
+    ///     - 空文字列で確定する
+    ///   - 状態がUnregister (ユーザー辞書から削除するか質問中)
+    ///     - 空文字列で確定する
+    func commitComposition() {
+        if let specialState = state.specialState {
+            state.inputMethod = .normal
+            state.specialState = nil
+            addFixedText("")
+        } else {
+            switch state.inputMethod {
+            case .normal:
+                return
+            case .composing(let composing):
+                let fixedText = composing.string(for: state.inputMode, convertHatsuon: false)
+                state.inputMethod = .normal
+                addFixedText(fixedText)
+            case .selecting(let selecting):
+                // エンター押したときと違って辞書登録はスキップ (仮)
+                updateCandidates(selecting: nil)
+                state.inputMethod = .normal
+                addFixedText(selecting.fixedText())
+            }
+        }
+    }
+
     private func addFixedText(_ text: String) {
         if let specialState = state.specialState {
             // state.markedTextを更新してinputMethodEventSubjectにstate.displayText()をsendする
