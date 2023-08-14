@@ -806,8 +806,10 @@ class StateMachine {
     ///   - 現在選択中の変換候補の "▼" より後ろの文字列を確定で入力する
     ///   - ユーザー辞書には登録しない (仮)
     /// - 状態が上記でないときは仮で次のように実装してみる。いろんなソフトで不具合があるかどうかを見る
-    ///   - 状態がRegister (単語登録中) なら 空文字列で確定する
-    ///   - 状態がUnregister (ユーザー辞書から削除するか質問中) なら削除に移行する前の "▼" より後ろの文字列を確定で入力する
+    ///   - 状態がRegister (単語登録中)
+    ///     - 空文字列で確定する
+    ///   - 状態がUnregister (ユーザー辞書から削除するか質問中)
+    ///     - 空文字列で確定する
     func commitComposition() {
         if let specialState = state.specialState {
             state.inputMethod = .normal
