@@ -60,6 +60,9 @@ final class UserDictTests: XCTestCase {
         // deleteのテスト
         XCTAssertTrue(userDict.delete(yomi: "い", word: Word("井")))
         XCTAssertEqual(userDict.refer("い").map { $0.word }, ["伊"])
+        // プライベートモードが解除されるとプライベートモードでのエントリがリセットされる
+        userDict.privateMode = false
+        XCTAssertTrue(userDict.privateUserDictEntries.isEmpty)
     }
 
     func testAppendDict() throws {

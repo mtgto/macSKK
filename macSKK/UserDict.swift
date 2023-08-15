@@ -15,11 +15,20 @@ class UserDict: DictProtocol {
     let source: DispatchSourceFileSystemObject
     /// 有効になっている辞書
     private(set) var dicts: [DictProtocol]
-    var privateMode: Bool = false
+    var privateMode: Bool = false {
+        didSet {
+            // プライベートモードを解除したときにそれまでのエントリを削除する
+            if !privateMode {
+                logger.log("プライベートモードが解除されました")
+                privateUserDictEntries = [:]
+            }
+        }
+    }
     /// 非プライベートモードのユーザー辞書。変換や単語登録すると更新されマイ辞書ファイルに永続化されます。
     var userDictEntries: [String: [Word]] = [:]
     /// プライベートモードのユーザー辞書。プライベートモードが有効な時に変換や単語登録するとuserDictEntriesとは別に更新されます。
     /// マイ辞書ファイルには永続化されません。
+    /// プライベートモード時に変換・登録された単語だけ登録されるので、このあと非プライベートモードに遷移するとリセットされます。
     private(set) var privateUserDictEntries: [String: [Word]] = [:]
     private let savePublisher = PassthroughSubject<Void, Never>()
     private var cancellables: Set<AnyCancellable> = []
