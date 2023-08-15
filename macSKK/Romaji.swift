@@ -260,7 +260,7 @@ struct Romaji: Equatable {
      *
      * - "ka" が入力されたら確定文字 "か" と残りのローマ字文字列 "" を返す
      * - "k" が入力されたら確定文字はnil, 残りのローマ字文字列 "k" を返す
-     * - "kt" のように連続できない子音が連続したinputの場合は"t"だけをローマ字文字列として返す
+     * - "kt" のように連続できない子音が連続したinputの場合は"t"をinput引数としたときのconvertの結果を返す
      * - "kya" のように確定した文字が複数の場合がありえる
      * - "aiueo" のように複数の確定が可能な場合は最初に確定できた文字だけを確定文字として返し、残りは(確定可能だが)inputとして返す
      * - ",", "." は"、", "。"にする (将来設定で切り変えられるようにするかも)
@@ -292,9 +292,11 @@ struct Romaji: Equatable {
         } else if array.contains(input) {
             return ConvertedMoji(input: input, kakutei: nil)
         } else if let firstIndex = array.firstIndex(where: { input.hasPrefix($0) }) {
-            return ConvertedMoji(input: String(input.dropFirst(array[firstIndex].utf8.count)), kakutei: nil)
+            return convert(String(input.dropFirst(array[firstIndex].utf8.count)))
+        } else if input.count == 1 {
+            return ConvertedMoji(input: input, kakutei: nil)
         } else if let c = input.last {
-            return ConvertedMoji(input: String(c), kakutei: nil)
+            return convert(String(c))
         }
         return ConvertedMoji(input: input, kakutei: nil)
     }
