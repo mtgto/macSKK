@@ -32,7 +32,7 @@ class StateMachine {
     /// 変換候補パネルに一度に表示する変換候補の数
     let displayCandidateCount = 9
 
-    init(initialState: IMEState = IMEState(), privateMode: Bool = UserDefaults.standard.bool(forKey: "privateMode")) {
+    init(initialState: IMEState = IMEState(), privateMode: Bool = false) {
         state = initialState
         inputMethodEvent = inputMethodEventSubject.eraseToAnyPublisher()
         candidateEvent = candidateEventSubject.removeDuplicates().eraseToAnyPublisher()
@@ -835,11 +835,10 @@ class StateMachine {
         }
     }
 
-    /// プライベートモードの有効無効を反転し、UserDefaultsに永続化します。
+    /// プライベートモードの有効無効を反転します。
     func togglePrivateMode() {
         privateMode = !privateMode
         dictionary.privateMode = privateMode
-        UserDefaults.standard.set(privateMode, forKey: "privateMode")
     }
 
     private func addFixedText(_ text: String) {
