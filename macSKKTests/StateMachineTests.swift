@@ -1415,6 +1415,7 @@ final class StateMachineTests: XCTestCase {
 
         let expectation = XCTestExpectation()
         stateMachine = StateMachine(initialState: stateMachine.state, privateMode: true)
+        dictionary.privateMode = true
         stateMachine.inputMethodEvent.collect(4).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText(text: "▽t", cursor: nil)))
             XCTAssertEqual(events[1], .markedText(MarkedText(text: "▽と", cursor: nil)))
@@ -1423,11 +1424,13 @@ final class StateMachineTests: XCTestCase {
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(dictionary.userDictEntries.isEmpty)
+        XCTAssertTrue(dictionary.privateUserDictEntries.isEmpty)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(dictionary.userDictEntries.isEmpty)
+        XCTAssertFalse(dictionary.privateUserDictEntries.isEmpty)
         wait(for: [expectation], timeout: 1.0)
     }
 

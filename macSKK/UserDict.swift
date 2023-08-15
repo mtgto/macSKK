@@ -4,6 +4,9 @@
 import Combine
 import Foundation
 
+/// ユーザー辞書。マイ辞書 (単語登録対象。ファイル名固定) とファイル辞書 をまとめて参照することができる。
+///
+/// TODO: ファイル辞書にしかない単語を削除しようとしたときにどうやってそれを記録するか。NG登録?
 class UserDict: DictProtocol {
     static let userDictFilename = "skk-jisyo.utf8"
     let dictionariesDirectoryURL: URL
@@ -83,6 +86,14 @@ class UserDict: DictProtocol {
     // MARK: DictProtocol
     func refer(_ word: String) -> [Word] {
         var result = userDictEntries[word] ?? []
+        if privateMode {
+            let founds = privateUserDictEntries[word] ?? []
+            founds.forEach { found in
+                if !result.contains(found) {
+                    result.append(found)
+                }
+            }
+        }
         dicts.forEach { dict in
             dict.refer(word).forEach { found in
                 if !result.contains(found) {
@@ -93,34 +104,65 @@ class UserDict: DictProtocol {
         return result
     }
 
-    /// ユーザー辞書にエントリを追加する
+    /// ユーザー辞書にエントリを追加する。
+    ///
+    /// プライベートモード時にはメモリ上に記録はされるが、通常モード時とは分けて記録しているため
+    /// プライベートモード時に追加されたエントリはマイ辞書に永続化されないといった違いがある。
+    ///
     /// - Parameters:
     ///   - yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
     ///   - word: SKK辞書の変換候補。
     func add(yomi: String, word: Word) {
-        if var words = userDictEntries[yomi] {
+        var entries: [String: [Word]] = privateMode ? privateUserDictEntries : userDictEntries
+        if var words = entries[yomi] {
             let index = words.firstIndex { $0.word == word.word }
             if let index {
                 words.remove(at: index)
             }
-            userDictEntries[yomi] = [word] + words
+            entries[yomi] = [word] + words
         } else {
-            userDictEntries[yomi] = [word]
+            entries[yomi] = [word]
         }
-        savePublisher.send(())
+        if privateMode {
+            privateUserDictEntries = entries
+        } else {
+            userDictEntries = entries
+            savePublisher.send(())
+        }
     }
 
-    /// ユーザー辞書からエントリを削除する
+    /// ユーザー辞書からエントリを削除する。
+    ///
+    /// プライベートモードが有効なときの仕様はあんまり自信がないが、ひとまず次のように定義します。
+    /// - 非プライベート時
+    ///   - 非プライベートモード用の辞書からのみエントリを削除する
+    ///   - もしプライベートモード用の辞書にエントリがあっても削除しない
+    ///   - ファイル形式の辞書にだけエントリがあった場合はなにもしない
+    /// - プライベートモード時
+    ///   - プライベートモード用の辞書からのみエントリを削除する
+    ///   - もし非プライベートモード用の辞書にエントリがあっても削除しない
+    ///   - ファイル形式の辞書にだけエントリがあった場合はなにもしない
+    ///
     /// - Parameters:
     ///   - yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
     ///   - word: SKK辞書の変換候補。
     /// - Returns: エントリを削除できたかどうか
     func delete(yomi: String, word: Word) -> Bool {
-        if var entries = userDictEntries[yomi] {
-            if let index = entries.firstIndex(of: word) {
-                entries.remove(at: index)
-                userDictEntries[yomi] = entries
-                return true
+        if privateMode {
+            if var entries = privateUserDictEntries[yomi] {
+                if let index = entries.firstIndex(of: word) {
+                    entries.remove(at: index)
+                    privateUserDictEntries[yomi] = entries
+                    return true
+                }
+            }
+        } else {
+            if var entries = userDictEntries[yomi] {
+                if let index = entries.firstIndex(of: word) {
+                    entries.remove(at: index)
+                    userDictEntries[yomi] = entries
+                    return true
+                }
             }
         }
         return false
