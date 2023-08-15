@@ -8,7 +8,6 @@ import InputMethodKit
 @objc(InputController)
 class InputController: IMKInputController {
     private let stateMachine = StateMachine()
-    private let preferenceMenu = NSMenu()
     private var cancellables: Set<AnyCancellable> = []
     private static let notFoundRange = NSRange(location: NSNotFound, length: NSNotFound)
     private let inputModePanel = InputModePanel()
@@ -19,19 +18,6 @@ class InputController: IMKInputController {
     // AppleのAPIドキュメントにはメインスレッドであるとは書かれてないけど、まあ大丈夫じゃないかな
     @MainActor
     override init!(server: IMKServer!, delegate: Any!, client inputClient: Any!) {
-        preferenceMenu.addItem(
-            withTitle: NSLocalizedString("MenuItemPreference", comment: "Preferences…"),
-            action: #selector(showSettings), keyEquivalent: "")
-        preferenceMenu.addItem(
-            withTitle: NSLocalizedString("MenuItemSaveDict", comment: "Save User Dictionary"),
-            action: #selector(saveDict), keyEquivalent: "")
-        #if DEBUG
-        // デバッグ用
-        preferenceMenu.addItem(
-            withTitle: "Show Panel",
-            action: #selector(showPanel), keyEquivalent: "")
-        #endif
-
         super.init(server: server, delegate: delegate, client: inputClient)
 
         guard let textInput = inputClient as? IMKTextInput else {
@@ -117,6 +103,24 @@ class InputController: IMKInputController {
     }
 
     override func menu() -> NSMenu! {
+        let preferenceMenu = NSMenu()
+        preferenceMenu.addItem(
+            withTitle: NSLocalizedString("MenuItemPreference", comment: "Preferences…"),
+            action: #selector(showSettings), keyEquivalent: "")
+        preferenceMenu.addItem(
+            withTitle: NSLocalizedString("MenuItemSaveDict", comment: "Save User Dictionary"),
+            action: #selector(saveDict), keyEquivalent: "")
+        let privateModeItem = NSMenuItem(title: NSLocalizedString("MenuPrivateMode", comment: "Private mode"),
+                                         action: #selector(togglePrivateMode),
+                                         keyEquivalent: "")
+        privateModeItem.state = stateMachine.privateMode ? .on : .off
+        preferenceMenu.addItem(privateModeItem)
+        #if DEBUG
+        // デバッグ用
+        preferenceMenu.addItem(
+            withTitle: "Show Panel",
+            action: #selector(showPanel), keyEquivalent: "")
+        #endif
         return preferenceMenu
     }
 
@@ -164,6 +168,10 @@ class InputController: IMKInputController {
             // TODO: NotificationCenterでユーザーに通知する
             logger.error("ユーザー辞書保存中にエラーが発生しました")
         }
+    }
+
+    @objc func togglePrivateMode() {
+        stateMachine.togglePrivateMode()
     }
 
     @objc func showPanel() {

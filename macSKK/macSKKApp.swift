@@ -45,6 +45,8 @@ struct macSKKApp: App {
                 logger.error("Error while loading userDictionary")
             }
         } else {
+            // テスト時はこの行を通らないのでdictionaryのプライベートモードは初期値のまま
+            dictionary.privateMode = UserDefaults.standard.bool(forKey: "privateMode")
             do {
                 try setupDictionaries()
                 if Bundle.main.bundleURL.deletingLastPathComponent().lastPathComponent == "Input Methods" {
