@@ -769,6 +769,24 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    func testHandleComposingPrintableSymbol() {
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(5).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText(text: "▽s", cursor: nil)))
+            XCTAssertEqual(events[1], .markedText(MarkedText(text: "▽ー", cursor: nil)), "Romaji.symbolTableに対応")
+            XCTAssertEqual(events[2], .markedText(MarkedText(text: "▽ーt", cursor: nil)))
+            XCTAssertEqual(events[3], .markedText(MarkedText(text: "▽ーty", cursor: nil)))
+            XCTAssertEqual(events[4], .markedText(MarkedText(text: "▽ー、", cursor: nil)))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "s", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "-")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "y")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ",")))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     func testHandleComposingCancel() {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(6).sink { events in
