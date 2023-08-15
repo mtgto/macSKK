@@ -19,6 +19,8 @@ enum InputMethodEvent: Equatable {
 
 class StateMachine {
     private(set) var state: IMEState
+    /// ユーザー辞書に保存しないプライベートモードかどうか
+    private(set) var privateMode: Bool
     let inputMethodEvent: AnyPublisher<InputMethodEvent, Never>
     private let inputMethodEventSubject = PassthroughSubject<InputMethodEvent, Never>()
     let candidateEvent: AnyPublisher<Candidates?, Never>
@@ -30,10 +32,11 @@ class StateMachine {
     /// 変換候補パネルに一度に表示する変換候補の数
     let displayCandidateCount = 9
 
-    init(initialState: IMEState = IMEState()) {
+    init(initialState: IMEState = IMEState(), privateMode: Bool = false) {
         state = initialState
         inputMethodEvent = inputMethodEventSubject.eraseToAnyPublisher()
         candidateEvent = candidateEventSubject.removeDuplicates().eraseToAnyPublisher()
+        self.privateMode = privateMode
     }
 
     func handle(_ action: Action) -> Bool {
@@ -830,6 +833,12 @@ class StateMachine {
                 addFixedText(selecting.fixedText())
             }
         }
+    }
+
+    /// プライベートモードの有効無効を反転します。
+    func togglePrivateMode() {
+        privateMode = !privateMode
+        dictionary.privateMode = privateMode
     }
 
     private func addFixedText(_ text: String) {

@@ -40,6 +40,31 @@ final class UserDictTests: XCTestCase {
         XCTAssertFalse(userDict.delete(yomi: "あr", word: Word("在")))
     }
 
+    func testPrivateMode() throws {
+        let userDict = try UserDict(dicts: [], userDictEntries: [:])
+        userDict.privateMode = true
+        let word1 = Word("井")
+        let word2 = Word("伊")
+        // addのテスト
+        userDict.add(yomi: "い", word: word1)
+        XCTAssertEqual(userDict.privateUserDictEntries, ["い": [word1]])
+        XCTAssertTrue(userDict.userDictEntries.isEmpty)
+        userDict.add(yomi: "い", word: word2)
+        XCTAssertEqual(userDict.privateUserDictEntries, ["い": [word2, word1]])
+        XCTAssertTrue(userDict.userDictEntries.isEmpty)
+        userDict.add(yomi: "い", word: word1)
+        XCTAssertEqual(userDict.privateUserDictEntries, ["い": [word1, word2]])
+        XCTAssertTrue(userDict.userDictEntries.isEmpty)
+        // referのテスト
+        XCTAssertEqual(userDict.refer("い").map { $0.word }, ["井", "伊"])
+        // deleteのテスト
+        XCTAssertTrue(userDict.delete(yomi: "い", word: Word("井")))
+        XCTAssertEqual(userDict.refer("い").map { $0.word }, ["伊"])
+        // プライベートモードが解除されるとプライベートモードでのエントリがリセットされる
+        userDict.privateMode = false
+        XCTAssertTrue(userDict.privateUserDictEntries.isEmpty)
+    }
+
     func testAppendDict() throws {
         let userDict = try UserDict(dicts: [])
         let fileURL = Bundle(for: Self.self).url(forResource: "SKK-JISYO.test", withExtension: "utf8")!

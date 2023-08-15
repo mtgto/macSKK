@@ -15,11 +15,14 @@ func isTest() -> Bool {
 @main
 struct macSKKApp: App {
     private var server: IMKServer!
-    private var panel: CandidatesPanel! = CandidatesPanel()
     @ObservedObject var settingsViewModel: SettingsViewModel
     /// SKK辞書を配置するディレクトリ
     /// "~/Library/Containers/net.mtgto.inputmethod.macSKK/Data/Documents/Dictionaries"
     private let dictionariesDirectoryUrl: URL
+    #if DEBUG
+    private var panel: CandidatesPanel! = CandidatesPanel()
+    private let inputModePanel = InputModePanel()
+    #endif
 
     init() {
         do {
@@ -80,6 +83,9 @@ struct macSKKApp: App {
                     let words = [Word("こんにちは", annotation: "辞書の注釈"), Word("こんばんは"), Word("おはようございます"), Word("追加したよ", annotation: "辞書の注釈")]
                     panel.setCandidates(CurrentCandidates(words: words, currentPage: 0, totalPageCount: 1), selected: words.last)
                     panel.viewModel.systemAnnotations = [words.last!: String(repeating: "これはシステム辞書の注釈です。", count: 5)]
+                }
+                Button("InputMode Panel") {
+                    inputModePanel.show(at: NSPoint(x: 200, y: 200), mode: .hiragana, privateMode: true)
                 }
                 #endif
             }

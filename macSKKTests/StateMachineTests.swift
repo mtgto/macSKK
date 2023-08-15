@@ -7,7 +7,7 @@ import XCTest
 @testable import macSKK
 
 final class StateMachineTests: XCTestCase {
-    var stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+    var stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana), privateMode: false)
     var cancellables: Set<AnyCancellable> = []
 
     override func setUpWithError() throws {
@@ -1423,6 +1423,32 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "x", withShift: true)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertEqual(dictionary.userDictEntries["え"], [Word("絵")])
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    func testPrivateMode() throws {
+        // プライベートモードが有効ならユーザー辞書を参照はするが保存はしない
+        let dict = MemoryDict(entries: ["と": [Word("都")]])
+        dictionary = try UserDict(dicts: [dict], userDictEntries: [:])
+
+        let expectation = XCTestExpectation()
+        stateMachine = StateMachine(initialState: stateMachine.state, privateMode: true)
+        dictionary.privateMode = true
+        stateMachine.inputMethodEvent.collect(4).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText(text: "▽t", cursor: nil)))
+            XCTAssertEqual(events[1], .markedText(MarkedText(text: "▽と", cursor: nil)))
+            XCTAssertEqual(events[2], .markedText(MarkedText(text: "▼都", cursor: nil)))
+            XCTAssertEqual(events[3], .fixedText("都"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(dictionary.userDictEntries.isEmpty)
+        XCTAssertTrue(dictionary.privateUserDictEntries.isEmpty)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(dictionary.userDictEntries.isEmpty)
+        XCTAssertFalse(dictionary.privateUserDictEntries.isEmpty)
         wait(for: [expectation], timeout: 1.0)
     }
 

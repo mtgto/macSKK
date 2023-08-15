@@ -8,7 +8,6 @@ import InputMethodKit
 @objc(InputController)
 class InputController: IMKInputController {
     private let stateMachine = StateMachine()
-    private let preferenceMenu = NSMenu()
     private var cancellables: Set<AnyCancellable> = []
     private static let notFoundRange = NSRange(location: NSNotFound, length: NSNotFound)
     private let inputModePanel = InputModePanel()
@@ -19,19 +18,6 @@ class InputController: IMKInputController {
     // AppleのAPIドキュメントにはメインスレッドであるとは書かれてないけど、まあ大丈夫じゃないかな
     @MainActor
     override init!(server: IMKServer!, delegate: Any!, client inputClient: Any!) {
-        preferenceMenu.addItem(
-            withTitle: NSLocalizedString("MenuItemPreference", comment: "Preferences…"),
-            action: #selector(showSettings), keyEquivalent: "")
-        preferenceMenu.addItem(
-            withTitle: NSLocalizedString("MenuItemSaveDict", comment: "Save User Dictionary"),
-            action: #selector(saveDict), keyEquivalent: "")
-        #if DEBUG
-        // デバッグ用
-        preferenceMenu.addItem(
-            withTitle: "Show Panel",
-            action: #selector(showPanel), keyEquivalent: "")
-        #endif
-
         super.init(server: server, delegate: delegate, client: inputClient)
 
         guard let textInput = inputClient as? IMKTextInput else {
@@ -66,7 +52,7 @@ class InputController: IMKInputController {
                     attributedText, selectionRange: cursorRange, replacementRange: Self.notFoundRange)
             case .modeChanged(let inputMode, let cursorPosition):
                 textInput.selectMode(inputMode.rawValue)
-                self.inputModePanel.show(at: cursorPosition.origin, mode: inputMode)
+                self.inputModePanel.show(at: cursorPosition.origin, mode: inputMode, privateMode: self.stateMachine.privateMode)
             }
         }.store(in: &cancellables)
         stateMachine.candidateEvent.sink { candidates in
@@ -117,6 +103,24 @@ class InputController: IMKInputController {
     }
 
     override func menu() -> NSMenu! {
+        let preferenceMenu = NSMenu()
+        preferenceMenu.addItem(
+            withTitle: NSLocalizedString("MenuItemPreference", comment: "Preferences…"),
+            action: #selector(showSettings), keyEquivalent: "")
+        preferenceMenu.addItem(
+            withTitle: NSLocalizedString("MenuItemSaveDict", comment: "Save User Dictionary"),
+            action: #selector(saveDict), keyEquivalent: "")
+        let privateModeItem = NSMenuItem(title: NSLocalizedString("MenuPrivateMode", comment: "Private mode"),
+                                         action: #selector(togglePrivateMode),
+                                         keyEquivalent: "")
+        privateModeItem.state = stateMachine.privateMode ? .on : .off
+        preferenceMenu.addItem(privateModeItem)
+        #if DEBUG
+        // デバッグ用
+        preferenceMenu.addItem(
+            withTitle: "Show Panel",
+            action: #selector(showPanel), keyEquivalent: "")
+        #endif
         return preferenceMenu
     }
 
@@ -145,7 +149,7 @@ class InputController: IMKInputController {
         // カーソル位置あたりを取得する
         var cursorPosition: NSRect = .zero
         _ = textInput.attributes(forCharacterIndex: 0, lineHeightRectangle: &cursorPosition)
-        inputModePanel.show(at: cursorPosition.origin, mode: inputMode)
+        inputModePanel.show(at: cursorPosition.origin, mode: inputMode, privateMode: stateMachine.privateMode)
     }
 
     @objc func showSettings() {
@@ -166,9 +170,13 @@ class InputController: IMKInputController {
         }
     }
 
+    @objc func togglePrivateMode() {
+        stateMachine.togglePrivateMode()
+    }
+
     @objc func showPanel() {
         let point = NSPoint(x: 100, y: 500)
-        self.inputModePanel.show(at: point, mode: .hiragana)
+        self.inputModePanel.show(at: point, mode: .hiragana, privateMode: stateMachine.privateMode)
     }
 
     // MARK: -

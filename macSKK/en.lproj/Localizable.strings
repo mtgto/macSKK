@@ -1,5 +1,6 @@
 "MenuItemPreference" = "Preferences…";
 "MenuItemSaveDict" = "Save User Dictionary";
+"MenuPrivateMode" = "Private mode";
 "SettingsNameSoftwareUpdate" = "Software Update";
 "SettingsNameDictionaries" = "Dictionaries";
 "SettingsNameKeyEvent" = "Key Event";
