@@ -66,7 +66,7 @@ class InputController: IMKInputController {
                     attributedText, selectionRange: cursorRange, replacementRange: Self.notFoundRange)
             case .modeChanged(let inputMode, let cursorPosition):
                 textInput.selectMode(inputMode.rawValue)
-                self.inputModePanel.show(at: cursorPosition.origin, mode: inputMode)
+                self.inputModePanel.show(at: cursorPosition.origin, mode: inputMode, privateMode: self.stateMachine.privateMode)
             }
         }.store(in: &cancellables)
         stateMachine.candidateEvent.sink { candidates in
@@ -145,7 +145,7 @@ class InputController: IMKInputController {
         // カーソル位置あたりを取得する
         var cursorPosition: NSRect = .zero
         _ = textInput.attributes(forCharacterIndex: 0, lineHeightRectangle: &cursorPosition)
-        inputModePanel.show(at: cursorPosition.origin, mode: inputMode)
+        inputModePanel.show(at: cursorPosition.origin, mode: inputMode, privateMode: stateMachine.privateMode)
     }
 
     @objc func showSettings() {
@@ -168,7 +168,7 @@ class InputController: IMKInputController {
 
     @objc func showPanel() {
         let point = NSPoint(x: 100, y: 500)
-        self.inputModePanel.show(at: point, mode: .hiragana)
+        self.inputModePanel.show(at: point, mode: .hiragana, privateMode: stateMachine.privateMode)
     }
 
     // MARK: -

@@ -19,6 +19,8 @@ enum InputMethodEvent: Equatable {
 
 class StateMachine {
     private(set) var state: IMEState
+    /// ユーザー辞書に保存しないプライベートモードかどうか
+    private(set) var privateMode: Bool
     let inputMethodEvent: AnyPublisher<InputMethodEvent, Never>
     private let inputMethodEventSubject = PassthroughSubject<InputMethodEvent, Never>()
     let candidateEvent: AnyPublisher<Candidates?, Never>
@@ -34,6 +36,7 @@ class StateMachine {
         state = initialState
         inputMethodEvent = inputMethodEventSubject.eraseToAnyPublisher()
         candidateEvent = candidateEventSubject.removeDuplicates().eraseToAnyPublisher()
+        privateMode = UserDefaults.standard.bool(forKey: "privateMode")
     }
 
     func handle(_ action: Action) -> Bool {
