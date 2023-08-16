@@ -841,7 +841,7 @@ class StateMachine {
             if text.isEmpty {
                 // 空文字列で確定するときは先にmarkedTextを削除する
                 // (そうしないとエディタには未確定文字列が残ってしまう)
-                inputMethodEventSubject.send(.markedText(MarkedText(text: "", cursor: nil)))
+                inputMethodEventSubject.send(.markedText(MarkedText(text: [])))
             } else {
                 inputMethodEventSubject.send(.fixedText(text))
             }
