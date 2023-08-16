@@ -24,7 +24,7 @@ class InputController: IMKInputController {
             return
         }
 
-        stateMachine.inputMethodEvent.sink { event in
+        stateMachine.inputMethodEvent.sink { [weak self] event in
             switch event {
             case .fixedText(let text):
                 if textInput.bundleIdentifier() == "com.jetbrains.intellij" {
@@ -52,34 +52,38 @@ class InputController: IMKInputController {
                     attributedText, selectionRange: cursorRange, replacementRange: Self.notFoundRange)
             case .modeChanged(let inputMode, let cursorPosition):
                 textInput.selectMode(inputMode.rawValue)
-                self.inputModePanel.show(at: cursorPosition.origin, mode: inputMode, privateMode: self.stateMachine.privateMode)
+                if let self {
+                    self.inputModePanel.show(at: cursorPosition.origin,
+                                              mode: inputMode,
+                                              privateMode: self.stateMachine.privateMode)
+                }
             }
         }.store(in: &cancellables)
-        stateMachine.candidateEvent.sink { candidates in
+        stateMachine.candidateEvent.sink { [weak self] candidates in
             if let candidates {
                 let currentCandidates = CurrentCandidates(
                     words: candidates.words,
                     currentPage: candidates.currentPage,
                     totalPageCount: candidates.totalPageCount)
-                self.candidatesPanel.setCandidates(currentCandidates, selected: candidates.selected)
-                self.selectedWord.send(candidates.selected)
-                self.candidatesPanel.show(cursorPosition: candidates.cursorPosition)
+                self?.candidatesPanel.setCandidates(currentCandidates, selected: candidates.selected)
+                self?.selectedWord.send(candidates.selected)
+                self?.candidatesPanel.show(cursorPosition: candidates.cursorPosition)
             } else {
-                self.candidatesPanel.orderOut(nil)
+                self?.candidatesPanel.orderOut(nil)
             }
         }.store(in: &cancellables)
-        candidatesPanel.viewModel.$selected.compactMap { $0 }.sink { selected in
-            self.stateMachine.didSelectCandidate(selected)
+        candidatesPanel.viewModel.$selected.compactMap { $0 }.sink { [weak self] selected in
+            self?.stateMachine.didSelectCandidate(selected)
             // TODO: バックグラウンドで引いて表示のときだけフォアグラウンドで処理をさせたい
             // TODO: 一度引いた単語を二度引かないようにしたい
-            self.selectedWord.send(selected)
+            self?.selectedWord.send(selected)
         }.store(in: &cancellables)
-        candidatesPanel.viewModel.$doubleSelected.compactMap { $0 }.sink { doubleSelected in
-            self.stateMachine.didDoubleSelectCandidate(doubleSelected)
+        candidatesPanel.viewModel.$doubleSelected.compactMap { $0 }.sink { [weak self] doubleSelected in
+            self?.stateMachine.didDoubleSelectCandidate(doubleSelected)
         }.store(in: &cancellables)
-        selectedWord.removeDuplicates().sink { word in
+        selectedWord.removeDuplicates().sink { [weak self] word in
             if let systemAnnotation = SystemDict.lookup(word.word), !systemAnnotation.isEmpty {
-                self.candidatesPanel.setSystemAnnotation(systemAnnotation, for: word)
+                self?.candidatesPanel.setSystemAnnotation(systemAnnotation, for: word)
             }
         }.store(in: &cancellables)
     }
