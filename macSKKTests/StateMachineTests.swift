@@ -1429,7 +1429,7 @@ final class StateMachineTests: XCTestCase {
     func testPrivateMode() throws {
         // プライベートモードが有効ならユーザー辞書を参照はするが保存はしない
         let dict = MemoryDict(entries: ["と": [Word("都")]])
-        dictionary = try UserDict(dicts: [dict], userDictEntries: [:])
+        dictionary = try UserDict(dicts: [dict], userDictEntries: [:], privateMode: privateMode)
 
         let expectation = XCTestExpectation()
         privateMode.send(true)

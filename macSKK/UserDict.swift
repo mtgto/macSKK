@@ -22,10 +22,12 @@ class UserDict: DictProtocol {
     /// プライベートモード時に変換・登録された単語だけ登録されるので、このあと非プライベートモードに遷移するとリセットされます。
     private(set) var privateUserDictEntries: [String: [Word]] = [:]
     private let savePublisher = PassthroughSubject<Void, Never>()
+    private let privateMode: CurrentValueSubject<Bool, Never>
     private var cancellables: Set<AnyCancellable> = []
 
-    init(dicts: [DictProtocol], userDictEntries: [String: [Word]]? = nil) throws {
+    init(dicts: [DictProtocol], userDictEntries: [String: [Word]]? = nil, privateMode: CurrentValueSubject<Bool, Never>) throws {
         self.dicts = dicts
+        self.privateMode = privateMode
         dictionariesDirectoryURL = try FileManager.default.url(
             for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false
         ).appending(path: "Dictionaries")
@@ -68,7 +70,7 @@ class UserDict: DictProtocol {
                 self.source.resume()
             }
             .store(in: &cancellables)
-        privateMode.removeDuplicates().sink { [weak self] privateMode in
+        self.privateMode.removeDuplicates().sink { [weak self] privateMode in
             // プライベートモードを解除したときにそれまでのエントリを削除する
             if !privateMode {
                 logger.log("プライベートモードが解除されました")

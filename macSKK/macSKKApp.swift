@@ -28,7 +28,7 @@ struct macSKKApp: App {
 
     init() {
         do {
-            dictionary = try UserDict(dicts: [])
+            dictionary = try UserDict(dicts: [], privateMode: privateMode)
             dictionariesDirectoryUrl = try FileManager.default.url(
                 for: .documentDirectory,
                 in: .userDomainMask,
@@ -42,7 +42,7 @@ struct macSKKApp: App {
         setupUserDefaults()
         if isTest() {
             do {
-                dictionary = try UserDict(dicts: [])
+                dictionary = try UserDict(dicts: [], privateMode: privateMode)
             } catch {
                 logger.error("Error while loading userDictionary")
             }
