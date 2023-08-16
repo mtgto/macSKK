@@ -814,7 +814,7 @@ class StateMachine {
     ///   - 状態がUnregister (ユーザー辞書から削除するか質問中)
     ///     - 空文字列で確定する
     func commitComposition() {
-        if let specialState = state.specialState {
+        if state.specialState != nil {
             state.inputMethod = .normal
             state.specialState = nil
             addFixedText("")
