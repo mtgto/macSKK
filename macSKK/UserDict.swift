@@ -15,15 +15,6 @@ class UserDict: DictProtocol {
     let source: DispatchSourceFileSystemObject
     /// 有効になっている辞書
     private(set) var dicts: [DictProtocol]
-    var privateMode: Bool = false {
-        didSet {
-            // プライベートモードを解除したときにそれまでのエントリを削除する
-            if !privateMode {
-                logger.log("プライベートモードが解除されました")
-                privateUserDictEntries = [:]
-            }
-        }
-    }
     /// 非プライベートモードのユーザー辞書。変換や単語登録すると更新されマイ辞書ファイルに永続化されます。
     var userDictEntries: [String: [Word]] = [:]
     /// プライベートモードのユーザー辞書。プライベートモードが有効な時に変換や単語登録するとuserDictEntriesとは別に更新されます。
@@ -31,10 +22,12 @@ class UserDict: DictProtocol {
     /// プライベートモード時に変換・登録された単語だけ登録されるので、このあと非プライベートモードに遷移するとリセットされます。
     private(set) var privateUserDictEntries: [String: [Word]] = [:]
     private let savePublisher = PassthroughSubject<Void, Never>()
+    private let privateMode: CurrentValueSubject<Bool, Never>
     private var cancellables: Set<AnyCancellable> = []
 
-    init(dicts: [DictProtocol], userDictEntries: [String: [Word]]? = nil) throws {
+    init(dicts: [DictProtocol], userDictEntries: [String: [Word]]? = nil, privateMode: CurrentValueSubject<Bool, Never>) throws {
         self.dicts = dicts
+        self.privateMode = privateMode
         dictionariesDirectoryURL = try FileManager.default.url(
             for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false
         ).appending(path: "Dictionaries")
@@ -77,6 +70,14 @@ class UserDict: DictProtocol {
                 self.source.resume()
             }
             .store(in: &cancellables)
+        self.privateMode.removeDuplicates().sink { [weak self] privateMode in
+            // プライベートモードを解除したときにそれまでのエントリを削除する
+            if !privateMode {
+                logger.log("プライベートモードが解除されました")
+                self?.privateUserDictEntries = [:]
+            }
+        }
+        .store(in: &cancellables)
     }
 
     deinit {
@@ -95,7 +96,7 @@ class UserDict: DictProtocol {
     // MARK: DictProtocol
     func refer(_ word: String) -> [Word] {
         var result = userDictEntries[word] ?? []
-        if privateMode {
+        if privateMode.value {
             let founds = privateUserDictEntries[word] ?? []
             founds.forEach { found in
                 if !result.contains(found) {
@@ -122,7 +123,7 @@ class UserDict: DictProtocol {
     ///   - yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
     ///   - word: SKK辞書の変換候補。
     func add(yomi: String, word: Word) {
-        var entries: [String: [Word]] = privateMode ? privateUserDictEntries : userDictEntries
+        var entries: [String: [Word]] = privateMode.value ? privateUserDictEntries : userDictEntries
         if var words = entries[yomi] {
             let index = words.firstIndex { $0.word == word.word }
             if let index {
@@ -132,7 +133,7 @@ class UserDict: DictProtocol {
         } else {
             entries[yomi] = [word]
         }
-        if privateMode {
+        if privateMode.value {
             privateUserDictEntries = entries
         } else {
             userDictEntries = entries
@@ -157,7 +158,7 @@ class UserDict: DictProtocol {
     ///   - word: SKK辞書の変換候補。
     /// - Returns: エントリを削除できたかどうか
     func delete(yomi: String, word: Word) -> Bool {
-        if privateMode {
+        if privateMode.value {
             if var entries = privateUserDictEntries[yomi] {
                 if let index = entries.firstIndex(of: word) {
                     entries.remove(at: index)

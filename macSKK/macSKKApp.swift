@@ -1,12 +1,14 @@
 // SPDX-FileCopyrightText: 2022 mtgto <hogerappa@gmail.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import Combine
 import InputMethodKit
 import SwiftUI
 import os
 
 let logger: Logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "main")
 var dictionary: UserDict!
+let privateMode = CurrentValueSubject<Bool, Never>(false)
 
 func isTest() -> Bool {
     return ProcessInfo.processInfo.environment["MACSKK_IS_TEST"] == "1"
@@ -26,7 +28,7 @@ struct macSKKApp: App {
 
     init() {
         do {
-            dictionary = try UserDict(dicts: [])
+            dictionary = try UserDict(dicts: [], privateMode: privateMode)
             dictionariesDirectoryUrl = try FileManager.default.url(
                 for: .documentDirectory,
                 in: .userDomainMask,
@@ -40,7 +42,7 @@ struct macSKKApp: App {
         setupUserDefaults()
         if isTest() {
             do {
-                dictionary = try UserDict(dicts: [])
+                dictionary = try UserDict(dicts: [], privateMode: privateMode)
             } catch {
                 logger.error("Error while loading userDictionary")
             }
