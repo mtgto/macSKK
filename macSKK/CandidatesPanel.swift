@@ -26,7 +26,6 @@ final class CandidatesPanel: NSPanel {
     }
 
     func show(cursorPosition: NSRect) {
-        // TODO: もしスクリーン下にはみ出す場合は setOrigin を使って左下座標を指定する。
         guard let viewController = contentViewController as? NSHostingController<CandidatesView> else {
             fatalError("ビューコントローラの状態が壊れている")
         }
@@ -43,6 +42,7 @@ final class CandidatesPanel: NSPanel {
         if cursorPosition.origin.y > height {
             setFrameTopLeftPoint(cursorPosition.origin)
         } else {
+            // スクリーン下にはみ出す場合はテキスト入力位置の上に表示する
             setFrameOrigin(CGPoint(x: cursorPosition.origin.x, y: cursorPosition.origin.y + cursorPosition.size.height))
         }
         level = .floating

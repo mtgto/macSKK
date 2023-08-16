@@ -5,6 +5,7 @@
 
 import SwiftUI
 
+/// システム辞書で引いてみるデバッグ機能。
 struct SystemDictView: View {
     @State private var word: String = ""
     @State private var displayText: String = ""

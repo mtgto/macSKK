@@ -3,6 +3,7 @@
 
 import Foundation
 
+/// GitHubのReleaseページにあるatom+xmlをFetchUpdateService XPC取得し、パースした結果を返します。
 struct UpdateChecker {
     // atomをパースして返すので新しい順で返す
     func fetch() async throws -> [Release] {

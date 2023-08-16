@@ -26,7 +26,7 @@ class StateMachine {
     let candidateEvent: AnyPublisher<Candidates?, Never>
     private let candidateEventSubject = PassthroughSubject<Candidates?, Never>()
 
-    /// TODO: inlineCandidateCount, displayCandidateCountを環境設定にするかも
+    // TODO: inlineCandidateCount, displayCandidateCountを環境設定にするかも
     /// 変換候補パネルを表示するまで表示する変換候補の数
     let inlineCandidateCount = 3
     /// 変換候補パネルに一度に表示する変換候補の数
