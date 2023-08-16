@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: 2023 mtgto <hogerappa@gmail.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#if DEBUG
+
 import SwiftUI
 
 struct KeyEventView: View {
@@ -77,3 +79,5 @@ struct KeyEventView_Previews: PreviewProvider {
         KeyEventView()
     }
 }
+
+#endif

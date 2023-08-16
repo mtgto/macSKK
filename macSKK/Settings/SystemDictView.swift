@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: 2023 mtgto <hogerappa@gmail.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#if DEBUG
+
 import SwiftUI
 
 struct SystemDictView: View {
@@ -33,3 +35,5 @@ struct SystemDictView_Previews: PreviewProvider {
         SystemDictView()
     }
 }
+
+#endif

@@ -174,10 +174,12 @@ class InputController: IMKInputController {
         stateMachine.togglePrivateMode()
     }
 
+    #if DEBUG
     @objc func showPanel() {
         let point = NSPoint(x: 100, y: 500)
         self.inputModePanel.show(at: point, mode: .hiragana, privateMode: stateMachine.privateMode)
     }
+    #endif
 
     // MARK: -
     private func isPrintable(_ text: String) -> Bool {
