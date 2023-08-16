@@ -7,7 +7,7 @@ import XCTest
 @testable import macSKK
 
 final class StateMachineTests: XCTestCase {
-    var stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana), privateMode: false)
+    var stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
     var cancellables: Set<AnyCancellable> = []
 
     override func setUpWithError() throws {
@@ -1432,8 +1432,7 @@ final class StateMachineTests: XCTestCase {
         dictionary = try UserDict(dicts: [dict], userDictEntries: [:])
 
         let expectation = XCTestExpectation()
-        stateMachine = StateMachine(initialState: stateMachine.state, privateMode: true)
-        dictionary.privateMode = true
+        privateMode.send(true)
         stateMachine.inputMethodEvent.collect(4).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText(text: "▽t", cursor: nil)))
             XCTAssertEqual(events[1], .markedText(MarkedText(text: "▽と", cursor: nil)))

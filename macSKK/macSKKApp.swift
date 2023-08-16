@@ -1,12 +1,14 @@
 // SPDX-FileCopyrightText: 2022 mtgto <hogerappa@gmail.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import Combine
 import InputMethodKit
 import SwiftUI
 import os
 
 let logger: Logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "main")
 var dictionary: UserDict!
+let privateMode = CurrentValueSubject<Bool, Never>(false)
 
 func isTest() -> Bool {
     return ProcessInfo.processInfo.environment["MACSKK_IS_TEST"] == "1"

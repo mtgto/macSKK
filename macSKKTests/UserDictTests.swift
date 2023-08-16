@@ -41,8 +41,8 @@ final class UserDictTests: XCTestCase {
     }
 
     func testPrivateMode() throws {
+        privateMode.send(true)
         let userDict = try UserDict(dicts: [], userDictEntries: [:])
-        userDict.privateMode = true
         let word1 = Word("井")
         let word2 = Word("伊")
         // addのテスト
@@ -61,7 +61,7 @@ final class UserDictTests: XCTestCase {
         XCTAssertTrue(userDict.delete(yomi: "い", word: Word("井")))
         XCTAssertEqual(userDict.refer("い").map { $0.word }, ["伊"])
         // プライベートモードが解除されるとプライベートモードでのエントリがリセットされる
-        userDict.privateMode = false
+        privateMode.send(false)
         XCTAssertTrue(userDict.privateUserDictEntries.isEmpty)
     }
 

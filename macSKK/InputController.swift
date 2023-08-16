@@ -54,8 +54,8 @@ class InputController: IMKInputController {
                 textInput.selectMode(inputMode.rawValue)
                 if let self {
                     self.inputModePanel.show(at: cursorPosition.origin,
-                                              mode: inputMode,
-                                              privateMode: self.stateMachine.privateMode)
+                                             mode: inputMode,
+                                             privateMode: privateMode.value)
                 }
             }
         }.store(in: &cancellables)
@@ -117,7 +117,7 @@ class InputController: IMKInputController {
         let privateModeItem = NSMenuItem(title: NSLocalizedString("MenuPrivateMode", comment: "Private mode"),
                                          action: #selector(togglePrivateMode),
                                          keyEquivalent: "")
-        privateModeItem.state = stateMachine.privateMode ? .on : .off
+        privateModeItem.state = privateMode.value ? .on : .off
         preferenceMenu.addItem(privateModeItem)
         #if DEBUG
         // デバッグ用
@@ -153,7 +153,7 @@ class InputController: IMKInputController {
         // カーソル位置あたりを取得する
         var cursorPosition: NSRect = .zero
         _ = textInput.attributes(forCharacterIndex: 0, lineHeightRectangle: &cursorPosition)
-        inputModePanel.show(at: cursorPosition.origin, mode: inputMode, privateMode: stateMachine.privateMode)
+        inputModePanel.show(at: cursorPosition.origin, mode: inputMode, privateMode: privateMode.value)
     }
 
     @objc func showSettings() {
@@ -175,13 +175,13 @@ class InputController: IMKInputController {
     }
 
     @objc func togglePrivateMode() {
-        stateMachine.togglePrivateMode()
+        privateMode.send(!privateMode.value)
     }
 
     #if DEBUG
     @objc func showPanel() {
         let point = NSPoint(x: 100, y: 500)
-        self.inputModePanel.show(at: point, mode: .hiragana, privateMode: stateMachine.privateMode)
+        self.inputModePanel.show(at: point, mode: .hiragana, privateMode: privateMode.value)
     }
     #endif
 
