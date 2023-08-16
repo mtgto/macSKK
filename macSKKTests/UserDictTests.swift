@@ -8,6 +8,7 @@ import Combine
 
 final class UserDictTests: XCTestCase {
     func testSerialize() throws {
+        let privateMode = CurrentValueSubject<Bool, Never>(false)
         var userDict = try UserDict(dicts: [], userDictEntries: [:], privateMode: privateMode)
         XCTAssertEqual(userDict.serialize(), "")
         userDict = try UserDict(dicts: [], userDictEntries: ["あ": [Word("亜", annotation: "亜の注釈")]], privateMode: privateMode)
@@ -15,6 +16,7 @@ final class UserDictTests: XCTestCase {
     }
 
     func testAdd() throws {
+        let privateMode = CurrentValueSubject<Bool, Never>(false)
         let userDict = try UserDict(dicts: [], userDictEntries: [:], privateMode: privateMode)
         let word1 = Word("井")
         let word2 = Word("伊")
@@ -27,6 +29,7 @@ final class UserDictTests: XCTestCase {
     }
 
     func testRefer() throws {
+        let privateMode = CurrentValueSubject<Bool, Never>(false)
         let dict1 = MemoryDict(entries: ["い": [Word("胃"), Word("伊")]])
         let dict2 = MemoryDict(entries: ["い": [Word("胃"), Word("意")]])
         let userDict = try UserDict(dicts: [dict1, dict2], userDictEntries: ["い": [Word("井"), Word("伊")]], privateMode: privateMode)
@@ -34,6 +37,7 @@ final class UserDictTests: XCTestCase {
     }
 
     func testDelete() throws {
+        let privateMode = CurrentValueSubject<Bool, Never>(false)
         let userDict = try UserDict(dicts: [], userDictEntries: ["あr": [Word("有"), Word("在")]], privateMode: privateMode)
         XCTAssertTrue(userDict.delete(yomi: "あr", word: Word("在")))
         XCTAssertEqual(userDict.userDictEntries["あr"], [Word("有")])
@@ -42,8 +46,8 @@ final class UserDictTests: XCTestCase {
     }
 
     func testPrivateMode() throws {
-        let localPrivateMode = CurrentValueSubject<Bool, Never>(true)
-        let userDict = try UserDict(dicts: [], userDictEntries: [:], privateMode: localPrivateMode)
+        let privateMode = CurrentValueSubject<Bool, Never>(true)
+        let userDict = try UserDict(dicts: [], userDictEntries: [:], privateMode: privateMode)
         let word1 = Word("井")
         let word2 = Word("伊")
         // addのテスト
@@ -62,11 +66,12 @@ final class UserDictTests: XCTestCase {
         XCTAssertTrue(userDict.delete(yomi: "い", word: Word("井")))
         XCTAssertEqual(userDict.refer("い").map { $0.word }, ["伊"])
         // プライベートモードが解除されるとプライベートモードでのエントリがリセットされる
-        localPrivateMode.send(false)
+        privateMode.send(false)
         XCTAssertTrue(userDict.privateUserDictEntries.isEmpty)
     }
 
     func testAppendDict() throws {
+        let privateMode = CurrentValueSubject<Bool, Never>(false)
         let userDict = try UserDict(dicts: [], privateMode: privateMode)
         let fileURL = Bundle(for: Self.self).url(forResource: "SKK-JISYO.test", withExtension: "utf8")!
         let fileDict = try FileDict(contentsOf: fileURL, encoding: .utf8)
@@ -78,6 +83,7 @@ final class UserDictTests: XCTestCase {
     }
 
     func testDeleteDict() throws {
+        let privateMode = CurrentValueSubject<Bool, Never>(false)
         let fileURL = Bundle(for: Self.self).url(forResource: "SKK-JISYO.test", withExtension: "utf8")!
         let fileDict = try FileDict(contentsOf: fileURL, encoding: .utf8)
         let userDict = try UserDict(dicts: [fileDict], privateMode: privateMode)
