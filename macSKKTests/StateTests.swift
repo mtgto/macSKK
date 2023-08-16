@@ -192,4 +192,48 @@ final class StateTests: XCTestCase {
         state = state.appendText("e").moveCursorLeft().dropLast()
         XCTAssertEqual(state.text, "y")
     }
+
+    func testIMEStateDisplayTextComposing() {
+        let composingState = ComposingState(isShift: true, text: ["そ"], romaji: "r")
+        let state = IMEState(inputMode: .hiragana,
+                             inputMethod: .composing(composingState),
+                             specialState: nil,
+                             candidates: [])
+        let displayText = state.displayText()
+        XCTAssertEqual(displayText.text, "▽そr")
+    }
+
+    func testIMEStateDisplayTextSelecting() {
+        let composingState = ComposingState(isShift: true, text: ["い"], romaji: "")
+        let selectingState = SelectingState(prev: SelectingState.PrevState(mode: .hiragana, composing: composingState),
+                                            yomi: "い",
+                                            candidates: [Word("井")],
+                                            candidateIndex: 0,
+                                            cursorPosition: .zero)
+        let state = IMEState(inputMode: .hiragana,
+                             inputMethod: .selecting(selectingState),
+                             specialState: nil,
+                             candidates: [])
+        let displayText = state.displayText()
+        XCTAssertEqual(displayText.text, "▼井")
+    }
+
+    func testIMEStateDisplayTextRegister() {
+        let prevComposingState = ComposingState(isShift: true, text: ["あいうえお"], romaji: "")
+        let registerState = RegisterState(prev: RegisterState.PrevState(mode: .hiragana, composing: prevComposingState),
+                                          yomi: "あいうえお",
+                                          text: "愛上")
+        let composingState = ComposingState(isShift: true, text: ["お"], romaji: "")
+        let selectingState = SelectingState(prev: SelectingState.PrevState(mode: .hiragana, composing: composingState),
+                                            yomi: "お",
+                                            candidates: [Word("尾")],
+                                            candidateIndex: 0,
+                                            cursorPosition: .zero)
+        let state = IMEState(inputMode: .hiragana,
+                             inputMethod: .selecting(selectingState),
+                             specialState: .register(registerState),
+                             candidates: [])
+        let displayText = state.displayText()
+        XCTAssertEqual(displayText.text, "[登録：あいうえお]愛上▼尾")
+    }
 }
