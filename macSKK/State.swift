@@ -54,7 +54,7 @@ enum InputMethodState: Equatable {
      * - Shift-A, space
      *   - [.emphasize("▼阿")]
      */
-    func displayText(inputMode: InputMode) -> [MarkedText.SubText] {
+    func displayText(inputMode: InputMode) -> [MarkedText.Element] {
         switch self {
         case .normal:
             return []
@@ -87,7 +87,7 @@ protocol DisplayTextProtocl {
      * - Shift-A, space
      *   - [.emphasize("▼阿")]
      */
-    func displayText(inputMode: InputMode) -> [MarkedText.SubText]
+    func displayText(inputMode: InputMode) -> [MarkedText.Element]
 }
 
 protocol SpecialStateProtocol: CursorProtocol {
@@ -259,7 +259,7 @@ struct ComposingState: Equatable, DisplayTextProtocl, CursorProtocol {
     }
 
     // MARK: - DisplayTextProtocol
-    func displayText(inputMode: InputMode) -> [MarkedText.SubText] {
+    func displayText(inputMode: InputMode) -> [MarkedText.Element] {
         let displayText = string(for: inputMode, convertHatsuon: false)
         let composingText: String
         if let okuri {
@@ -315,7 +315,7 @@ struct SelectingState: Equatable, DisplayTextProtocl {
     }
 
     // MARK: - DisplayTextProtocol
-    func displayText(inputMode: InputMode) -> [MarkedText.SubText] {
+    func displayText(inputMode: InputMode) -> [MarkedText.Element] {
         var selectingText = "▼" + candidates[candidateIndex].word
         if let okuri = prev.composing.okuri {
             selectingText += okuri.map { $0.string(for: inputMode) }.joined()
@@ -506,7 +506,7 @@ enum SpecialState: SpecialStateProtocol {
 
 struct MarkedText: Equatable {
     /// 意味の違う部分文字列ごとの定義。現在のところは下線のスタイルの出し分けにだけ使用する
-    enum SubText: Equatable {
+    enum Element: Equatable {
         /// 細い下線で表示する文字列。未確定文字列の入力中、"[登録中]" などのカーソルを操作できない文字列など
         case plain(String)
         /// 太い下線で表示する文字列。今選択されている変換候補。
@@ -525,7 +525,7 @@ struct MarkedText: Equatable {
             }
         }
     }
-    let text: [SubText]
+    let text: [Element]
 //    let cursor: Int?
 
     var attributedString: AttributedString {
@@ -534,7 +534,7 @@ struct MarkedText: Equatable {
                 return result + current.attributedString
             })
             if !text.contains(where: { $0 == .cursor }) {
-                result.append(SubText.cursor.attributedString)
+                result.append(Element.cursor.attributedString)
             }
             return result
         } else {
@@ -544,8 +544,8 @@ struct MarkedText: Equatable {
 
     func cursorRange() -> NSRange? {
         var location: Int = 0
-        for subtext in text {
-            switch subtext {
+        for element in text {
+            switch element {
             case .plain(let string):
                 location += string.count
             case .emphasized(let string):
@@ -578,10 +578,7 @@ struct IMEState {
     /// "▽\(text)" や "▼(変換候補)" や "[登録：\(text)]" のような、下線が当たっていて表示されている文字列とカーソル位置を返す。
     /// カーソル位置は末尾の場合はnilを返す
     func displayText() -> MarkedText {
-        var markedText = [MarkedText.SubText]()
-        // 単語登録モードのカーソルより後の確定済文字列
-        var registerTextSuffix = ""
-        var cursor: Int? = nil
+        var markedText = [MarkedText.Element]()
         if let specialState {
             switch specialState {
             case .register(let registerState):
@@ -593,22 +590,28 @@ struct IMEState {
                 }
                 markedText.append(.plain("[登録：\(yomi)]"))
                 if let registerCursor = registerState.cursor {
-//                    cursor = markedText.count + registerCursor
                     let subtext = String(registerState.text.prefix(registerCursor))
                     if !subtext.isEmpty {
                         markedText.append(.plain(subtext))
                     }
+                    markedText += inputMethod.displayText(inputMode: inputMode)
                     markedText.append(.cursor)
+                    // 単語登録モードのカーソルより後の確定済文字列
+                    let registerTextSuffix: String
                     if registerCursor == 0 {
                         registerTextSuffix = registerState.text
                     } else {
-                        registerTextSuffix += registerState.text.suffix(
-                            from: registerState.text.index(registerState.text.startIndex, offsetBy: registerCursor))
+                        registerTextSuffix = String(registerState.text.suffix(
+                            from: registerState.text.index(registerState.text.startIndex, offsetBy: registerCursor)))
+                    }
+                    if !registerTextSuffix.isEmpty {
+                        markedText.append(.plain(registerTextSuffix))
                     }
                 } else {
                     if !registerState.text.isEmpty {
                         markedText.append(.plain(registerState.text))
                     }
+                    markedText += inputMethod.displayText(inputMode: inputMode)
                 }
             case .unregister(let unregisterState):
                 let selectingState = unregisterState.prev.selecting
@@ -621,60 +624,6 @@ struct IMEState {
         } else {
             return MarkedText(text: inputMethod.displayText(inputMode: inputMode))
         }
-//        switch inputMethod {
-//        case .normal:
-//            if !registerTextSuffix.isEmpty {
-//                markedText.append(.plain(registerTextSuffix))
-//            }
-//        case .composing(let composing):
-//            let displayText = composing.string(for: inputMode, convertHatsuon: false)
-//            let composingText: String
-//            if let okuri = composing.okuri {
-//                composingText =
-//                    "▽" + displayText + "*" + okuri.map { $0.string(for: inputMode) }.joined() + composing.romaji
-//            } else if composing.isShift {
-//                composingText = "▽" + displayText + composing.romaji
-//            } else {
-//                composingText = composing.romaji
-//            }
-//
-//            if let currentCursor = cursor {
-//                if let composingCursor = composing.cursor {
-//                    // 先頭の "▽" 分の1を足す
-//                    cursor = currentCursor + composingCursor + (composing.isShift ? 1 : 0)
-//                } else {
-//                    cursor = currentCursor + composingText.count
-//                }
-//            } else {
-//                if let composingCursor = composing.cursor {
-//                    cursor = markedText.count + composingCursor + (composing.isShift ? 1 : 0)
-//                } else {
-//                    cursor = nil
-//                }
-//            }
-//            if let composingCursor = composing.cursor {
-//                // 先頭の "▽" があればその分の1を足す
-//                let cursor = composingCursor + (composing.isShift ? 1 : 0)
-//                let cursorTextPrefix = String(composingText.prefix(cursor))
-//                markedText.append(.plain(cursorTextPrefix))
-//                markedText.append(.cursor)
-//                let cursorTextSuffix = String(composingText.suffix(from: composingText.index(composingText.startIndex, offsetBy: cursor)))
-//                markedText.append(.plain(cursorTextSuffix))
-//            } else {
-//                markedText.append(.plain(composingText))
-//            }
-//            if !registerTextSuffix.isEmpty {
-//                markedText.append(.plain(registerTextSuffix))
-//            }
-//        case .selecting(let selecting):
-//            var selectingText = "▼" + selecting.candidates[selecting.candidateIndex].word
-//            if let okuri = selecting.prev.composing.okuri {
-//                selectingText += okuri.map { $0.string(for: inputMode) }.joined()
-//            }
-//            markedText.append(.emphasized(selectingText))
-//            cursor = nil
-//        }
-//        return MarkedText(text: markedText)
     }
 }
 

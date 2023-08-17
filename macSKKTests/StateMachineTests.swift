@@ -1021,7 +1021,7 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[11], .markedText(MarkedText(text: [.plain("[登録：い*う]"), .plain("あ"), .plain("▽お"), .cursor, .plain("え")])))
             XCTAssertEqual(events[12], .markedText(MarkedText(text: [.plain("[登録：い*う]"), .plain("あ"), .plain("▽おs"), .cursor, .plain("え")])))
             XCTAssertEqual(events[13], .markedText(MarkedText(text: [.plain("[登録：い*う]"), .plain("あ"), .plain("▽おそ"), .cursor, .plain("え")])))
-            XCTAssertEqual(events[14], .markedText(MarkedText(text: [.plain("[登録：い*う]"), .plain("あ"), .plain("▽おそ"), .cursor, .plain("*kえ")])))
+            XCTAssertEqual(events[14], .markedText(MarkedText(text: [.plain("[登録：い*う]"), .plain("あ"), .plain("▽おそ*k"), .cursor, .plain("え")])))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i", withShift: true)))
