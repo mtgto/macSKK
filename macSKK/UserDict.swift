@@ -70,7 +70,7 @@ class UserDict: DictProtocol {
                 self.source.resume()
             }
             .store(in: &cancellables)
-        self.privateMode.removeDuplicates().sink { [weak self] privateMode in
+        self.privateMode.drop(while: { !$0 }).removeDuplicates().sink { [weak self] privateMode in
             // プライベートモードを解除したときにそれまでのエントリを削除する
             if !privateMode {
                 logger.log("プライベートモードが解除されました")
