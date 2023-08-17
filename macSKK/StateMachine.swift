@@ -11,7 +11,6 @@ enum InputMethodEvent: Equatable {
     /// 下線付きの未確定文字列
     ///
     /// 登録モード時は "[登録：あああ]ほげ" のように長くなる
-    /// 第二引数はカーソル位置。nil時は末尾扱い
     case markedText(MarkedText)
     /// qやlなどにより入力モードを変更する
     case modeChanged(InputMode, NSRect)
@@ -841,7 +840,7 @@ class StateMachine {
             if text.isEmpty {
                 // 空文字列で確定するときは先にmarkedTextを削除する
                 // (そうしないとエディタには未確定文字列が残ってしまう)
-                inputMethodEventSubject.send(.markedText(MarkedText(text: [])))
+                inputMethodEventSubject.send(.markedText(MarkedText([])))
             } else {
                 inputMethodEventSubject.send(.fixedText(text))
             }

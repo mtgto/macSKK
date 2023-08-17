@@ -525,15 +525,18 @@ struct MarkedText: Equatable {
             }
         }
     }
-    let text: [Element]
-//    let cursor: Int?
+    let elements: [Element]
+
+    init(_ elements: [Element]) {
+        self.elements = elements
+    }
 
     var attributedString: AttributedString {
-        if let first = text.first {
-            var result = text.dropFirst().reduce(first.attributedString, { result, current in
+        if let first = elements.first {
+            var result = elements.dropFirst().reduce(first.attributedString, { result, current in
                 return result + current.attributedString
             })
-            if !text.contains(where: { $0 == .cursor }) {
+            if !elements.contains(where: { $0 == .cursor }) {
                 result.append(Element.cursor.attributedString)
             }
             return result
@@ -544,7 +547,7 @@ struct MarkedText: Equatable {
 
     func cursorRange() -> NSRange? {
         var location: Int = 0
-        for element in text {
+        for element in elements {
             switch element {
             case .plain(let string):
                 location += string.count
@@ -578,7 +581,7 @@ struct IMEState {
     /// "▽\(text)" や "▼(変換候補)" や "[登録：\(text)]" のような、下線が当たっていて表示されている文字列とカーソル位置を返す。
     /// カーソル位置は末尾の場合はnilを返す
     func displayText() -> MarkedText {
-        var markedText = [MarkedText.Element]()
+        var elements = [MarkedText.Element]()
         if let specialState {
             switch specialState {
             case .register(let registerState):
@@ -588,14 +591,14 @@ struct IMEState {
                 if let okuri = composing.okuri {
                     yomi += "*" + okuri.map { $0.string(for: mode) }.joined()
                 }
-                markedText.append(.plain("[登録：\(yomi)]"))
+                elements.append(.plain("[登録：\(yomi)]"))
                 if let registerCursor = registerState.cursor {
                     let subtext = String(registerState.text.prefix(registerCursor))
                     if !subtext.isEmpty {
-                        markedText.append(.plain(subtext))
+                        elements.append(.plain(subtext))
                     }
-                    markedText += inputMethod.displayText(inputMode: inputMode)
-                    markedText.append(.cursor)
+                    elements += inputMethod.displayText(inputMode: inputMode)
+                    elements.append(.cursor)
                     // 単語登録モードのカーソルより後の確定済文字列
                     let registerTextSuffix: String
                     if registerCursor == 0 {
@@ -605,24 +608,24 @@ struct IMEState {
                             from: registerState.text.index(registerState.text.startIndex, offsetBy: registerCursor)))
                     }
                     if !registerTextSuffix.isEmpty {
-                        markedText.append(.plain(registerTextSuffix))
+                        elements.append(.plain(registerTextSuffix))
                     }
                 } else {
                     if !registerState.text.isEmpty {
-                        markedText.append(.plain(registerState.text))
+                        elements.append(.plain(registerState.text))
                     }
-                    markedText += inputMethod.displayText(inputMode: inputMode)
+                    elements += inputMethod.displayText(inputMode: inputMode)
                 }
             case .unregister(let unregisterState):
                 let selectingState = unregisterState.prev.selecting
-                markedText.append(.plain("\(selectingState.yomi) /\(selectingState.candidates[selectingState.candidateIndex].word)/ を削除します(yes/no)"))
+                elements.append(.plain("\(selectingState.yomi) /\(selectingState.candidates[selectingState.candidateIndex].word)/ を削除します(yes/no)"))
                 if !unregisterState.text.isEmpty {
-                    markedText.append(.plain(unregisterState.text))
+                    elements.append(.plain(unregisterState.text))
                 }
             }
-            return MarkedText(text: markedText)
+            return MarkedText(elements)
         } else {
-            return MarkedText(text: inputMethod.displayText(inputMode: inputMode))
+            return MarkedText(inputMethod.displayText(inputMode: inputMode))
         }
     }
 }

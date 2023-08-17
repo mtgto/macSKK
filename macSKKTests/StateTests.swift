@@ -225,7 +225,7 @@ final class StateTests: XCTestCase {
                              specialState: nil,
                              candidates: [])
         let displayText = state.displayText()
-        XCTAssertEqual(displayText.text, [.plain("▽そr")])
+        XCTAssertEqual(displayText.elements, [.plain("▽そr")])
     }
 
     func testIMEStateDisplayTextComposingCursor() {
@@ -235,7 +235,7 @@ final class StateTests: XCTestCase {
                              specialState: nil,
                              candidates: [])
         let displayText = state.displayText()
-        XCTAssertEqual(displayText.text, [.plain("▽お"), .cursor, .plain("そr")])
+        XCTAssertEqual(displayText.elements, [.plain("▽お"), .cursor, .plain("そr")])
     }
 
     func testIMEStateDisplayTextSelecting() {
@@ -250,7 +250,7 @@ final class StateTests: XCTestCase {
                              specialState: nil,
                              candidates: [])
         let displayText = state.displayText()
-        XCTAssertEqual(displayText.text, [.emphasized("▼井")])
+        XCTAssertEqual(displayText.elements, [.emphasized("▼井")])
     }
 
     func testIMEStateDisplayTextRegister() {
@@ -269,7 +269,7 @@ final class StateTests: XCTestCase {
                              specialState: .register(registerState),
                              candidates: [])
         let displayText = state.displayText()
-        XCTAssertEqual(displayText.text, [.plain("[登録：あいうえお]"), .plain("愛上"), .emphasized("▼尾")])
+        XCTAssertEqual(displayText.elements, [.plain("[登録：あいうえお]"), .plain("愛上"), .emphasized("▼尾")])
     }
 
     func testIMEStateDisplayTextRegisterCursor() {
@@ -289,7 +289,7 @@ final class StateTests: XCTestCase {
                              specialState: .register(registerState),
                              candidates: [])
         let displayText = state.displayText()
-        XCTAssertEqual(displayText.text, [.plain("[登録：あいうえお]"), .plain("愛"), .emphasized("▼尾"), .cursor, .plain("上")])
+        XCTAssertEqual(displayText.elements, [.plain("[登録：あいうえお]"), .plain("愛"), .emphasized("▼尾"), .cursor, .plain("上")])
     }
 
     func testIMEStateDisplayTextUnregister() {
@@ -314,6 +314,6 @@ final class StateTests: XCTestCase {
                              specialState: .unregister(unregisterState),
                              candidates: [])
         let displayText = state.displayText()
-        XCTAssertEqual(displayText.text, [.plain("あ /有/ を削除します(yes/no)"), .plain("yes")])
+        XCTAssertEqual(displayText.elements, [.plain("あ /有/ を削除します(yes/no)"), .plain("yes")])
     }
 }
