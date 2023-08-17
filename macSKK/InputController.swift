@@ -38,18 +38,10 @@ class InputController: IMKInputController {
             case .markedText(let markedText):
                 let attributedText = markedText.attributedString
                 let cursorRange: NSRange = markedText.cursorRange() ?? Self.notFoundRange
-//                if let cursor = markedText.cursor {
-//                    cursorRange = NSRange(location: cursor, length: 0)
-                    //attributedText.insert(AttributedString("", attributes: .init([.cursor: NSCursor.iBeam])),
-                    //                      at: cursor)
-//                } else {
-                    // Thingsのメモ欄などで最初の一文字をShift押しながら入力すると "▽あ" が直接入力されてしまうことがあるのを回避するワークグラウンド
-                    if case .plain(let text) = markedText.text.first, markedText.text.count == 1 && text.count == 2 && text.hasPrefix("▽") {
-                        textInput.setMarkedText("▽", selectionRange: Self.notFoundRange, replacementRange: Self.notFoundRange)
-                    }
-                    //cursorRange = NSRange(location: markedText.text.count, length: 0)
-//                }
-                //attributedText.addAttributes([.cursor: NSCursor.iBeam], range: cursorRange)
+                // Thingsのメモ欄などで最初の一文字をShift押しながら入力すると "▽あ" が直接入力されてしまうことがあるのを回避するワークグラウンド
+                if case .plain(let text) = markedText.text.first, markedText.text.count == 1 && text.count == 2 && text.hasPrefix("▽") {
+                    textInput.setMarkedText("▽", selectionRange: Self.notFoundRange, replacementRange: Self.notFoundRange)
+                }
                 textInput.setMarkedText(NSAttributedString(attributedText), selectionRange: cursorRange, replacementRange: Self.notFoundRange)
             case .modeChanged(let inputMode, let cursorPosition):
                 textInput.selectMode(inputMode.rawValue)

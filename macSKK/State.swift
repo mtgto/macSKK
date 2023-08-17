@@ -517,9 +517,9 @@ struct MarkedText: Equatable {
         var attributedString: AttributedString {
             switch self {
             case .plain(let text):
-                return AttributedString(text, attributes: .init([.accessibilityUnderline: NSUnderlineStyle.single]))
+                return AttributedString(text, attributes: .init([.underlineStyle: NSUnderlineStyle.single.rawValue]))
             case .emphasized(let text):
-                return AttributedString(text)
+                return AttributedString(text, attributes: .init([.underlineStyle: NSUnderlineStyle.thick.rawValue]))
             case .cursor:
                 return AttributedString("", attributes: .init([.cursor: NSCursor.iBeam]))
             }
