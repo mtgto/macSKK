@@ -5,19 +5,21 @@ import Combine
 import Foundation
 import InputMethodKit
 
+// AppleのAPIドキュメントにはメインスレッドであるとは書かれてないけど、まあ大丈夫じゃないかな、と雑にMainActorを設定している。
+// 問題があるようだったらDispatchQueue.main.(a)syncを使うように修正すること。
+@MainActor
 @objc(InputController)
 class InputController: IMKInputController {
     private let stateMachine = StateMachine()
     private var cancellables: Set<AnyCancellable> = []
     private static let notFoundRange = NSRange(location: NSNotFound, length: NSNotFound)
-    private let inputModePanel = InputModePanel()
-    private let candidatesPanel = CandidatesPanel()
+    private let inputModePanel: InputModePanel
+    private let candidatesPanel: CandidatesPanel
     private let selectedWord = PassthroughSubject<Word, Never>()
 
-    // CandidateViewModelに @MainActor をつけており、メンバ変数をここでsinkしたいため @MainActor と指定している
-    // AppleのAPIドキュメントにはメインスレッドであるとは書かれてないけど、まあ大丈夫じゃないかな
-    @MainActor
     override init!(server: IMKServer!, delegate: Any!, client inputClient: Any!) {
+        inputModePanel = InputModePanel()
+        candidatesPanel = CandidatesPanel()
         super.init(server: server, delegate: delegate, client: inputClient)
 
         guard let textInput = inputClient as? IMKTextInput else {

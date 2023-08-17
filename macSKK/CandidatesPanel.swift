@@ -5,6 +5,7 @@ import Cocoa
 import SwiftUI
 
 /// 変換候補リストをフローティングモーダルで表示するパネル
+@MainActor
 final class CandidatesPanel: NSPanel {
     let viewModel: CandidatesViewModel
 
