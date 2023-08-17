@@ -19,7 +19,7 @@ Universal Binaryでビルドしていますが、動作確認はApple Silicon環
 しばらくはAquaSKKにあるけどmacSKKにない機能を実装しつつ、徐々に独自機能を実装していこうと考えています。
 
 - [x] 複数辞書を使用できるようにする
-- [ ] マイ辞書に保存しないプライベートモード
+- [x] マイ辞書に保存しないプライベートモード
 - [ ] アプリごとに直接入力させるかどうかを設定できるようにする
   - ddskkを使っているときのGUI版Emacs.appなど
 - [ ] Java AWT製アプリケーションで入力ができない問題のワークアラウンド対応 (JetBrain製品など)
@@ -35,9 +35,9 @@ Universal Binaryでビルドしていますが、動作確認はApple Silicon環
 
 ## インストール
 
-2023年現在、Mac App Storeではインプットメソッドを配布することができないため、[Appleのソフトウェア公証](https://support.apple.com/ja-jp/guide/security/sec3ad8e6e53/1/web/1)を受けたアプリケーションバイナリを[GitHub Releases](https://github.com/mtgto/macSKK/releases/latest)で配布しています。
+2023年現在、Mac App Storeではインプットメソッドを配布することができないため、[Appleのソフトウェア公証](https://support.apple.com/ja-jp/guide/security/sec3ad8e6e53/1/web/1)を受けたアプリケーションバイナリを[GitHub Releases](https://github.com/mtgto/macSKK/releases/latest)で配布しています。dmgをダウンロードしマウントした中にあるpkgからインストールしてください。
 
-インストール後、システム設定→キーボード→入力ソースから「ひらがな (macSKK)」と「ABC (macSKK)」を追加してください。カタカナ、全角英数、半角カナは追加しなくても問題ありません。
+macSKKのインストール後に、システム設定→キーボード→入力ソースから「ひらがな (macSKK)」と「ABC (macSKK)」を追加してください。カタカナ、全角英数、半角カナは追加しなくても問題ありません。
 もしインストール直後に表示されなかったり、さしかえても反映されない場合はログアウト & ログインを試してみてください。
 
 ## アンインストール
@@ -54,7 +54,7 @@ Universal Binaryでビルドしていますが、動作確認はApple Silicon環
 Xcodeでビルドし、 `~/Library/Input Methods` に `macSKK.app` を配置してからシステム設定→キーボード→入力ソースで `ひらがな (macSKK)` などを追加してください。
 
 SKK辞書は `~/Library/Containers/net.mtgto.inputmethod.macSKK/Data/Documents/Dictionaries` に配置してください。
-その後で環境設定から使用する辞書を有効に切り替えてください。
+その後で環境設定の辞書設定で使用する辞書を有効に切り替えてください。EUC-JPでないエンコーディングの場合はiボタンからエンコーディングを切り替えてください。
 
 ユーザー辞書は `~/Library/Containers/net.mtgto.inputmethod.macSKK/Data/Documents/Dictionaries/skk-jisyo.utf8` にUTF-8形式で保存されます。
 ユーザー辞書はテキストエディタで更新可能です。別プロセスでユーザー辞書が更新された場合はmacSKKが自動で再読み込みを行います。
