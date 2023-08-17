@@ -64,10 +64,10 @@ class UserDict: DictProtocol {
 
         savePublisher
             .debounce(for: .seconds(60), scheduler: RunLoop.main)  // 短期間に複数の保存要求があっても一回にまとめる
-            .sink { _ in
-                self.source.suspend()
-                try? self.save()
-                self.source.resume()
+            .sink { [weak self] _ in
+                self?.source.suspend()
+                try? self?.save()
+                self?.source.resume()
             }
             .store(in: &cancellables)
         self.privateMode.drop(while: { !$0 }).removeDuplicates().sink { [weak self] privateMode in
