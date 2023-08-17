@@ -3,7 +3,7 @@
 
 import Foundation
 
-enum InputMethodState: Equatable {
+enum InputMethodState: Equatable, MarkedTextProtocol {
     /**
      * 直接入力 or 確定入力済で、下線がない状態
      *
@@ -39,6 +39,30 @@ enum InputMethodState: Equatable {
      * 変換候補選択中の状態
      */
     case selecting(SelectingState)
+
+    /**
+     * 現在の状態をMarkedTextとして出力したときを表す文字列、カーソル位置を返す。
+     *
+     * 入力文字列に対する応答例:
+     * - Shift-A, I
+     *   - [.plain("▽あい")]
+     * - Shift-A, Shift-I
+     *   - [.plain("▽あ\*い")]
+     * - Shift-A, I, left-key
+     *   - [.plain("▽あ"), .cursor, .plain("い")]
+     * - Shift-A, space
+     *   - [.emphasize("▼阿")]
+     */
+    func markedTextElements(inputMode: InputMode) -> [MarkedText.Element] {
+        switch self {
+        case .normal:
+            return []
+        case .composing(let composing):
+            return composing.markedTextElements(inputMode: inputMode)
+        case .selecting(let selecting):
+            return selecting.markedTextElements(inputMode: inputMode)
+        }
+    }
 }
 
 protocol CursorProtocol {
@@ -54,7 +78,7 @@ protocol SpecialStateProtocol: CursorProtocol {
 }
 
 /// 入力中の未確定文字列の定義
-struct ComposingState: Equatable, CursorProtocol {
+struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
     /// (Sticky)Shiftによる未確定入力中かどうか。先頭に▽ついてる状態。
     var isShift: Bool
     /// かな/カナならかなになっているひらがなの文字列、abbrevなら入力した文字列.
@@ -215,10 +239,32 @@ struct ComposingState: Equatable, CursorProtocol {
             return self
         }
     }
+
+    // MARK: - MarkedTextProtocol
+    func markedTextElements(inputMode: InputMode) -> [MarkedText.Element] {
+        let displayText = string(for: inputMode, convertHatsuon: false)
+        let composingText: String
+        if let okuri {
+            composingText = "▽" + displayText + "*" + okuri.map { $0.string(for: inputMode) }.joined() + romaji
+        } else if isShift {
+            composingText = "▽" + displayText + romaji
+        } else {
+            composingText = romaji
+        }
+        if let cursor {
+            // 先頭の "▽" があればその分の1を足す
+            let composingCursor = cursor + (isShift ? 1 : 0)
+            let cursorTextPrefix = String(composingText.prefix(composingCursor))
+            let cursorTextSuffix = String(composingText.suffix(from: composingText.index(composingText.startIndex, offsetBy: composingCursor)))
+            return [.plain(cursorTextPrefix), .cursor, .plain(cursorTextSuffix)]
+        } else {
+            return [.plain(composingText)]
+        }
+    }
 }
 
 /// 変換候補選択状態
-struct SelectingState: Equatable {
+struct SelectingState: Equatable, MarkedTextProtocol {
     struct PrevState: Equatable {
         let mode: InputMode
         let composing: ComposingState
@@ -248,6 +294,15 @@ struct SelectingState: Equatable {
         } else {
             return text
         }
+    }
+
+    // MARK: - MarkedTextProtocol
+    func markedTextElements(inputMode: InputMode) -> [MarkedText.Element] {
+        var selectingText = "▼" + candidates[candidateIndex].word
+        if let okuri = prev.composing.okuri {
+            selectingText += okuri.map { $0.string(for: inputMode) }.joined()
+        }
+        return [.emphasized(selectingText)]
     }
 }
 
@@ -431,11 +486,6 @@ enum SpecialState: SpecialStateProtocol {
     }
 }
 
-struct MarkedText: Equatable {
-    let text: String
-    let cursor: Int?
-}
-
 struct Candidates: Equatable {
     /// 現在表示される変換候補。全体の変換候補の一部。
     let words: [Word]
@@ -456,10 +506,7 @@ struct IMEState {
     /// "▽\(text)" や "▼(変換候補)" や "[登録：\(text)]" のような、下線が当たっていて表示されている文字列とカーソル位置を返す。
     /// カーソル位置は末尾の場合はnilを返す
     func displayText() -> MarkedText {
-        var markedText = ""
-        // 単語登録モードのカーソルより後の確定済文字列
-        var registerTextSuffix = ""
-        var cursor: Int? = nil
+        var elements = [MarkedText.Element]()
         if let specialState {
             switch specialState {
             case .register(let registerState):
@@ -469,64 +516,42 @@ struct IMEState {
                 if let okuri = composing.okuri {
                     yomi += "*" + okuri.map { $0.string(for: mode) }.joined()
                 }
-                markedText = "[登録：\(yomi)]"
+                elements.append(.plain("[登録：\(yomi)]"))
                 if let registerCursor = registerState.cursor {
-                    cursor = markedText.count + registerCursor
-                    markedText += registerState.text.prefix(registerCursor)
+                    let subtext = String(registerState.text.prefix(registerCursor))
+                    if !subtext.isEmpty {
+                        elements.append(.plain(subtext))
+                    }
+                    elements += inputMethod.markedTextElements(inputMode: inputMode)
+                    elements.append(.cursor)
+                    // 単語登録モードのカーソルより後の確定済文字列
+                    let registerTextSuffix: String
                     if registerCursor == 0 {
                         registerTextSuffix = registerState.text
                     } else {
-                        registerTextSuffix += registerState.text.suffix(
-                            from: registerState.text.index(registerState.text.startIndex, offsetBy: registerCursor))
+                        registerTextSuffix = String(registerState.text.suffix(
+                            from: registerState.text.index(registerState.text.startIndex, offsetBy: registerCursor)))
+                    }
+                    if !registerTextSuffix.isEmpty {
+                        elements.append(.plain(registerTextSuffix))
                     }
                 } else {
-                    markedText += registerState.text
+                    if !registerState.text.isEmpty {
+                        elements.append(.plain(registerState.text))
+                    }
+                    elements += inputMethod.markedTextElements(inputMode: inputMode)
                 }
             case .unregister(let unregisterState):
                 let selectingState = unregisterState.prev.selecting
-                markedText =
-                    "\(selectingState.yomi) /\(selectingState.candidates[selectingState.candidateIndex].word)/ を削除します(yes/no)"
-                markedText += unregisterState.text
-            }
-        }
-        switch inputMethod {
-        case .normal:
-            markedText += registerTextSuffix
-        case .composing(let composing):
-            let displayText = composing.string(for: inputMode, convertHatsuon: false)
-            let composingText: String
-            if let okuri = composing.okuri {
-                composingText =
-                    "▽" + displayText + "*" + okuri.map { $0.string(for: inputMode) }.joined() + composing.romaji
-            } else if composing.isShift {
-                composingText = "▽" + displayText + composing.romaji
-            } else {
-                composingText = composing.romaji
-            }
-
-            if let currentCursor = cursor {
-                if let composingCursor = composing.cursor {
-                    // 先頭の "▽" 分の1を足す
-                    cursor = currentCursor + composingCursor + (composing.isShift ? 1 : 0)
-                } else {
-                    cursor = currentCursor + composingText.count
-                }
-            } else {
-                if let composingCursor = composing.cursor {
-                    cursor = markedText.count + composingCursor + (composing.isShift ? 1 : 0)
-                } else {
-                    cursor = nil
+                elements.append(.plain("\(selectingState.yomi) /\(selectingState.candidates[selectingState.candidateIndex].word)/ を削除します(yes/no)"))
+                if !unregisterState.text.isEmpty {
+                    elements.append(.plain(unregisterState.text))
                 }
             }
-            markedText += composingText + registerTextSuffix
-        case .selecting(let selecting):
-            markedText += "▼" + selecting.candidates[selecting.candidateIndex].word
-            if let okuri = selecting.prev.composing.okuri {
-                markedText += okuri.map { $0.string(for: inputMode) }.joined()
-            }
-            cursor = nil
+            return MarkedText(elements)
+        } else {
+            return MarkedText(inputMethod.markedTextElements(inputMode: inputMode))
         }
-        return MarkedText(text: markedText, cursor: cursor)
     }
 }
 
