@@ -60,7 +60,10 @@ class InputController: IMKInputController {
                     totalPageCount: candidates.totalPageCount)
                 self?.candidatesPanel.setCandidates(currentCandidates, selected: candidates.selected)
                 self?.selectedWord.send(candidates.selected)
-                self?.candidatesPanel.show(cursorPosition: candidates.cursorPosition)
+                // 下線のスタイルがthickのときに被らないように1ピクセル下に余白を設ける
+                var cursorPosition = candidates.cursorPosition.offsetBy(dx: 0, dy: -1)
+                cursorPosition.size.height += 1
+                self?.candidatesPanel.show(cursorPosition: cursorPosition)
             } else {
                 self?.candidatesPanel.orderOut(nil)
             }
