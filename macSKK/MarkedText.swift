@@ -4,6 +4,23 @@
 import AppKit
 import Foundation
 
+protocol MarkedTextProtocol {
+    /**
+     * 現在の状態をMarkedTextとして出力したときを表す文字列、カーソル位置を返す。
+     *
+     * 入力文字列に対する応答例:
+     * - Shift-A, I
+     *   - [.plain("▽あい")]
+     * - Shift-A, Shift-I
+     *   - [.plain("▽あ\*い")]
+     * - Shift-A, I, left-key
+     *   - [.plain("▽あ"), .cursor, .plain("い")]
+     * - Shift-A, space
+     *   - [.emphasize("▼阿")]
+     */
+    func markedTextElements(inputMode: InputMode) -> [MarkedText.Element]
+}
+
 /// 未確定文字列 (下線で表示される) を表すデータ構造。
 struct MarkedText: Equatable {
     /// 意味の違う部分文字列ごとの定義。現在のところは下線のスタイルの出し分けにだけ使用する

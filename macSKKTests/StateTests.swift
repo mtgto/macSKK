@@ -113,17 +113,17 @@ final class StateTests: XCTestCase {
 
     func testComposingStateDisplayTextSimple() {
         let composingState = ComposingState(isShift: true, text: ["お", "い"], romaji: "")
-        XCTAssertEqual(composingState.displayText(inputMode: .hiragana), [.plain("▽おい")])
+        XCTAssertEqual(composingState.markedTextElements(inputMode: .hiragana), [.plain("▽おい")])
     }
 
     func testComposingStateDisplayTextOkuri() {
         let composingState = ComposingState(isShift: true, text: ["お", "い"], okuri: [], romaji: "s")
-        XCTAssertEqual(composingState.displayText(inputMode: .hiragana), [.plain("▽おい*s")])
+        XCTAssertEqual(composingState.markedTextElements(inputMode: .hiragana), [.plain("▽おい*s")])
     }
 
     func testComposingStateDisplayTextCursor() {
         let composingState = ComposingState(isShift: true, text: ["お", "い"], okuri: [], romaji: "s", cursor: 1)
-        XCTAssertEqual(composingState.displayText(inputMode: .hiragana), [.plain("▽お"), .cursor, .plain("い*s")])
+        XCTAssertEqual(composingState.markedTextElements(inputMode: .hiragana), [.plain("▽お"), .cursor, .plain("い*s")])
     }
 
     func testSelectingStateFixedText() throws {
@@ -165,7 +165,7 @@ final class StateTests: XCTestCase {
                                             candidates: [Word("尾")],
                                             candidateIndex: 0,
                                             cursorPosition: .zero)
-        XCTAssertEqual(selectingState.displayText(inputMode: .hiragana), [.emphasized("▼尾")])
+        XCTAssertEqual(selectingState.markedTextElements(inputMode: .hiragana), [.emphasized("▼尾")])
     }
 
     func testRegisterStateAppendText() throws {

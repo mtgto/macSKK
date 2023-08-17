@@ -3,7 +3,7 @@
 
 import Foundation
 
-enum InputMethodState: Equatable {
+enum InputMethodState: Equatable, MarkedTextProtocol {
     /**
      * 直接入力 or 確定入力済で、下線がない状態
      *
@@ -53,14 +53,14 @@ enum InputMethodState: Equatable {
      * - Shift-A, space
      *   - [.emphasize("▼阿")]
      */
-    func displayText(inputMode: InputMode) -> [MarkedText.Element] {
+    func markedTextElements(inputMode: InputMode) -> [MarkedText.Element] {
         switch self {
         case .normal:
             return []
         case .composing(let composing):
-            return composing.displayText(inputMode: inputMode)
+            return composing.markedTextElements(inputMode: inputMode)
         case .selecting(let selecting):
-            return selecting.displayText(inputMode: inputMode)
+            return selecting.markedTextElements(inputMode: inputMode)
         }
     }
 }
@@ -72,30 +72,13 @@ protocol CursorProtocol {
     func moveCursorLast() -> Self
 }
 
-protocol DisplayTextProtocl {
-    /**
-     * 現在の状態をMarkedTextとして出力したときを表す文字列、カーソル位置を返す。
-     *
-     * 入力文字列に対する応答例:
-     * - Shift-A, I
-     *   - [.plain("▽あい")]
-     * - Shift-A, Shift-I
-     *   - [.plain("▽あ\*い")]
-     * - Shift-A, I, left-key
-     *   - [.plain("▽あ"), .cursor, .plain("い")]
-     * - Shift-A, space
-     *   - [.emphasize("▼阿")]
-     */
-    func displayText(inputMode: InputMode) -> [MarkedText.Element]
-}
-
 protocol SpecialStateProtocol: CursorProtocol {
     func appendText(_ text: String) -> Self
     func dropLast() -> Self
 }
 
 /// 入力中の未確定文字列の定義
-struct ComposingState: Equatable, DisplayTextProtocl, CursorProtocol {
+struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
     /// (Sticky)Shiftによる未確定入力中かどうか。先頭に▽ついてる状態。
     var isShift: Bool
     /// かな/カナならかなになっているひらがなの文字列、abbrevなら入力した文字列.
@@ -257,8 +240,8 @@ struct ComposingState: Equatable, DisplayTextProtocl, CursorProtocol {
         }
     }
 
-    // MARK: - DisplayTextProtocol
-    func displayText(inputMode: InputMode) -> [MarkedText.Element] {
+    // MARK: - MarkedTextProtocol
+    func markedTextElements(inputMode: InputMode) -> [MarkedText.Element] {
         let displayText = string(for: inputMode, convertHatsuon: false)
         let composingText: String
         if let okuri {
@@ -281,7 +264,7 @@ struct ComposingState: Equatable, DisplayTextProtocl, CursorProtocol {
 }
 
 /// 変換候補選択状態
-struct SelectingState: Equatable, DisplayTextProtocl {
+struct SelectingState: Equatable, MarkedTextProtocol {
     struct PrevState: Equatable {
         let mode: InputMode
         let composing: ComposingState
@@ -313,8 +296,8 @@ struct SelectingState: Equatable, DisplayTextProtocl {
         }
     }
 
-    // MARK: - DisplayTextProtocol
-    func displayText(inputMode: InputMode) -> [MarkedText.Element] {
+    // MARK: - MarkedTextProtocol
+    func markedTextElements(inputMode: InputMode) -> [MarkedText.Element] {
         var selectingText = "▼" + candidates[candidateIndex].word
         if let okuri = prev.composing.okuri {
             selectingText += okuri.map { $0.string(for: inputMode) }.joined()
@@ -539,7 +522,7 @@ struct IMEState {
                     if !subtext.isEmpty {
                         elements.append(.plain(subtext))
                     }
-                    elements += inputMethod.displayText(inputMode: inputMode)
+                    elements += inputMethod.markedTextElements(inputMode: inputMode)
                     elements.append(.cursor)
                     // 単語登録モードのカーソルより後の確定済文字列
                     let registerTextSuffix: String
@@ -556,7 +539,7 @@ struct IMEState {
                     if !registerState.text.isEmpty {
                         elements.append(.plain(registerState.text))
                     }
-                    elements += inputMethod.displayText(inputMode: inputMode)
+                    elements += inputMethod.markedTextElements(inputMode: inputMode)
                 }
             case .unregister(let unregisterState):
                 let selectingState = unregisterState.prev.selecting
@@ -567,7 +550,7 @@ struct IMEState {
             }
             return MarkedText(elements)
         } else {
-            return MarkedText(inputMethod.displayText(inputMode: inputMode))
+            return MarkedText(inputMethod.markedTextElements(inputMode: inputMode))
         }
     }
 }
