@@ -50,7 +50,7 @@ class InputController: IMKInputController {
                     //cursorRange = NSRange(location: markedText.text.count, length: 0)
 //                }
                 //attributedText.addAttributes([.cursor: NSCursor.iBeam], range: cursorRange)
-                textInput.setMarkedText(attributedText, selectionRange: cursorRange, replacementRange: Self.notFoundRange)
+                textInput.setMarkedText(NSAttributedString(attributedText), selectionRange: cursorRange, replacementRange: Self.notFoundRange)
             case .modeChanged(let inputMode, let cursorPosition):
                 textInput.selectMode(inputMode.rawValue)
                 if let self {
