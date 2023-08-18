@@ -143,6 +143,9 @@ class UserDict: DictProtocol {
 
     /// ユーザー辞書からエントリを削除する。
     ///
+    /// ユーザー辞書にないエントリ (ファイル辞書) の削除は無視されます。
+    /// (ユーザー辞書に入力履歴があれば削除されるが、元のファイル辞書は更新されない)
+    ///
     /// プライベートモードが有効なときの仕様はあんまり自信がないが、ひとまず次のように定義します。
     /// - 非プライベート時
     ///   - 非プライベートモード用の辞書からのみエントリを削除する
@@ -189,6 +192,7 @@ class UserDict: DictProtocol {
 
     /// ユーザー辞書をSKK辞書形式に変換する
     func serialize() -> String {
+        // FIXME: 送り仮名あり・なしでエントリを分けるようにする?
         return userDictEntries.map { entry in
             return "\(entry.key) /\(serializeWords(entry.value))/"
         }.joined(separator: "\n")
