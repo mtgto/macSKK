@@ -243,30 +243,9 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
     // MARK: - MarkedTextProtocol
     func markedTextElements(inputMode: InputMode) -> [MarkedText.Element] {
         let displayText = string(for: inputMode, convertHatsuon: false)
-//        let composingText: String
-//        if let okuri {
-//            composingText = "▽" + displayText + "*" + okuri.map { $0.string(for: inputMode) }.joined() + romaji
-//        } else if isShift {
-//            composingText = "▽" + displayText + romaji
-//        } else {
-//            composingText = romaji
-//        }
-//        if let cursor {
-//            // 先頭の "▽" があればその分の1を足す
-//            let composingCursor = cursor + (isShift ? 1 : 0)
-//            let cursorTextPrefix = String(composingText.prefix(composingCursor))
-//            let cursorTextSuffix = String(composingText.suffix(from: composingText.index(composingText.startIndex, offsetBy: composingCursor)))
-//            return [.plain(cursorTextPrefix), .cursor, .plain(cursorTextSuffix)]
-//        } else {
-//            return [.plain(composingText)]
-//        }
-
-        var result: [MarkedText.Element?] = []
+        var result: [MarkedText.Element] = []
         var okuriElement: MarkedText.Element? = nil
-        // 送り仮名があるとき
-        // ▽ + カーソルより前 + * + 送り仮名 + 送り仮名ローマ字 + カーソルより後
-        // 送り仮名がないとき
-        // ▽ + カーソルより前 + カーソルより後
+
         if isShift {
             result.append(.markerSelect)
         }
@@ -276,15 +255,16 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
         if let cursor {
             let cursorTextPrefix = String(displayText.prefix(cursor))
             let cursorTextSuffix = String(displayText.suffix(from: displayText.index(displayText.startIndex, offsetBy: cursor)))
-            result.append(.plain(cursorTextPrefix))
-            result.append(okuriElement)
-            result.append(.cursor)
-            result.append(.plain(cursorTextSuffix))
+            result += [
+                .plain(cursorTextPrefix),
+                okuriElement,
+                .cursor,
+                (cursorTextSuffix.isEmpty ? nil : .plain(cursorTextSuffix))
+            ].compactMap({ $0 })
         } else {
-            result.append(.plain(displayText))
-            result.append(okuriElement)
+            result += [.plain(displayText), okuriElement].compactMap { $0 }
         }
-        return result.compactMap({ $0 })
+        return result
     }
 }
 

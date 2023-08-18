@@ -116,6 +116,11 @@ final class StateTests: XCTestCase {
         XCTAssertEqual(composingState.markedTextElements(inputMode: .hiragana), [.markerSelect, .plain("おい")])
     }
 
+    func testComposingStateDisplayTextRomaji() {
+        let composingState = ComposingState(isShift: false, text: [], okuri: nil, romaji: "k")
+        XCTAssertEqual(composingState.markedTextElements(inputMode: .hiragana), [.plain("k")])
+    }
+
     func testComposingStateDisplayTextOkuri() {
         let composingState = ComposingState(isShift: true, text: ["お", "い"], okuri: [], romaji: "s")
         XCTAssertEqual(composingState.markedTextElements(inputMode: .hiragana), [.markerSelect, .plain("おい"), .plain("*s")])
