@@ -40,13 +40,7 @@ struct macSKKApp: App {
             fatalError("辞書設定でエラーが発生しました: \(error)")
         }
         setupUserDefaults()
-        if isTest() {
-            do {
-                dictionary = try UserDict(dicts: [], privateMode: privateMode)
-            } catch {
-                logger.error("Error while loading userDictionary")
-            }
-        } else {
+        if !isTest() {
             do {
                 try setupDictionaries()
                 if Bundle.main.bundleURL.deletingLastPathComponent().lastPathComponent == "Input Methods" {
