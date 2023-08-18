@@ -243,28 +243,35 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
     // MARK: - MarkedTextProtocol
     func markedTextElements(inputMode: InputMode) -> [MarkedText.Element] {
         let displayText = string(for: inputMode, convertHatsuon: false)
-        var result: [MarkedText.Element] = []
-        var okuriElement: MarkedText.Element? = nil
+        var result: [MarkedText.Element?] = []
+        var okuriDisplayText: String = ""
 
         if isShift {
             result.append(.markerSelect)
         }
         if let okuri {
-            okuriElement = .plain("*" + okuri.map { $0.string(for: inputMode) }.joined() + romaji)
+            okuriDisplayText = "*" + okuri.map { $0.string(for: inputMode) }.joined() + romaji
+        } else {
+            okuriDisplayText = romaji
         }
         if let cursor {
             let cursorTextPrefix = String(displayText.prefix(cursor))
             let cursorTextSuffix = String(displayText.suffix(from: displayText.index(displayText.startIndex, offsetBy: cursor)))
             result += [
-                .plain(cursorTextPrefix),
-                okuriElement,
+                .plain(cursorTextPrefix + okuriDisplayText),
                 .cursor,
-                (cursorTextSuffix.isEmpty ? nil : .plain(cursorTextSuffix))
+                .plain(cursorTextSuffix)
             ].compactMap({ $0 })
         } else {
-            result += [.plain(displayText), okuriElement].compactMap { $0 }
+            result.append(.plain(displayText + okuriDisplayText))
         }
-        return result
+        return result.compactMap { element in
+            if case .plain(let text) = element, text.isEmpty {
+                return nil
+            } else {
+                return element
+            }
+        }
     }
 }
 
