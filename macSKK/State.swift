@@ -127,7 +127,7 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
         if let cursor {
             let mojiText: [String] = moji.kana.map { String($0) }
             newText = text[0..<cursor] + mojiText + text[cursor...]
-            newCursor = cursor + 1
+            newCursor = cursor + mojiText.count
         } else {
             newText = text + moji.kana.map({ String($0) })
             newCursor = nil
@@ -243,22 +243,34 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
     // MARK: - MarkedTextProtocol
     func markedTextElements(inputMode: InputMode) -> [MarkedText.Element] {
         let displayText = string(for: inputMode, convertHatsuon: false)
-        let composingText: String
+        var result: [MarkedText.Element?] = []
+        var okuriDisplayText: String = ""
+
+        if isShift {
+            result.append(.markerCompose)
+        }
         if let okuri {
-            composingText = "▽" + displayText + "*" + okuri.map { $0.string(for: inputMode) }.joined() + romaji
-        } else if isShift {
-            composingText = "▽" + displayText + romaji
+            okuriDisplayText = "*" + okuri.map { $0.string(for: inputMode) }.joined() + romaji
         } else {
-            composingText = romaji
+            okuriDisplayText = romaji
         }
         if let cursor {
-            // 先頭の "▽" があればその分の1を足す
-            let composingCursor = cursor + (isShift ? 1 : 0)
-            let cursorTextPrefix = String(composingText.prefix(composingCursor))
-            let cursorTextSuffix = String(composingText.suffix(from: composingText.index(composingText.startIndex, offsetBy: composingCursor)))
-            return [.plain(cursorTextPrefix), .cursor, .plain(cursorTextSuffix)]
+            let cursorTextPrefix = String(displayText.prefix(cursor))
+            let cursorTextSuffix = String(displayText.suffix(from: displayText.index(displayText.startIndex, offsetBy: cursor)))
+            result += [
+                .plain(cursorTextPrefix + okuriDisplayText),
+                .cursor,
+                .plain(cursorTextSuffix)
+            ].compactMap({ $0 })
         } else {
-            return [.plain(composingText)]
+            result.append(.plain(displayText + okuriDisplayText))
+        }
+        return result.compactMap { element in
+            if case .plain(let text) = element, text.isEmpty {
+                return nil
+            } else {
+                return element
+            }
         }
     }
 }
@@ -298,11 +310,11 @@ struct SelectingState: Equatable, MarkedTextProtocol {
 
     // MARK: - MarkedTextProtocol
     func markedTextElements(inputMode: InputMode) -> [MarkedText.Element] {
-        var selectingText = "▼" + candidates[candidateIndex].word
+        var selectingText = candidates[candidateIndex].word
         if let okuri = prev.composing.okuri {
             selectingText += okuri.map { $0.string(for: inputMode) }.joined()
         }
-        return [.emphasized(selectingText)]
+        return [.markerSelect, .emphasized(selectingText)]
     }
 }
 
