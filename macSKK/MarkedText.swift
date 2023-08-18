@@ -39,9 +39,9 @@ struct MarkedText: Equatable {
 
         var attributedString: AttributedString {
             switch self {
-            case .markerSelect:
-                return Self.plain("▽").attributedString
             case .markerCompose:
+                return Self.plain("▽").attributedString
+            case .markerSelect:
                 return Self.emphasized("▼").attributedString
             case .plain(let text):
                 return AttributedString(text, attributes: .init([.underlineStyle: NSUnderlineStyle.single.rawValue]))
