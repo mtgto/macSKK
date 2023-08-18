@@ -16,3 +16,5 @@
 "Filename" = "Filename";
 "Dictionary Setting" = "Dictionary Setting";
 "Encoding" = "Encoding";
+"UNNewVersionTitle" = "A new version is available";
+"UNNewVersionBody" = "macSKK %@ is now available.";

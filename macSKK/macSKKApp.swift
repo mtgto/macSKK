@@ -4,6 +4,7 @@
 import Combine
 import InputMethodKit
 import SwiftUI
+import UserNotifications
 import os
 
 let logger: Logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "main")
@@ -21,6 +22,7 @@ struct macSKKApp: App {
     /// SKK辞書を配置するディレクトリ
     /// "~/Library/Containers/net.mtgto.inputmethod.macSKK/Data/Documents/Dictionaries"
     private let dictionariesDirectoryUrl: URL
+    private let userNotificationDelegate = UserNotificationDelegate()
     #if DEBUG
     private var panel: CandidatesPanel! = CandidatesPanel()
     private let inputModePanel = InputModePanel()
@@ -53,6 +55,7 @@ struct macSKKApp: App {
             } catch {
                 logger.error("辞書の読み込みに失敗しました")
             }
+            setupNotification()
         }
     }
 
@@ -82,6 +85,23 @@ struct macSKKApp: App {
                 }
                 Button("InputMode Panel") {
                     inputModePanel.show(at: NSPoint(x: 200, y: 200), mode: .hiragana, privateMode: true)
+                }
+                Button("User Notification") {
+                    let center = UNUserNotificationCenter.current()
+                    center.requestAuthorization { granted, error in
+                        if let error {
+                            print(error)
+                        }
+                        let release = Release(version: ReleaseVersion(major: 0, minor: 4, patch: 0),
+                                              updated: Date(),
+                                              url: URL(string: "https://github.com/mtgto/macSKK/releases/tag/0.4.0")!)
+                        let request = release.userNotificationRequest()
+                        center.add(request) { error in
+                            if let error {
+                                print(error)
+                            }
+                        }
+                    }
                 }
                 #endif
             }
@@ -113,6 +133,12 @@ struct macSKKApp: App {
             return
         }
         try settingsViewModel.setDictSettings(dictSettings)
+    }
+
+    // UNNotificationの設定
+    private func setupNotification() {
+        let center = UNUserNotificationCenter.current()
+        center.delegate = userNotificationDelegate
     }
 
     private func loadFileDict(fileURL: URL, encoding: String.Encoding) throws -> FileDict {
