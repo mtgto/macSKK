@@ -23,6 +23,7 @@ struct macSKKApp: App {
     /// "~/Library/Containers/net.mtgto.inputmethod.macSKK/Data/Documents/Dictionaries"
     private let dictionariesDirectoryUrl: URL
     private let userNotificationDelegate = UserNotificationDelegate()
+    @State private var fetchReleaseTask: Task<Void, Error>?
     #if DEBUG
     private var panel: CandidatesPanel! = CandidatesPanel()
     private let inputModePanel = InputModePanel()
@@ -56,6 +57,7 @@ struct macSKKApp: App {
                 logger.error("辞書の読み込みに失敗しました")
             }
             setupNotification()
+            setupReleaseFetcher()
         }
     }
 
@@ -87,21 +89,10 @@ struct macSKKApp: App {
                     inputModePanel.show(at: NSPoint(x: 200, y: 200), mode: .hiragana, privateMode: true)
                 }
                 Button("User Notification") {
-                    let center = UNUserNotificationCenter.current()
-                    center.requestAuthorization { granted, error in
-                        if let error {
-                            print(error)
-                        }
-                        let release = Release(version: ReleaseVersion(major: 0, minor: 4, patch: 0),
-                                              updated: Date(),
-                                              url: URL(string: "https://github.com/mtgto/macSKK/releases/tag/0.4.0")!)
-                        let request = release.userNotificationRequest()
-                        center.add(request) { error in
-                            if let error {
-                                print(error)
-                            }
-                        }
-                    }
+                    let release = Release(version: ReleaseVersion(major: 0, minor: 4, patch: 0),
+                                          updated: Date(),
+                                          url: URL(string: "https://github.com/mtgto/macSKK/releases/tag/0.4.0")!)
+                    sendPushNotificationForRelease(release)
                 }
                 #endif
             }
@@ -139,6 +130,50 @@ struct macSKKApp: App {
     private func setupNotification() {
         let center = UNUserNotificationCenter.current()
         center.delegate = userNotificationDelegate
+    }
+
+    private func setupReleaseFetcher() {
+        fetchReleaseTask = Task {
+            var sleepDuration: Duration = .seconds(12 * 60 * 60) // 12時間休み
+            while true {
+                if Task.isCancelled {
+                    logger.log("更新チェックを終了します")
+                    break
+                }
+                try await Task.sleep(for: sleepDuration) // 12時間休み
+                logger.log("スケジュールされていた更新チェックを行います")
+                let release = try await LatestReleaseFetcher.shared.fetch()
+                if let currentVersion = ReleaseVersion(string: Bundle.main.infoDictionary!["CFBundleShortVersionString"] as! String) {
+                    if release.version > currentVersion {
+                        sleepDuration = .seconds(7 * 24 * 60 * 60) // 1週間休み
+                        sendPushNotificationForRelease(release)
+                    }
+                }
+            }
+        }
+    }
+
+    private func sendPushNotificationForRelease(_ release: Release) {
+        let center = UNUserNotificationCenter.current()
+        center.requestAuthorization { granted, error in
+            if let error {
+                logger.log("通知センターへの通知ができない状態です:\(error)")
+                return
+            }
+            if !granted {
+                logger.log("通知センターへの通知がユーザーに拒否されています")
+                return
+            }
+            let release = Release(version: ReleaseVersion(major: 0, minor: 4, patch: 0),
+                                  updated: Date(),
+                                  url: URL(string: "https://github.com/mtgto/macSKK/releases/tag/0.4.0")!)
+            let request = release.userNotificationRequest()
+            center.add(request) { error in
+                if let error {
+                    print(error)
+                }
+            }
+        }
     }
 
     private func loadFileDict(fileURL: URL, encoding: String.Encoding) throws -> FileDict {
