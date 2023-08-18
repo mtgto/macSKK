@@ -27,11 +27,11 @@ protocol DictProtocol {
 
 /// 実ファイルをもつSKK辞書
 struct FileDict: DictProtocol, Identifiable {
-    let id: String
-    let fileURL: URL
     // FIXME: URLResourceのfileResourceIdentifierKeyをidとして使ってもいいかもしれない。
     // FIXME: ただしこの値は再起動したら同一性が保証されなくなるのでIDとしての永続化はできない
     // FIXME: iCloud Documentsとかでてくるとディレクトリが複数になるけど、ひとまずファイル名だけもっておけばよさそう。
+    let id: String
+    let fileURL: URL
     let encoding: String.Encoding
     let entries: [String: [Word]]
 
