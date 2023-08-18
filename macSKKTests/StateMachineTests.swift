@@ -1468,6 +1468,33 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    func testHandleSelectingRememberCursor() {
+        dictionary.userDictEntries = ["え": [Word("絵")], "えr": [Word("得")]]
+
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(8).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("う")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .cursor, .plain("う")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("え"), .cursor, .plain("う")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerSelect, .emphasized("絵")])))
+            XCTAssertEqual(events[4], .markedText(MarkedText([.markerCompose, .plain("え"), .cursor, .plain("う")])))
+            XCTAssertEqual(events[5], .markedText(MarkedText([.markerCompose, .plain("え*r"), .cursor, .plain("う")])))
+            XCTAssertEqual(events[6], .markedText(MarkedText([.markerSelect, .emphasized("得る")])))
+            XCTAssertEqual(events[7], .markedText(MarkedText([.markerCompose, .plain("え*る"), .cursor, .plain("う")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .left, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .backspace, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "r", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u")))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .backspace, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .left, originalEvent: nil, cursorPosition: .zero))) // 何もinputMethodEventには流れない
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     func testPrivateMode() throws {
         let privateMode = CurrentValueSubject<Bool, Never>(false)
         // プライベートモードが有効ならユーザー辞書を参照はするが保存はしない

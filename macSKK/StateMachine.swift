@@ -451,38 +451,46 @@ class StateMachine {
                 return true
             }
         case .left:
-            if romaji.isEmpty {
-                state.inputMethod = .composing(composing.moveCursorLeft())
-            } else {
-                // 未確定ローマ字があるときはローマ字を消す (AquaSKKと同じ)
-                state.inputMethod = .composing(ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: ""))
+            if okuri == nil { // 一度変換候補選択に遷移してからキャンセルで戻ると送り仮名ありになっている
+                if romaji.isEmpty {
+                    state.inputMethod = .composing(composing.moveCursorLeft())
+                } else {
+                    // 未確定ローマ字があるときはローマ字を消す (AquaSKKと同じ)
+                    state.inputMethod = .composing(ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: ""))
+                }
+                updateMarkedText()
             }
-            updateMarkedText()
             return true
         case .right:
-            if romaji.isEmpty {
-                state.inputMethod = .composing(composing.moveCursorRight())
-            } else {
-                state.inputMethod = .composing(ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: ""))
+            if okuri == nil { // 一度変換候補選択に遷移してからキャンセルで戻ると送り仮名ありになっている
+                if romaji.isEmpty {
+                    state.inputMethod = .composing(composing.moveCursorRight())
+                } else {
+                    state.inputMethod = .composing(ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: ""))
+                }
+                updateMarkedText()
             }
-            updateMarkedText()
             return true
         case .ctrlA:
-            if romaji.isEmpty {
-                state.inputMethod = .composing(composing.moveCursorFirst())
-            } else {
-                // 未確定ローマ字があるときはローマ字を消す (AquaSKKと同じ)
-                state.inputMethod = .composing(ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: ""))
+            if okuri == nil { // 一度変換候補選択に遷移してからキャンセルで戻ると送り仮名ありになっている
+                if romaji.isEmpty {
+                    state.inputMethod = .composing(composing.moveCursorFirst())
+                } else {
+                    // 未確定ローマ字があるときはローマ字を消す (AquaSKKと同じ)
+                    state.inputMethod = .composing(ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: ""))
+                }
+                updateMarkedText()
             }
-            updateMarkedText()
             return true
         case .ctrlE:
-            if romaji.isEmpty {
-                state.inputMethod = .composing(composing.moveCursorLast())
-            } else {
-                state.inputMethod = .composing(ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: ""))
+            if okuri == nil { // 一度変換候補選択に遷移してからキャンセルで戻ると送り仮名ありになっている
+                if romaji.isEmpty {
+                    state.inputMethod = .composing(composing.moveCursorLast())
+                } else {
+                    state.inputMethod = .composing(ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: ""))
+                }
+                updateMarkedText()
             }
-            updateMarkedText()
             return true
         case .up, .down, .ctrlY:
             return true
@@ -581,8 +589,11 @@ class StateMachine {
                         // カーソル位置がnilじゃないときはその前までで変換を試みる
                         let subText: [String] = composing.subText()
                         let yomiText = subText.joined() + (okuri?.first?.firstRomaji ?? moji.firstRomaji)
-                        let newComposing = ComposingState(
-                            isShift: true, text: subText, okuri: (okuri ?? []) + [moji], romaji: "")
+                        let newComposing = ComposingState(isShift: true,
+                                                          text: composing.text,
+                                                          okuri: (okuri ?? []) + [moji],
+                                                          romaji: "",
+                                                          cursor: composing.cursor)
                         let candidates = dictionary.refer(yomiText)
                         if candidates.isEmpty {
                             if specialState != nil {
