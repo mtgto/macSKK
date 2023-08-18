@@ -170,7 +170,7 @@ final class StateTests: XCTestCase {
                                             candidates: [Word("尾")],
                                             candidateIndex: 0,
                                             cursorPosition: .zero)
-        XCTAssertEqual(selectingState.markedTextElements(inputMode: .hiragana), [.emphasized("▼尾")])
+        XCTAssertEqual(selectingState.markedTextElements(inputMode: .hiragana), [.markerSelect, .emphasized("尾")])
     }
 
     func testRegisterStateAppendText() throws {

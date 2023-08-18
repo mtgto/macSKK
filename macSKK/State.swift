@@ -247,7 +247,7 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
         var okuriDisplayText: String = ""
 
         if isShift {
-            result.append(.markerSelect)
+            result.append(.markerCompose)
         }
         if let okuri {
             okuriDisplayText = "*" + okuri.map { $0.string(for: inputMode) }.joined() + romaji
