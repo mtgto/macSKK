@@ -185,6 +185,9 @@ final class StateTests: XCTestCase {
         state = state.appendText("い")
         XCTAssertEqual(state.text, "いあ")
         XCTAssertEqual(state.cursor, 1)
+        state = state.appendText("しゅ")
+        XCTAssertEqual(state.text, "いしゅあ")
+        XCTAssertEqual(state.cursor, 3)
     }
 
     func testRegisterStateDropLast() throws {

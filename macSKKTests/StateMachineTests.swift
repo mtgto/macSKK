@@ -856,19 +856,21 @@ final class StateMachineTests: XCTestCase {
         dictionary.userDictEntries = ["あs": [Word("褪")]]
 
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(5).sink { events in
+        stateMachine.inputMethodEvent.collect(6).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
             XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("あえ")])))
             XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("あ"), .cursor, .plain("え")])))
             XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("あr"), .cursor, .plain("え")])))
-            XCTAssertEqual(events[4], .markedText(MarkedText([.markerCompose, .plain("あり"), .cursor, .plain("え")])))
+            XCTAssertEqual(events[4], .markedText(MarkedText([.markerCompose, .plain("あry"), .cursor, .plain("え")])))
+            XCTAssertEqual(events[5], .markedText(MarkedText([.markerCompose, .plain("ありゅ"), .cursor, .plain("え")])))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .left, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "r")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "y")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u")))
         wait(for: [expectation], timeout: 1.0)
     }
 

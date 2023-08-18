@@ -127,7 +127,7 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
         if let cursor {
             let mojiText: [String] = moji.kana.map { String($0) }
             newText = text[0..<cursor] + mojiText + text[cursor...]
-            newCursor = cursor + 1
+            newCursor = cursor + mojiText.count
         } else {
             newText = text + moji.kana.map({ String($0) })
             newCursor = nil
