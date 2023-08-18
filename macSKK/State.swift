@@ -310,11 +310,11 @@ struct SelectingState: Equatable, MarkedTextProtocol {
 
     // MARK: - MarkedTextProtocol
     func markedTextElements(inputMode: InputMode) -> [MarkedText.Element] {
-        var selectingText = "▼" + candidates[candidateIndex].word
+        var selectingText = candidates[candidateIndex].word
         if let okuri = prev.composing.okuri {
             selectingText += okuri.map { $0.string(for: inputMode) }.joined()
         }
-        return [.emphasized(selectingText)]
+        return [.markerSelect, .emphasized(selectingText)]
     }
 }
 
