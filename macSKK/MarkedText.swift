@@ -25,6 +25,11 @@ protocol MarkedTextProtocol {
 struct MarkedText: Equatable {
     /// 意味の違う部分文字列ごとの定義。現在のところは下線のスタイルの出し分けにだけ使用する
     enum Element: Equatable {
+        /// ▽ のこと。マーカーという名前はddskkに合わせています。
+        /// 将来カスタマイズしたときには引数Stringを取るようにするかも。
+        case markerCompose
+        /// ▼ のこと。
+        case markerSelect
         /// 細い下線で表示する文字列。未確定文字列の入力中、"[登録中]" などのカーソルを操作できない文字列など
         case plain(String)
         /// 太い下線で表示する文字列。今選択されている変換候補。
@@ -34,6 +39,10 @@ struct MarkedText: Equatable {
 
         var attributedString: AttributedString {
             switch self {
+            case .markerSelect:
+                return Self.plain("▽").attributedString
+            case .markerCompose:
+                return Self.emphasized("▼").attributedString
             case .plain(let text):
                 return AttributedString(text, attributes: .init([.underlineStyle: NSUnderlineStyle.single.rawValue]))
             case .emphasized(let text):
@@ -67,6 +76,8 @@ struct MarkedText: Equatable {
         var location: Int = 0
         for element in elements {
             switch element {
+            case .markerSelect, .markerCompose:
+                location += 1
             case .plain(let string):
                 location += string.count
             case .emphasized(let string):

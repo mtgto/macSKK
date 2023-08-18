@@ -113,17 +113,17 @@ final class StateTests: XCTestCase {
 
     func testComposingStateDisplayTextSimple() {
         let composingState = ComposingState(isShift: true, text: ["お", "い"], romaji: "")
-        XCTAssertEqual(composingState.markedTextElements(inputMode: .hiragana), [.plain("▽おい")])
+        XCTAssertEqual(composingState.markedTextElements(inputMode: .hiragana), [.markerSelect, .plain("おい")])
     }
 
     func testComposingStateDisplayTextOkuri() {
         let composingState = ComposingState(isShift: true, text: ["お", "い"], okuri: [], romaji: "s")
-        XCTAssertEqual(composingState.markedTextElements(inputMode: .hiragana), [.plain("▽おい*s")])
+        XCTAssertEqual(composingState.markedTextElements(inputMode: .hiragana), [.markerSelect, .plain("おい"), .plain("*s")])
     }
 
     func testComposingStateDisplayTextCursor() {
         let composingState = ComposingState(isShift: true, text: ["お", "い"], okuri: [], romaji: "s", cursor: 1)
-        XCTAssertEqual(composingState.markedTextElements(inputMode: .hiragana), [.plain("▽お"), .cursor, .plain("い*s")])
+        XCTAssertEqual(composingState.markedTextElements(inputMode: .hiragana), [.markerSelect, .plain("お"), .plain("*s"), .cursor, .plain("い")])
     }
 
     func testSelectingStateFixedText() throws {
