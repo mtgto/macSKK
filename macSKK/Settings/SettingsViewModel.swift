@@ -100,32 +100,37 @@ final class SettingsViewModel: ObservableObject {
         self.dictionariesDirectoryUrl = dictionariesDirectoryUrl
         // SKK-JISYO.Lのようなファイルの読み込みが遅いのでバックグラウンドで処理
         $dictSettings.filter({ !$0.isEmpty }).receive(on: DispatchQueue.global()).sink { dictSettings in
-            dictSettings.forEach { dictSetting in
+            let enabledDicts = dictSettings.compactMap { dictSetting -> FileDict? in
+                let dict = dictionary.fileDict(id: dictSetting.id)
                 if dictSetting.enabled {
                     // 無効だった辞書が有効化された、もしくは辞書のエンコーディング設定が変わったら読み込む
-                    let dict = dictionary.fileDict(id: dictSetting.id)
                     if dictSetting.encoding != dict?.encoding {
                         let fileURL = dictionariesDirectoryUrl.appendingPathComponent(dictSetting.filename)
                         do {
                             logger.log("SKK辞書 \(dictSetting.filename)を読み込みます")
                             self.loadStatusPublisher.send((dictSetting.id, .loading))
                             let fileDict = try FileDict(contentsOf: fileURL, encoding: dictSetting.encoding)
-                            dictionary.appendDict(fileDict)
                             self.loadStatusPublisher.send((dictSetting.id, .loaded(fileDict.entries.count)))
                             logger.log("SKK辞書 \(dictSetting.filename)から \(fileDict.entries.count) エントリ読み込みました")
+                            return fileDict
                         } catch {
                             self.loadStatusPublisher.send((dictSetting.id, .fail(error)))
                             dictSetting.enabled = false
                             logger.log("SKK辞書 \(dictSetting.filename) の読み込みに失敗しました!: \(error)")
+                            return nil
                         }
+                    } else {
+                        return dict
                     }
                 } else {
-                    if dictionary.deleteDict(id: dictSetting.id) {
-                        logger.log("SKK辞書 \(dictSetting.filename) を無効化しました")
+                    if dict != nil {
+                        logger.log("SKK辞書 \(dictSetting.filename) を無効化します")
                         self.loadStatusPublisher.send((dictSetting.id, .disabled))
                     }
+                    return nil
                 }
             }
+            dictionary.dicts = enabledDicts
             UserDefaults.standard.set(self.dictSettings.map { $0.encode() }, forKey: "dictionaries")
         }
         .store(in: &cancellables)

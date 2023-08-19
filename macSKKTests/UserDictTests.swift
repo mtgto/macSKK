@@ -69,27 +69,4 @@ final class UserDictTests: XCTestCase {
         privateMode.send(false)
         XCTAssertTrue(userDict.privateUserDictEntries.isEmpty)
     }
-
-    func testAppendDict() throws {
-        let privateMode = CurrentValueSubject<Bool, Never>(false)
-        let userDict = try UserDict(dicts: [], privateMode: privateMode)
-        let fileURL = Bundle(for: Self.self).url(forResource: "SKK-JISYO.test", withExtension: "utf8")!
-        let fileDict = try FileDict(contentsOf: fileURL, encoding: .utf8)
-        userDict.appendDict(fileDict)
-        XCTAssertEqual(userDict.dicts.count, 1)
-        // FIXME: ほんとはIDが同じで中身が異なる辞書を作って、それを追加すると置換になることをテストしたい
-        userDict.appendDict(fileDict)
-        XCTAssertEqual(userDict.dicts.count, 1, "同じIDをもつ辞書を追加しても個数は増えない")
-    }
-
-    func testDeleteDict() throws {
-        let privateMode = CurrentValueSubject<Bool, Never>(false)
-        let fileURL = Bundle(for: Self.self).url(forResource: "SKK-JISYO.test", withExtension: "utf8")!
-        let fileDict = try FileDict(contentsOf: fileURL, encoding: .utf8)
-        let userDict = try UserDict(dicts: [fileDict], privateMode: privateMode)
-        XCTAssertFalse(userDict.deleteDict(id: "foo"))
-        XCTAssertEqual(userDict.dicts.count, 1)
-        XCTAssertTrue(userDict.deleteDict(id: "SKK-JISYO.test.utf8"), "idはファイル名")
-        XCTAssertEqual(userDict.dicts.count, 0)
-    }
 }
