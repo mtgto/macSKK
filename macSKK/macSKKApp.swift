@@ -17,7 +17,8 @@ func isTest() -> Bool {
 
 @main
 struct macSKKApp: App {
-    private var server: IMKServer!
+    /// ユニットテスト実行時はnil
+    private let server: IMKServer?
     @ObservedObject var settingsViewModel: SettingsViewModel
     /// SKK辞書を配置するディレクトリ
     /// "~/Library/Containers/net.mtgto.inputmethod.macSKK/Data/Documents/Dictionaries"
@@ -42,17 +43,19 @@ struct macSKKApp: App {
         } catch {
             fatalError("辞書設定でエラーが発生しました: \(error)")
         }
+        if !isTest() && Bundle.main.bundleURL.deletingLastPathComponent().lastPathComponent == "Input Methods" {
+            guard let connectionName = Bundle.main.infoDictionary?["InputMethodConnectionName"] as? String
+            else {
+                fatalError("InputMethodConnectionName is not set")
+            }
+            server = IMKServer(name: connectionName, bundleIdentifier: Bundle.main.bundleIdentifier)
+        } else {
+            server = nil
+        }
         setupUserDefaults()
         if !isTest() {
             do {
                 try setupDictionaries()
-                if Bundle.main.bundleURL.deletingLastPathComponent().lastPathComponent == "Input Methods" {
-                    guard let connectionName = Bundle.main.infoDictionary?["InputMethodConnectionName"] as? String
-                    else {
-                        fatalError("InputMethodConnectionName is not set")
-                    }
-                    server = IMKServer(name: connectionName, bundleIdentifier: Bundle.main.bundleIdentifier)
-                }
             } catch {
                 logger.error("辞書の読み込みに失敗しました")
             }
@@ -140,10 +143,6 @@ struct macSKKApp: App {
         fetchReleaseTask = Task {
             var sleepDuration: Duration = .seconds(12 * 60 * 60) // 12時間休み
             while true {
-                if Task.isCancelled {
-                    logger.log("更新チェックを終了します")
-                    break
-                }
                 try await Task.sleep(for: sleepDuration) // 12時間休み
                 logger.log("スケジュールされていた更新チェックを行います")
                 do {
