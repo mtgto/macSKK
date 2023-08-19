@@ -133,6 +133,10 @@ struct macSKKApp: App {
     }
 
     private func setupReleaseFetcher() {
+        guard let shortVersionString = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
+              let currentVersion = ReleaseVersion(string: shortVersionString) else {
+            fatalError("現在のバージョンが不正な状態です")
+        }
         fetchReleaseTask = Task {
             var sleepDuration: Duration = .seconds(12 * 60 * 60) // 12時間休み
             while true {
@@ -142,12 +146,18 @@ struct macSKKApp: App {
                 }
                 try await Task.sleep(for: sleepDuration) // 12時間休み
                 logger.log("スケジュールされていた更新チェックを行います")
-                let release = try await LatestReleaseFetcher.shared.fetch()
-                if let currentVersion = ReleaseVersion(string: Bundle.main.infoDictionary!["CFBundleShortVersionString"] as! String) {
+                do {
+                    let release = try await settingsViewModel.fetchLatestRelease()
                     if release.version > currentVersion {
+                        logger.log("新しいバージョン \(release.version, privacy: .public) が見つかりました")
                         sleepDuration = .seconds(7 * 24 * 60 * 60) // 1週間休み
                         sendPushNotificationForRelease(release)
+                    } else {
+                        logger.log("更新チェックをしましたが新しいバージョンは見つかりませんでした")
                     }
+                } catch {
+                    // 通信エラーなど? 次回は成功するかもしれないのでログだけ吐いて続行
+                    logger.error("更新チェックに失敗しました: \(error)")
                 }
             }
         }
@@ -170,7 +180,7 @@ struct macSKKApp: App {
             let request = release.userNotificationRequest()
             center.add(request) { error in
                 if let error {
-                    print(error)
+                    logger.error("通知センターへの通知に失敗しました: \(error)")
                 }
             }
         }

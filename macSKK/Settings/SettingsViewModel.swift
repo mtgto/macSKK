@@ -221,11 +221,13 @@ final class SettingsViewModel: ObservableObject {
     /**
      * リリースの確認を行う
      */
-    func fetchReleases() async throws {
+    func fetchLatestRelease() async throws -> Release {
         fetchingRelease = true
         defer {
             fetchingRelease = false
         }
-        latestRelease = try await LatestReleaseFetcher.shared.fetch()
+        let release = try await LatestReleaseFetcher.shared.fetch()
+        latestRelease = release
+        return release
     }
 }
