@@ -140,22 +140,25 @@ struct macSKKApp: App {
               let currentVersion = ReleaseVersion(string: shortVersionString) else {
             fatalError("現在のバージョンが不正な状態です")
         }
-        fetchReleaseTask = Task {
+        fetchReleaseTask = Task.detached(priority: .low) {
             var sleepDuration: Duration = .seconds(12 * 60 * 60) // 12時間休み
             while true {
-                try await Task.sleep(for: sleepDuration) // 12時間休み
+                try await Task.sleep(for: sleepDuration)
                 logger.log("スケジュールされていた更新チェックを行います")
                 do {
                     let release = try await settingsViewModel.fetchLatestRelease()
                     if release.version > currentVersion {
                         logger.log("新しいバージョン \(release.version, privacy: .public) が見つかりました")
                         sleepDuration = .seconds(7 * 24 * 60 * 60) // 1週間休み
-                        sendPushNotificationForRelease(release)
+                        await sendPushNotificationForRelease(release)
                     } else {
                         logger.log("更新チェックをしましたが新しいバージョンは見つかりませんでした")
                     }
+                } catch is CancellationError {
+                    logger.log("スケジュールされていた更新チェックがキャンセルされました")
+                    break
                 } catch {
-                    // 通信エラーなど? 次回は成功するかもしれないのでログだけ吐いて続行
+                    // 通信エラーなどでここに来るかも? 次回は成功するかもしれないのでログだけ吐いて続行
                     logger.error("更新チェックに失敗しました: \(error)")
                 }
             }
