@@ -4,6 +4,7 @@
 import Combine
 import InputMethodKit
 import SwiftUI
+import UserNotifications
 import os
 
 let logger: Logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "main")
@@ -16,13 +17,16 @@ func isTest() -> Bool {
 
 @main
 struct macSKKApp: App {
-    private var server: IMKServer!
+    /// ユニットテスト実行時はnil
+    private let server: IMKServer?
     @ObservedObject var settingsViewModel: SettingsViewModel
     /// SKK辞書を配置するディレクトリ
     /// "~/Library/Containers/net.mtgto.inputmethod.macSKK/Data/Documents/Dictionaries"
     private let dictionariesDirectoryUrl: URL
+    private let userNotificationDelegate = UserNotificationDelegate()
+    @State private var fetchReleaseTask: Task<Void, Error>?
     #if DEBUG
-    private var panel: CandidatesPanel! = CandidatesPanel()
+    private let panel: CandidatesPanel = CandidatesPanel()
     private let inputModePanel = InputModePanel()
     #endif
 
@@ -39,20 +43,24 @@ struct macSKKApp: App {
         } catch {
             fatalError("辞書設定でエラーが発生しました: \(error)")
         }
+        if !isTest() && Bundle.main.bundleURL.deletingLastPathComponent().lastPathComponent == "Input Methods" {
+            guard let connectionName = Bundle.main.infoDictionary?["InputMethodConnectionName"] as? String
+            else {
+                fatalError("InputMethodConnectionName is not set")
+            }
+            server = IMKServer(name: connectionName, bundleIdentifier: Bundle.main.bundleIdentifier)
+        } else {
+            server = nil
+        }
         setupUserDefaults()
         if !isTest() {
             do {
                 try setupDictionaries()
-                if Bundle.main.bundleURL.deletingLastPathComponent().lastPathComponent == "Input Methods" {
-                    guard let connectionName = Bundle.main.infoDictionary?["InputMethodConnectionName"] as? String
-                    else {
-                        fatalError("InputMethodConnectionName is not set")
-                    }
-                    server = IMKServer(name: connectionName, bundleIdentifier: Bundle.main.bundleIdentifier)
-                }
             } catch {
                 logger.error("辞書の読み込みに失敗しました")
             }
+            setupNotification()
+            setupReleaseFetcher()
         }
     }
 
@@ -82,6 +90,12 @@ struct macSKKApp: App {
                 }
                 Button("InputMode Panel") {
                     inputModePanel.show(at: NSPoint(x: 200, y: 200), mode: .hiragana, privateMode: true)
+                }
+                Button("User Notification") {
+                    let release = Release(version: ReleaseVersion(major: 0, minor: 4, patch: 0),
+                                          updated: Date(),
+                                          url: URL(string: "https://github.com/mtgto/macSKK/releases/tag/0.4.0")!)
+                    sendPushNotificationForRelease(release)
                 }
                 #endif
             }
@@ -113,6 +127,65 @@ struct macSKKApp: App {
             return
         }
         try settingsViewModel.setDictSettings(dictSettings)
+    }
+
+    // UNNotificationの設定
+    private func setupNotification() {
+        let center = UNUserNotificationCenter.current()
+        center.delegate = userNotificationDelegate
+    }
+
+    private func setupReleaseFetcher() {
+        guard let shortVersionString = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
+              let currentVersion = ReleaseVersion(string: shortVersionString) else {
+            fatalError("現在のバージョンが不正な状態です")
+        }
+        fetchReleaseTask = Task.detached(priority: .low) {
+            var sleepDuration: Duration = .seconds(12 * 60 * 60) // 12時間休み
+            while true {
+                try await Task.sleep(for: sleepDuration)
+                logger.log("スケジュールされていた更新チェックを行います")
+                do {
+                    let release = try await settingsViewModel.fetchLatestRelease()
+                    if release.version > currentVersion {
+                        logger.log("新しいバージョン \(release.version, privacy: .public) が見つかりました")
+                        sleepDuration = .seconds(7 * 24 * 60 * 60) // 1週間休み
+                        await sendPushNotificationForRelease(release)
+                    } else {
+                        logger.log("更新チェックをしましたが新しいバージョンは見つかりませんでした")
+                    }
+                } catch is CancellationError {
+                    logger.log("スケジュールされていた更新チェックがキャンセルされました")
+                    break
+                } catch {
+                    // 通信エラーなどでここに来るかも? 次回は成功するかもしれないのでログだけ吐いて続行
+                    logger.error("更新チェックに失敗しました: \(error)")
+                }
+            }
+        }
+    }
+
+    private func sendPushNotificationForRelease(_ release: Release) {
+        let center = UNUserNotificationCenter.current()
+        center.requestAuthorization { granted, error in
+            if let error {
+                logger.log("通知センターへの通知ができない状態です:\(error)")
+                return
+            }
+            if !granted {
+                logger.log("通知センターへの通知がユーザーに拒否されています")
+                return
+            }
+            let release = Release(version: ReleaseVersion(major: 0, minor: 4, patch: 0),
+                                  updated: Date(),
+                                  url: URL(string: "https://github.com/mtgto/macSKK/releases/tag/0.4.0")!)
+            let request = release.userNotificationRequest()
+            center.add(request) { error in
+                if let error {
+                    logger.error("通知センターへの通知に失敗しました: \(error)")
+                }
+            }
+        }
     }
 
     private func loadFileDict(fileURL: URL, encoding: String.Encoding) throws -> FileDict {

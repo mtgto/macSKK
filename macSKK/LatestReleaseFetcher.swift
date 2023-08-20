@@ -9,7 +9,7 @@ enum LatestReleaseFetcherError: Error {
 
 @globalActor
 actor LatestReleaseFetcher {
-    public static var shared = LatestReleaseFetcher()
+    public static let shared = LatestReleaseFetcher()
     /// 前回取得を開始した時間
     private(set) var lastFetchedDate: Date? = nil
     private(set) var latestRelease: Release? = nil

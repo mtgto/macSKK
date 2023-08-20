@@ -47,7 +47,7 @@ struct SoftwareUpdateView: View {
 
     private func fetchReleases() {
         Task {
-            try await settingsViewModel.fetchReleases()
+            try await _ = settingsViewModel.fetchLatestRelease()
         }
     }
 }

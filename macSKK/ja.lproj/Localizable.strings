@@ -18,3 +18,5 @@
 "Filename" = "ファイル名";
 "Dictionary Setting" = "辞書の設定";
 "Encoding" = "エンコーディング";
+"UNNewVersionTitle" = "新しいバージョンがあります";
+"UNNewVersionBody" = "macSKKの新しいバージョン %@ がリリースされています。";
