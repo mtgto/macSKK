@@ -11,27 +11,37 @@ struct DictionariesView: View {
         VStack {
             Form {
                 Section {
-                    ForEach($settingsViewModel.dictSettings) { dictSetting in
-                        HStack(alignment: .top) {
-                            Toggle(isOn: dictSetting.enabled) {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(dictSetting.id)
-                                        .font(.body)
-                                    Text(loadingStatus(of: dictSetting.wrappedValue))
-                                        .font(.footnote)
+                    List {
+                        ForEach($settingsViewModel.dictSettings) { dictSetting in
+                            HStack(alignment: .top) {
+                                Toggle(isOn: dictSetting.enabled) {
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(dictSetting.id)
+                                            .font(.body)
+                                        Text(loadingStatus(of: dictSetting.wrappedValue))
+                                            .font(.footnote)
+                                    }
                                 }
+                                .toggleStyle(.switch)
+                                Button {
+                                    selectedDictSetting = dictSetting.wrappedValue
+                                } label: {
+                                    Image(systemName: "info.circle")
+                                        .resizable()
+                                        .frame(width: 16, height: 16)
+                                }
+                                .buttonStyle(.borderless)
                             }
-                            .toggleStyle(.switch)
-                            Button {
-                                selectedDictSetting = dictSetting.wrappedValue
-                            } label: {
-                                Image(systemName: "info.circle")
-                                    .resizable()
-                                    .frame(width: 16, height: 16)
-                            }
-                            .buttonStyle(.borderless)
+                            .padding(EdgeInsets(top: 4, leading: 2, bottom: 4, trailing: 2))
+                        }.onMove { from, to in
+                            settingsViewModel.dictSettings.move(fromOffsets: from, toOffset: to)
                         }
                     }
+                } header: {
+                    Text("SettingsFileDictionariesTitle")
+                    Text("SettingsFileDictionariesSubtitle")
+                        .font(.subheadline)
+                        .fontWeight(.light)
                 } footer: {
                     Button {
                         NSWorkspace.shared.open(settingsViewModel.dictionariesDirectoryUrl)

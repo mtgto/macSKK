@@ -13,8 +13,8 @@ class UserDict: DictProtocol {
     let fileURL: URL
     let fileHandle: FileHandle
     let source: DispatchSourceFileSystemObject
-    /// 有効になっている辞書
-    private(set) var dicts: [DictProtocol]
+    /// 有効になっている辞書。優先度が高い順。
+    var dicts: [DictProtocol]
     /// 非プライベートモードのユーザー辞書。変換や単語登録すると更新されマイ辞書ファイルに永続化されます。
     var userDictEntries: [String: [Word]] = [:]
     /// プライベートモードのユーザー辞書。プライベートモードが有効な時に変換や単語登録するとuserDictEntriesとは別に更新されます。
@@ -207,40 +207,6 @@ class UserDict: DictProtocol {
             }
         }
         return nil
-    }
-
-    /// ファイル辞書を追加する。すでに追加済だった場合はさしかえる。
-    func appendDict(_ fileDict: FileDict) {
-        let index = dicts.firstIndex(where: { dict in
-            if let dict = dict as? FileDict {
-                if dict.id == fileDict.id {
-                    return true
-                }
-            }
-            return false
-        })
-        if let index {
-            dicts[index] = fileDict
-        } else {
-            dicts.append(fileDict)
-        }
-    }
-
-    func deleteDict(id: FileDict.ID) -> Bool {
-        let index = dicts.firstIndex(where: { dict in
-            if let fileDict = dict as? FileDict {
-                if fileDict.id == id {
-                    return true
-                }
-            }
-            return false
-        })
-        if let index {
-            dicts.remove(at: index)
-            return true
-        } else {
-            return false
-        }
     }
 
     private func serializeWords(_ words: [Word]) -> String {
