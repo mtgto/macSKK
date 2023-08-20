@@ -41,8 +41,11 @@ class InputController: IMKInputController {
                 let attributedText = markedText.attributedString
                 let cursorRange: NSRange = markedText.cursorRange() ?? Self.notFoundRange
                 // Thingsのメモ欄などで最初の一文字をShift押しながら入力すると "▽あ" が直接入力されてしまうことがあるのを回避するワークグラウンド
-                if case .plain(let text) = markedText.elements.first, markedText.elements.count == 1 && text.count == 2 && text.hasPrefix("▽") {
-                    textInput.setMarkedText("▽", selectionRange: Self.notFoundRange, replacementRange: Self.notFoundRange)
+                if case .markerCompose = markedText.elements.first, markedText.elements.count == 2,
+                   case let .plain(text) = markedText.elements[1], text.count == 1 {
+                    textInput.setMarkedText(NSAttributedString(MarkedText.Element.markerCompose.attributedString),
+                                            selectionRange: cursorRange,
+                                            replacementRange: Self.notFoundRange)
                 }
                 textInput.setMarkedText(NSAttributedString(attributedText), selectionRange: cursorRange, replacementRange: Self.notFoundRange)
             case .modeChanged(let inputMode, let cursorPosition):
