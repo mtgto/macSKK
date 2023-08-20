@@ -1302,23 +1302,53 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[10], .markedText(MarkedText([.markerSelect, .emphasized("M")])), "Vの9個前のMを表示")
             expectation.fulfill()
         }.store(in: &cancellables)
-        stateMachine.candidateEvent.collect(8).sink { events in
-            XCTAssertNil(events[0])
-            XCTAssertEqual(events[1]?.selected.word, "4")
-            XCTAssertEqual(events[1]?.currentPage, 0, "0オリジン")
-            XCTAssertEqual(events[1]?.totalPageCount, 4, "35個の変換候補があり、最初3つはインライン表示して残りを4ページで表示する")
-            XCTAssertEqual(events[2]?.selected.word, "D")
-            XCTAssertEqual(events[2]?.currentPage, 1)
-            XCTAssertEqual(events[3]?.selected.word, "M")
-            XCTAssertEqual(events[3]?.currentPage, 2)
-            XCTAssertEqual(events[4]?.selected.word, "N")
-            XCTAssertEqual(events[4]?.currentPage, 2)
-            XCTAssertEqual(events[5]?.selected.word, "V")
-            XCTAssertEqual(events[5]?.currentPage, 3)
-            XCTAssertEqual(events[6]?.selected.word, "W")
-            XCTAssertEqual(events[6]?.currentPage, 3)
-            XCTAssertEqual(events[7]?.selected.word, "M")
-            XCTAssertEqual(events[7]?.currentPage, 2)
+        stateMachine.candidateEvent.collect(10).sink { events in
+            XCTAssertEqual(events[0]?.selected, Word("1"))
+            XCTAssertEqual(events[1]?.selected, Word("2"))
+            XCTAssertEqual(events[2]?.selected, Word("3"))
+            if case let .panel(_, currentPage, totalPageCount, selected, _) = events[3] {
+                XCTAssertEqual(selected.word, "4")
+                XCTAssertEqual(currentPage, 0, "0オリジン")
+                XCTAssertEqual(totalPageCount, 4, "35個の変換候補があり、最初3つはインライン表示して残りを4ページで表示する")
+            } else {
+                XCTFail()
+            }
+            if case let .panel(_, currentPage, _, selected, _) = events[4] {
+                XCTAssertEqual(selected.word, "D")
+                XCTAssertEqual(currentPage, 1)
+            } else {
+                XCTFail()
+            }
+            if case let .panel(_, currentPage, _, selected, _) = events[5] {
+                XCTAssertEqual(selected.word, "M")
+                XCTAssertEqual(currentPage, 2)
+            } else {
+                XCTFail()
+            }
+            if case let .panel(_, currentPage, _, selected, _) = events[6] {
+                XCTAssertEqual(selected.word, "N")
+                XCTAssertEqual(currentPage, 2)
+            } else {
+                XCTFail()
+            }
+            if case let .panel(_, currentPage, _, selected, _) = events[7] {
+                XCTAssertEqual(selected.word, "V")
+                XCTAssertEqual(currentPage, 3)
+            } else {
+                XCTFail()
+            }
+            if case let .panel(_, currentPage, _, selected, _) = events[8] {
+                XCTAssertEqual(selected.word, "W")
+                XCTAssertEqual(currentPage, 3)
+            } else {
+                XCTFail()
+            }
+            if case let .panel(_, currentPage, _, selected, _) = events[9] {
+                XCTAssertEqual(selected.word, "M")
+                XCTAssertEqual(currentPage, 2)
+            } else {
+                XCTFail()
+            }
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
@@ -1403,11 +1433,13 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[7], .fixedText("5"))
             expectation.fulfill()
         }.store(in: &cancellables)
-        stateMachine.candidateEvent.collect(4).sink { events in
-            XCTAssertNil(events[0])
-            XCTAssertEqual(events[1]?.selected.word, "4")
-            XCTAssertEqual(events[2]?.selected.word, "5")
-            XCTAssertEqual(events[3]?.selected.word, "6")
+        stateMachine.candidateEvent.collect(6).sink { events in
+            XCTAssertEqual(events[0], .inline(selected: Word("1"), cursorPosition: .zero))
+            XCTAssertEqual(events[1], .inline(selected: Word("2"), cursorPosition: .zero))
+            XCTAssertEqual(events[2], .inline(selected: Word("3"), cursorPosition: .zero))
+            XCTAssertEqual(events[3]?.selected.word, "4")
+            XCTAssertEqual(events[4]?.selected.word, "5")
+            XCTAssertEqual(events[5]?.selected.word, "6")
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))

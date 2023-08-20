@@ -8,6 +8,7 @@ import SwiftUI
 @MainActor
 final class CandidatesPanel: NSPanel {
     let viewModel: CandidatesViewModel
+    var cursorPosition: NSRect = .zero
 
     init() {
         viewModel = CandidatesViewModel(candidates: [], currentPage: 0, totalPageCount: 0)
@@ -26,7 +27,11 @@ final class CandidatesPanel: NSPanel {
         viewModel.systemAnnotations.updateValue(systemAnnotation, forKey: word)
     }
 
-    func show(cursorPosition: NSRect) {
+    func setCursorPosition(_ cursorPosition: NSRect) {
+        self.cursorPosition = cursorPosition
+    }
+
+    func show() {
         guard let viewController = contentViewController as? NSHostingController<CandidatesView> else {
             fatalError("ビューコントローラの状態が壊れている")
         }
@@ -38,7 +43,13 @@ final class CandidatesPanel: NSPanel {
         print("sizeThatFits = \(viewController.sizeThatFits(in: CGSize(width: 10000, height: 10000)))")
         #endif
         let width = viewController.rootView.minWidth()
-        let height = CGFloat(self.viewModel.candidates.words.count) * CandidatesView.lineHeight + CandidatesView.footerHeight
+        let height: CGFloat
+        if case let .panel(words, _, _) = viewModel.candidates {
+            height = CGFloat(words.count) * CandidatesView.lineHeight + CandidatesView.footerHeight
+        } else {
+            // TODO: 省略できないか考える
+            height = 100
+        }
         setContentSize(NSSize(width: width, height: height))
         if cursorPosition.origin.y > height {
             setFrameTopLeftPoint(cursorPosition.origin)
