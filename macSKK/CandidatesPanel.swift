@@ -47,8 +47,8 @@ final class CandidatesPanel: NSPanel {
         if case let .panel(words, _, _) = viewModel.candidates {
             height = CGFloat(words.count) * CandidatesView.lineHeight + CandidatesView.footerHeight
         } else {
-            // TODO: 省略できないか考える
-            height = 100
+            // FIXME: 短い文のときにはそれに合わせて高さを縮める
+            height = 200
         }
         setContentSize(NSSize(width: width, height: height))
         if cursorPosition.origin.y > height {

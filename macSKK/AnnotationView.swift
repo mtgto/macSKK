@@ -11,35 +11,37 @@ struct AnnotationView: View {
 
     var body: some View {
         VStack(alignment: .leading) {
-            if let systemAnnotation {
-                HStack(alignment: .top) {
-                    VStack(alignment: .leading) {
-                        Text("システム辞書")
-                            .font(.headline)
-                        Text(systemAnnotation)
-                            .textSelection(.enabled)
-                        // ↓ ダークモードではテキスト選択時に文字色が白から黒に変わってしまう問題があるので暫定対処
-                            .foregroundColor(colorScheme == .dark ? .white : nil)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .layoutPriority(1)
-                            .padding(.leading)
+            ScrollView {
+                if let systemAnnotation {
+                    HStack(alignment: .top) {
+                        VStack(alignment: .leading) {
+                            Text("システム辞書")
+                                .font(.headline)
+                            Text(systemAnnotation)
+                                .textSelection(.enabled)
+                                // ↓ ダークモードではテキスト選択時に文字色が白から黒に変わってしまう問題があるので暫定対処
+                                .foregroundColor(colorScheme == .dark ? .white : nil)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .layoutPriority(1)
+                                .padding(.leading)
+                        }
+                        Spacer()
                     }
-                    Spacer()
                 }
-            }
-            if let annotation {
-                HStack(alignment: .top) {
-                    VStack(alignment: .leading) {
-                        Text("SKK辞書")
-                            .font(.headline)
-                        Text(annotation)
-                            .textSelection(.enabled)
-                            .foregroundColor(colorScheme == .dark ? .white : nil)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .layoutPriority(1)
-                            .padding(.leading)
+                if let annotation {
+                    HStack(alignment: .top) {
+                        VStack(alignment: .leading) {
+                            Text("SKK辞書")
+                                .font(.headline)
+                            Text(annotation)
+                                .textSelection(.enabled)
+                                .foregroundColor(colorScheme == .dark ? .white : nil)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .layoutPriority(1)
+                                .padding(.leading)
+                        }
+                        Spacer()
                     }
-                    Spacer()
                 }
             }
         }

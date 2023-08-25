@@ -17,7 +17,7 @@ struct CandidatesView: View {
         case .inline:
             AnnotationView(annotation: $candidates.selectedAnnotation, systemAnnotation: $candidates.selectedSystemAnnotation)
                 .padding(EdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4))
-                .frame(width: 300)
+                .frame(width: 300, height: 200)
         case let .panel(words, currentPage, totalPageCount):
             VStack(spacing: 0) {
                 List(Array(words.enumerated()), id: \.element, selection: $candidates.selected) { index, candidate in
@@ -80,7 +80,7 @@ struct CandidatesView: View {
             }.max()
             return width ?? 0
         } else {
-            return 0
+            return 300
         }
     }
 }
