@@ -899,6 +899,7 @@ class StateMachine {
         }
     }
 
+    /// 見出し語で辞書を引く。同じ文字列である変換候補が複数の辞書にある場合は最初の1つにまとめる。
     func candidates(for yomi: String) -> [ReferredWord] {
         let candidates = dictionary.refer(yomi)
         var result = [ReferredWord]()

@@ -5,10 +5,10 @@ import Foundation
 
 /// 見出し語の注釈
 struct Annotation: Equatable {
-    // SKK-JISYO.Lなど。
+    static let userDictId: FileDict.ID = NSLocalizedString("User Dictionary", comment: "ユーザー辞書")
+    /// 注釈がつけられた辞書のID。現状はユーザー辞書以外はファイル名になっておりSKK-JISYO.Lなどになる。
     let dictId: FileDict.ID
     let text: String
-    static let userDictId: FileDict.ID = NSLocalizedString("User Dictionary", comment: "ユーザー辞書")
 }
 
 /// 辞書に登録する言葉。
