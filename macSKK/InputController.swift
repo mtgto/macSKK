@@ -64,21 +64,20 @@ class InputController: IMKInputController {
                 cursorPosition.size.height += 1
                 self?.candidatesPanel.setCursorPosition(cursorPosition)
 
-                switch candidates {
-                case let .inline(selected, _):
-                    self?.candidatesPanel.setCandidates(.inline, selected: selected)
-                    self?.selectedWord.send(selected)
-                    if selected.annotation != nil {
-                        self?.candidatesPanel.setCandidates(.inline, selected: selected)
+                if let page = candidates.page {
+                    let currentCandidates: CurrentCandidates = .panel(words: page.words,
+                                                                      currentPage: page.current,
+                                                                      totalPageCount: page.total)
+                    self?.candidatesPanel.setCandidates(currentCandidates, selected: candidates.selected)
+                    self?.selectedWord.send(candidates.selected)
+                    self?.candidatesPanel.show()
+                } else {
+                    self?.candidatesPanel.setCandidates(.inline, selected: candidates.selected)
+                    self?.selectedWord.send(candidates.selected)
+                    if candidates.selected.annotation != nil {
+                        self?.candidatesPanel.setCandidates(.inline, selected: candidates.selected)
                         self?.candidatesPanel.show()
                     }
-                case let .panel(words, currentPage, totalPageCount, selected, _):
-                    let currentCandidates: CurrentCandidates = .panel(words: words,
-                                                                      currentPage: currentPage,
-                                                                      totalPageCount: totalPageCount)
-                    self?.candidatesPanel.setCandidates(currentCandidates, selected: selected)
-                    self?.selectedWord.send(selected)
-                    self?.candidatesPanel.show()
                 }
             } else {
                 self?.candidatesPanel.orderOut(nil)

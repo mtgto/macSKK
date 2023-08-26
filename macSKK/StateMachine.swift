@@ -880,8 +880,9 @@ class StateMachine {
         if let selecting {
             if selecting.candidateIndex < inlineCandidateCount {
                 candidateEventSubject.send(
-                    Candidates.inline(selected: selecting.candidates[selecting.candidateIndex],
-                                      cursorPosition: selecting.cursorPosition))
+                    Candidates(page: nil,
+                               selected: selecting.candidates[selecting.candidateIndex],
+                               cursorPosition: selecting.cursorPosition))
             } else {
                 var start = selecting.candidateIndex - inlineCandidateCount
                 let currentPage = start / displayCandidateCount
@@ -889,12 +890,9 @@ class StateMachine {
                 start = start - start % displayCandidateCount + inlineCandidateCount
                 let candidates = selecting.candidates[start..<min(start + displayCandidateCount, selecting.candidates.count)]
                 candidateEventSubject.send(
-                    Candidates.panel(
-                        words: Array(candidates),
-                        currentPage: currentPage,
-                        totalPageCount: totalPageCount,
-                        selected: selecting.candidates[selecting.candidateIndex],
-                        cursorPosition: selecting.cursorPosition))
+                    Candidates(page: Candidates.Page(words: Array(candidates), current: currentPage, total: totalPageCount),
+                               selected: selecting.candidates[selecting.candidateIndex],
+                               cursorPosition: selecting.cursorPosition))
             }
         } else {
             candidateEventSubject.send(nil)

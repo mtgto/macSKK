@@ -1306,49 +1306,21 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[0]?.selected, Word("1"))
             XCTAssertEqual(events[1]?.selected, Word("2"))
             XCTAssertEqual(events[2]?.selected, Word("3"))
-            if case let .panel(_, currentPage, totalPageCount, selected, _) = events[3] {
-                XCTAssertEqual(selected.word, "4")
-                XCTAssertEqual(currentPage, 0, "0オリジン")
-                XCTAssertEqual(totalPageCount, 4, "35個の変換候補があり、最初3つはインライン表示して残りを4ページで表示する")
-            } else {
-                XCTFail()
-            }
-            if case let .panel(_, currentPage, _, selected, _) = events[4] {
-                XCTAssertEqual(selected.word, "D")
-                XCTAssertEqual(currentPage, 1)
-            } else {
-                XCTFail()
-            }
-            if case let .panel(_, currentPage, _, selected, _) = events[5] {
-                XCTAssertEqual(selected.word, "M")
-                XCTAssertEqual(currentPage, 2)
-            } else {
-                XCTFail()
-            }
-            if case let .panel(_, currentPage, _, selected, _) = events[6] {
-                XCTAssertEqual(selected.word, "N")
-                XCTAssertEqual(currentPage, 2)
-            } else {
-                XCTFail()
-            }
-            if case let .panel(_, currentPage, _, selected, _) = events[7] {
-                XCTAssertEqual(selected.word, "V")
-                XCTAssertEqual(currentPage, 3)
-            } else {
-                XCTFail()
-            }
-            if case let .panel(_, currentPage, _, selected, _) = events[8] {
-                XCTAssertEqual(selected.word, "W")
-                XCTAssertEqual(currentPage, 3)
-            } else {
-                XCTFail()
-            }
-            if case let .panel(_, currentPage, _, selected, _) = events[9] {
-                XCTAssertEqual(selected.word, "M")
-                XCTAssertEqual(currentPage, 2)
-            } else {
-                XCTFail()
-            }
+            XCTAssertEqual(events[3]?.selected, Word("4"))
+            XCTAssertEqual(events[3]?.page?.current, 0, "0オリジン")
+            XCTAssertEqual(events[3]?.page?.total, 4, "35個の変換候補があり、最初3つはインライン表示して残りを4ページで表示する")
+            XCTAssertEqual(events[4]?.selected, Word("D"))
+            XCTAssertEqual(events[4]?.page?.current, 1)
+            XCTAssertEqual(events[5]?.selected, Word("M"))
+            XCTAssertEqual(events[5]?.page?.current, 2)
+            XCTAssertEqual(events[6]?.selected, Word("N"))
+            XCTAssertEqual(events[6]?.page?.current, 2)
+            XCTAssertEqual(events[7]?.selected, Word("V"))
+            XCTAssertEqual(events[7]?.page?.current, 3)
+            XCTAssertEqual(events[8]?.selected, Word("W"))
+            XCTAssertEqual(events[8]?.page?.current, 3)
+            XCTAssertEqual(events[9]?.selected, Word("M"))
+            XCTAssertEqual(events[9]?.page?.current, 2)
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
@@ -1434,9 +1406,9 @@ final class StateMachineTests: XCTestCase {
             expectation.fulfill()
         }.store(in: &cancellables)
         stateMachine.candidateEvent.collect(6).sink { events in
-            XCTAssertEqual(events[0], .inline(selected: Word("1"), cursorPosition: .zero))
-            XCTAssertEqual(events[1], .inline(selected: Word("2"), cursorPosition: .zero))
-            XCTAssertEqual(events[2], .inline(selected: Word("3"), cursorPosition: .zero))
+            XCTAssertEqual(events[0]?.selected.word, "1")
+            XCTAssertEqual(events[1]?.selected.word, "2")
+            XCTAssertEqual(events[2]?.selected.word, "3")
             XCTAssertEqual(events[3]?.selected.word, "4")
             XCTAssertEqual(events[4]?.selected.word, "5")
             XCTAssertEqual(events[5]?.selected.word, "6")

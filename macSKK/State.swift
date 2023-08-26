@@ -498,43 +498,21 @@ enum SpecialState: SpecialStateProtocol {
     }
 }
 
-//struct Candidates: Equatable {
-//    /// 現在表示される変換候補。全体の変換候補の一部。インライン変換中の場合はnil
-//    let words: [Word]
-//    /// wordsが全体の変換候補表示の何ページ目かという数値 (0オリジン)
-//    let currentPage: Int
-//    /// 全体の変換候補表示の最大ページ数
-//    let totalPageCount: Int
-//    let selected: Word
-//    let cursorPosition: NSRect
-//}
-
-enum Candidates: Equatable {
-    case inline(selected: Word,
-                cursorPosition: NSRect)
-    case panel(words: [Word], /// 現在表示される変換候補。全体の変換候補の一部。
-               currentPage: Int, /// wordsが全体の変換候補表示の何ページ目かという数値 (0オリジン)
-               totalPageCount: Int, /// 全体の変換候補表示の最大ページ数
-               selected: Word,
-               cursorPosition: NSRect)
-
-    var selected: Word {
-        switch self {
-        case let .inline(selected, _):
-            return selected
-        case let .panel(_, _, _, selected, _):
-            return selected
-        }
+struct Candidates: Equatable {
+    /// パネル形式のときの現在ページと最大ページ数。
+    struct Page: Equatable {
+        /// 現在表示される変換候補。全体の変換候補の一部。
+        let words: [Word]
+        /// 全体の変換候補表示の何ページ目かという数値 (0オリジン)
+        let current: Int
+        /// 全体の変換候補表示の最大ページ数
+        let total: Int
     }
 
-    var cursorPosition: NSRect {
-        switch self {
-        case let .inline(_, cursorPosition):
-            return cursorPosition
-        case let .panel(_, _, _, _, cursorPosition):
-            return cursorPosition
-        }
-    }
+    /// パネル形式のときの現在ページと最大ページ数。インライン変換中はnil
+    let page: Page?
+    let selected: Word
+    let cursorPosition: NSRect
 }
 
 struct IMEState {
