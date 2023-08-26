@@ -1499,6 +1499,33 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    func testHandleSelectingMergeAnnotations() throws {
+        let annotation0 = Annotation(dictId: Annotation.userDictId, text: "user")
+        dictionary.userDictEntries = ["う": [Word("雨", annotation: annotation0)]]
+        let annotation1 = Annotation(dictId: "dict1", text: "dict1")
+        let annotation2 = Annotation(dictId: "dict2", text: "dict2")
+        let annotation3 = Annotation(dictId: "dict3", text: "dict2")
+        let dict1 = MemoryDict(entries: ["う": [Word("雨", annotation: annotation1)]])
+        let dict2 = MemoryDict(entries: ["う": [Word("雨", annotation: annotation2)]])
+        let dict3 = MemoryDict(entries: ["う": [Word("雨", annotation: annotation3)]])
+        dictionary.dicts = [dict1, dict2, dict3]
+
+        let expectation = XCTestExpectation()
+        expectation.expectedFulfillmentCount = 2
+        stateMachine.inputMethodEvent.collect(2).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("う")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerSelect, .emphasized("雨")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        stateMachine.candidateEvent.collect(1).sink { events in
+            XCTAssertEqual(events[0]?.selected.annotations, [annotation0, annotation1, annotation2], "テキストが同じ注釈は含まれない")
+            expectation.fulfill()
+        }.store(in: &cancellables)
+
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
+    }
+
     func testPrivateMode() throws {
         let privateMode = CurrentValueSubject<Bool, Never>(false)
         // プライベートモードが有効ならユーザー辞書を参照はするが保存はしない

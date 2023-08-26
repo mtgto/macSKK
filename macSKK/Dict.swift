@@ -3,50 +3,6 @@
 
 import Foundation
 
-/// 見出し語の注釈
-struct Annotation: Equatable {
-    // SKK-JISYO.Lなど。
-    let dictId: FileDict.ID
-    let text: String
-}
-
-/// 辞書に登録する言葉。
-///
-/// - NOTE: 将来プログラム辞書みたいな機能が増えるかもしれない。
-struct Word: Hashable {
-    typealias Word = String
-    let word: Word
-    let annotation: Annotation?
-
-    init(_ word: String, annotation: Annotation? = nil) {
-        self.word = word
-        self.annotation = annotation
-    }
-
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(word)
-    }
-}
-
-/// 複数の辞書から引いた、辞書ごとの注釈をもつことが可能なWord。
-struct ReferredWord: Equatable, Hashable {
-    let word: String
-    let annotations: [Annotation]
-
-    init(_ word: String, annotations: [Annotation] = []) {
-        self.word = word
-        self.annotations = annotations
-    }
-
-    static func ==(lhs: Self, rhs: Self) -> Bool {
-        return lhs.word == rhs.word
-    }
-
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(word)
-    }
-}
-
 protocol DictProtocol {
     /// 辞書を引き変換候補順に返す
     func refer(_ yomi: String) -> [Word]

@@ -903,7 +903,11 @@ class StateMachine {
         let candidates = dictionary.refer(yomi)
         var result = [ReferredWord]()
         for candidate in candidates {
-            if let word = result.first(where: { $0.word == candidate.word }) {
+            if let index = result.firstIndex(where: { $0.word == candidate.word }) {
+                // 注釈だけマージする
+                if let annotation = candidate.annotation {
+                    result[index].appendAnnotation(annotation)
+                }
             } else {
                 let annotations: [Annotation]
                 if let annotation = candidate.annotation {

@@ -87,7 +87,7 @@ class UserDict: DictProtocol {
     private func load() throws {
         try fileHandle.seek(toOffset: 0)
         if let data = try fileHandle.readToEnd(), let source = String(data: data, encoding: .utf8) {
-            let userDict = try MemoryDict(dictId: "ユーザー辞書", source: source)
+            let userDict = try MemoryDict(dictId: Annotation.userDictId, source: source)
             userDictEntries = userDict.entries
             logger.log("ユーザー辞書から \(userDict.entries.count) エントリ読み込みました")
         }
