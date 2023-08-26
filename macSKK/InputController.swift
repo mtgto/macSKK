@@ -15,7 +15,8 @@ class InputController: IMKInputController {
     private static let notFoundRange = NSRange(location: NSNotFound, length: NSNotFound)
     private let inputModePanel: InputModePanel
     private let candidatesPanel: CandidatesPanel
-    private let selectedWord = PassthroughSubject<Word, Never>()
+    /// 変換候補として選択されている単語を流すストリーム
+    private let selectedWord = PassthroughSubject<Word?, Never>()
 
     override init!(server: IMKServer!, delegate: Any!, client inputClient: Any!) {
         inputModePanel = InputModePanel()
@@ -80,6 +81,8 @@ class InputController: IMKInputController {
                     }
                 }
             } else {
+                // 変換→キャンセル→再変換しても注釈が表示されなくならないように状態を変えておく
+                self?.selectedWord.send(nil)
                 self?.candidatesPanel.orderOut(nil)
             }
         }.store(in: &cancellables)
@@ -92,7 +95,7 @@ class InputController: IMKInputController {
         candidatesPanel.viewModel.$doubleSelected.compactMap { $0 }.sink { [weak self] doubleSelected in
             self?.stateMachine.didDoubleSelectCandidate(doubleSelected)
         }.store(in: &cancellables)
-        selectedWord.removeDuplicates().sink { [weak self] word in
+        selectedWord.removeDuplicates().compactMap({ $0 }).sink { [weak self] word in
             if let systemAnnotation = SystemDict.lookup(word.word), !systemAnnotation.isEmpty {
                 self?.candidatesPanel.setSystemAnnotation(systemAnnotation, for: word)
                 self?.candidatesPanel.show()
