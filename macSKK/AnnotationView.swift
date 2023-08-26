@@ -44,6 +44,7 @@ struct AnnotationView: View {
                     }
                 }
             }
+            .scrollBounceBehavior(.basedOnSize)
         }
     }
 }
