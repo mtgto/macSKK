@@ -10,6 +10,9 @@ jobs:
   test:
     runs-on: macos-13
     steps:
+    # https://github.com/actions/runner-images/blob/main/images/macos/macos-13-Readme.md#xcode
+    - name: Select Xcode version
+      run: sudo xcode-select -s '/Applications/Xcode_14.3.1.app/Contents/Developer'
     - uses: actions/checkout@v3
     - name: test
       run: |

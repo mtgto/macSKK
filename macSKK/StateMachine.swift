@@ -90,6 +90,7 @@ class StateMachine {
                         updateMarkedText()
                     } else {
                         state.inputMode = unregisterState.prev.mode
+                        updateCandidates(selecting: unregisterState.prev.selecting)
                         state.inputMethod = .selecting(unregisterState.prev.selecting)
                         state.specialState = nil
                         updateMarkedText()
@@ -144,6 +145,7 @@ class StateMachine {
                     state.inputMethod = .composing(registerState.prev.composing)
                 case .unregister(let unregisterState):
                     state.inputMode = unregisterState.prev.mode
+                    updateCandidates(selecting: unregisterState.prev.selecting)
                     state.inputMethod = .selecting(unregisterState.prev.selecting)
                 }
                 state.specialState = nil
@@ -371,11 +373,12 @@ class StateMachine {
                         inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
                     }
                 } else {
-                    state.inputMethod = .selecting(
-                        SelectingState(
-                            prev: SelectingState.PrevState(mode: state.inputMode, composing: trimmedComposing),
-                            yomi: yomiText, candidates: candidates, candidateIndex: 0,
-                            cursorPosition: action.cursorPosition))
+                    let selectingState = SelectingState(
+                        prev: SelectingState.PrevState(mode: state.inputMode, composing: trimmedComposing),
+                        yomi: yomiText, candidates: candidates, candidateIndex: 0,
+                        cursorPosition: action.cursorPosition)
+                    updateCandidates(selecting: selectingState)
+                    state.inputMethod = .selecting(selectingState)
                 }
                 updateMarkedText()
                 return true
@@ -611,11 +614,12 @@ class StateMachine {
                                 inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
                             }
                         } else {
-                            state.inputMethod = .selecting(
-                                SelectingState(
-                                    prev: SelectingState.PrevState(mode: state.inputMode, composing: newComposing),
-                                    yomi: yomiText, candidates: candidates, candidateIndex: 0,
-                                    cursorPosition: action.cursorPosition))
+                            let selectingState = SelectingState(
+                                prev: SelectingState.PrevState(mode: state.inputMode, composing: newComposing),
+                                yomi: yomiText, candidates: candidates, candidateIndex: 0,
+                                cursorPosition: action.cursorPosition)
+                            updateCandidates(selecting: selectingState)
+                            state.inputMethod = .selecting(selectingState)
                         }
                     }
                 } else {  // !result.input.isEmpty
@@ -873,19 +877,23 @@ class StateMachine {
 
     /// 現在の変換候補選択状態をcandidateEventSubject.sendする
     private func updateCandidates(selecting: SelectingState?) {
-        if let selecting, selecting.candidateIndex >= inlineCandidateCount {
-            var start = selecting.candidateIndex - inlineCandidateCount
-            let currentPage = start / displayCandidateCount
-            let totalPageCount = (selecting.candidates.count - inlineCandidateCount - 1) / displayCandidateCount + 1
-            start = start - start % displayCandidateCount + inlineCandidateCount
-            let candidates = selecting.candidates[start..<min(start + displayCandidateCount, selecting.candidates.count)]
-            candidateEventSubject.send(
-                Candidates(
-                    words: Array(candidates),
-                    currentPage: currentPage,
-                    totalPageCount: totalPageCount,
-                    selected: selecting.candidates[selecting.candidateIndex],
-                    cursorPosition: selecting.cursorPosition))
+        if let selecting {
+            if selecting.candidateIndex < inlineCandidateCount {
+                candidateEventSubject.send(
+                    Candidates(page: nil,
+                               selected: selecting.candidates[selecting.candidateIndex],
+                               cursorPosition: selecting.cursorPosition))
+            } else {
+                var start = selecting.candidateIndex - inlineCandidateCount
+                let currentPage = start / displayCandidateCount
+                let totalPageCount = (selecting.candidates.count - inlineCandidateCount - 1) / displayCandidateCount + 1
+                start = start - start % displayCandidateCount + inlineCandidateCount
+                let candidates = selecting.candidates[start..<min(start + displayCandidateCount, selecting.candidates.count)]
+                candidateEventSubject.send(
+                    Candidates(page: Candidates.Page(words: Array(candidates), current: currentPage, total: totalPageCount),
+                               selected: selecting.candidates[selecting.candidateIndex],
+                               cursorPosition: selecting.cursorPosition))
+            }
         } else {
             candidateEventSubject.send(nil)
         }

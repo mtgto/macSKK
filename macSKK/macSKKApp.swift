@@ -26,7 +26,7 @@ struct macSKKApp: App {
     private let userNotificationDelegate = UserNotificationDelegate()
     @State private var fetchReleaseTask: Task<Void, Error>?
     #if DEBUG
-    private let panel: CandidatesPanel = CandidatesPanel()
+    private let candidatesPanel: CandidatesPanel = CandidatesPanel()
     private let inputModePanel = InputModePanel()
     #endif
 
@@ -78,15 +78,26 @@ struct macSKKApp: App {
                     }
                 }.keyboardShortcut("S")
                 #if DEBUG
+                Button("AnnotationsPanel") {
+                    let word = Word("インライン", annotation: String(repeating: "これはインラインのテスト用注釈です", count: 5))
+                    candidatesPanel.setCandidates(.inline, selected: word)
+                    candidatesPanel.setCursorPosition(NSRect(origin: NSPoint(x: 100, y: 640), size: CGSize(width: 0, height: 30)))
+                    candidatesPanel.show()
+                }
+                Button("SystemAnnotation") {
+                    let word = Word("インライン", annotation: String(repeating: "これはインラインのテスト用注釈です", count: 5))
+                    candidatesPanel.viewModel.systemAnnotations = [word: (String(repeating: "これはシステム辞書の注釈です。", count: 5))]
+                }
                 Button("Show CandidatesPanel") {
                     let words = [Word("こんにちは", annotation: "辞書の注釈"), Word("こんばんは"), Word("おはようございます")]
-                    panel.setCandidates(CurrentCandidates(words: words, currentPage: 0, totalPageCount: 1), selected: words.first)
-                    panel.show(cursorPosition: NSRect(origin: NSPoint(x: 100, y: 20), size: CGSize(width: 0, height: 30)))
+                    candidatesPanel.setCandidates(.panel(words: words, currentPage: 0, totalPageCount: 1), selected: words.first)
+                    candidatesPanel.setCursorPosition(NSRect(origin: NSPoint(x: 100, y: 20), size: CGSize(width: 0, height: 30)))
+                    candidatesPanel.show()
                 }
                 Button("Add Word") {
                     let words = [Word("こんにちは", annotation: "辞書の注釈"), Word("こんばんは"), Word("おはようございます"), Word("追加したよ", annotation: "辞書の注釈")]
-                    panel.setCandidates(CurrentCandidates(words: words, currentPage: 0, totalPageCount: 1), selected: words.last)
-                    panel.viewModel.systemAnnotations = [words.last!: String(repeating: "これはシステム辞書の注釈です。", count: 5)]
+                    candidatesPanel.setCandidates(.panel(words: words, currentPage: 0, totalPageCount: 1), selected: words.last)
+                    candidatesPanel.viewModel.systemAnnotations = [words.last!: String(repeating: "これはシステム辞書の注釈です。", count: 5)]
                 }
                 Button("InputMode Panel") {
                     inputModePanel.show(at: NSPoint(x: 200, y: 200), mode: .hiragana, privateMode: true)

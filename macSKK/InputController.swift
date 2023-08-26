@@ -15,7 +15,8 @@ class InputController: IMKInputController {
     private static let notFoundRange = NSRange(location: NSNotFound, length: NSNotFound)
     private let inputModePanel: InputModePanel
     private let candidatesPanel: CandidatesPanel
-    private let selectedWord = PassthroughSubject<Word, Never>()
+    /// 変換候補として選択されている単語を流すストリーム
+    private let selectedWord = PassthroughSubject<Word?, Never>()
 
     override init!(server: IMKServer!, delegate: Any!, client inputClient: Any!) {
         inputModePanel = InputModePanel()
@@ -59,21 +60,33 @@ class InputController: IMKInputController {
         }.store(in: &cancellables)
         stateMachine.candidateEvent.sink { [weak self] candidates in
             if let candidates {
-                let currentCandidates = CurrentCandidates(
-                    words: candidates.words,
-                    currentPage: candidates.currentPage,
-                    totalPageCount: candidates.totalPageCount)
-                self?.candidatesPanel.setCandidates(currentCandidates, selected: candidates.selected)
-                self?.selectedWord.send(candidates.selected)
                 // 下線のスタイルがthickのときに被らないように1ピクセル下に余白を設ける
                 var cursorPosition = candidates.cursorPosition.offsetBy(dx: 0, dy: -1)
                 cursorPosition.size.height += 1
-                self?.candidatesPanel.show(cursorPosition: cursorPosition)
+                self?.candidatesPanel.setCursorPosition(cursorPosition)
+
+                if let page = candidates.page {
+                    let currentCandidates: CurrentCandidates = .panel(words: page.words,
+                                                                      currentPage: page.current,
+                                                                      totalPageCount: page.total)
+                    self?.candidatesPanel.setCandidates(currentCandidates, selected: candidates.selected)
+                    self?.selectedWord.send(candidates.selected)
+                    self?.candidatesPanel.show()
+                } else {
+                    self?.candidatesPanel.setCandidates(.inline, selected: candidates.selected)
+                    self?.selectedWord.send(candidates.selected)
+                    if candidates.selected.annotation != nil {
+                        self?.candidatesPanel.setCandidates(.inline, selected: candidates.selected)
+                        self?.candidatesPanel.show()
+                    }
+                }
             } else {
+                // 変換→キャンセル→再変換しても注釈が表示されなくならないように状態を変えておく
+                self?.selectedWord.send(nil)
                 self?.candidatesPanel.orderOut(nil)
             }
         }.store(in: &cancellables)
-        candidatesPanel.viewModel.$selected.compactMap { $0 }.sink { [weak self] selected in
+        candidatesPanel.viewModel.$selected.compactMap { $0 }.sink { [weak self] (selected: Word) in
             self?.stateMachine.didSelectCandidate(selected)
             // TODO: バックグラウンドで引いて表示のときだけフォアグラウンドで処理をさせたい
             // TODO: 一度引いた単語を二度引かないようにしたい
@@ -82,9 +95,10 @@ class InputController: IMKInputController {
         candidatesPanel.viewModel.$doubleSelected.compactMap { $0 }.sink { [weak self] doubleSelected in
             self?.stateMachine.didDoubleSelectCandidate(doubleSelected)
         }.store(in: &cancellables)
-        selectedWord.removeDuplicates().sink { [weak self] word in
+        selectedWord.removeDuplicates().compactMap({ $0 }).sink { [weak self] word in
             if let systemAnnotation = SystemDict.lookup(word.word), !systemAnnotation.isEmpty {
                 self?.candidatesPanel.setSystemAnnotation(systemAnnotation, for: word)
+                self?.candidatesPanel.show()
             }
         }.store(in: &cancellables)
     }
