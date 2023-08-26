@@ -16,7 +16,7 @@ class InputController: IMKInputController {
     private let inputModePanel: InputModePanel
     private let candidatesPanel: CandidatesPanel
     /// 変換候補として選択されている単語を流すストリーム
-    private let selectedWord = PassthroughSubject<Word?, Never>()
+    private let selectedWord = PassthroughSubject<Word.Word?, Never>()
 
     override init!(server: IMKServer!, delegate: Any!, client inputClient: Any!) {
         inputModePanel = InputModePanel()
@@ -70,12 +70,12 @@ class InputController: IMKInputController {
                                                                       currentPage: page.current,
                                                                       totalPageCount: page.total)
                     self?.candidatesPanel.setCandidates(currentCandidates, selected: candidates.selected)
-                    self?.selectedWord.send(candidates.selected)
+                    self?.selectedWord.send(candidates.selected.word)
                     self?.candidatesPanel.show()
                 } else {
                     self?.candidatesPanel.setCandidates(.inline, selected: candidates.selected)
-                    self?.selectedWord.send(candidates.selected)
-                    if candidates.selected.annotation != nil {
+                    self?.selectedWord.send(candidates.selected.word)
+                    if !candidates.selected.annotations.isEmpty {
                         self?.candidatesPanel.setCandidates(.inline, selected: candidates.selected)
                         self?.candidatesPanel.show()
                     }
@@ -86,17 +86,17 @@ class InputController: IMKInputController {
                 self?.candidatesPanel.orderOut(nil)
             }
         }.store(in: &cancellables)
-        candidatesPanel.viewModel.$selected.compactMap { $0 }.sink { [weak self] (selected: Word) in
+        candidatesPanel.viewModel.$selected.compactMap { $0 }.sink { [weak self] selected in
             self?.stateMachine.didSelectCandidate(selected)
             // TODO: バックグラウンドで引いて表示のときだけフォアグラウンドで処理をさせたい
             // TODO: 一度引いた単語を二度引かないようにしたい
-            self?.selectedWord.send(selected)
+            self?.selectedWord.send(selected.word)
         }.store(in: &cancellables)
         candidatesPanel.viewModel.$doubleSelected.compactMap { $0 }.sink { [weak self] doubleSelected in
             self?.stateMachine.didDoubleSelectCandidate(doubleSelected)
         }.store(in: &cancellables)
         selectedWord.removeDuplicates().compactMap({ $0 }).sink { [weak self] word in
-            if let systemAnnotation = SystemDict.lookup(word.word), !systemAnnotation.isEmpty {
+            if let systemAnnotation = SystemDict.lookup(word), !systemAnnotation.isEmpty {
                 self?.candidatesPanel.setSystemAnnotation(systemAnnotation, for: word)
                 self?.candidatesPanel.show()
             }

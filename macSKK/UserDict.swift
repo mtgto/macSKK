@@ -87,17 +87,17 @@ class UserDict: DictProtocol {
     private func load() throws {
         try fileHandle.seek(toOffset: 0)
         if let data = try fileHandle.readToEnd(), let source = String(data: data, encoding: .utf8) {
-            let userDict = try MemoryDict(source: source)
+            let userDict = try MemoryDict(dictId: "ユーザー辞書", source: source)
             userDictEntries = userDict.entries
             logger.log("ユーザー辞書から \(userDict.entries.count) エントリ読み込みました")
         }
     }
 
     // MARK: DictProtocol
-    func refer(_ word: String) -> [Word] {
-        var result = userDictEntries[word] ?? []
+    func refer(_ yomi: String) -> [Word] {
+        var result = userDictEntries[yomi] ?? []
         if privateMode.value {
-            let founds = privateUserDictEntries[word] ?? []
+            let founds = privateUserDictEntries[yomi] ?? []
             founds.forEach { found in
                 if !result.contains(found) {
                     result.append(found)
@@ -105,7 +105,7 @@ class UserDict: DictProtocol {
             }
         }
         dicts.forEach { dict in
-            dict.refer(word).forEach { found in
+            dict.refer(yomi).forEach { found in
                 if !result.contains(found) {
                     result.append(found)
                 }
@@ -160,10 +160,10 @@ class UserDict: DictProtocol {
     ///   - yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
     ///   - word: SKK辞書の変換候補。
     /// - Returns: エントリを削除できたかどうか
-    func delete(yomi: String, word: Word) -> Bool {
+    func delete(yomi: String, word: Word.Word) -> Bool {
         if privateMode.value {
             if var entries = privateUserDictEntries[yomi] {
-                if let index = entries.firstIndex(of: word) {
+                if let index = entries.firstIndex(where: { $0.word == word }) {
                     entries.remove(at: index)
                     privateUserDictEntries[yomi] = entries
                     return true
@@ -171,7 +171,7 @@ class UserDict: DictProtocol {
             }
         } else {
             if var entries = userDictEntries[yomi] {
-                if let index = entries.firstIndex(of: word) {
+                if let index = entries.firstIndex(where: { $0.word == word }) {
                     entries.remove(at: index)
                     userDictEntries[yomi] = entries
                     return true
@@ -212,7 +212,7 @@ class UserDict: DictProtocol {
     private func serializeWords(_ words: [Word]) -> String {
         return words.map { word in
             if let annotation = word.annotation {
-                return word.word + ";" + annotation
+                return word.word + ";" + annotation.text
             } else {
                 return word.word
             }

@@ -3,14 +3,22 @@
 
 import Foundation
 
+/// 見出し語の注釈
+struct Annotation: Equatable {
+    // SKK-JISYO.Lなど。
+    let dictId: FileDict.ID
+    let text: String
+}
+
 /// 辞書に登録する言葉。
 ///
 /// - NOTE: 将来プログラム辞書みたいな機能が増えるかもしれない。
 struct Word: Hashable {
-    let word: String
-    let annotation: String?
+    typealias Word = String
+    let word: Word
+    let annotation: Annotation?
 
-    init(_ word: String, annotation: String? = nil) {
+    init(_ word: String, annotation: Annotation? = nil) {
         self.word = word
         self.annotation = annotation
     }
@@ -20,9 +28,28 @@ struct Word: Hashable {
     }
 }
 
+/// 複数の辞書から引いた、辞書ごとの注釈をもつことが可能なWord。
+struct ReferredWord: Equatable, Hashable {
+    let word: String
+    let annotations: [Annotation]
+
+    init(_ word: String, annotations: [Annotation] = []) {
+        self.word = word
+        self.annotations = annotations
+    }
+
+    static func ==(lhs: Self, rhs: Self) -> Bool {
+        return lhs.word == rhs.word
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(word)
+    }
+}
+
 protocol DictProtocol {
     /// 辞書を引き変換候補順に返す
-    func refer(_ word: String) -> [Word]
+    func refer(_ yomi: String) -> [Word]
 }
 
 /// 実ファイルをもつSKK辞書
@@ -41,13 +68,13 @@ struct FileDict: DictProtocol, Identifiable {
         self.fileURL = fileURL
         self.encoding = encoding
         let source = try String(contentsOf: fileURL, encoding: encoding)
-        let memoryDict = try MemoryDict(source: source)
+        let memoryDict = try MemoryDict(dictId: id, source: source)
         entries = memoryDict.entries
     }
 
     // MARK: DictProtocol
-    func refer(_ word: String) -> [Word] {
-        return entries[word] ?? []
+    func refer(_ yomi: String) -> [Word] {
+        return entries[yomi] ?? []
     }
 
     // MARK: Hashable
@@ -60,7 +87,7 @@ struct FileDict: DictProtocol, Identifiable {
 struct MemoryDict: DictProtocol {
     let entries: [String: [Word]]
 
-    init(source: String) throws {
+    init(dictId: FileDict.ID, source: String) throws {
         var dict: [String: [Word]] = [:]
         let pattern = try Regex(#"^(\S+) (/(?:[^/\n\r]+/)+)$"#).anchorsMatchLineEndings()
         for match in source.matches(of: pattern) {
@@ -68,7 +95,7 @@ struct MemoryDict: DictProtocol {
             guard let wordsText = match.output[2].substring else { continue }
             let words = wordsText.split(separator: Character("/")).map { word -> Word in
                 let words = word.split(separator: Character(";"), maxSplits: 1)
-                let annotation = words.count == 2 ? Self.decode(String(words[1])) : nil
+                let annotation = words.count == 2 ? Annotation(dictId: dictId, text: Self.decode(String(words[1]))) : nil
                 return Word(Self.decode(String(words[0])), annotation: annotation)
             }
             dict[String(word)] = words
@@ -81,8 +108,8 @@ struct MemoryDict: DictProtocol {
     }
 
     // MARK: DictProtocol
-    func refer(_ word: String) -> [Word] {
-        return entries[word] ?? []
+    func refer(_ yomi: String) -> [Word] {
+        return entries[yomi] ?? []
     }
 
     static func decode(_ word: String) -> String {

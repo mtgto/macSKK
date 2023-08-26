@@ -14,7 +14,7 @@ enum CurrentCandidates {
     ///   - words: 現在表示されている変換候補
     ///   - currentPage: wordsが全体の変換候補表示の何ページ目かという数値 (0オリジン)
     ///   - totalPageCount: 全体の変換候補表示の最大ページ数
-    case panel(words: [Word], /// 現在表示されている変換候補
+    case panel(words: [ReferredWord], /// 現在表示されている変換候補
                currentPage: Int,
                totalPageCount: Int)
 }
@@ -22,33 +22,33 @@ enum CurrentCandidates {
 @MainActor
 final class CandidatesViewModel: ObservableObject {
     @Published var candidates: CurrentCandidates
-    @Published var selected: Word?
+    @Published var selected: ReferredWord?
     /// 二回連続で同じ値がセットされた (マウスで選択されたとき)
-    @Published var doubleSelected: Word?
-    /// 選択中の変換候補のシステム辞書での注釈
-    @Published var systemAnnotations = Dictionary<Word, String>()
+    @Published var doubleSelected: ReferredWord?
+    /// 選択中の変換候補のシステム辞書での注釈。キーは変換候補
+    @Published var systemAnnotations = Dictionary<Word.Word, String>()
     @Published var popoverIsPresented: Bool = false
     @Published var selectedIndex: Int?
     @Published var selectedSystemAnnotation: String?
-    @Published var selectedAnnotation: String?
+    @Published var selectedAnnotations: [Annotation] = []
     private var cancellables: Set<AnyCancellable> = []
 
-    init(candidates: [Word], currentPage: Int, totalPageCount: Int) {
+    init(candidates: [ReferredWord], currentPage: Int, totalPageCount: Int) {
         self.candidates = .panel(words: candidates, currentPage: currentPage, totalPageCount: totalPageCount)
         if let first = candidates.first {
             self.selected = first
         }
 
-        $selected.combineLatest($systemAnnotations).sink { (selected, systemAnnotations) in
+        $selected.combineLatest($systemAnnotations).sink { [weak self] (selected, systemAnnotations) in
             if let selected {
-                if case let .panel(words, _, _) = self.candidates {
-                    self.selectedIndex = words.firstIndex(of: selected)
+                self?.selectedAnnotations = selected.annotations
+                if case let .panel(words, _, _) = self?.candidates {
+                    self?.selectedIndex = words.firstIndex(of: selected)
                 } else {
-                    self.selectedIndex = nil
+                    self?.selectedIndex = nil
                 }
-                self.selectedAnnotation = selected.annotation
-                self.selectedSystemAnnotation = systemAnnotations[selected]
-                self.popoverIsPresented = (self.selectedAnnotation ?? self.selectedSystemAnnotation) != nil
+                self?.selectedSystemAnnotation = systemAnnotations[selected.word]
+                self?.popoverIsPresented = self?.selectedAnnotations != [] || self?.selectedSystemAnnotation != nil
             }
         }
         .store(in: &cancellables)

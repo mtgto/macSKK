@@ -83,7 +83,7 @@ class StateMachine {
                     if unregisterState.text == "yes" {
                         let word = unregisterState.prev.selecting.candidates[
                             unregisterState.prev.selecting.candidateIndex]
-                        _ = dictionary.delete(yomi: unregisterState.prev.selecting.yomi, word: word)
+                        _ = dictionary.delete(yomi: unregisterState.prev.selecting.yomi, word: word.word)
                         state.inputMode = unregisterState.prev.mode
                         state.inputMethod = .normal
                         state.specialState = nil
@@ -357,7 +357,7 @@ class StateMachine {
                 // 変換候補がないときは辞書登録へ
                 let trimmedComposing = composing.trim()
                 let yomiText = trimmedComposing.yomi(for: state.inputMode)
-                let candidates = dictionary.refer(yomiText)
+                let candidates = candidates(for: yomiText)
                 if candidates.isEmpty {
                     if specialState != nil {
                         // 登録中に変換不能な変換をした場合は空文字列に変換する
@@ -373,6 +373,7 @@ class StateMachine {
                         inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
                     }
                 } else {
+                    // TODO: 複数の辞書からの重複エントリを取り除く
                     let selectingState = SelectingState(
                         prev: SelectingState.PrevState(mode: state.inputMode, composing: trimmedComposing),
                         yomi: yomiText, candidates: candidates, candidateIndex: 0,
@@ -597,7 +598,7 @@ class StateMachine {
                                                           okuri: (okuri ?? []) + [moji],
                                                           romaji: "",
                                                           cursor: composing.cursor)
-                        let candidates = dictionary.refer(yomiText)
+                        let candidates = candidates(for: yomiText)
                         if candidates.isEmpty {
                             if specialState != nil {
                                 // 登録中に変換不能な変換をした場合は空文字列に変換する
@@ -683,7 +684,7 @@ class StateMachine {
     func handleSelecting(_ action: Action, selecting: SelectingState, specialState: SpecialState?) -> Bool {
         switch action.keyEvent {
         case .enter:
-            dictionary.add(yomi: selecting.yomi, word: selecting.candidates[selecting.candidateIndex])
+            addWordToUserDict(yomi: selecting.yomi, word: selecting.candidates[selecting.candidateIndex])
             updateCandidates(selecting: nil)
             state.inputMethod = .normal
             addFixedText(selecting.fixedText())
@@ -741,7 +742,7 @@ class StateMachine {
             return true
         case .stickyShift, .ctrlJ, .ctrlQ:
             // 選択中候補で確定
-            dictionary.add(yomi: selecting.yomi, word: selecting.candidates[selecting.candidateIndex])
+            addWordToUserDict(yomi: selecting.yomi, word: selecting.candidates[selecting.candidateIndex])
             updateCandidates(selecting: nil)
             addFixedText(selecting.fixedText())
             state.inputMethod = .normal
@@ -760,8 +761,7 @@ class StateMachine {
                     let diff = index - 1 - (selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount
                     if selecting.candidateIndex + diff < selecting.candidates.count {
                         let newSelecting = selecting.addCandidateIndex(diff: diff)
-                        dictionary.add(
-                            yomi: newSelecting.yomi, word: newSelecting.candidates[newSelecting.candidateIndex])
+                        addWordToUserDict(yomi: newSelecting.yomi, word: newSelecting.candidates[newSelecting.candidateIndex])
                         updateCandidates(selecting: nil)
                         state.inputMethod = .normal
                         addFixedText(newSelecting.fixedText())
@@ -770,7 +770,7 @@ class StateMachine {
                 }
             }
             // 選択中候補で確定
-            dictionary.add(yomi: selecting.yomi, word: selecting.candidates[selecting.candidateIndex])
+            addWordToUserDict(yomi: selecting.yomi, word: selecting.candidates[selecting.candidateIndex])
             updateCandidates(selecting: nil)
             addFixedText(selecting.fixedText())
             state.inputMethod = .normal
@@ -899,8 +899,32 @@ class StateMachine {
         }
     }
 
+    func candidates(for yomi: String) -> [ReferredWord] {
+        let candidates = dictionary.refer(yomi)
+        var result = [ReferredWord]()
+        for candidate in candidates {
+            if let word = result.first(where: { $0.word == candidate.word }) {
+            } else {
+                let annotations: [Annotation]
+                if let annotation = candidate.annotation {
+                    annotations = [annotation]
+                } else {
+                    annotations = []
+                }
+                result.append(ReferredWord(candidate.word, annotations: annotations))
+            }
+        }
+        return result
+    }
+
+    func addWordToUserDict(yomi: String, word referredWord: ReferredWord) {
+        // FIXME: ユーザー辞書に残す注釈は複数は載せられないので最初の1つを選択。もっといい方法があるかも? (連結するとか)
+        let word = Word(referredWord.word, annotation: referredWord.annotations.first)
+        dictionary.add(yomi: yomi, word: word)
+    }
+
     /// StateMachine外で選択されている変換候補が更新されたときに通知される
-    func didSelectCandidate(_ candidate: Word) {
+    func didSelectCandidate(_ candidate: ReferredWord) {
         if case .selecting(var selecting) = state.inputMethod {
             if let candidateIndex = selecting.candidates.firstIndex(of: candidate) {
                 selecting.candidateIndex = candidateIndex
@@ -911,9 +935,9 @@ class StateMachine {
     }
 
     /// StateMachine外で選択されている変換候補が二回選択されたときに通知される
-    func didDoubleSelectCandidate(_ candidate: Word) {
+    func didDoubleSelectCandidate(_ candidate: ReferredWord) {
         if case .selecting(let selecting) = state.inputMethod {
-            dictionary.add(yomi: selecting.yomi, word: candidate)
+            addWordToUserDict(yomi: selecting.yomi, word: candidate)
             updateCandidates(selecting: nil)
             state.inputMethod = .normal
             addFixedText(candidate.word)

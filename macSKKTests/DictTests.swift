@@ -21,7 +21,7 @@ class DictTests: XCTestCase {
             けい /京;10^16/
 
             """
-        let dict = try MemoryDict(source: source)
+        let dict = try MemoryDict(dictId: "testDict", source: source)
         XCTAssertEqual(dict.entries["あg"]?.map { $0.word }, ["挙", "揚", "上"])
         XCTAssertEqual(dict.entries["あb"]?.map { $0.word }, ["浴"])
         XCTAssertEqual(dict.entries["あ"]?.map { $0.word }, ["阿", "唖", "亜", "娃"])
@@ -36,9 +36,9 @@ class DictTests: XCTestCase {
             GPL /GNU General Public License;(concat "http:\\057\\057www.gnu.org\\057licenses\\057gpl.ja.html")/
 
             """
-        let dict = try MemoryDict(source: source)
+        let dict = try MemoryDict(dictId: "testDict", source: source)
         XCTAssertEqual(dict.entries["わi"]?.map { $0.word }, ["湧", "沸", "涌"])
         XCTAssertEqual(dict.entries["ao"]?.map { $0.word }, ["and/or"])
-        XCTAssertEqual(dict.entries["GPL"]?.map { $0.annotation }, ["http://www.gnu.org/licenses/gpl.ja.html"])
+        XCTAssertEqual(dict.entries["GPL"]?.map { $0.annotation?.text }, ["http://www.gnu.org/licenses/gpl.ja.html"])
     }
 }
