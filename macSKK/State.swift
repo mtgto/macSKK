@@ -526,6 +526,15 @@ enum Candidates: Equatable {
             return selected
         }
     }
+
+    var cursorPosition: NSRect {
+        switch self {
+        case let .inline(_, cursorPosition):
+            return cursorPosition
+        case let .panel(_, _, _, _, cursorPosition):
+            return cursorPosition
+        }
+    }
 }
 
 struct IMEState {

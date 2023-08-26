@@ -59,29 +59,25 @@ class InputController: IMKInputController {
         }.store(in: &cancellables)
         stateMachine.candidateEvent.sink { [weak self] candidates in
             if let candidates {
+                // 下線のスタイルがthickのときに被らないように1ピクセル下に余白を設ける
+                var cursorPosition = candidates.cursorPosition.offsetBy(dx: 0, dy: -1)
+                cursorPosition.size.height += 1
+                self?.candidatesPanel.setCursorPosition(cursorPosition)
+
                 switch candidates {
-                case let .inline(selected, cursorPosition):
-                    // 下線のスタイルがthickのときに被らないように1ピクセル下に余白を設ける
-                    var cursorPosition = cursorPosition.offsetBy(dx: 0, dy: -1)
-                    cursorPosition.size.height += 1
-                    self?.candidatesPanel.setCursorPosition(cursorPosition)
+                case let .inline(selected, _):
                     self?.candidatesPanel.setCandidates(.inline, selected: selected)
                     self?.selectedWord.send(selected)
                     if selected.annotation != nil {
                         self?.candidatesPanel.setCandidates(.inline, selected: selected)
                         self?.candidatesPanel.show()
-                        logger.log("インラインで注釈を表示")
                     }
-                case let .panel(words, currentPage, totalPageCount, selected, cursorPosition):
+                case let .panel(words, currentPage, totalPageCount, selected, _):
                     let currentCandidates: CurrentCandidates = .panel(words: words,
                                                                       currentPage: currentPage,
                                                                       totalPageCount: totalPageCount)
                     self?.candidatesPanel.setCandidates(currentCandidates, selected: selected)
                     self?.selectedWord.send(selected)
-                    // 下線のスタイルがthickのときに被らないように1ピクセル下に余白を設ける
-                    var cursorPosition = cursorPosition.offsetBy(dx: 0, dy: -1)
-                    cursorPosition.size.height += 1
-                    self?.candidatesPanel.setCursorPosition(cursorPosition)
                     self?.candidatesPanel.show()
                 }
             } else {
@@ -98,11 +94,9 @@ class InputController: IMKInputController {
             self?.stateMachine.didDoubleSelectCandidate(doubleSelected)
         }.store(in: &cancellables)
         selectedWord.removeDuplicates().sink { [weak self] word in
-            logger.log("選択された \(word.word, privacy: .public), \(word.annotation ?? "nil", privacy: .public)")
             if let systemAnnotation = SystemDict.lookup(word.word), !systemAnnotation.isEmpty {
                 self?.candidatesPanel.setSystemAnnotation(systemAnnotation, for: word)
                 self?.candidatesPanel.show()
-                logger.log("インラインでシステム辞書の注釈を表示")
             }
         }.store(in: &cancellables)
     }
