@@ -1,6 +1,7 @@
 "MenuItemPreference" = "設定…";
 "MenuItemSaveDict" = "ユーザー辞書を今すぐ保存";
-"MenuPrivateMode" = "プライベートモード";
+"MenuItemPrivateMode" = "プライベートモード";
+"MenuItemDirectInput" = "\"%@\"では直接入力";
 "SettingsNameSoftwareUpdate" = "ソフトウェアアップデート";
 "SettingsNameDictionaries" = "辞書";
 "SettingsNameKeyEvent" = "キーイベント";

@@ -10,7 +10,15 @@ import InputMethodKit
 @MainActor
 @objc(InputController)
 class InputController: IMKInputController {
+    /// 入力元のアプリケーション情報
+    struct TargetApplication {
+        let bundleIdentifier: String
+        // FIXME: NSRunningApplicationから取得するので、表示名が取れないときもあるかもしれない?
+        let localizedName: String?
+    }
+
     private let stateMachine = StateMachine()
+    private var targetApp: TargetApplication! = nil
     private var cancellables: Set<AnyCancellable> = []
     private static let notFoundRange = NSRange(location: NSNotFound, length: NSNotFound)
     private let inputModePanel: InputModePanel
@@ -25,6 +33,15 @@ class InputController: IMKInputController {
 
         guard let textInput = inputClient as? IMKTextInput else {
             return
+        }
+        if let bundleIdentifier = textInput.bundleIdentifier() {
+            targetApp = TargetApplication(bundleIdentifier: bundleIdentifier, localizedName: nil)
+            for app in NSRunningApplication.runningApplications(withBundleIdentifier: bundleIdentifier) {
+                if let localizedName = app.localizedName {
+                    targetApp = TargetApplication(bundleIdentifier: bundleIdentifier, localizedName: localizedName)
+                    break
+                }
+            }
         }
 
         stateMachine.inputMethodEvent.sink { [weak self] event in
@@ -127,11 +144,15 @@ class InputController: IMKInputController {
         preferenceMenu.addItem(
             withTitle: NSLocalizedString("MenuItemSaveDict", comment: "Save User Dictionary"),
             action: #selector(saveDict), keyEquivalent: "")
-        let privateModeItem = NSMenuItem(title: NSLocalizedString("MenuPrivateMode", comment: "Private mode"),
+        let privateModeItem = NSMenuItem(title: NSLocalizedString("MenuItemPrivateMode", comment: "Private mode"),
                                          action: #selector(togglePrivateMode),
                                          keyEquivalent: "")
         privateModeItem.state = privateMode.value ? .on : .off
         preferenceMenu.addItem(privateModeItem)
+        let directModeItem = NSMenuItem(title: String(format: NSLocalizedString("MenuItemDirectInput", comment: "\"%@\"では直接入力"), targetApp.localizedName ?? "?"),
+                                        action: #selector(toggleDirectMode),
+                                        keyEquivalent: "")
+        preferenceMenu.addItem(directModeItem)
         #if DEBUG
         // デバッグ用
         preferenceMenu.addItem(
@@ -189,6 +210,11 @@ class InputController: IMKInputController {
 
     @objc func togglePrivateMode() {
         privateMode.send(!privateMode.value)
+    }
+
+    /// 現在最前面にあるアプリからの入力をハンドルしないかどうかを切り替える
+    @objc func toggleDirectMode() {
+
     }
 
     #if DEBUG
