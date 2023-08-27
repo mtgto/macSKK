@@ -2,8 +2,9 @@
 "MenuItemSaveDict" = "ユーザー辞書を今すぐ保存";
 "MenuItemPrivateMode" = "プライベートモード";
 "MenuItemDirectInput" = "\"%@\"では直接入力";
-"SettingsNameSoftwareUpdate" = "ソフトウェアアップデート";
 "SettingsNameDictionaries" = "辞書";
+"SettingsNameSoftwareUpdate" = "ソフトウェアアップデート";
+"SettingsNameDirectMode" = "直接入力";
 "SettingsNameKeyEvent" = "キーイベント";
 "SettingsNameSystemDict" = "システム辞書";
 "SettingsOpenDictionaryFolder" = "辞書フォルダをFinderで表示";

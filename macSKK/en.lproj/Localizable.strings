@@ -2,8 +2,9 @@
 "MenuItemSaveDict" = "Save User Dictionary";
 "MenuPrivateMode" = "Private mode";
 "MenuItemDirectInput" = "Direct input from \"%@\"";
-"SettingsNameSoftwareUpdate" = "Software Update";
 "SettingsNameDictionaries" = "Dictionaries";
+"SettingsNameSoftwareUpdate" = "Software Update";
+"SettingsNameDirectMode" = "Direct Mode";
 "SettingsNameKeyEvent" = "Key Event";
 "SettingsNameSystemDict" = "System Dict";
 "SettingsOpenDictionaryFolder" = "Show Dictionaries in Finder";

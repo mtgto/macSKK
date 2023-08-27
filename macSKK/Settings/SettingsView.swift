@@ -8,6 +8,7 @@ struct SettingsView: View {
     enum Section: String, CaseIterable {
         case dictionaries = "SettingsNameDictionaries"
         case softwareUpdate = "SettingsNameSoftwareUpdate"
+        case directMode = "SettingsNameDirectMode"
         #if DEBUG
         case keyEvent = "SettingsNameKeyEvent"
         case systemDict = "SettingsNameSystemDict"
@@ -27,6 +28,8 @@ struct SettingsView: View {
                         Label(section.localizedStringKey, systemImage: "books.vertical")
                     case .softwareUpdate:
                         Label(section.localizedStringKey, systemImage: "gear.badge")
+                    case .directMode:
+                        Label(section.localizedStringKey, systemImage: "hand.raised.app")
                     #if DEBUG
                     case .keyEvent:
                         Label(section.localizedStringKey, systemImage: "keyboard")
@@ -45,6 +48,9 @@ struct SettingsView: View {
                     .navigationTitle(selectedSection.localizedStringKey)
             case .softwareUpdate:
                 SoftwareUpdateView(settingsViewModel: settingsViewModel)
+                    .navigationTitle(selectedSection.localizedStringKey)
+            case .directMode:
+                DirectModeView(bundleIdentifiers: $settingsViewModel.directModeBundleIdentifiers)
                     .navigationTitle(selectedSection.localizedStringKey)
             #if DEBUG
             case .keyEvent:

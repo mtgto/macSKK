@@ -10,6 +10,12 @@ import os
 let logger: Logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "main")
 var dictionary: UserDict!
 let privateMode = CurrentValueSubject<Bool, Never>(false)
+// 直接入力するアプリケーションのBundleIdentifierの集合のコピー。
+// マスターはSettingsViewModelがもっているが、InputControllerからAppが参照できないのでグローバル変数にコピーしている。
+// FIXME: NotificationCenter経由で設定画面で変更したことを各InputControllerに通知するようにしてこの変数は消すかも。
+let directModeBundleIdentifiers = CurrentValueSubject<[String], Never>([])
+// 直接入力モードを切り替えたいときに通知される通知の名前。
+let notificationNameToggleDirectMode = Notification.Name("toggleDirectMode")
 
 func isTest() -> Bool {
     return ProcessInfo.processInfo.environment["MACSKK_IS_TEST"] == "1"
@@ -25,6 +31,7 @@ struct macSKKApp: App {
     private let dictionariesDirectoryUrl: URL
     private let userNotificationDelegate = UserNotificationDelegate()
     @State private var fetchReleaseTask: Task<Void, Error>?
+    private var cancellables: Set<AnyCancellable> = []
     #if DEBUG
     private let candidatesPanel: CandidatesPanel = CandidatesPanel()
     private let inputModePanel = InputModePanel()
@@ -61,6 +68,9 @@ struct macSKKApp: App {
             }
             setupNotification()
             setupReleaseFetcher()
+            settingsViewModel.$directModeBundleIdentifiers.sink { bundleIdentifiers in
+                directModeBundleIdentifiers.send(bundleIdentifiers)
+            }.store(in: &cancellables)
         }
     }
 
@@ -145,9 +155,15 @@ struct macSKKApp: App {
     }
 
     // UNNotificationの設定
-    private func setupNotification() {
+    private mutating func setupNotification() {
         let center = UNUserNotificationCenter.current()
         center.delegate = userNotificationDelegate
+
+        NotificationCenter.default.publisher(for: notificationNameToggleDirectMode)
+            .sink { notification in
+
+            }
+            .store(in: &cancellables)
     }
 
     private func setupReleaseFetcher() {

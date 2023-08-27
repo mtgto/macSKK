@@ -88,6 +88,8 @@ final class SettingsViewModel: ObservableObject {
     @Published var dictSettings: [DictSetting] = []
     //// 利用可能な辞書の読み込み状態
     @Published var dictLoadingStatuses: [DictSetting.ID: LoadStatus] = [:]
+    /// 直接入力するアプリケーションのBundle Identifier
+    @Published var directModeBundleIdentifiers: [String] = []
     // 辞書ディレクトリ
     let dictionariesDirectoryUrl: URL
     // バックグラウンドでの辞書を読み込みで読み込み状態が変わったときに通知される
