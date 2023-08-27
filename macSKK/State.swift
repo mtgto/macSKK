@@ -286,7 +286,7 @@ struct SelectingState: Equatable, MarkedTextProtocol {
     /// 辞書登録する際の読み。ひらがなのみ、もしくは `ひらがな + アルファベット` もしくは `":" + アルファベット` (abbrev) のパターンがある
     let yomi: String
     /// 変換候補
-    let candidates: [Word]
+    let candidates: [ReferredWord]
     var candidateIndex: Int = 0
     /// カーソル位置。この位置を基に変換候補パネルを表示する
     let cursorPosition: NSRect
@@ -502,7 +502,7 @@ struct Candidates: Equatable {
     /// パネル形式のときの現在ページと最大ページ数。
     struct Page: Equatable {
         /// 現在表示される変換候補。全体の変換候補の一部。
-        let words: [Word]
+        let words: [ReferredWord]
         /// 全体の変換候補表示の何ページ目かという数値 (0オリジン)
         let current: Int
         /// 全体の変換候補表示の最大ページ数
@@ -511,7 +511,7 @@ struct Candidates: Equatable {
 
     /// パネル形式のときの現在ページと最大ページ数。インライン変換中はnil
     let page: Page?
-    let selected: Word
+    let selected: ReferredWord
     let cursorPosition: NSRect
 }
 

@@ -18,12 +18,12 @@ final class CandidatesPanel: NSPanel {
         contentViewController = viewController
     }
 
-    func setCandidates(_ candidates: CurrentCandidates, selected: Word?) {
+    func setCandidates(_ candidates: CurrentCandidates, selected: ReferredWord?) {
         viewModel.candidates = candidates
         viewModel.selected = selected
     }
 
-    func setSystemAnnotation(_ systemAnnotation: String, for word: Word) {
+    func setSystemAnnotation(_ systemAnnotation: String, for word: Word.Word) {
         viewModel.systemAnnotations.updateValue(systemAnnotation, forKey: word)
     }
 

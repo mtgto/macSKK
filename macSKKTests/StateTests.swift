@@ -137,7 +137,7 @@ final class StateTests: XCTestCase {
                 mode: .hiragana,
                 composing: ComposingState(isShift: true, text: ["あ"], romaji: "")),
             yomi: "あ",
-            candidates: [Word("亜")],
+            candidates: [ReferredWord("亜")],
             candidateIndex: 0,
             cursorPosition: .zero
         )
@@ -156,7 +156,7 @@ final class StateTests: XCTestCase {
                 )
             ),
             yomi: "あ",
-            candidates: [Word("有")],
+            candidates: [ReferredWord("有")],
             candidateIndex: 0,
             cursorPosition: .zero
         )
@@ -167,7 +167,7 @@ final class StateTests: XCTestCase {
         let composingState = ComposingState(isShift: true, text: ["お"], romaji: "")
         let selectingState = SelectingState(prev: SelectingState.PrevState(mode: .hiragana, composing: composingState),
                                             yomi: "お",
-                                            candidates: [Word("尾")],
+                                            candidates: [ReferredWord("尾")],
                                             candidateIndex: 0,
                                             cursorPosition: .zero)
         XCTAssertEqual(selectingState.markedTextElements(inputMode: .hiragana), [.markerSelect, .emphasized("尾")])
@@ -214,7 +214,7 @@ final class StateTests: XCTestCase {
                 )
             ),
             yomi: "あ",
-            candidates: [Word("有")],
+            candidates: [ReferredWord("有")],
             candidateIndex: 0,
             cursorPosition: .zero
         )
@@ -250,7 +250,7 @@ final class StateTests: XCTestCase {
         let composingState = ComposingState(isShift: true, text: ["い"], romaji: "")
         let selectingState = SelectingState(prev: SelectingState.PrevState(mode: .hiragana, composing: composingState),
                                             yomi: "い",
-                                            candidates: [Word("井")],
+                                            candidates: [ReferredWord("井")],
                                             candidateIndex: 0,
                                             cursorPosition: .zero)
         let state = IMEState(inputMode: .hiragana,
@@ -269,7 +269,7 @@ final class StateTests: XCTestCase {
         let composingState = ComposingState(isShift: true, text: ["お"], romaji: "")
         let selectingState = SelectingState(prev: SelectingState.PrevState(mode: .hiragana, composing: composingState),
                                             yomi: "お",
-                                            candidates: [Word("尾")],
+                                            candidates: [ReferredWord("尾")],
                                             candidateIndex: 0,
                                             cursorPosition: .zero)
         let state = IMEState(inputMode: .hiragana,
@@ -289,7 +289,7 @@ final class StateTests: XCTestCase {
         let composingState = ComposingState(isShift: true, text: ["お"], romaji: "")
         let selectingState = SelectingState(prev: SelectingState.PrevState(mode: .hiragana, composing: composingState),
                                             yomi: "お",
-                                            candidates: [Word("尾")],
+                                            candidates: [ReferredWord("尾")],
                                             candidateIndex: 0,
                                             cursorPosition: .zero)
         let state = IMEState(inputMode: .hiragana,
@@ -312,7 +312,7 @@ final class StateTests: XCTestCase {
                 )
             ),
             yomi: "あ",
-            candidates: [Word("有")],
+            candidates: [ReferredWord("有")],
             candidateIndex: 0,
             cursorPosition: .zero
         )

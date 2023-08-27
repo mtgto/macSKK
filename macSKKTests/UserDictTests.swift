@@ -11,7 +11,9 @@ final class UserDictTests: XCTestCase {
         let privateMode = CurrentValueSubject<Bool, Never>(false)
         var userDict = try UserDict(dicts: [], userDictEntries: [:], privateMode: privateMode)
         XCTAssertEqual(userDict.serialize(), "")
-        userDict = try UserDict(dicts: [], userDictEntries: ["あ": [Word("亜", annotation: "亜の注釈")]], privateMode: privateMode)
+        userDict = try UserDict(dicts: [],
+                                userDictEntries: ["あ": [Word("亜", annotation: Annotation(dictId: "testDict", text: "亜の注釈"))]],
+                                privateMode: privateMode)
         XCTAssertEqual(userDict.serialize(), "あ /亜;亜の注釈/")
     }
 
@@ -36,13 +38,22 @@ final class UserDictTests: XCTestCase {
         XCTAssertEqual(userDict.refer("い").map { $0.word }, ["井", "伊", "胃", "意"])
     }
 
+    func testReferMergeAnnotation() throws {
+        let privateMode = CurrentValueSubject<Bool, Never>(false)
+        let dict1 = MemoryDict(entries: ["い": [Word("胃", annotation: Annotation(dictId: "dict1", text: "d1ann")), Word("伊")]])
+        let dict2 = MemoryDict(entries: ["い": [Word("胃", annotation: Annotation(dictId: "dict2", text: "d2ann")), Word("意")]])
+        let userDict = try UserDict(dicts: [dict1, dict2], userDictEntries: [:], privateMode: privateMode)
+        XCTAssertEqual(userDict.refer("い").map({ $0.word }).sorted(), ["伊", "意", "胃", "胃"], "dict1, dict2に胃が1つずつある")
+        XCTAssertEqual(userDict.refer("い").compactMap({ $0.annotation?.dictId }), ["dict1", "dict2"])
+    }
+
     func testDelete() throws {
         let privateMode = CurrentValueSubject<Bool, Never>(false)
         let userDict = try UserDict(dicts: [], userDictEntries: ["あr": [Word("有"), Word("在")]], privateMode: privateMode)
-        XCTAssertTrue(userDict.delete(yomi: "あr", word: Word("在")))
+        XCTAssertTrue(userDict.delete(yomi: "あr", word: "在"))
         XCTAssertEqual(userDict.userDictEntries["あr"], [Word("有")])
-        XCTAssertFalse(userDict.delete(yomi: "いいい", word: Word("いいい")))
-        XCTAssertFalse(userDict.delete(yomi: "あr", word: Word("在")))
+        XCTAssertFalse(userDict.delete(yomi: "いいい", word: "いいい"))
+        XCTAssertFalse(userDict.delete(yomi: "あr", word: "在"))
     }
 
     func testPrivateMode() throws {
@@ -63,7 +74,7 @@ final class UserDictTests: XCTestCase {
         // referのテスト
         XCTAssertEqual(userDict.refer("い").map { $0.word }, ["井", "伊"])
         // deleteのテスト
-        XCTAssertTrue(userDict.delete(yomi: "い", word: Word("井")))
+        XCTAssertTrue(userDict.delete(yomi: "い", word: "井"))
         XCTAssertEqual(userDict.refer("い").map { $0.word }, ["伊"])
         // プライベートモードが解除されるとプライベートモードでのエントリがリセットされる
         privateMode.send(false)

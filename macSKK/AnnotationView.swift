@@ -5,7 +5,7 @@ import SwiftUI
 
 /// 注釈表示
 struct AnnotationView: View {
-    @Binding var annotation: String?
+    @Binding var annotations: [Annotation]
     @Binding var systemAnnotation: String?
     @Environment(\.colorScheme) var colorScheme
 
@@ -28,20 +28,20 @@ struct AnnotationView: View {
                         Spacer()
                     }
                 }
-                if let annotation {
-                    HStack(alignment: .top) {
-                        VStack(alignment: .leading) {
-                            Text("SKK辞書")
+                HStack(alignment: .top) {
+                    VStack(alignment: .leading) {
+                        ForEach(annotations, id: \.dictId) { annotation in
+                            Text(annotation.dictId)
                                 .font(.headline)
-                            Text(annotation)
+                            Text(annotation.text)
                                 .textSelection(.enabled)
                                 .foregroundColor(colorScheme == .dark ? .white : nil)
                                 .fixedSize(horizontal: false, vertical: true)
                                 .layoutPriority(1)
                                 .padding(.leading)
                         }
-                        Spacer()
                     }
+                    Spacer()
                 }
             }
             .scrollBounceBehavior(.basedOnSize)
@@ -52,13 +52,20 @@ struct AnnotationView: View {
 struct AnnotationView_Previews: PreviewProvider {
     static var previews: some View {
         AnnotationView(
-            annotation: .constant("これは辞書の注釈です。"),
+            annotations: .constant([Annotation(dictId: "SKK-JISYO.L", text: "これは辞書の注釈です。")]),
             systemAnnotation: .constant(nil)
         )
         .frame(width: 300)
         .previewDisplayName("SKK辞書の注釈のみ")
         AnnotationView(
-            annotation: .constant("これは辞書の注釈です"),
+            annotations: .constant([Annotation(dictId: "SKK-JISYO.L", text: "これは辞書の注釈です。"),
+                                    Annotation(dictId: Annotation.userDictId, text: "これはユーザー辞書の注釈です。")]),
+            systemAnnotation: .constant(nil)
+        )
+        .frame(width: 300)
+        .previewDisplayName("SKK辞書の注釈 + ユーザー辞書の注釈")
+        AnnotationView(
+            annotations: .constant([Annotation(dictId: "SKK-JISYO.L", text: "これは辞書の注釈です。")]),
             systemAnnotation: .constant(String(repeating: "これはシステム辞書の注釈です。", count: 10))
         )
         .frame(width: 300)

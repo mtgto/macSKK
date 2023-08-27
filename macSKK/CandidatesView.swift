@@ -15,7 +15,7 @@ struct CandidatesView: View {
     var body: some View {
         switch candidates.candidates {
         case .inline:
-            AnnotationView(annotation: $candidates.selectedAnnotation, systemAnnotation: $candidates.selectedSystemAnnotation)
+            AnnotationView(annotations: $candidates.selectedAnnotations, systemAnnotation: $candidates.selectedSystemAnnotation)
                 .padding(EdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4))
                 .frame(width: 300, height: 200)
         case let .panel(words, currentPage, totalPageCount):
@@ -57,7 +57,7 @@ struct CandidatesView: View {
                 arrowEdge: .trailing
             ) {
                 AnnotationView(
-                    annotation: $candidates.selectedAnnotation,
+                    annotations: $candidates.selectedAnnotations,
                     systemAnnotation: $candidates.selectedSystemAnnotation
                 )
                 .frame(width: 300, alignment: .topLeading)
@@ -86,14 +86,15 @@ struct CandidatesView: View {
 }
 
 struct CandidatesView_Previews: PreviewProvider {
-    private static let words: [Word] = (1..<9).map {
-        Word(String(repeating: "例文\($0)", count: $0), annotation: "注釈\($0)")
+    private static let words: [ReferredWord] = (1..<9).map {
+        ReferredWord(String(repeating: "例文\($0)", count: $0),
+                     annotations: [Annotation(dictId: "SKK-JISYO.L", text: "注釈\($0)")])
     }
 
     static var previews: some View {
         let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3)
         viewModel.selected = words.first
-        viewModel.systemAnnotations = [words.first!: String(repeating: "これはシステム辞書の注釈です。", count: 10)]
+        viewModel.systemAnnotations = [words.first!.word: String(repeating: "これはシステム辞書の注釈です。", count: 10)]
         return CandidatesView(candidates: viewModel)
     }
 }
