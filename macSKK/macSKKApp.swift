@@ -68,8 +68,8 @@ struct macSKKApp: App {
             }
             setupNotification()
             setupReleaseFetcher()
-            settingsViewModel.$directModeBundleIdentifiers.sink { bundleIdentifiers in
-                directModeBundleIdentifiers.send(bundleIdentifiers)
+            settingsViewModel.$directModeApplications.sink { directModeApplications in
+                directModeBundleIdentifiers.send(directModeApplications.map { $0.bundleIdentifier })
             }.store(in: &cancellables)
         }
     }

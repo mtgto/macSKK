@@ -78,6 +78,19 @@ enum AllowedEncoding: CaseIterable, CustomStringConvertible {
     }
 }
 
+struct DirectModeApplication: Identifiable, Equatable {
+    typealias ID = String
+    let bundleIdentifier: String
+    var icon: NSImage?
+    var displayName: String?
+
+    var id: ID { bundleIdentifier }
+
+    static func ==(lhs: Self, rhs: Self) -> Bool {
+        return lhs.id == rhs.id
+    }
+}
+
 @MainActor
 final class SettingsViewModel: ObservableObject {
     /// CheckUpdaterで取得した最新のリリース。取得前はnil
@@ -89,7 +102,7 @@ final class SettingsViewModel: ObservableObject {
     //// 利用可能な辞書の読み込み状態
     @Published var dictLoadingStatuses: [DictSetting.ID: LoadStatus] = [:]
     /// 直接入力するアプリケーションのBundle Identifier
-    @Published var directModeBundleIdentifiers: [String] = []
+    @Published var directModeApplications: [DirectModeApplication] = [DirectModeApplication(bundleIdentifier: "net.mtgto.inputmethod.macSKK")]
     // 辞書ディレクトリ
     let dictionariesDirectoryUrl: URL
     // バックグラウンドでの辞書を読み込みで読み込み状態が変わったときに通知される
