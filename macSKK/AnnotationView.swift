@@ -58,6 +58,13 @@ struct AnnotationView_Previews: PreviewProvider {
         .frame(width: 300)
         .previewDisplayName("SKK辞書の注釈のみ")
         AnnotationView(
+            annotations: .constant([Annotation(dictId: "SKK-JISYO.L", text: "これは辞書の注釈です。"),
+                                    Annotation(dictId: Annotation.userDictId, text: "これはユーザー辞書の注釈です。")]),
+            systemAnnotation: .constant(nil)
+        )
+        .frame(width: 300)
+        .previewDisplayName("SKK辞書の注釈 + ユーザー辞書の注釈")
+        AnnotationView(
             annotations: .constant([Annotation(dictId: "SKK-JISYO.L", text: "これは辞書の注釈です。")]),
             systemAnnotation: .constant(String(repeating: "これはシステム辞書の注釈です。", count: 10))
         )
