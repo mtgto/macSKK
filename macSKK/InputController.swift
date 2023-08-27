@@ -51,11 +51,9 @@ class InputController: IMKInputController {
                 textInput.setMarkedText(NSAttributedString(attributedText), selectionRange: cursorRange, replacementRange: Self.notFoundRange)
             case .modeChanged(let inputMode, let cursorPosition):
                 textInput.selectMode(inputMode.rawValue)
-                if let self {
-                    self.inputModePanel.show(at: cursorPosition.origin,
-                                             mode: inputMode,
-                                             privateMode: privateMode.value)
-                }
+                self?.inputModePanel.show(at: cursorPosition.origin,
+                                         mode: inputMode,
+                                         privateMode: privateMode.value)
             }
         }.store(in: &cancellables)
         stateMachine.candidateEvent.sink { [weak self] candidates in
@@ -196,7 +194,7 @@ class InputController: IMKInputController {
     #if DEBUG
     @objc func showPanel() {
         let point = NSPoint(x: 100, y: 500)
-        self.inputModePanel.show(at: point, mode: .hiragana, privateMode: privateMode.value)
+        inputModePanel.show(at: point, mode: .hiragana, privateMode: privateMode.value)
     }
     #endif
 

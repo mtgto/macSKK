@@ -12,7 +12,6 @@ class InputModePanel: NSPanel {
     init() {
         imageSize = CGSize(width: 32, height: 32)
         imageView = NSImageView(frame: .zero)
-        // super.init(contentRect: .zero, styleMask: .borderless, backing: .buffered, defer: true)
         super.init(contentRect: .zero, styleMask: [.nonactivatingPanel], backing: .buffered, defer: true)
         imageView.imageScaling = .scaleProportionallyUpOrDown
         backgroundColor = .clear
