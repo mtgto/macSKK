@@ -19,7 +19,7 @@ struct Word: Hashable {
     let word: Word
     let annotation: Annotation?
 
-    init(_ word: String, annotation: Annotation? = nil) {
+    init(_ word: Self.Word, annotation: Annotation? = nil) {
         self.word = word
         self.annotation = annotation
     }
@@ -31,10 +31,10 @@ struct Word: Hashable {
 
 /// 複数の辞書から引いた、辞書ごとの注釈をもつことが可能なWord。
 struct ReferredWord: Equatable, Hashable {
-    let word: String
+    let word: Word.Word
     private(set) var annotations: [Annotation]
 
-    init(_ word: String, annotations: [Annotation] = []) {
+    init(_ word: Word.Word, annotations: [Annotation] = []) {
         self.word = word
         self.annotations = annotations
     }
