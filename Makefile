@@ -47,8 +47,8 @@ $(DICT):
 	fi
 
 $(DICT_PKG): $(DICT)
-	mkdir -p $(WORKDIR)/dict/Library/Containers/net.mtgto.inputmethod.macSKK/Data
-	cp $< $(WORKDIR)/dict/Library/Containers/net.mtgto.inputmethod.macSKK/Data
+	mkdir -p $(WORKDIR)/dict/Library/Containers/net.mtgto.inputmethod.macSKK/Data/Documents/Dictionaries
+	cp $< $(WORKDIR)/dict/Library/Containers/net.mtgto.inputmethod.macSKK/Data/Documents/Dictionaries
 	pkgbuild --root $(WORKDIR)/dict --component-plist script/dict.plist --identifier $(DICT_PKG_ID) --version $(VERSION) --install-location / $(DICT_PKG)
 
 $(APP_PKG): $(APP)
