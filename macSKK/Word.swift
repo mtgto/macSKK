@@ -30,17 +30,13 @@ struct Word: Hashable {
 }
 
 /// 複数の辞書から引いた、辞書ごとの注釈をもつことが可能なWord。
-struct ReferredWord: Equatable, Hashable {
+struct ReferredWord: Hashable {
     let word: Word.Word
     private(set) var annotations: [Annotation]
 
     init(_ word: Word.Word, annotations: [Annotation] = []) {
         self.word = word
         self.annotations = annotations
-    }
-
-    static func ==(lhs: Self, rhs: Self) -> Bool {
-        return lhs.word == rhs.word
     }
 
     func hash(into hasher: inout Hasher) {
