@@ -31,7 +31,6 @@ struct macSKKApp: App {
     private let dictionariesDirectoryUrl: URL
     private let userNotificationDelegate = UserNotificationDelegate()
     @State private var fetchReleaseTask: Task<Void, Error>?
-    private var cancellables: Set<AnyCancellable> = []
     #if DEBUG
     private let candidatesPanel: CandidatesPanel = CandidatesPanel()
     private let inputModePanel = InputModePanel()
@@ -69,9 +68,6 @@ struct macSKKApp: App {
             setupNotification()
             setupReleaseFetcher()
             setupDirectMode()
-            settingsViewModel.$directModeApplications.sink { directModeApplications in
-                directModeBundleIdentifiers.send(directModeApplications.map { $0.bundleIdentifier })
-            }.store(in: &cancellables)
         }
     }
 

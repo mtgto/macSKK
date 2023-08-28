@@ -51,7 +51,7 @@ struct DirectModeView: View {
 struct DirectModeView_Previews: PreviewProvider {
     static var previews: some View {
         DirectModeView(applications: .constant([
-            DirectModeApplication(bundleIdentifier: "net.mtgto.inputmethod.macSKK", icon: nil, displayName: "macSKK"),
+            DirectModeApplication(bundleIdentifier: "net.mtgto.inputmethod.macSKK", icon: nil, displayName: nil),
         ]))
     }
 }

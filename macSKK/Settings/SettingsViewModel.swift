@@ -102,7 +102,7 @@ final class SettingsViewModel: ObservableObject {
     //// 利用可能な辞書の読み込み状態
     @Published var dictLoadingStatuses: [DictSetting.ID: LoadStatus] = [:]
     /// 直接入力するアプリケーションのBundle Identifier
-    @Published var directModeApplications: [DirectModeApplication] = [DirectModeApplication(bundleIdentifier: "net.mtgto.inputmethod.macSKK")]
+    @Published var directModeApplications: [DirectModeApplication] = []
     // 辞書ディレクトリ
     let dictionariesDirectoryUrl: URL
     // バックグラウンドでの辞書を読み込みで読み込み状態が変わったときに通知される
@@ -113,6 +113,10 @@ final class SettingsViewModel: ObservableObject {
 
     init(dictionariesDirectoryUrl: URL) throws {
         self.dictionariesDirectoryUrl = dictionariesDirectoryUrl
+        if let bundleIdentifiers = UserDefaults.standard.array(forKey: "directModeBundleIdentifiers") as? [String] {
+            directModeApplications = bundleIdentifiers.map { DirectModeApplication(bundleIdentifier: $0) }
+        }
+
         // SKK-JISYO.Lのようなファイルの読み込みが遅いのでバックグラウンドで処理
         $dictSettings.filter({ !$0.isEmpty }).receive(on: DispatchQueue.global()).sink { dictSettings in
             let enabledDicts = dictSettings.compactMap { dictSetting -> FileDict? in
@@ -157,6 +161,7 @@ final class SettingsViewModel: ObservableObject {
         $directModeApplications.sink { applications in
             let bundleIdentifiers = applications.map { $0.bundleIdentifier }
             UserDefaults.standard.set(bundleIdentifiers, forKey: "directModeBundleIdentifiers")
+            directModeBundleIdentifiers.send(bundleIdentifiers)
         }
         .store(in: &cancellables)
 
