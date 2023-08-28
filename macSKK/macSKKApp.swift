@@ -68,6 +68,7 @@ struct macSKKApp: App {
             }
             setupNotification()
             setupReleaseFetcher()
+            setupDirectMode()
             settingsViewModel.$directModeApplications.sink { directModeApplications in
                 directModeBundleIdentifiers.send(directModeApplications.map { $0.bundleIdentifier })
             }.store(in: &cancellables)
@@ -132,6 +133,7 @@ struct macSKKApp: App {
             "dictionaries": [
                 DictSetting(filename: "SKK-JISYO.L", enabled: true, encoding: .japaneseEUC).encode()
             ],
+            "directModeBundleIdentifiers": [],
         ])
     }
 
@@ -158,12 +160,12 @@ struct macSKKApp: App {
     private mutating func setupNotification() {
         let center = UNUserNotificationCenter.current()
         center.delegate = userNotificationDelegate
+    }
 
-        NotificationCenter.default.publisher(for: notificationNameToggleDirectMode)
-            .sink { notification in
-
-            }
-            .store(in: &cancellables)
+    private func setupDirectMode() {
+        if let bundleIdentifiers = UserDefaults.standard.array(forKey: "directModeBundleIdentifiers") as? [String] {
+            directModeBundleIdentifiers.send(bundleIdentifiers)
+        }
     }
 
     private func setupReleaseFetcher() {

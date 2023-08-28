@@ -23,6 +23,7 @@ struct DirectModeView: View {
                         Spacer()
                         Button {
                             if let index = applications.firstIndex(of: application) {
+                                logger.log("Bundle Identifier \"\(applications[index].bundleIdentifier, privacy: .public)\" の直接入力が解除されました。")
                                 applications.remove(at: index)
                             }
                         } label: {

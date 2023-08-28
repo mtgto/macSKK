@@ -25,6 +25,8 @@ class InputController: IMKInputController {
     private let candidatesPanel: CandidatesPanel
     /// 変換候補として選択されている単語を流すストリーム
     private let selectedWord = PassthroughSubject<Word.Word?, Never>()
+    /// 入力を処理しないで直接入力させるかどうか
+    private var directMode: Bool = false
 
     override init!(server: IMKServer!, delegate: Any!, client inputClient: Any!) {
         inputModePanel = InputModePanel()
@@ -116,9 +118,17 @@ class InputController: IMKInputController {
                 self?.candidatesPanel.show()
             }
         }.store(in: &cancellables)
+        directModeBundleIdentifiers.sink { [weak self] bundleIdentifiers in
+            if let bundleIdentifier = self?.targetApp?.bundleIdentifier {
+                self?.directMode = bundleIdentifiers.contains(bundleIdentifier)
+            }
+        }.store(in: &cancellables)
     }
 
     override func handle(_ event: NSEvent!, client sender: Any!) -> Bool {
+        if directMode {
+            return false
+        }
         // 左下座標基準でwidth=1, height=(通常だとフォントサイズ)のNSRect
         var cursorPosition: NSRect = .zero
         if let textInput = sender as? IMKTextInput {
@@ -152,6 +162,7 @@ class InputController: IMKInputController {
         let directModeItem = NSMenuItem(title: String(format: NSLocalizedString("MenuItemDirectInput", comment: "\"%@\"では直接入力"), targetApp.localizedName ?? "?"),
                                         action: #selector(toggleDirectMode),
                                         keyEquivalent: "")
+        directModeItem.state = directMode ? .on : .off
         preferenceMenu.addItem(directModeItem)
         #if DEBUG
         // デバッグ用
@@ -214,7 +225,7 @@ class InputController: IMKInputController {
 
     /// 現在最前面にあるアプリからの入力をハンドルしないかどうかを切り替える
     @objc func toggleDirectMode() {
-
+        NotificationCenter.default.post(name: notificationNameToggleDirectMode, object: targetApp.bundleIdentifier)
     }
 
     #if DEBUG

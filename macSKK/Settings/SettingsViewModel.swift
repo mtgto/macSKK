@@ -153,6 +153,26 @@ final class SettingsViewModel: ObservableObject {
         loadStatusPublisher.receive(on: RunLoop.main).sink { (id, status) in
             self.dictLoadingStatuses[id] = status
         }.store(in: &cancellables)
+
+        $directModeApplications.sink { applications in
+            let bundleIdentifiers = applications.map { $0.bundleIdentifier }
+            UserDefaults.standard.set(bundleIdentifiers, forKey: "directModeBundleIdentifiers")
+        }
+        .store(in: &cancellables)
+
+        NotificationCenter.default.publisher(for: notificationNameToggleDirectMode)
+            .sink { [weak self] notification in
+                if let bundleIdentifier = notification.object as? String {
+                    if let index = self?.directModeApplications.firstIndex(where: { $0.bundleIdentifier == bundleIdentifier }) {
+                        logger.log("Bundle Identifier \"\(bundleIdentifier, privacy: .public)\" の直接入力が解除されました。")
+                        self?.directModeApplications.remove(at: index)
+                    } else {
+                        logger.log("Bundle Identifier \"\(bundleIdentifier, privacy: .public)\" が直接入力に追加されました。")
+                        self?.directModeApplications.append(DirectModeApplication(bundleIdentifier: bundleIdentifier))
+                    }
+                }
+            }
+            .store(in: &cancellables)
     }
 
     // PreviewProvider用
