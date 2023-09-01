@@ -4,6 +4,7 @@
       <os-version min="13.3"/>
     </allowed-os-versions>
     <title>macSKK</title>
+    <welcome file="welcome.rtf"/>
     <license file="license.rtf"/>
     <domains enable_localSystem="false" enable_anywhere="false" enable_currentUserHome="true"/>
     <options customize="allow" require-scripts="false" hostArchitectures="x86_64,arm64"/>
