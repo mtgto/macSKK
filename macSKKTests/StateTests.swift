@@ -65,8 +65,16 @@ final class StateTests: XCTestCase {
 
     func testComposingStateTrim() {
         let state = ComposingState(
-            isShift: true, text: ["あ"], okuri: nil, romaji: "n", cursor: nil)
-        XCTAssertEqual(state.trim().text, ["あ", "ん"])
+            isShift: true, text: ["あ"], okuri: nil, romaji: "n", cursor: nil).trim()
+        XCTAssertEqual(state.text, ["あ", "ん"])
+        XCTAssertNil(state.okuri)
+    }
+
+    func testComposingStateTrimOkuriN() {
+        let state = ComposingState(
+            isShift: true, text: ["く", "や"], okuri: [], romaji: "n", cursor: nil).trim()
+        XCTAssertEqual(state.trim().text, ["く", "や"])
+        XCTAssertEqual(state.trim().okuri, [Romaji.n])
     }
 
     func testComposingStateYomi() {

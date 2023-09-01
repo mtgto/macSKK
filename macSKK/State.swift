@@ -90,15 +90,30 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
     /// カーソル位置。末尾のときはnil。先頭の▽分は含まないので非nilのときは[0, text.count)の範囲を取る。
     var cursor: Int?
 
-    /// 現在の状態で別の状態に移行するための処理を行った結果を返す
-    /// 末尾がnで終わっていたら「ん」が入力されたものと見做す。それ以外の未確定部分はそのままにする
+    /**
+     * 現在の状態で別の状態に移行するための処理を行った結果を返す
+     * 読みもしくは送り仮名が末尾がnで終わっていたら「ん」が入力されたものと見做す。それ以外の未確定部分はそのままにする
+     * okuriが1文字以上含む場合にリセットするかどうかは未定義。
+     * 現状はスペース押されたときの処理でしか使ってないので送り仮名を「ん」一文字にするかそれ以外だけしか発生しないはずだけど
+     * ひとまず自然な方と思われる「ローマ字の未確定部分がnのときだけ末尾に「ん」をつける」としています。
+     */
     func trim() -> Self {
         if romaji == "n" {
-            return ComposingState(
-                isShift: isShift,
-                text: text + [Romaji.n.kana],
-                romaji: "",
-                cursor: cursor)
+            if let okuri {
+                return ComposingState(
+                    isShift: isShift,
+                    text: text,
+                    okuri: okuri + [Romaji.n],
+                    romaji: "",
+                    cursor: cursor)
+            } else {
+                return ComposingState(
+                    isShift: isShift,
+                    text: text + [Romaji.n.kana],
+                    okuri: nil,
+                    romaji: "",
+                    cursor: cursor)
+            }
         } else {
             return self
         }
