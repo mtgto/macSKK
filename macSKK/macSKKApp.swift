@@ -191,9 +191,6 @@ struct macSKKApp: App {
                 logger.log("通知センターへの通知がユーザーに拒否されています")
                 return
             }
-            let release = Release(version: ReleaseVersion(major: 0, minor: 4, patch: 0),
-                                  updated: Date(),
-                                  url: URL(string: "https://github.com/mtgto/macSKK/releases/tag/0.4.0")!)
             let request = release.userNotificationRequest()
             center.add(request) { error in
                 if let error {
