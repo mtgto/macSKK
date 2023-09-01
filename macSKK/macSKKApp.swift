@@ -10,6 +10,12 @@ import os
 let logger: Logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "main")
 var dictionary: UserDict!
 let privateMode = CurrentValueSubject<Bool, Never>(false)
+// 直接入力するアプリケーションのBundleIdentifierの集合のコピー。
+// マスターはSettingsViewModelがもっているが、InputControllerからAppが参照できないのでグローバル変数にコピーしている。
+// FIXME: NotificationCenter経由で設定画面で変更したことを各InputControllerに通知するようにしてこの変数は消すかも。
+let directModeBundleIdentifiers = CurrentValueSubject<[String], Never>([])
+// 直接入力モードを切り替えたいときに通知される通知の名前。
+let notificationNameToggleDirectMode = Notification.Name("toggleDirectMode")
 
 func isTest() -> Bool {
     return ProcessInfo.processInfo.environment["MACSKK_IS_TEST"] == "1"
@@ -61,6 +67,7 @@ struct macSKKApp: App {
             }
             setupNotification()
             setupReleaseFetcher()
+            setupDirectMode()
         }
     }
 
@@ -122,6 +129,7 @@ struct macSKKApp: App {
             "dictionaries": [
                 DictSetting(filename: "SKK-JISYO.L", enabled: true, encoding: .japaneseEUC).encode()
             ],
+            "directModeBundleIdentifiers": [String](),
         ])
     }
 
@@ -148,6 +156,12 @@ struct macSKKApp: App {
     private func setupNotification() {
         let center = UNUserNotificationCenter.current()
         center.delegate = userNotificationDelegate
+    }
+
+    private func setupDirectMode() {
+        if let bundleIdentifiers = UserDefaults.standard.array(forKey: "directModeBundleIdentifiers") as? [String] {
+            directModeBundleIdentifiers.send(bundleIdentifiers)
+        }
     }
 
     private func setupReleaseFetcher() {

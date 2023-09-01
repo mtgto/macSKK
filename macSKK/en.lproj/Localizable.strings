@@ -1,8 +1,10 @@
 "MenuItemPreference" = "Preferences…";
 "MenuItemSaveDict" = "Save User Dictionary";
 "MenuPrivateMode" = "Private mode";
-"SettingsNameSoftwareUpdate" = "Software Update";
+"MenuItemDirectInput" = "Direct input from \"%@\"";
 "SettingsNameDictionaries" = "Dictionaries";
+"SettingsNameSoftwareUpdate" = "Software Update";
+"SettingsNameDirectMode" = "Direct Mode";
 "SettingsNameKeyEvent" = "Key Event";
 "SettingsNameSystemDict" = "System Dict";
 "SettingsOpenDictionaryFolder" = "Show Dictionaries in Finder";
@@ -21,3 +23,4 @@
 "UNNewVersionTitle" = "A new version is available";
 "UNNewVersionBody" = "macSKK %@ is now available.";
 "User Dictionary" = "User Dictionary";
+"Delete" = "Delete";

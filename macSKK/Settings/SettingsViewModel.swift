@@ -78,6 +78,19 @@ enum AllowedEncoding: CaseIterable, CustomStringConvertible {
     }
 }
 
+struct DirectModeApplication: Identifiable, Equatable {
+    typealias ID = String
+    let bundleIdentifier: String
+    var icon: NSImage?
+    var displayName: String?
+
+    var id: ID { bundleIdentifier }
+
+    static func ==(lhs: Self, rhs: Self) -> Bool {
+        return lhs.id == rhs.id
+    }
+}
+
 @MainActor
 final class SettingsViewModel: ObservableObject {
     /// CheckUpdaterで取得した最新のリリース。取得前はnil
@@ -88,6 +101,8 @@ final class SettingsViewModel: ObservableObject {
     @Published var dictSettings: [DictSetting] = []
     //// 利用可能な辞書の読み込み状態
     @Published var dictLoadingStatuses: [DictSetting.ID: LoadStatus] = [:]
+    /// 直接入力するアプリケーションのBundle Identifier
+    @Published var directModeApplications: [DirectModeApplication] = []
     // 辞書ディレクトリ
     let dictionariesDirectoryUrl: URL
     // バックグラウンドでの辞書を読み込みで読み込み状態が変わったときに通知される
@@ -98,6 +113,10 @@ final class SettingsViewModel: ObservableObject {
 
     init(dictionariesDirectoryUrl: URL) throws {
         self.dictionariesDirectoryUrl = dictionariesDirectoryUrl
+        if let bundleIdentifiers = UserDefaults.standard.array(forKey: "directModeBundleIdentifiers") as? [String] {
+            directModeApplications = bundleIdentifiers.map { DirectModeApplication(bundleIdentifier: $0) }
+        }
+
         // SKK-JISYO.Lのようなファイルの読み込みが遅いのでバックグラウンドで処理
         $dictSettings.filter({ !$0.isEmpty }).receive(on: DispatchQueue.global()).sink { dictSettings in
             let enabledDicts = dictSettings.compactMap { dictSetting -> FileDict? in
@@ -138,6 +157,27 @@ final class SettingsViewModel: ObservableObject {
         loadStatusPublisher.receive(on: RunLoop.main).sink { (id, status) in
             self.dictLoadingStatuses[id] = status
         }.store(in: &cancellables)
+
+        $directModeApplications.sink { applications in
+            let bundleIdentifiers = applications.map { $0.bundleIdentifier }
+            UserDefaults.standard.set(bundleIdentifiers, forKey: "directModeBundleIdentifiers")
+            directModeBundleIdentifiers.send(bundleIdentifiers)
+        }
+        .store(in: &cancellables)
+
+        NotificationCenter.default.publisher(for: notificationNameToggleDirectMode)
+            .sink { [weak self] notification in
+                if let bundleIdentifier = notification.object as? String {
+                    if let index = self?.directModeApplications.firstIndex(where: { $0.bundleIdentifier == bundleIdentifier }) {
+                        logger.log("Bundle Identifier \"\(bundleIdentifier, privacy: .public)\" の直接入力が解除されました。")
+                        self?.directModeApplications.remove(at: index)
+                    } else {
+                        logger.log("Bundle Identifier \"\(bundleIdentifier, privacy: .public)\" が直接入力に追加されました。")
+                        self?.directModeApplications.append(DirectModeApplication(bundleIdentifier: bundleIdentifier))
+                    }
+                }
+            }
+            .store(in: &cancellables)
     }
 
     // PreviewProvider用
