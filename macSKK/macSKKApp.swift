@@ -129,7 +129,7 @@ struct macSKKApp: App {
             "dictionaries": [
                 DictSetting(filename: "SKK-JISYO.L", enabled: true, encoding: .japaneseEUC).encode()
             ],
-            "directModeBundleIdentifiers": [],
+            "directModeBundleIdentifiers": [String](),
         ])
     }
 
@@ -153,7 +153,7 @@ struct macSKKApp: App {
     }
 
     // UNNotificationの設定
-    private mutating func setupNotification() {
+    private func setupNotification() {
         let center = UNUserNotificationCenter.current()
         center.delegate = userNotificationDelegate
     }
