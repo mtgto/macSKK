@@ -26,9 +26,10 @@ enum InputMethodState: Equatable, MarkedTextProtocol {
      * 3. (true, ["あ", "ら"], nil, "")
      * 4. (true, ["あ", "ら"], [], "t") (Shift押して送り仮名モード)
      * 5. (true, ["あ", "ら"], ["っ"], "t")
-     * 6. (true, ["あ", "ら"], ["っ", "た"], "") (ローマ字がなくなった瞬間に変換されて変換 or 辞書登録に遷移する)
+     * 6. (true, ["あ", "ら"], ["っ", "た"], "") (送り仮名のローマ字がなくなったので直後にSelectingState or RegisterStateに遷移する)
      *
      * abbrevモードの例 "/apple" と入力した場合、次のように遷移します
+     * 常にokuriはnilのまま
      *
      * 1. (true, "", nil, "")
      * 2. (true, "apple", nil, "")
@@ -235,7 +236,7 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
         }
     }
 
-    func moveCursorFirst() -> ComposingState {
+    func moveCursorFirst() -> Self {
         if text.isEmpty {
             return self
         } else if isShift {
@@ -245,7 +246,7 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
         }
     }
 
-    func moveCursorLast() -> ComposingState {
+    func moveCursorLast() -> Self {
         if text.isEmpty {
             return self
         } else if isShift {
@@ -306,13 +307,13 @@ struct SelectingState: Equatable, MarkedTextProtocol {
     /// カーソル位置。この位置を基に変換候補パネルを表示する
     let cursorPosition: NSRect
 
-    func addCandidateIndex(diff: Int) -> SelectingState {
+    func addCandidateIndex(diff: Int) -> Self {
         return SelectingState(
             prev: prev, yomi: yomi, candidates: candidates, candidateIndex: candidateIndex + diff,
             cursorPosition: cursorPosition)
     }
 
-    /// 現在選択中の文字列を返す
+    /// 読みを文字列を返す
     func fixedText() -> String {
         let text = candidates[candidateIndex].word
         let okuri = prev.composing.okuri?.map { $0.string(for: prev.mode) }
@@ -494,7 +495,7 @@ enum SpecialState: SpecialStateProtocol {
         }
     }
 
-    func moveCursorFirst() -> SpecialState {
+    func moveCursorFirst() -> Self {
         switch self {
         case .register(let registerState):
             return .register(registerState.moveCursorFirst())
@@ -503,7 +504,7 @@ enum SpecialState: SpecialStateProtocol {
         }
     }
 
-    func moveCursorLast() -> SpecialState {
+    func moveCursorLast() -> Self {
         switch self {
         case .register(let registerState):
             return .register(registerState.moveCursorLast())
