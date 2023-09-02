@@ -99,7 +99,7 @@ final class SettingsViewModel: ObservableObject {
     @Published var fetchingRelease: Bool = false
     /// すべての利用可能なSKK辞書の設定
     @Published var dictSettings: [DictSetting] = []
-    //// 利用可能な辞書の読み込み状態
+    /// 利用可能な辞書の読み込み状態
     @Published var dictLoadingStatuses: [DictSetting.ID: LoadStatus] = [:]
     /// 直接入力するアプリケーションのBundle Identifier
     @Published var directModeApplications: [DirectModeApplication] = []

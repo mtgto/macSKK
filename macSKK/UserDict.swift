@@ -42,18 +42,17 @@ class UserDict: DictProtocol {
         }
         fileHandle = try FileHandle(forUpdating: fileURL)
         source = DispatchSource.makeFileSystemObjectSource(
-            fileDescriptor: fileHandle.fileDescriptor, eventMask: .extend)
-        source.setEventHandler {
+            fileDescriptor: fileHandle.fileDescriptor,
+            eventMask: .write,
+            queue: DispatchQueue.global(qos: .background))
+        logger.log("ユーザー辞書の監視を登録します")
+        source.setEventHandler { [weak self] in
             logger.log("ユーザー辞書が更新されました")
             do {
-                try self.load()
+                try self?.load()
             } catch {
                 logger.error("ユーザー辞書の読み込みに失敗しました")
             }
-        }
-        source.setCancelHandler {
-            logger.log("ユーザー辞書の監視がキャンセルされました")
-            self.source.cancel()
         }
         if let userDictEntries {
             self.userDictEntries = userDictEntries
@@ -63,8 +62,10 @@ class UserDict: DictProtocol {
         source.activate()
 
         savePublisher
-            .debounce(for: .seconds(60), scheduler: RunLoop.main)  // 短期間に複数の保存要求があっても一回にまとめる
+            // 短期間に複数の保存要求があっても60秒に一回にまとめる
+            .debounce(for: .seconds(60), scheduler: DispatchQueue.global(qos: .background))
             .sink { [weak self] _ in
+                logger.log("ユーザー辞書を永続化します")
                 self?.source.suspend()
                 try? self?.save()
                 self?.source.resume()
