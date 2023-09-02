@@ -16,21 +16,21 @@ Universal Binaryでビルドしていますが、動作確認はApple Silicon環
 
 ## 実装予定
 
-しばらくはAquaSKKにあるけどmacSKKにない機能を実装しつつ、徐々に独自機能を実装していこうと考えています。
+しばらくはAquaSKKにはあるけどmacSKKにない機能を実装しつつ、徐々に独自機能を実装していこうと考えています。
 
 - [x] 複数辞書を使用できるようにする
 - [x] マイ辞書に保存しないプライベートモード
-- [ ] アプリごとに直接入力させるかどうかを設定できるようにする
+- [x] アプリごとに直接入力させるかどうかを設定できるようにする
   - ddskkを使っているときのGUI版Emacs.appなど
 - [ ] Java AWT製アプリケーションで入力ができない問題のワークアラウンド対応 (JetBrain製品など)
 - [ ] 過去の入力を使った入力補完
 
 ### 実装予定の独自機能
 
-- iCloudにマイ辞書を保存して他環境と共有できるようにする
-- マイ辞書の暗号化
+- [ ] iCloudにマイ辞書を保存して他環境と共有できるようにする
+- [ ] マイ辞書の暗号化
   - 編集したい場合は生データでのエクスポート & インポートできるようにする
-- 自動更新確認
+- [x] 自動更新確認
   - Network Outgoingが可能なXPCプロセスを作成し、GitHub Releasesから情報を定期的に取得して新しいバージョンが見つかったらNotification Centerに表示する
 
 ## インストール
@@ -48,6 +48,12 @@ macSKKのインストール後に、システム設定→キーボード→入�
 
 - `~/Library/Input Methods/macSKK.app`
 - `~/Library/Containers/net.mtgto.inputmethod.macSKK`
+
+## FAQ
+
+### Q. Visual Studio Code (vscode) で `C-j` を押すと行末が削除されてしまいます
+
+A. `C-j` がVisual Studio Codeのキーボードショートカット設定の `editor.action.joinLines` にデフォルトでは割り当てられていると思われます。`Cmd-K Cmd-S` から `editor.action.joinLines` で検索し、キーバインドを削除するなり変更するなりしてみてください。
 
 ## 開発
 
