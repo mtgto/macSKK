@@ -82,6 +82,13 @@ agvtool next-version
 
 `Info.plist`に`CFBundleShortVersionString`で管理するのではなくpbxprojに`MARKETING_VERSION`で管理する形式だと`agvtool next-marketing-version` が使えないみたいなのでXcodeで手動で変えてください。
 
+### リリース
+
+- CHANGELOGを記述
+- バージョンアップ
+- `make clean && make release`
+- GitHubのReleaseを作成、dmgとdSYMsをアップロード、CHANGELOGをコピペ
+
 ## ライセンス
 
 macSKKはGNU一般公衆ライセンスv3またはそれ移行のバージョンの条項の元で配布されるフリー・ソフトウェアです。
