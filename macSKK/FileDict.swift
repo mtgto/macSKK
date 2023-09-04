@@ -24,14 +24,15 @@ class FileDict: NSObject, DictProtocol, Identifiable {
         self.encoding = encoding
         presentedItemURL = fileURL
         super.init()
-        self.entries = try load(fileURL)
+        try load(fileURL)
         NSFileCoordinator.addFilePresenter(self)
     }
 
-    func load(_ url: URL) throws -> [String: [Word]] {
+    func load(_ url: URL) throws {
         let source = try String(contentsOf: url, encoding: self.encoding)
         let memoryDict = try MemoryDict(dictId: self.id, source: source)
-        return memoryDict.entries
+        self.entries = memoryDict.entries
+        logger.log("辞書 \(self.id) から \(self.entries.count) エントリ読み込みました")
     }
 
     func save() throws {
@@ -78,13 +79,28 @@ class FileDict: NSObject, DictProtocol, Identifiable {
 }
 
 extension FileDict: NSFilePresenter {
+    // 他プログラムでの書き込みなどでは呼ばれないみたい
+    /*
     func presentedItemDidGain(_ version: NSFileVersion) {
         logger.log("辞書 \(self.id) が更新されたので読み込みます")
         NSFileCoordinator(filePresenter: self).coordinate(readingItemAt: version.url, error: nil) { [weak self] newURL in
             if let self {
                 do {
-                    self.entries = try self.load(newURL)
-                    logger.log("辞書 \(self.id) から \(self.entries.count) エントリ読み込みました")
+                    try self.load(newURL)
+                } catch {
+                    logger.log("辞書 \(self.id) の読み込みに失敗しました: \(error)")
+                }
+            }
+        }
+    }
+    */
+
+    func presentedItemDidChange() {
+        logger.log("辞書 \(self.id) が更新されたので読み込みます")
+        NSFileCoordinator(filePresenter: self).coordinate(readingItemAt: fileURL, error: nil) { [weak self] newURL in
+            if let self {
+                do {
+                    try self.load(newURL)
                 } catch {
                     logger.log("辞書 \(self.id) の読み込みに失敗しました: \(error)")
                 }

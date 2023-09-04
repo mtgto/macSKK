@@ -245,14 +245,17 @@ class UserDict: NSObject, DictProtocol {
 }
 
 extension UserDict: NSFilePresenter {
+    // TODO: dictSettingsに追加
     func presentedSubitemDidAppear(at url: URL) {
         logger.log("新しいファイル \(url.lastPathComponent) が作成されました")
     }
 
+    // TODO: なにもしない (読み込み直しはFileDict側でやるため)
     func presentedSubitemDidChange(at url: URL) {
         logger.log("ファイル \(url.lastPathComponent) が更新されました")
     }
 
+    // TODO: dictSettingsを更新
     func presentedSubitem(at oldURL: URL, didMoveTo newURL: URL) {
         logger.log("ファイル \(oldURL.lastPathComponent) が移動されました")
     }
