@@ -7,12 +7,12 @@ import Foundation
 /// ユーザー辞書。マイ辞書 (単語登録対象。ファイル名固定) とファイル辞書 をまとめて参照することができる。
 ///
 /// TODO: ファイル辞書にしかない単語を削除しようとしたときにどうやってそれを記録するか。NG登録?
-class UserDict: DictProtocol {
+class UserDict: NSObject, DictProtocol {
     static let userDictFilename = "skk-jisyo.utf8"
     let dictionariesDirectoryURL: URL
     let fileURL: URL
-    let fileHandle: FileHandle
-    let source: DispatchSourceFileSystemObject
+    let dict: DictProtocol
+//    let fileHandle: FileHandle
     /// 有効になっている辞書。優先度が高い順。
     var dicts: [DictProtocol]
     /// 非プライベートモードのユーザー辞書。変換や単語登録すると更新されマイ辞書ファイルに永続化されます。
@@ -25,12 +25,17 @@ class UserDict: DictProtocol {
     private let privateMode: CurrentValueSubject<Bool, Never>
     private var cancellables: Set<AnyCancellable> = []
 
+    // MARK: NSFilePresenter
+    let presentedItemURL: URL?
+    let presentedItemOperationQueue: OperationQueue = OperationQueue()
+
     init(dicts: [DictProtocol], userDictEntries: [String: [Word]]? = nil, privateMode: CurrentValueSubject<Bool, Never>) throws {
         self.dicts = dicts
         self.privateMode = privateMode
         dictionariesDirectoryURL = try FileManager.default.url(
             for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false
         ).appending(path: "Dictionaries")
+        presentedItemURL = dictionariesDirectoryURL
         if !FileManager.default.fileExists(atPath: dictionariesDirectoryURL.path) {
             logger.log("辞書フォルダがないため作成します")
             try FileManager.default.createDirectory(at: dictionariesDirectoryURL, withIntermediateDirectories: true)
@@ -40,35 +45,39 @@ class UserDict: DictProtocol {
             logger.log("ユーザー辞書ファイルがないため作成します")
             try Data().write(to: fileURL, options: .withoutOverwriting)
         }
-        fileHandle = try FileHandle(forUpdating: fileURL)
-        source = DispatchSource.makeFileSystemObjectSource(
-            fileDescriptor: fileHandle.fileDescriptor,
-            eventMask: .write,
-            queue: DispatchQueue.global(qos: .background))
-        logger.log("ユーザー辞書の監視を登録します")
-        source.setEventHandler { [weak self] in
-            logger.log("ユーザー辞書が更新されました")
-            do {
-                try self?.load()
-            } catch {
-                logger.error("ユーザー辞書の読み込みに失敗しました")
-            }
-        }
+//        fileHandle = try FileHandle(forUpdating: fileURL)
+//        super.init()
+
+//        logger.log("ユーザー辞書の監視を登録します")
+//        source.setEventHandler { [weak self] in
+//            logger.log("ユーザー辞書が更新されました")
+//            do {
+//                try self?.load()
+//            } catch {
+//                logger.error("ユーザー辞書の読み込みに失敗しました")
+//            }
+//        }
         if let userDictEntries {
-            self.userDictEntries = userDictEntries
+            self.dict = MemoryDict(entries: userDictEntries)
+//            self.userDictEntries = userDictEntries
         } else {
-            try load()
+            self.dict = try FileDict(contentsOf: fileURL, encoding: .utf8)
+//            try load()
         }
-        source.activate()
+        super.init()
+//        source.activate()
+        NSFileCoordinator.addFilePresenter(self)
 
         savePublisher
             // 短期間に複数の保存要求があっても60秒に一回にまとめる
             .debounce(for: .seconds(60), scheduler: DispatchQueue.global(qos: .background))
             .sink { [weak self] _ in
                 logger.log("ユーザー辞書を永続化します")
-                self?.source.suspend()
-                try? self?.save()
-                self?.source.resume()
+//                self?.source.suspend()
+                if let fileDict = self?.dict as? FileDict {
+                    try? fileDict.save()
+                }
+//                self?.source.resume()
             }
             .store(in: &cancellables)
         self.privateMode.drop(while: { !$0 }).removeDuplicates().sink { [weak self] privateMode in
@@ -82,17 +91,18 @@ class UserDict: DictProtocol {
     }
 
     deinit {
-        source.cancel()
+//        source.cancel()
+        NSFileCoordinator.removeFilePresenter(self)
     }
 
-    private func load() throws {
-        try fileHandle.seek(toOffset: 0)
-        if let data = try fileHandle.readToEnd(), let source = String(data: data, encoding: .utf8) {
-            let userDict = try MemoryDict(dictId: Annotation.userDictId, source: source)
-            userDictEntries = userDict.entries
-            logger.log("ユーザー辞書から \(userDict.entries.count) エントリ読み込みました")
-        }
-    }
+//    private func load() throws {
+//        try fileHandle.seek(toOffset: 0)
+//        if let data = try fileHandle.readToEnd(), let source = String(data: data, encoding: .utf8) {
+//            let userDict = try MemoryDict(dictId: Annotation.userDictId, source: source)
+//            userDictEntries = userDict.entries
+//            logger.log("ユーザー辞書から \(userDict.entries.count) エントリ読み込みました")
+//        }
+//    }
 
     // MARK: DictProtocol
     func refer(_ yomi: String) -> [Word] {
@@ -184,19 +194,32 @@ class UserDict: DictProtocol {
 
     /// ユーザー辞書を永続化する
     func save() throws {
-        try fileHandle.seek(toOffset: 0)
-        if let serialized = serialize().data(using: .utf8) {
-            try fileHandle.write(contentsOf: serialized)
-            try fileHandle.truncate(atOffset: fileHandle.offset())
+        if let dict = dict as? FileDict {
+            try dict.save()
+        } else {
+            // ユニットテストなど特殊な場合のみ
+            logger.info("永続化が要求されましたが、ユーザー辞書がファイル形式でないため無視されます")
         }
     }
+//    func save() throws {
+//        try fileHandle.seek(toOffset: 0)
+//        if let serialized = serialize().data(using: .utf8) {
+//            try fileHandle.write(contentsOf: serialized)
+//            try fileHandle.truncate(atOffset: fileHandle.offset())
+//        }
+//    }
 
     /// ユーザー辞書をSKK辞書形式に変換する
-    func serialize() -> String {
-        // FIXME: 送り仮名あり・なしでエントリを分けるようにする?
-        return userDictEntries.map { entry in
-            return "\(entry.key) /\(serializeWords(entry.value))/"
-        }.joined(separator: "\n")
+//    func serialize() -> String {
+//        // FIXME: 送り仮名あり・なしでエントリを分けるようにする?
+//        return userDictEntries.map { entry in
+//            return "\(entry.key) /\(serializeWords(entry.value))/"
+//        }.joined(separator: "\n")
+//    }
+
+    func openFileDict(contentsOf fileURL: URL, encoding: String.Encoding) throws -> FileDict {
+        // TODO: NSFilePresenterに登録する
+        return try FileDict(contentsOf: fileURL, encoding: encoding)
     }
 
     func fileDict(id: FileDict.ID) -> FileDict? {
@@ -210,13 +233,27 @@ class UserDict: DictProtocol {
         return nil
     }
 
-    private func serializeWords(_ words: [Word]) -> String {
-        return words.map { word in
-            if let annotation = word.annotation {
-                return word.word + ";" + annotation.text
-            } else {
-                return word.word
-            }
-        }.joined(separator: "/")
+//    private func serializeWords(_ words: [Word]) -> String {
+//        return words.map { word in
+//            if let annotation = word.annotation {
+//                return word.word + ";" + annotation.text
+//            } else {
+//                return word.word
+//            }
+//        }.joined(separator: "/")
+//    }
+}
+
+extension UserDict: NSFilePresenter {
+    func presentedSubitemDidAppear(at url: URL) {
+        logger.log("新しいファイル \(url.lastPathComponent) が作成されました")
+    }
+
+    func presentedSubitemDidChange(at url: URL) {
+        logger.log("ファイル \(url.lastPathComponent) が更新されました")
+    }
+
+    func presentedSubitem(at oldURL: URL, didMoveTo newURL: URL) {
+        logger.log("ファイル \(oldURL.lastPathComponent) が移動されました")
     }
 }
