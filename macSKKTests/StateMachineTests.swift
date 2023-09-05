@@ -11,8 +11,8 @@ final class StateMachineTests: XCTestCase {
     var cancellables: Set<AnyCancellable> = []
 
     override func setUpWithError() throws {
+        dictionary.setEntries([:])
         cancellables = []
-        dictionary.userDictEntries = [:]
     }
 
     func testHandleNormalSimple() throws {
@@ -474,7 +474,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     func testHandleComposingSpaceOkurinashi() {
-        dictionary.userDictEntries = ["と": [Word("戸"), Word("都")]]
+        dictionary.setEntries(["と": [Word("戸"), Word("都")]])
 
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(7).sink { events in
@@ -498,7 +498,7 @@ final class StateMachineTests: XCTestCase {
 
     // 送り仮名入力でShiftキーを押すのを子音側でするパターン
     func testHandleComposingOkuriari() {
-        dictionary.userDictEntries = ["とr": [Word("取"), Word("撮")]]
+        dictionary.setEntries(["とr": [Word("取"), Word("撮")]])
 
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(8).sink { events in
@@ -524,7 +524,7 @@ final class StateMachineTests: XCTestCase {
 
     // 送り仮名入力でShiftキーを押すのを母音側にしたパターン
     func testHandleComposingOkuriari2() {
-        dictionary.userDictEntries = ["とらw": [Word("捕"), Word("捉")]]
+        dictionary.setEntries(["とらw": [Word("捕"), Word("捉")]])
 
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(10).sink { events in
@@ -554,7 +554,7 @@ final class StateMachineTests: XCTestCase {
 
     // 送り仮名入力でShiftキーを押すのを途中の子音でするパターン
     func testHandleComposingOkuriari3() {
-        dictionary.userDictEntries = ["とr": [Word("取"), Word("撮")]]
+        dictionary.setEntries(["とr": [Word("取"), Word("撮")]])
 
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(9).sink { events in
@@ -581,7 +581,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     func testHandleComposingOkuriariIncludeN() {
-        dictionary.userDictEntries = ["かんz": [Word("感")]]
+        dictionary.setEntries(["かんz": [Word("感")]])
 
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(7).sink { events in
@@ -604,7 +604,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     func testHandleComposingOkuriSokuon() {
-        dictionary.userDictEntries = ["あt": [Word("会")]]
+        dictionary.setEntries(["あt": [Word("会")]])
 
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
@@ -622,7 +622,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     func testHandleComposingOkuriSokuon2() {
-        dictionary.userDictEntries = ["あt": [Word("会")]]
+        dictionary.setEntries(["あt": [Word("会")]])
 
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(5).sink { events in
@@ -642,7 +642,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     func testHandleComposingOkuriSokuon3() {
-        dictionary.userDictEntries = ["やっt": [Word("八")]]
+        dictionary.setEntries(["やっt": [Word("八")]])
 
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(5).sink { events in
@@ -662,7 +662,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     func testHandleComposingOkuriN() {
-        dictionary.userDictEntries = ["あn": [Word("編")]]
+        dictionary.setEntries(["あn": [Word("編")]])
 
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
@@ -680,7 +680,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     func testHandleComposingOkuriCursor() {
-        dictionary.userDictEntries = ["あu": [Word("会")]]
+        dictionary.setEntries(["あu": [Word("会")]])
 
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
@@ -698,7 +698,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     func testHandleComposingCursorSpace() {
-        dictionary.userDictEntries = ["え": [Word("絵")]]
+        dictionary.setEntries(["え": [Word("絵")]])
 
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
@@ -853,7 +853,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     func testHandleComposingLeft() {
-        dictionary.userDictEntries = ["あs": [Word("褪")]]
+        dictionary.setEntries(["あs": [Word("褪")]])
 
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(6).sink { events in
@@ -875,7 +875,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     func testHandleComposingLeftOkuri() {
-        dictionary.userDictEntries = ["あs": [Word("褪")]]
+        dictionary.setEntries(["あs": [Word("褪")]])
 
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(5).sink { events in
@@ -956,7 +956,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     func testHandleComposingAbbrevSpace() {
-        dictionary.userDictEntries = ["b": [Word("美")]]
+        dictionary.setEntries(["b": [Word("美")]])
 
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
@@ -984,7 +984,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     func testHandleRegisteringEnter() {
-        dictionary.userDictEntries = ["お": [Word("尾")]]
+        dictionary.setEntries(["お": [Word("尾")]])
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(9).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
@@ -1126,7 +1126,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     func testHandleRegisterN() {
-        dictionary.userDictEntries = ["もん": [Word("門")]]
+        dictionary.setEntries(["もん": [Word("門")]])
 
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(8).sink { events in
@@ -1184,7 +1184,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     func testHandleSelectingEnter() {
-        dictionary.userDictEntries = ["と": [Word("戸")]]
+        dictionary.setEntries(["と": [Word("戸")]])
 
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
@@ -1202,7 +1202,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     func testHandleSelectingEnterOkuriari() {
-        dictionary.userDictEntries = ["とr": [Word("取")]]
+        dictionary.setEntries(["とr": [Word("取")]])
 
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(5).sink { events in
@@ -1222,7 +1222,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     func testHandleSelectingBackspace() {
-        dictionary.userDictEntries = ["と": [Word("戸"), Word("都")]]
+        dictionary.setEntries(["と": [Word("戸"), Word("都")]])
 
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(6).sink { events in
@@ -1245,7 +1245,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     func testHandleSelectingStickyShift() {
-        dictionary.userDictEntries = ["と": [Word("戸")]]
+        dictionary.setEntries(["と": [Word("戸")]])
 
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(5).sink { events in
@@ -1264,7 +1264,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     func testHandleSelectingCancel() {
-        dictionary.userDictEntries = ["と": [Word("戸"), Word("都")]]
+        dictionary.setEntries(["と": [Word("戸"), Word("都")]])
 
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(5).sink { events in
@@ -1284,7 +1284,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     func testHandleSelectingSpaceBackspace() {
-        dictionary.userDictEntries = ["あ": "123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".map { Word(String($0)) }]
+        dictionary.setEntries(["あ": "123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".map { Word(String($0)) }])
 
         let expectation = XCTestExpectation()
         expectation.expectedFulfillmentCount = 2
@@ -1339,7 +1339,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     func testHandleSelectingCtrlACtrlE() {
-        dictionary.userDictEntries = ["と": [Word("戸"), Word("都"), Word("徒"), Word("途"), Word("斗")]]
+        dictionary.setEntries(["と": [Word("戸"), Word("都"), Word("徒"), Word("途"), Word("斗")]])
 
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(8).sink { events in
@@ -1373,7 +1373,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     func testHandleSelectingCtrlY() {
-        dictionary.userDictEntries = ["と": [Word("戸")]]
+        dictionary.setEntries(["と": [Word("戸")]])
 
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(3).sink { events in
@@ -1390,7 +1390,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     func testHandleSelectingNum() {
-        dictionary.userDictEntries = ["あ": "123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".map { Word(String($0)) }]
+        dictionary.setEntries(["あ": "123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".map { Word(String($0)) }])
 
         let expectation = XCTestExpectation()
         expectation.expectedFulfillmentCount = 2
@@ -1426,7 +1426,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     func testHandleSelectingUnregister() {
-        dictionary.userDictEntries = ["え": [Word("絵")]]
+        dictionary.setEntries(["え": [Word("絵")]])
 
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(7).sink { events in
@@ -1449,12 +1449,12 @@ final class StateMachineTests: XCTestCase {
             XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: character)))
         }
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil, cursorPosition: .zero)))
-        XCTAssertEqual(dictionary.userDictEntries["え"], [])
+        XCTAssertEqual(dictionary.refer("え"), [])
         wait(for: [expectation], timeout: 1.0)
     }
 
     func testHandleSelectingUnregisterCancel() {
-        dictionary.userDictEntries = ["え": [Word("絵")]]
+        dictionary.setEntries(["え": [Word("絵")]])
 
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
@@ -1468,12 +1468,12 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "x", withShift: true)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil, cursorPosition: .zero)))
-        XCTAssertEqual(dictionary.userDictEntries["え"], [Word("絵")])
+        XCTAssertEqual(dictionary.refer("え"), [Word("絵")])
         wait(for: [expectation], timeout: 1.0)
     }
 
     func testHandleSelectingRememberCursor() {
-        dictionary.userDictEntries = ["え": [Word("絵")], "えr": [Word("得")]]
+        dictionary.setEntries(["え": [Word("絵")], "えr": [Word("得")]])
 
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(8).sink { events in
@@ -1501,7 +1501,7 @@ final class StateMachineTests: XCTestCase {
 
     func testHandleSelectingMergeAnnotations() throws {
         let annotation0 = Annotation(dictId: Annotation.userDictId, text: "user")
-        dictionary.userDictEntries = ["う": [Word("雨", annotation: annotation0)]]
+        dictionary.setEntries(["う": [Word("雨", annotation: annotation0)]])
         let annotation1 = Annotation(dictId: "dict1", text: "dict1")
         let annotation2 = Annotation(dictId: "dict2", text: "dict2")
         let annotation3 = Annotation(dictId: "dict3", text: "dict2")
@@ -1541,13 +1541,13 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[3], .fixedText("都"))
             expectation.fulfill()
         }.store(in: &cancellables)
-        XCTAssertTrue(dictionary.userDictEntries.isEmpty)
+        XCTAssertNil(dictionary.entries())
         XCTAssertTrue(dictionary.privateUserDictEntries.isEmpty)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil, cursorPosition: .zero)))
-        XCTAssertTrue(dictionary.userDictEntries.isEmpty)
+        XCTAssertNil(dictionary.entries())
         XCTAssertFalse(dictionary.privateUserDictEntries.isEmpty)
         wait(for: [expectation], timeout: 1.0)
     }
@@ -1576,7 +1576,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     func testCommitCompositionSelecting() {
-        dictionary.userDictEntries = ["え": [Word("絵")]]
+        dictionary.setEntries(["え": [Word("絵")]])
 
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(3).sink { events in
@@ -1611,7 +1611,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     func testCommitCompositionUnregister() {
-        dictionary.userDictEntries = ["お": [Word("尾")]]
+        dictionary.setEntries(["お": [Word("尾")]])
 
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in

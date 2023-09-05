@@ -5,7 +5,7 @@ import XCTest
 
 @testable import macSKK
 
-class DictTests: XCTestCase {
+class MemoryDictTests: XCTestCase {
     func testParseSource() throws {
         let source = """
             ;; この行はコメント扱い

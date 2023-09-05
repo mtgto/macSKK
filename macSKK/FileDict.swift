@@ -43,7 +43,8 @@ class FileDict: NSObject, DictProtocol, Identifiable {
         guard let data = serialize().data(using: encoding) else {
             fatalError("辞書 \(self.id) のシリアライズに失敗しました")
         }
-        NSFileCoordinator(filePresenter: self).coordinate(writingItemAt: fileURL, options: .forReplacing, error: nil) { [weak self] newURL in
+        let fileCoordinator = NSFileCoordinator(filePresenter: self)
+        fileCoordinator.coordinate(writingItemAt: fileURL, options: .forReplacing, error: nil) { [weak self] newURL in
             if let self {
                 do {
                     try data.write(to: newURL)
@@ -57,6 +58,42 @@ class FileDict: NSObject, DictProtocol, Identifiable {
     deinit {
         logger.log("辞書 \(self.id) がプロセスから削除されます")
         NSFileCoordinator.removeFilePresenter(self)
+    }
+
+    /// 辞書にエントリを追加する。
+    ///
+    /// - Parameters:
+    ///   - yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
+    ///   - word: SKK辞書の変換候補。
+    func add(yomi: String, word: Word) {
+        if var words = entries[yomi] {
+            let index = words.firstIndex { $0.word == word.word }
+            if let index {
+                words.remove(at: index)
+            }
+            entries[yomi] = [word] + words
+        } else {
+            entries[yomi] = [word]
+        }
+    }
+
+    /// 辞書からエントリを削除する。
+    ///
+    /// 辞書にないエントリ (ファイル辞書) の削除は無視されます。
+    ///
+    /// - Parameters:
+    ///   - yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
+    ///   - word: SKK辞書の変換候補。
+    /// - Returns: エントリを削除できたかどうか
+    func delete(yomi: String, word: Word.Word) -> Bool {
+        if var words = entries[yomi] {
+            if let index = words.firstIndex(where: { $0.word == word }) {
+                words.remove(at: index)
+                entries[yomi] = words
+                return true
+            }
+        }
+        return false
     }
 
     /// ユーザー辞書をSKK辞書形式に変換する
@@ -80,6 +117,11 @@ class FileDict: NSObject, DictProtocol, Identifiable {
     // MARK: DictProtocol
     func refer(_ yomi: String) -> [Word] {
         return entries[yomi] ?? []
+    }
+
+    // ユニットテスト用
+    func setEntries(_ entries: [String: [Word]]) {
+        self.entries = entries
     }
 }
 

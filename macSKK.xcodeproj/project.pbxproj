@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		CE06CA2A2AAC171B00E80E5E /* UserDict+Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE06CA282AAC171B00E80E5E /* UserDict+Utilities.swift */; };
+		CE06CA2B2AAC171B00E80E5E /* FileDictTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE06CA292AAC171B00E80E5E /* FileDictTests.swift */; };
+		CE06CA2D2AAC172F00E80E5E /* empty.txt in Resources */ = {isa = PBXBuildFile; fileRef = CE06CA2C2AAC172F00E80E5E /* empty.txt */; };
 		CE39DB212A8DFD8F00BC619F /* MarkedText.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE39DB202A8DFD8F00BC619F /* MarkedText.swift */; };
 		CE40D9A12A6D0C2F00D44799 /* SystemDictView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE40D9A02A6D0C2F00D44799 /* SystemDictView.swift */; };
 		CE40D9A32A6D0C3900D44799 /* SystemDict.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE40D9A22A6D0C3900D44799 /* SystemDict.swift */; };
@@ -25,8 +28,6 @@
 		CE6DBAC42A85BF3E00F5A227 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = CE6DBAC62A85BF3E00F5A227 /* Localizable.strings */; };
 		CE6DBACD2A864A3B00F5A227 /* DictionariesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE6DBACC2A864A3B00F5A227 /* DictionariesView.swift */; };
 		CE6DBACF2A8663E600F5A227 /* SKK-JISYO.sample.utf-8 in Resources */ = {isa = PBXBuildFile; fileRef = CE6DBACE2A8663E600F5A227 /* SKK-JISYO.sample.utf-8 */; };
-		CE7498A12AA61E020025BC60 /* MemoryDict.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE7498A02AA61E020025BC60 /* MemoryDict.swift */; };
-		CE7498A32AA61E2E0025BC60 /* Dict.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE7498A22AA61E2E0025BC60 /* Dict.swift */; };
 		CE84A3B929570C37009394C4 /* InputController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE84A3B829570C37009394C4 /* InputController.swift */; };
 		CE84A3DC2957174D009394C4 /* State.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE84A3DB2957174D009394C4 /* State.swift */; };
 		CE84A3DE29571797009394C4 /* Action.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE84A3DD29571797009394C4 /* Action.swift */; };
@@ -99,6 +100,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		CE06CA282AAC171B00E80E5E /* UserDict+Utilities.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UserDict+Utilities.swift"; sourceTree = "<group>"; };
+		CE06CA292AAC171B00E80E5E /* FileDictTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileDictTests.swift; sourceTree = "<group>"; };
+		CE06CA2C2AAC172F00E80E5E /* empty.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = empty.txt; sourceTree = "<group>"; };
 		CE39DB202A8DFD8F00BC619F /* MarkedText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkedText.swift; sourceTree = "<group>"; };
 		CE40D9A02A6D0C2F00D44799 /* SystemDictView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemDictView.swift; sourceTree = "<group>"; };
 		CE40D9A22A6D0C3900D44799 /* SystemDict.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemDict.swift; sourceTree = "<group>"; };
@@ -122,8 +126,6 @@
 		CE6DBAC72A85BF6B00F5A227 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Localizable.strings; sourceTree = "<group>"; };
 		CE6DBACC2A864A3B00F5A227 /* DictionariesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionariesView.swift; sourceTree = "<group>"; };
 		CE6DBACE2A8663E600F5A227 /* SKK-JISYO.sample.utf-8 */ = {isa = PBXFileReference; lastKnownFileType = text; path = "SKK-JISYO.sample.utf-8"; sourceTree = "<group>"; };
-		CE7498A02AA61E020025BC60 /* MemoryDict.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryDict.swift; sourceTree = "<group>"; };
-		CE7498A22AA61E2E0025BC60 /* Dict.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dict.swift; sourceTree = "<group>"; };
 		CE84A3B829570C37009394C4 /* InputController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputController.swift; sourceTree = "<group>"; };
 		CE84A3DB2957174D009394C4 /* State.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = State.swift; sourceTree = "<group>"; };
 		CE84A3DD29571797009394C4 /* Action.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Action.swift; sourceTree = "<group>"; };
@@ -274,13 +276,16 @@
 				CE84A3E8295DA504009394C4 /* RomajiTests.swift */,
 				CEE2D9782A99FEC700A4CD76 /* WordTest.swift */,
 				CE84A3EC295DA818009394C4 /* MemoryDictTests.swift */,
+				CE06CA292AAC171B00E80E5E /* FileDictTests.swift */,
 				CEA78FB129646CA100B67E25 /* UserDictTests.swift */,
 				CEF0823529685C0800646366 /* StateTests.swift */,
 				CEA78FA9295EBCAC00B67E25 /* StateMachineTests.swift */,
-				CEA78FAD2961BA1D00B67E25 /* String+TransformTests.swift */,
 				CED7CA3D2A8397E4004EF988 /* UpdateCheckerTests.swift */,
 				CE6DBA902A846C1700F5A227 /* ReleaseVersionTests.swift */,
+				CEA78FAD2961BA1D00B67E25 /* String+TransformTests.swift */,
+				CE06CA282AAC171B00E80E5E /* UserDict+Utilities.swift */,
 				CED7CA572A83BFE9004EF988 /* fixture */,
+				CE7498A82AA9FD110025BC60 /* UserDict+Utilities.swift */,
 			);
 			path = macSKKTests;
 			sourceTree = "<group>";
@@ -315,6 +320,7 @@
 		CED7CA572A83BFE9004EF988 /* fixture */ = {
 			isa = PBXGroup;
 			children = (
+				CE06CA2C2AAC172F00E80E5E /* empty.txt */,
 				CED7CA582A83CD67004EF988 /* releases.atom */,
 				CEB1416F2A8773DB005E7252 /* SKK-JISYO.test.utf8 */,
 			);
@@ -447,6 +453,7 @@
 			files = (
 				CEB141702A8773DB005E7252 /* SKK-JISYO.test.utf8 in Resources */,
 				CED7CA592A83CD67004EF988 /* releases.atom in Resources */,
+				CE06CA2D2AAC172F00E80E5E /* empty.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -495,16 +502,14 @@
 				CEA78FAC2960401F00B67E25 /* String+Transform.swift in Sources */,
 				CE84A3B929570C37009394C4 /* InputController.swift in Sources */,
 				CE485A8A2A8FA5C6008271EF /* UserNotificationDelegate.swift in Sources */,
-				CE84A3EB295DA715009394C4 /* FileDict.swift in Sources */,
+				CE84A3EB295DA715009394C4 /* Dict.swift in Sources */,
 				CE40D9A12A6D0C2F00D44799 /* SystemDictView.swift in Sources */,
 				CE84A3E7295DA4DA009394C4 /* Romaji.swift in Sources */,
 				CEF0825B296D8FF000646366 /* CandidatesView.swift in Sources */,
-				CE7498A32AA61E2E0025BC60 /* Dict.swift in Sources */,
 				CE84A3E0295717CB009394C4 /* StateMachine.swift in Sources */,
 				CED7CA3C2A839603004EF988 /* UpdateChecker.swift in Sources */,
 				CE5ECF362957034B00E7BE7D /* macSKKApp.swift in Sources */,
 				CE84A3DE29571797009394C4 /* Action.swift in Sources */,
-				CE7498A12AA61E020025BC60 /* MemoryDict.swift in Sources */,
 				CE485A882A8FA195008271EF /* Release+UNNotification.swift in Sources */,
 				CED7CA3A2A839505004EF988 /* FetchUpdateServiceProtocol.swift in Sources */,
 				CEA78FB02964209B00B67E25 /* UserDict.swift in Sources */,
@@ -537,8 +542,10 @@
 				CEF0823629685C0800646366 /* StateTests.swift in Sources */,
 				CED7CA3E2A8397E4004EF988 /* UpdateCheckerTests.swift in Sources */,
 				CEA78FB229646CA100B67E25 /* UserDictTests.swift in Sources */,
+				CE06CA2B2AAC171B00E80E5E /* FileDictTests.swift in Sources */,
 				CE6DBA912A846C1700F5A227 /* ReleaseVersionTests.swift in Sources */,
 				CEA78FAE2961BA1D00B67E25 /* String+TransformTests.swift in Sources */,
+				CE06CA2A2AAC171B00E80E5E /* UserDict+Utilities.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
