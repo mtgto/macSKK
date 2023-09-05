@@ -55,6 +55,7 @@ class FileDict: NSObject, DictProtocol, Identifiable {
     }
 
     deinit {
+        logger.log("辞書 \(self.id) がプロセスから削除されます")
         NSFileCoordinator.removeFilePresenter(self)
     }
 

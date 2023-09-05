@@ -246,19 +246,33 @@ class UserDict: NSObject, DictProtocol {
 
 extension UserDict: NSFilePresenter {
     // TODO: dictSettingsに追加
+    // TODO: .DS_Storeのようなファイルも追加しようとしてないか確認
     func presentedSubitemDidAppear(at url: URL) {
         logger.log("新しいファイル \(url.lastPathComponent) が作成されました")
         NotificationCenter.default.post(name: notificationNameDictFileDidAppear, object: url)
     }
 
-    // TODO: なにもしない (読み込み直しはFileDict側でやるため)
+    // 他フォルダから移動された場合だけでなく他フォルダに移動した場合にも発生する (後者はdidMoveToも発生する)
     func presentedSubitemDidChange(at url: URL) {
-        logger.log("ファイル \(url.lastPathComponent) が更新されました")
+        var relationship: FileManager.URLRelationship = .same
+        do {
+            try FileManager.default.getRelationship(&relationship, ofDirectoryAt: dictionariesDirectoryURL, toItemAt: url)
+            if case .contains = relationship {
+                logger.log("ファイル \(url.lastPathComponent) が辞書フォルダに移動または更新されました")
+                // 他フォルダから辞書フォルダに移動された
+                NotificationCenter.default.post(name: notificationNameDictFileDidAppear, object: url)
+            } else {
+                logger.log("ファイル \(url.lastPathComponent) が更新されましたが無視されました")
+            }
+        } catch {
+            logger.error("更新された辞書ファイル \(url.lastPathComponent, privacy: .public) の情報取得に失敗しました: \(error)")
+        }
     }
 
+    // 子要素を他フォルダに移動した場合に発生する
     // TODO: dictSettingsを更新
     func presentedSubitem(at oldURL: URL, didMoveTo newURL: URL) {
-        logger.log("ファイル \(oldURL.lastPathComponent) が移動されました")
+        logger.log("ファイル \(oldURL.lastPathComponent) が辞書フォルダから移動されました")
         NotificationCenter.default.post(name: notificationNameDictFileDidMove, object: oldURL)
     }
 }
