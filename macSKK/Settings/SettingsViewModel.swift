@@ -179,27 +179,29 @@ final class SettingsViewModel: ObservableObject {
             }
             .store(in: &cancellables)
 
-        NotificationCenter.default.publisher(for: notificationNameDictFileDidAppear)
-            .sink { [weak self] notification in
+        Task {
+            for await notification in NotificationCenter.default.notifications(named: notificationNameDictFileDidAppear) {
                 if let url = notification.object as? URL {
                     if FileManager.default.isReadableFile(atPath: url.path) {
-                        self?.dictSettings.append(DictSetting(filename: url.lastPathComponent, enabled: false, encoding: .japaneseEUC))
+                        await MainActor.run {
+                            self.dictSettings.append(DictSetting(filename: url.lastPathComponent,
+                                                                 enabled: false,
+                                                                 encoding: .japaneseEUC))
+                        }
                     }
                 }
             }
-            .store(in: &cancellables)
 
-        NotificationCenter.default.publisher(for: notificationNameDictFileDidMove)
-            .sink { [weak self] notification in
+            for await notification in NotificationCenter.default.notifications(named: notificationNameDictFileDidMove) {
                 if let url = notification.object as? URL {
-                    if let self {
-                        // 辞書設定から移動したファイルを削除する
-                        // FIXME: 削除ではなくリネームなら追従する
+                    // 辞書設定から移動したファイルを削除する
+                    // FIXME: 削除ではなくリネームなら追従する
+                    await MainActor.run {
                         self.dictSettings = self.dictSettings.filter({ $0.filename != url.lastPathComponent })
                     }
                 }
             }
-            .store(in: &cancellables)
+        }
     }
 
     // PreviewProvider用
