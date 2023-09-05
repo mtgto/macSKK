@@ -3,6 +3,11 @@
 
 import Foundation
 
+// 辞書ディレクトリに新規ファイルが作成されたときに通知する通知の名前。objectはURL
+let notificationNameDictFileDidAppear = Notification.Name("dictFileDidAppear")
+// 辞書ディレクトリからファイルが移動されたときに通知する通知の名前。objectは移動前のURL
+let notificationNameDictFileDidMove = Notification.Name("dictFileDidMove")
+
 /// 実ファイルをもつSKK辞書
 class FileDict: NSObject, DictProtocol, Identifiable {
     // FIXME: URLResourceのfileResourceIdentifierKeyをidとして使ってもいいかもしれない。
@@ -14,7 +19,7 @@ class FileDict: NSObject, DictProtocol, Identifiable {
     private(set) var entries: [String: [Word]]!
 
     // MARK: NSFilePresenter
-    let presentedItemURL: URL?
+    var presentedItemURL: URL? { fileURL }
     let presentedItemOperationQueue: OperationQueue = OperationQueue()
 
     init(contentsOf fileURL: URL, encoding: String.Encoding) throws {
@@ -22,7 +27,6 @@ class FileDict: NSObject, DictProtocol, Identifiable {
         self.id = fileURL.lastPathComponent
         self.fileURL = fileURL
         self.encoding = encoding
-        presentedItemURL = fileURL
         super.init()
         try load(fileURL)
         NSFileCoordinator.addFilePresenter(self)

@@ -108,7 +108,7 @@ final class SettingsViewModel: ObservableObject {
     // バックグラウンドでの辞書を読み込みで読み込み状態が変わったときに通知される
     private let loadStatusPublisher = PassthroughSubject<(DictSetting.ID, LoadStatus), Never>()
     // 辞書ディレクトリ監視
-    private var source: DispatchSourceFileSystemObject?
+//    private var source: DispatchSourceFileSystemObject?
     private var cancellables = Set<AnyCancellable>()
 
     init(dictionariesDirectoryUrl: URL) throws {
@@ -178,6 +178,28 @@ final class SettingsViewModel: ObservableObject {
                 }
             }
             .store(in: &cancellables)
+
+        NotificationCenter.default.publisher(for: notificationNameDictFileDidAppear)
+            .sink { [weak self] notification in
+                if let url = notification.object as? URL {
+                    if FileManager.default.isReadableFile(atPath: url.path) {
+                        self?.dictSettings.append(DictSetting(filename: url.lastPathComponent, enabled: false, encoding: .japaneseEUC))
+                    }
+                }
+            }
+            .store(in: &cancellables)
+
+        NotificationCenter.default.publisher(for: notificationNameDictFileDidMove)
+            .sink { [weak self] notification in
+                if let url = notification.object as? URL {
+                    if let self {
+                        // 辞書設定から移動したファイルを削除する
+                        // FIXME: 削除ではなくリネームなら追従する
+                        self.dictSettings = self.dictSettings.filter({ $0.filename != url.lastPathComponent })
+                    }
+                }
+            }
+            .store(in: &cancellables)
     }
 
     // PreviewProvider用
@@ -192,7 +214,7 @@ final class SettingsViewModel: ObservableObject {
     }
 
     deinit {
-        source?.cancel()
+//        source?.cancel()
     }
 
     // fileDictsが設定されてから呼び出すこと。
@@ -202,32 +224,32 @@ final class SettingsViewModel: ObservableObject {
     func setDictSettings(_ dictSettings: [DictSetting]) throws {
         self.dictSettings = dictSettings
         if !isTest() {
-            try watchDictionariesDirectory()
-            refreshDictionariesDirectory()
+//            try watchDictionariesDirectory()
+            //refreshDictionariesDirectory()
         }
     }
 
     /// 辞書ディレクトリを監視して変更があった場合にfileDictsを更新する
     /// DictSettingが変更されてないときは辞書ファイルの再読み込みは行なわない (需要があれば今後やるかも)
-    func watchDictionariesDirectory() throws {
-        // dictionaryDirectoryUrl直下のファイルを監視してfileDictsにないファイルがあればfileDictsに追加する
-        let fileDescriptor = open(dictionariesDirectoryUrl.path(percentEncoded: true), O_EVTONLY)
-        if fileDescriptor < 0 {
-            logger.log("辞書ディレクトリのファイルディスクリプタ取得で失敗しました: code=\(fileDescriptor)")
-            return
-        }
-        let source = DispatchSource.makeFileSystemObjectSource(fileDescriptor: fileDescriptor, eventMask: [.write, .delete])
-        source.setEventHandler {
-            logger.log("辞書ディレクトリでファイルイベントが発生しました")
-            self.refreshDictionariesDirectory()
-        }
-        source.setCancelHandler {
-            logger.log("辞書ディレクトリの監視がキャンセルされました")
-            source.cancel()
-        }
-        self.source = source
-        source.activate()
-    }
+//    func watchDictionariesDirectory() throws {
+//        // dictionaryDirectoryUrl直下のファイルを監視してfileDictsにないファイルがあればfileDictsに追加する
+//        let fileDescriptor = open(dictionariesDirectoryUrl.path(percentEncoded: true), O_EVTONLY)
+//        if fileDescriptor < 0 {
+//            logger.log("辞書ディレクトリのファイルディスクリプタ取得で失敗しました: code=\(fileDescriptor)")
+//            return
+//        }
+//        let source = DispatchSource.makeFileSystemObjectSource(fileDescriptor: fileDescriptor, eventMask: [.write, .delete])
+//        source.setEventHandler {
+//            logger.log("辞書ディレクトリでファイルイベントが発生しました")
+//            self.refreshDictionariesDirectory()
+//        }
+//        source.setCancelHandler {
+//            logger.log("辞書ディレクトリの監視がキャンセルされました")
+//            source.cancel()
+//        }
+//        self.source = source
+//        source.activate()
+//    }
 
     /// 辞書ディレクトリを見て辞書設定と同期します。起動時とディレクトリのイベント時に実行します。
     /// - ディレクトリにあって辞書設定にないファイルができている場合は、enabled=false, encoding=euc-jpで辞書設定に追加し、UserDefaultsを更新する

@@ -248,6 +248,7 @@ extension UserDict: NSFilePresenter {
     // TODO: dictSettingsに追加
     func presentedSubitemDidAppear(at url: URL) {
         logger.log("新しいファイル \(url.lastPathComponent) が作成されました")
+        NotificationCenter.default.post(name: notificationNameDictFileDidAppear, object: url)
     }
 
     // TODO: なにもしない (読み込み直しはFileDict側でやるため)
@@ -258,5 +259,6 @@ extension UserDict: NSFilePresenter {
     // TODO: dictSettingsを更新
     func presentedSubitem(at oldURL: URL, didMoveTo newURL: URL) {
         logger.log("ファイル \(oldURL.lastPathComponent) が移動されました")
+        NotificationCenter.default.post(name: notificationNameDictFileDidMove, object: oldURL)
     }
 }
