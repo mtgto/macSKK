@@ -127,8 +127,8 @@ final class SettingsViewModel: ObservableObject {
                             logger.log("SKK辞書 \(dictSetting.filename)を読み込みます")
                             self.loadStatusPublisher.send((dictSetting.id, .loading))
                             let fileDict = try FileDict(contentsOf: fileURL, encoding: dictSetting.encoding)
-                            self.loadStatusPublisher.send((dictSetting.id, .loaded(fileDict.entries.count)))
-                            logger.log("SKK辞書 \(dictSetting.filename)から \(fileDict.entries.count) エントリ読み込みました")
+                            self.loadStatusPublisher.send((dictSetting.id, .loaded(fileDict.entryCount)))
+                            logger.log("SKK辞書 \(dictSetting.filename)から \(fileDict.entryCount) エントリ読み込みました")
                             return fileDict
                         } catch {
                             self.loadStatusPublisher.send((dictSetting.id, .fail(error)))

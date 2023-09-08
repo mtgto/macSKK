@@ -10,7 +10,7 @@ final class FileDictTests: XCTestCase {
 
     func testAdd() throws {
         let dict = try FileDict(contentsOf: fileURL, encoding: .utf8)
-        XCTAssertTrue(dict.entries.isEmpty)
+        XCTAssertEqual(dict.entryCount, 0)
         let word1 = Word("井")
         let word2 = Word("伊")
         dict.add(yomi: "い", word: word1)

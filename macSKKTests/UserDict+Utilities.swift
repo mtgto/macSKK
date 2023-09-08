@@ -12,7 +12,7 @@ extension UserDict {
 
     func entries() -> [String: [Word]]? {
         if let dict = dict as? FileDict {
-            return dict.entries
+            return dict.dict.entries
         }
         return nil
     }

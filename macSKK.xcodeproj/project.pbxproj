@@ -7,9 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		CE06CA2A2AAC171B00E80E5E /* UserDict+Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE06CA282AAC171B00E80E5E /* UserDict+Utilities.swift */; };
 		CE06CA2B2AAC171B00E80E5E /* FileDictTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE06CA292AAC171B00E80E5E /* FileDictTests.swift */; };
 		CE06CA2D2AAC172F00E80E5E /* empty.txt in Resources */ = {isa = PBXBuildFile; fileRef = CE06CA2C2AAC172F00E80E5E /* empty.txt */; };
+		CE06CA342AAC199500E80E5E /* UserDict+Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE06CA332AAC199500E80E5E /* UserDict+Utilities.swift */; };
 		CE39DB212A8DFD8F00BC619F /* MarkedText.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE39DB202A8DFD8F00BC619F /* MarkedText.swift */; };
 		CE40D9A12A6D0C2F00D44799 /* SystemDictView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE40D9A02A6D0C2F00D44799 /* SystemDictView.swift */; };
 		CE40D9A32A6D0C3900D44799 /* SystemDict.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE40D9A22A6D0C3900D44799 /* SystemDict.swift */; };
@@ -100,9 +100,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		CE06CA282AAC171B00E80E5E /* UserDict+Utilities.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UserDict+Utilities.swift"; sourceTree = "<group>"; };
 		CE06CA292AAC171B00E80E5E /* FileDictTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileDictTests.swift; sourceTree = "<group>"; };
 		CE06CA2C2AAC172F00E80E5E /* empty.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = empty.txt; sourceTree = "<group>"; };
+		CE06CA332AAC199500E80E5E /* UserDict+Utilities.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UserDict+Utilities.swift"; sourceTree = "<group>"; };
 		CE39DB202A8DFD8F00BC619F /* MarkedText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkedText.swift; sourceTree = "<group>"; };
 		CE40D9A02A6D0C2F00D44799 /* SystemDictView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemDictView.swift; sourceTree = "<group>"; };
 		CE40D9A22A6D0C3900D44799 /* SystemDict.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemDict.swift; sourceTree = "<group>"; };
@@ -283,9 +283,8 @@
 				CED7CA3D2A8397E4004EF988 /* UpdateCheckerTests.swift */,
 				CE6DBA902A846C1700F5A227 /* ReleaseVersionTests.swift */,
 				CEA78FAD2961BA1D00B67E25 /* String+TransformTests.swift */,
-				CE06CA282AAC171B00E80E5E /* UserDict+Utilities.swift */,
+				CE06CA332AAC199500E80E5E /* UserDict+Utilities.swift */,
 				CED7CA572A83BFE9004EF988 /* fixture */,
-				CE7498A82AA9FD110025BC60 /* UserDict+Utilities.swift */,
 			);
 			path = macSKKTests;
 			sourceTree = "<group>";
@@ -536,6 +535,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CE84A3ED295DA818009394C4 /* MemoryDictTests.swift in Sources */,
+				CE06CA342AAC199500E80E5E /* UserDict+Utilities.swift in Sources */,
 				CE84A3E9295DA504009394C4 /* RomajiTests.swift in Sources */,
 				CEA78FAA295EBCAC00B67E25 /* StateMachineTests.swift in Sources */,
 				CEE2D9792A99FEC700A4CD76 /* WordTest.swift in Sources */,

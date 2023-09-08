@@ -16,7 +16,7 @@ class FileDict: NSObject, DictProtocol, Identifiable {
     let id: String
     let fileURL: URL
     let encoding: String.Encoding
-    private(set) var entries: [String: [Word]]!
+    private(set) var dict: MemoryDict
 
     // MARK: NSFilePresenter
     var presentedItemURL: URL? { fileURL }
@@ -27,6 +27,7 @@ class FileDict: NSObject, DictProtocol, Identifiable {
         self.id = fileURL.lastPathComponent
         self.fileURL = fileURL
         self.encoding = encoding
+        self.dict = MemoryDict(entries: [:])
         super.init()
         try load(fileURL)
         NSFileCoordinator.addFilePresenter(self)
@@ -35,8 +36,8 @@ class FileDict: NSObject, DictProtocol, Identifiable {
     func load(_ url: URL) throws {
         let source = try String(contentsOf: url, encoding: self.encoding)
         let memoryDict = try MemoryDict(dictId: self.id, source: source)
-        self.entries = memoryDict.entries
-        logger.log("辞書 \(self.id) から \(self.entries.count) エントリ読み込みました")
+        self.dict = memoryDict
+        logger.log("辞書 \(self.id) から \(self.dict.entries.count) エントリ読み込みました")
     }
 
     func save() throws {
@@ -60,49 +61,15 @@ class FileDict: NSObject, DictProtocol, Identifiable {
         NSFileCoordinator.removeFilePresenter(self)
     }
 
-    /// 辞書にエントリを追加する。
-    ///
-    /// - Parameters:
-    ///   - yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
-    ///   - word: SKK辞書の変換候補。
-    func add(yomi: String, word: Word) {
-        if var words = entries[yomi] {
-            let index = words.firstIndex { $0.word == word.word }
-            if let index {
-                words.remove(at: index)
-            }
-            entries[yomi] = [word] + words
-        } else {
-            entries[yomi] = [word]
-        }
-    }
-
-    /// 辞書からエントリを削除する。
-    ///
-    /// 辞書にないエントリ (ファイル辞書) の削除は無視されます。
-    ///
-    /// - Parameters:
-    ///   - yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
-    ///   - word: SKK辞書の変換候補。
-    /// - Returns: エントリを削除できたかどうか
-    func delete(yomi: String, word: Word.Word) -> Bool {
-        if var words = entries[yomi] {
-            if let index = words.firstIndex(where: { $0.word == word }) {
-                words.remove(at: index)
-                entries[yomi] = words
-                return true
-            }
-        }
-        return false
-    }
-
     /// ユーザー辞書をSKK辞書形式に変換する
     func serialize() -> String {
         // FIXME: 送り仮名あり・なしでエントリを分けるようにする?
-        return entries.map { entry in
+        return dict.entries.map { entry in
             return "\(entry.key) /\(serializeWords(entry.value))/"
         }.joined(separator: "\n")
     }
+
+    var entryCount: Int { return dict.entries.count }
 
     private func serializeWords(_ words: [Word]) -> String {
         return words.map { word in
@@ -116,12 +83,20 @@ class FileDict: NSObject, DictProtocol, Identifiable {
 
     // MARK: DictProtocol
     func refer(_ yomi: String) -> [Word] {
-        return entries[yomi] ?? []
+        return dict.refer(yomi)
+    }
+
+    func add(yomi: String, word: Word) {
+        dict.add(yomi: yomi, word: word)
+    }
+
+    func delete(yomi: String, word: Word.Word) -> Bool {
+        return dict.delete(yomi: yomi, word: word)
     }
 
     // ユニットテスト用
     func setEntries(_ entries: [String: [Word]]) {
-        self.entries = entries
+        self.dict = MemoryDict(entries: entries)
     }
 }
 
