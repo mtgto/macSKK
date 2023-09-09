@@ -206,6 +206,14 @@ extension UserDict: NSFilePresenter {
 
     // 他フォルダから移動された場合だけでなく他フォルダに移動した場合にも発生する (後者はdidMoveToも発生する)
     func presentedSubitemDidChange(at url: URL) {
+        // 削除されたときにaccommodatePresentedSubitemDeletionが呼ばれないがこのメソッドは呼ばれるようだった。
+        // そのためこのメソッドで削除のとき同様の処理を行う。
+        if !FileManager.default.fileExists(atPath: url.path) {
+            logger.log("変更されたファイル \(url.lastPathComponent, privacy: .public) が見つからないため削除されたと扱います")
+            NotificationCenter.default.post(name: notificationNameDictFileDidMove, object: url)
+            return
+        }
+
         var relationship: FileManager.URLRelationship = .same
         do {
             if try isValidFile(url) {
@@ -235,6 +243,9 @@ extension UserDict: NSFilePresenter {
         NotificationCenter.default.post(name: notificationNameDictFileDidMove, object: oldURL)
     }
 
+    // NOTE: 本来ディレクトリ内のファイルが削除したときに呼ばれるはずだが、なぜか呼び出されない。
+    // macOSのバグかもしれない?
+    // @see https://stackoverflow.com/questions/50439658/swift-cocoa-how-to-watch-folder-for-changes#comment120683334_50443763
     func accommodatePresentedSubitemDeletion(at url: URL) async throws {
         logger.log("ファイル \(url.lastPathComponent, privacy: .public) が辞書フォルダから削除されます")
     }
