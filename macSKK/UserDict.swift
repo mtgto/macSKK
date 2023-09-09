@@ -193,10 +193,10 @@ extension UserDict: NSFilePresenter {
     func presentedSubitemDidAppear(at url: URL) {
         do {
             if try isValidFile(url) {
-                logger.log("新しいファイル \(url.lastPathComponent) が作成されました")
+                logger.log("新しいファイル \(url.lastPathComponent, privacy: .public) が作成されました")
                 NotificationCenter.default.post(name: notificationNameDictFileDidAppear, object: url)
             } else {
-                logger.log("辞書ファイルとして不適合なファイル \(url.lastPathComponent) が更新されました")
+                logger.log("辞書ファイルとして不適合なファイル \(url.lastPathComponent, privacy: .public) が更新されました")
                 return
             }
         } catch {
@@ -211,17 +211,17 @@ extension UserDict: NSFilePresenter {
             if try isValidFile(url) {
                 try FileManager.default.getRelationship(&relationship, ofDirectoryAt: dictionariesDirectoryURL, toItemAt: url)
                 if case .contains = relationship {
-                    logger.log("ファイル \(url.lastPathComponent) が辞書フォルダに移動または更新されました")
+                    logger.log("ファイル \(url.lastPathComponent, privacy: .public) が辞書フォルダに移動または更新されました")
                     // 他フォルダから辞書フォルダに移動された
                     NotificationCenter.default.post(name: notificationNameDictFileDidAppear, object: url)
                 } else {
                     // 辞書ファイルが別フォルダに移動したときにはpresentedSubitem:at:didMoveToも呼ばれる
                     // FIXME: 辞書ファイルが削除されたときはdidMoveTo呼ばれるのか確認する
-                    logger.log("ファイル \(url.lastPathComponent) が更新されましたが辞書フォルダ外なので無視します")
+                    logger.log("ファイル \(url.lastPathComponent, privacy: .public) が更新されましたが辞書フォルダ外なので無視します")
                 }
 
             } else {
-                logger.log("辞書ファイルとして不適合なファイル \(url.lastPathComponent) が更新されました")
+                logger.log("辞書フォルダで \(url.lastPathComponent, privacy: .public) が更新されました (無視)")
             }
         } catch {
             logger.error("更新された辞書ファイル \(url.lastPathComponent, privacy: .public) の情報取得に失敗しました: \(error)")
@@ -231,12 +231,12 @@ extension UserDict: NSFilePresenter {
     // 子要素を他フォルダに移動した場合に発生する
     // TODO: dictSettingsを更新
     func presentedSubitem(at oldURL: URL, didMoveTo newURL: URL) {
-        logger.log("ファイル \(oldURL.lastPathComponent) が辞書フォルダから移動されました")
+        logger.log("ファイル \(oldURL.lastPathComponent, privacy: .public) が辞書フォルダから移動されました")
         NotificationCenter.default.post(name: notificationNameDictFileDidMove, object: oldURL)
     }
 
     func accommodatePresentedSubitemDeletion(at url: URL) async throws {
-        logger.log("ファイル \(url.lastPathComponent) が辞書フォルダから削除されます")
+        logger.log("ファイル \(url.lastPathComponent, privacy: .public) が辞書フォルダから削除されます")
     }
 
     // 辞書ファイルとして問題があるファイルでないかを判定する

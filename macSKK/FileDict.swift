@@ -45,6 +45,7 @@ class FileDict: NSObject, DictProtocol, Identifiable {
                     let source = try String(contentsOf: url, encoding: self.encoding)
                     let memoryDict = try MemoryDict(dictId: self.id, source: source)
                     self.dict = memoryDict
+                    self.version = NSFileVersion.currentVersionOfItem(at: url)
                     logger.log("辞書 \(self.id, privacy: .public) から \(self.dict.entries.count) エントリ読み込みました")
                 } catch {
                     logger.error("辞書 \(self.id, privacy: .public) の読み込みでエラーが発生しました: \(error)")
@@ -134,17 +135,29 @@ class FileDict: NSObject, DictProtocol, Identifiable {
 extension FileDict: NSFilePresenter {
     // 他プログラムでの書き込みなどでは呼ばれないみたい
     func presentedItemDidGain(_ version: NSFileVersion) {
-        logger.log("辞書 \(self.id) が更新されたので読み込みます (バージョン情報が更新)")
-        try? load(fileURL)
+        if version == self.version {
+            logger.log("辞書 \(self.id, privacy: .public) のバージョンが自分自身に更新されたため何もしません")
+        } else {
+            logger.log("辞書 \(self.id, privacy: .public) のバージョンが更新されたので読み込みます")
+            try? load(fileURL)
+        }
     }
 
     func presentedItemDidLose(_ version: NSFileVersion) {
-        logger.log("辞書 \(self.id) が更新されたので読み込みます (バージョン情報が消失)")
+        logger.log("辞書 \(self.id, privacy: .public) が更新されたので読み込みます (バージョン情報が消失)")
         try? load(fileURL)
     }
 
+    // NOTE: save() で保存した場合はバージョンが必ず更新されるのでこのメソッドは呼ばれない
+    // IMEとして動いているmacSKK (A) とXcodeからデバッグ起動しているmacSKK (B) の両方がいる場合、
+    // どちらも同じ辞書ファイルを監視しているので、Aが保存してもAのpresentedItemDidChangeは呼び出されないが、
+    // BのpresentedItemDidChangeは呼び出される。
     func presentedItemDidChange() {
-        logger.log("辞書 \(self.id) が更新されたので読み込みます")
-        try? load(fileURL)
+        if let version = NSFileVersion.currentVersionOfItem(at: fileURL), version == self.version {
+            logger.log("辞書 \(self.id, privacy: .public) が変更されましたがバージョンが変更されてないため何もしません")
+        } else {
+            logger.log("辞書 \(self.id, privacy: .public) が変更されたので読み込みます")
+            try? load(fileURL)
+        }
     }
 }

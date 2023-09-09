@@ -124,16 +124,16 @@ final class SettingsViewModel: ObservableObject {
                     if dictSetting.encoding != dict?.encoding {
                         let fileURL = dictionariesDirectoryUrl.appendingPathComponent(dictSetting.filename)
                         do {
-                            logger.log("SKK辞書 \(dictSetting.filename)を読み込みます")
+                            logger.log("SKK辞書 \(dictSetting.filename, privacy: .public) を読み込みます")
                             self.loadStatusPublisher.send((dictSetting.id, .loading))
                             let fileDict = try FileDict(contentsOf: fileURL, encoding: dictSetting.encoding)
                             self.loadStatusPublisher.send((dictSetting.id, .loaded(fileDict.entryCount)))
-                            logger.log("SKK辞書 \(dictSetting.filename)から \(fileDict.entryCount) エントリ読み込みました")
+                            logger.log("SKK辞書 \(dictSetting.filename, privacy: .public) から \(fileDict.entryCount) エントリ読み込みました")
                             return fileDict
                         } catch {
                             self.loadStatusPublisher.send((dictSetting.id, .fail(error)))
                             dictSetting.enabled = false
-                            logger.log("SKK辞書 \(dictSetting.filename) の読み込みに失敗しました!: \(error)")
+                            logger.log("SKK辞書 \(dictSetting.filename, privacy: .public) の読み込みに失敗しました!: \(error)")
                             return nil
                         }
                     } else {
@@ -141,7 +141,7 @@ final class SettingsViewModel: ObservableObject {
                     }
                 } else {
                     if dict != nil {
-                        logger.log("SKK辞書 \(dictSetting.filename) を無効化します")
+                        logger.log("SKK辞書 \(dictSetting.filename, privacy: .public) を無効化します")
                         self.loadStatusPublisher.send((dictSetting.id, .disabled))
                     }
                     return nil
