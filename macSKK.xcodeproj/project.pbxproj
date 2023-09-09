@@ -12,6 +12,8 @@
 		CE40D9A32A6D0C3900D44799 /* SystemDict.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE40D9A22A6D0C3900D44799 /* SystemDict.swift */; };
 		CE485A882A8FA195008271EF /* Release+UNNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE485A872A8FA195008271EF /* Release+UNNotification.swift */; };
 		CE485A8A2A8FA5C6008271EF /* UserNotificationDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE485A892A8FA5C6008271EF /* UserNotificationDelegate.swift */; };
+		CE5EB6AD2AAC0DE000389B98 /* FileDict.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE5EB6AC2AAC0DE000389B98 /* FileDict.swift */; };
+		CE5EB6AF2AAC0DEB00389B98 /* MemoryDict.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE5EB6AE2AAC0DEB00389B98 /* MemoryDict.swift */; };
 		CE5ECF362957034B00E7BE7D /* macSKKApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE5ECF352957034B00E7BE7D /* macSKKApp.swift */; };
 		CE5ECF3A2957034D00E7BE7D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CE5ECF392957034D00E7BE7D /* Assets.xcassets */; };
 		CE5ECF3D2957034D00E7BE7D /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CE5ECF3C2957034D00E7BE7D /* Preview Assets.xcassets */; };
@@ -30,7 +32,7 @@
 		CE84A3E7295DA4DA009394C4 /* Romaji.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE84A3E6295DA4DA009394C4 /* Romaji.swift */; };
 		CE84A3E9295DA504009394C4 /* RomajiTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE84A3E8295DA504009394C4 /* RomajiTests.swift */; };
 		CE84A3EB295DA715009394C4 /* Dict.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE84A3EA295DA715009394C4 /* Dict.swift */; };
-		CE84A3ED295DA818009394C4 /* DictTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE84A3EC295DA818009394C4 /* DictTests.swift */; };
+		CE84A3ED295DA818009394C4 /* MemoryDictTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE84A3EC295DA818009394C4 /* MemoryDictTests.swift */; };
 		CE97887B2A9B93EB00F9B196 /* DirectModeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE97887A2A9B93EB00F9B196 /* DirectModeView.swift */; };
 		CEA78FAA295EBCAC00B67E25 /* StateMachineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA78FA9295EBCAC00B67E25 /* StateMachineTests.swift */; };
 		CEA78FAC2960401F00B67E25 /* String+Transform.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA78FAB2960401F00B67E25 /* String+Transform.swift */; };
@@ -100,6 +102,8 @@
 		CE40D9A22A6D0C3900D44799 /* SystemDict.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemDict.swift; sourceTree = "<group>"; };
 		CE485A872A8FA195008271EF /* Release+UNNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Release+UNNotification.swift"; sourceTree = "<group>"; };
 		CE485A892A8FA5C6008271EF /* UserNotificationDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserNotificationDelegate.swift; sourceTree = "<group>"; };
+		CE5EB6AC2AAC0DE000389B98 /* FileDict.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileDict.swift; sourceTree = "<group>"; };
+		CE5EB6AE2AAC0DEB00389B98 /* MemoryDict.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryDict.swift; sourceTree = "<group>"; };
 		CE5ECF322957034B00E7BE7D /* macSKK.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = macSKK.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CE5ECF352957034B00E7BE7D /* macSKKApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = macSKKApp.swift; sourceTree = "<group>"; };
 		CE5ECF392957034D00E7BE7D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -123,7 +127,7 @@
 		CE84A3E6295DA4DA009394C4 /* Romaji.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Romaji.swift; sourceTree = "<group>"; };
 		CE84A3E8295DA504009394C4 /* RomajiTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RomajiTests.swift; sourceTree = "<group>"; };
 		CE84A3EA295DA715009394C4 /* Dict.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dict.swift; sourceTree = "<group>"; };
-		CE84A3EC295DA818009394C4 /* DictTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictTests.swift; sourceTree = "<group>"; };
+		CE84A3EC295DA818009394C4 /* MemoryDictTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryDictTests.swift; sourceTree = "<group>"; };
 		CE97887A2A9B93EB00F9B196 /* DirectModeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectModeView.swift; sourceTree = "<group>"; };
 		CEA78FA9295EBCAC00B67E25 /* StateMachineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateMachineTests.swift; sourceTree = "<group>"; };
 		CEA78FAB2960401F00B67E25 /* String+Transform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Transform.swift"; sourceTree = "<group>"; };
@@ -219,6 +223,8 @@
 				CE84A3DF295717CB009394C4 /* StateMachine.swift */,
 				CEE2D9762A99FE1B00A4CD76 /* Word.swift */,
 				CE84A3EA295DA715009394C4 /* Dict.swift */,
+				CE5EB6AC2AAC0DE000389B98 /* FileDict.swift */,
+				CE5EB6AE2AAC0DEB00389B98 /* MemoryDict.swift */,
 				CEA78FAF2964209B00B67E25 /* UserDict.swift */,
 				CE84A3E6295DA4DA009394C4 /* Romaji.swift */,
 				CEF08239296BCDB000646366 /* InputModePanel.swift */,
@@ -263,10 +269,10 @@
 			children = (
 				CE84A3E8295DA504009394C4 /* RomajiTests.swift */,
 				CEE2D9782A99FEC700A4CD76 /* WordTest.swift */,
-				CE84A3EC295DA818009394C4 /* DictTests.swift */,
+				CE84A3EC295DA818009394C4 /* MemoryDictTests.swift */,
+				CEA78FB129646CA100B67E25 /* UserDictTests.swift */,
 				CEF0823529685C0800646366 /* StateTests.swift */,
 				CEA78FA9295EBCAC00B67E25 /* StateMachineTests.swift */,
-				CEA78FB129646CA100B67E25 /* UserDictTests.swift */,
 				CEA78FAD2961BA1D00B67E25 /* String+TransformTests.swift */,
 				CED7CA3D2A8397E4004EF988 /* UpdateCheckerTests.swift */,
 				CE6DBA902A846C1700F5A227 /* ReleaseVersionTests.swift */,
@@ -481,6 +487,7 @@
 				CEF0825D296DB58600646366 /* CandidatesViewModel.swift in Sources */,
 				CE6DBA8D2A845CE400F5A227 /* Release.swift in Sources */,
 				CED7CA5B2A83DE7F004EF988 /* SettingsViewModel.swift in Sources */,
+				CE5EB6AF2AAC0DEB00389B98 /* MemoryDict.swift in Sources */,
 				CEA78FAC2960401F00B67E25 /* String+Transform.swift in Sources */,
 				CE84A3B929570C37009394C4 /* InputController.swift in Sources */,
 				CE485A8A2A8FA5C6008271EF /* UserNotificationDelegate.swift in Sources */,
@@ -503,6 +510,7 @@
 				CEE3717529653112000DB2C3 /* SoftwareUpdateView.swift in Sources */,
 				CE39DB212A8DFD8F00BC619F /* MarkedText.swift in Sources */,
 				CE40D9A32A6D0C3900D44799 /* SystemDict.swift in Sources */,
+				CE5EB6AD2AAC0DE000389B98 /* FileDict.swift in Sources */,
 				CEB0888E2A7F393600EFD1E3 /* AnnotationView.swift in Sources */,
 				CEC376E82965199500D9C432 /* SettingsView.swift in Sources */,
 				CEC376EB2965211200D9C432 /* KeyEventView.swift in Sources */,
@@ -516,7 +524,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CE84A3ED295DA818009394C4 /* DictTests.swift in Sources */,
+				CE84A3ED295DA818009394C4 /* MemoryDictTests.swift in Sources */,
 				CE84A3E9295DA504009394C4 /* RomajiTests.swift in Sources */,
 				CEA78FAA295EBCAC00B67E25 /* StateMachineTests.swift in Sources */,
 				CEE2D9792A99FEC700A4CD76 /* WordTest.swift in Sources */,
