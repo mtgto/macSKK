@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 mtgto <hogerappa@gmail.com>
+// SPDX-FileCopyrightText: 2023 mtgto <hogerappa@gmail.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import Foundation
@@ -78,7 +78,7 @@ class FileDict: NSObject, DictProtocol, Identifiable {
                 do {
                     try data.write(to: newURL)
                 } catch {
-                    logger.error("辞書 \(self.id) の書き込みに失敗しました: \(error)")
+                    logger.error("辞書 \(self.id, privacy: .public) の書き込みに失敗しました: \(error)")
                     writingError = error as NSError
                 }
             }
@@ -89,7 +89,7 @@ class FileDict: NSObject, DictProtocol, Identifiable {
     }
 
     deinit {
-        logger.log("辞書 \(self.id) がプロセスから削除されます")
+        logger.log("辞書 \(self.id, privacy: .public) がプロセスから削除されます")
         NSFileCoordinator.removeFilePresenter(self)
     }
 
