@@ -16,6 +16,7 @@ class FileDict: NSObject, DictProtocol, Identifiable {
     let id: String
     let fileURL: URL
     let encoding: String.Encoding
+    var version: NSFileVersion?
     private(set) var dict: MemoryDict
 
     // MARK: NSFilePresenter
@@ -28,31 +29,61 @@ class FileDict: NSObject, DictProtocol, Identifiable {
         self.fileURL = fileURL
         self.encoding = encoding
         self.dict = MemoryDict(entries: [:])
+        self.version = NSFileVersion.currentVersionOfItem(at: fileURL)
         super.init()
         try load(fileURL)
         NSFileCoordinator.addFilePresenter(self)
     }
 
     func load(_ url: URL) throws {
-        let source = try String(contentsOf: url, encoding: self.encoding)
-        let memoryDict = try MemoryDict(dictId: self.id, source: source)
-        self.dict = memoryDict
-        logger.log("辞書 \(self.id) から \(self.dict.entries.count) エントリ読み込みました")
+        var coordinationError: NSError?
+        var readingError: NSError?
+        let fileCoordinator = NSFileCoordinator(filePresenter: self)
+        fileCoordinator.coordinate(readingItemAt: fileURL, error: &coordinationError) { [weak self] newURL in
+            if let self {
+                do {
+                    let source = try String(contentsOf: url, encoding: self.encoding)
+                    let memoryDict = try MemoryDict(dictId: self.id, source: source)
+                    self.dict = memoryDict
+                    logger.log("辞書 \(self.id, privacy: .public) から \(self.dict.entries.count) エントリ読み込みました")
+                } catch {
+                    logger.error("辞書 \(self.id, privacy: .public) の読み込みでエラーが発生しました: \(error)")
+                    readingError = error as NSError
+                }
+            }
+        }
+        if let error = coordinationError ?? readingError {
+            throw error
+        }
     }
 
     func save() throws {
         guard let data = serialize().data(using: encoding) else {
             fatalError("辞書 \(self.id) のシリアライズに失敗しました")
         }
+        var coordinationError: NSError?
+        var writingError: NSError?
         let fileCoordinator = NSFileCoordinator(filePresenter: self)
-        fileCoordinator.coordinate(writingItemAt: fileURL, options: .forReplacing, error: nil) { [weak self] newURL in
+        fileCoordinator.coordinate(writingItemAt: fileURL, options: .forReplacing, error: &coordinationError) { [weak self] newURL in
             if let self {
+                do {
+                    self.version = try NSFileVersion.addOfItem(at: newURL, withContentsOf: newURL)
+                    logger.log("辞書のバージョンを作成しました")
+                } catch {
+                    logger.error("辞書のバージョン作成でエラーが発生しました: \(error)")
+                    writingError = error as NSError
+                    return
+                }
                 do {
                     try data.write(to: newURL)
                 } catch {
-                    logger.log("辞書 \(self.id) の書き込みに失敗しました: \(error)")
+                    logger.error("辞書 \(self.id) の書き込みに失敗しました: \(error)")
+                    writingError = error as NSError
                 }
             }
+        }
+        if let error = coordinationError ?? writingError {
+            throw error
         }
     }
 
@@ -102,31 +133,18 @@ class FileDict: NSObject, DictProtocol, Identifiable {
 
 extension FileDict: NSFilePresenter {
     // 他プログラムでの書き込みなどでは呼ばれないみたい
-    /*
     func presentedItemDidGain(_ version: NSFileVersion) {
-        logger.log("辞書 \(self.id) が更新されたので読み込みます")
-        NSFileCoordinator(filePresenter: self).coordinate(readingItemAt: version.url, error: nil) { [weak self] newURL in
-            if let self {
-                do {
-                    try self.load(newURL)
-                } catch {
-                    logger.log("辞書 \(self.id) の読み込みに失敗しました: \(error)")
-                }
-            }
-        }
+        logger.log("辞書 \(self.id) が更新されたので読み込みます (バージョン情報が更新)")
+        try? load(fileURL)
     }
-    */
+
+    func presentedItemDidLose(_ version: NSFileVersion) {
+        logger.log("辞書 \(self.id) が更新されたので読み込みます (バージョン情報が消失)")
+        try? load(fileURL)
+    }
 
     func presentedItemDidChange() {
         logger.log("辞書 \(self.id) が更新されたので読み込みます")
-        NSFileCoordinator(filePresenter: self).coordinate(readingItemAt: fileURL, error: nil) { [weak self] newURL in
-            if let self {
-                do {
-                    try self.load(newURL)
-                } catch {
-                    logger.log("辞書 \(self.id) の読み込みに失敗しました: \(error)")
-                }
-            }
-        }
+        try? load(fileURL)
     }
 }
