@@ -70,5 +70,17 @@ struct AnnotationView_Previews: PreviewProvider {
         )
         .frame(width: 300)
         .previewDisplayName("SKK辞書の注釈 & システム辞書の注釈")
+        AnnotationView(
+            annotations: .constant([]),
+            systemAnnotation: .constant(String(repeating: "これはシステム辞書の注釈です。", count: 10))
+        )
+        .frame(width: 300)
+        .previewDisplayName("システム辞書のみ")
+        AnnotationView(
+            annotations: .constant([]),
+            systemAnnotation: .constant(nil)
+        )
+        .frame(width: 300)
+        .previewDisplayName("注釈なし")
     }
 }

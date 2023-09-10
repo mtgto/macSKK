@@ -91,10 +91,25 @@ struct CandidatesView_Previews: PreviewProvider {
                      annotations: [Annotation(dictId: "SKK-JISYO.L", text: "注釈\($0)")])
     }
 
-    static var previews: some View {
+    private static func pageViewModel() -> CandidatesViewModel {
         let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3)
         viewModel.selected = words.first
         viewModel.systemAnnotations = [words.first!.word: String(repeating: "これはシステム辞書の注釈です。", count: 10)]
-        return CandidatesView(candidates: viewModel)
+        return viewModel
+    }
+
+    private static func inlineViewModel() -> CandidatesViewModel {
+        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3)
+        viewModel.candidates = .inline
+        viewModel.selected = words.first
+        viewModel.systemAnnotations = [words.first!.word: String(repeating: "これはシステム辞書の注釈です。", count: 10)]
+        return viewModel
+    }
+
+    static var previews: some View {
+        CandidatesView(candidates: pageViewModel())
+            .previewDisplayName("パネル表示")
+        CandidatesView(candidates: inlineViewModel())
+            .previewDisplayName("インライン表示")
     }
 }
