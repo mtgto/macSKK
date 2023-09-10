@@ -135,12 +135,23 @@ struct macSKKApp: App {
 
     // Dictionariesフォルダのファイルのうち、UserDefaultsで有効になっているものだけ読み込む
     private func setupDictionaries() throws {
-        let dictSettings = UserDefaults.standard.array(forKey: "dictionaries")?.compactMap { obj in
-            if let setting = obj as? [String: Any] {
-                return DictSetting(setting)
-            } else {
-                return nil
+        let childFileUrls = try FileManager.default.contentsOfDirectory(at: dictionariesDirectoryUrl,
+                                                                        includingPropertiesForKeys: [.isReadableKey],
+                                                                        options: [.skipsHiddenFiles, .skipsSubdirectoryDescendants])
+        let validFilenames = try childFileUrls.compactMap { fileURL -> String? in
+            let resourceValues = try fileURL.resourceValues(forKeys: [.isReadableKey])
+            if let isReadable = resourceValues.isReadable, isReadable {
+                return fileURL.lastPathComponent
             }
+            return nil
+        }
+        let dictSettings = UserDefaults.standard.array(forKey: "dictionaries")?.compactMap { obj in
+            if let setting = obj as? [String: Any], let dictSetting = DictSetting(setting) {
+                if validFilenames.contains(dictSetting.filename) {
+                    return dictSetting
+                }
+            }
+            return nil
         }
         guard let dictSettings else {
             // 再起動してもおそらく同じ理由でこけるので、リセットしちゃう
@@ -149,7 +160,7 @@ struct macSKKApp: App {
             UserDefaults.standard.removeObject(forKey: "dictionaries")
             return
         }
-        try settingsViewModel.setDictSettings(dictSettings)
+        settingsViewModel.dictSettings = dictSettings
     }
 
     // UNNotificationの設定

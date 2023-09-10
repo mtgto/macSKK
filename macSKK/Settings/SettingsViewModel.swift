@@ -107,8 +107,6 @@ final class SettingsViewModel: ObservableObject {
     let dictionariesDirectoryUrl: URL
     // バックグラウンドでの辞書を読み込みで読み込み状態が変わったときに通知される
     private let loadStatusPublisher = PassthroughSubject<(DictSetting.ID, LoadStatus), Never>()
-    // 辞書ディレクトリ監視
-    private var source: DispatchSourceFileSystemObject?
     private var cancellables = Set<AnyCancellable>()
 
     init(dictionariesDirectoryUrl: URL) throws {
@@ -126,16 +124,16 @@ final class SettingsViewModel: ObservableObject {
                     if dictSetting.encoding != dict?.encoding {
                         let fileURL = dictionariesDirectoryUrl.appendingPathComponent(dictSetting.filename)
                         do {
-                            logger.log("SKK辞書 \(dictSetting.filename)を読み込みます")
+                            logger.log("SKK辞書 \(dictSetting.filename, privacy: .public) を読み込みます")
                             self.loadStatusPublisher.send((dictSetting.id, .loading))
                             let fileDict = try FileDict(contentsOf: fileURL, encoding: dictSetting.encoding)
-                            self.loadStatusPublisher.send((dictSetting.id, .loaded(fileDict.entries.count)))
-                            logger.log("SKK辞書 \(dictSetting.filename)から \(fileDict.entries.count) エントリ読み込みました")
+                            self.loadStatusPublisher.send((dictSetting.id, .loaded(fileDict.entryCount)))
+                            logger.log("SKK辞書 \(dictSetting.filename, privacy: .public) から \(fileDict.entryCount) エントリ読み込みました")
                             return fileDict
                         } catch {
                             self.loadStatusPublisher.send((dictSetting.id, .fail(error)))
                             dictSetting.enabled = false
-                            logger.log("SKK辞書 \(dictSetting.filename) の読み込みに失敗しました!: \(error)")
+                            logger.log("SKK辞書 \(dictSetting.filename, privacy: .public) の読み込みに失敗しました!: \(error)")
                             return nil
                         }
                     } else {
@@ -143,7 +141,7 @@ final class SettingsViewModel: ObservableObject {
                     }
                 } else {
                     if dict != nil {
-                        logger.log("SKK辞書 \(dictSetting.filename) を無効化します")
+                        logger.log("SKK辞書 \(dictSetting.filename, privacy: .public) を無効化します")
                         self.loadStatusPublisher.send((dictSetting.id, .disabled))
                     }
                     return nil
@@ -178,6 +176,11 @@ final class SettingsViewModel: ObservableObject {
                 }
             }
             .store(in: &cancellables)
+
+        // 空以外のdictSettingsがセットされたときに一回だけ実行する
+        $dictSettings.filter({ !$0.isEmpty }).first().sink { [weak self] _ in
+            self?.setupNotification()
+        }.store(in: &cancellables)
     }
 
     // PreviewProvider用
@@ -191,73 +194,38 @@ final class SettingsViewModel: ObservableObject {
         self.dictSettings = dictSettings
     }
 
-    deinit {
-        source?.cancel()
-    }
+    /**
+     * 辞書ファイルが追加・削除された通知を受け取りdictSettingsを更新する処理をセットアップします。
+     *
+     * dictSettingsが設定されてから呼び出すこと。じゃないとSKK-JISYO.Lのようなファイルが
+     * refreshDictionariesDirectoryでfileDictsにない辞書ディレクトリにあるファイルとして
+     * enabled=falseでfileDictsに追加されてしまい、読み込みスキップされたというログがでてしまうため。
+     */
+    func setupNotification() {
+        assert(dictSettings.isEmpty, "dictSettingsが空の状態でsetupNotificationしようとしました。バグと思われます。")
 
-    // fileDictsが設定されてから呼び出すこと。
-    // じゃないとSKK-JISYO.Lのようなファイルが refreshDictionariesDirectoryでfileDictsにない辞書ディレクトリにあるファイルとして
-    // enabled=falseでfileDictsに追加されてしまい、読み込みスキップされたというログがでてしまうため。
-    // FIXME: 辞書設定が設定されたイベントをsinkして設定されたときに一回だけsetupEventsを実行する、とかのほうがよさそう。
-    func setDictSettings(_ dictSettings: [DictSetting]) throws {
-        self.dictSettings = dictSettings
-        if !isTest() {
-            try watchDictionariesDirectory()
-            refreshDictionariesDirectory()
-        }
-    }
-
-    /// 辞書ディレクトリを監視して変更があった場合にfileDictsを更新する
-    /// DictSettingが変更されてないときは辞書ファイルの再読み込みは行なわない (需要があれば今後やるかも)
-    func watchDictionariesDirectory() throws {
-        // dictionaryDirectoryUrl直下のファイルを監視してfileDictsにないファイルがあればfileDictsに追加する
-        let fileDescriptor = open(dictionariesDirectoryUrl.path(percentEncoded: true), O_EVTONLY)
-        if fileDescriptor < 0 {
-            logger.log("辞書ディレクトリのファイルディスクリプタ取得で失敗しました: code=\(fileDescriptor)")
-            return
-        }
-        let source = DispatchSource.makeFileSystemObjectSource(fileDescriptor: fileDescriptor, eventMask: [.write, .delete])
-        source.setEventHandler {
-            logger.log("辞書ディレクトリでファイルイベントが発生しました")
-            self.refreshDictionariesDirectory()
-        }
-        source.setCancelHandler {
-            logger.log("辞書ディレクトリの監視がキャンセルされました")
-            source.cancel()
-        }
-        self.source = source
-        source.activate()
-    }
-
-    /// 辞書ディレクトリを見て辞書設定と同期します。起動時とディレクトリのイベント時に実行します。
-    /// - ディレクトリにあって辞書設定にないファイルができている場合は、enabled=false, encoding=euc-jpで辞書設定に追加し、UserDefaultsを更新する
-    /// - ディレクトリになくて辞書設定にあるファイルができている場合は、読み込み辞書から設定を削除する? enabled=falseにする?
-    func refreshDictionariesDirectory() {
-        // 辞書ディレクトリ直下にあるファイル一覧をみていく。シンボリックリンク、サブディレクトリは探索しない。
-        let resourceKeys: Set<URLResourceKey> = [.isDirectoryKey, .nameKey]
-        let enumerator = FileManager.default.enumerator(at: self.dictionariesDirectoryUrl,
-                                                        includingPropertiesForKeys: Array(resourceKeys),
-                                                        options: [.skipsHiddenFiles, .skipsSubdirectoryDescendants])
-        guard let enumerator else {
-            logger.error("辞書フォルダのファイル一覧が取得できません")
-            return
-        }
-
-        for case let fileURL as URL in enumerator {
-            guard let resourceValues = try? fileURL.resourceValues(forKeys: resourceKeys),
-                  let isDirectory = resourceValues.isDirectory,
-                  let filename = resourceValues.name
-            else {
-                continue
+        Task {
+            for await notification in NotificationCenter.default.notifications(named: notificationNameDictFileDidAppear) {
+                if let url = notification.object as? URL {
+                    await MainActor.run {
+                        if self.dictSettings.allSatisfy({ $0.filename != url.lastPathComponent }) {
+                            self.dictSettings.append(DictSetting(filename: url.lastPathComponent,
+                                                                 enabled: false,
+                                                                 encoding: .japaneseEUC))
+                        }
+                    }
+                }
             }
-            if isDirectory || filename == UserDict.userDictFilename {
-                continue
-            }
-            if self.dictSettings.first(where: { $0.filename == filename }) == nil {
-                // UserDefaultsの辞書設定に存在しないファイルが見つかったので辞書設定に無効化状態で追加
-                logger.log("新しいSKK辞書らしきファイル \(filename) がみつかりました")
-                DispatchQueue.main.async {
-                    self.dictSettings.append(DictSetting(filename: filename, enabled: false, encoding: .japaneseEUC))
+        }
+
+        Task {
+            for await notification in NotificationCenter.default.notifications(named: notificationNameDictFileDidMove) {
+                if let url = notification.object as? URL {
+                    // 辞書設定から移動したファイルを削除する
+                    // FIXME: 削除ではなくリネームなら追従する
+                    await MainActor.run {
+                        self.dictSettings = self.dictSettings.filter({ $0.filename != url.lastPathComponent })
+                    }
                 }
             }
         }
