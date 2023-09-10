@@ -265,10 +265,9 @@ class StateMachine {
             }
         }
 
-        let isAlphabet = input.unicodeScalars.allSatisfy { CharacterSet.letters.contains($0) }
         switch state.inputMode {
         case .hiragana, .katakana, .hankaku:
-            if isAlphabet && !action.optionIsPressed() {
+            if input.isAlphabet() && !action.optionIsPressed() {
                 let result = Romaji.convert(input)
                 if let moji = result.kakutei {
                     if action.shiftIsPressed() {
