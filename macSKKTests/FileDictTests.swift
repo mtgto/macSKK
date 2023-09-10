@@ -32,8 +32,8 @@ final class FileDictTests: XCTestCase {
 
     func testSerialize() throws {
         let dict = try FileDict(contentsOf: fileURL, encoding: .utf8)
-        XCTAssertEqual(dict.serialize(), "")
+        XCTAssertEqual(dict.serialize(), FileDict.headers[0])
         dict.add(yomi: "あ", word: Word("亜", annotation: Annotation(dictId: "testDict", text: "亜の注釈")))
-        XCTAssertEqual(dict.serialize(), "あ /亜;亜の注釈/")
+        XCTAssertEqual(dict.serialize(), FileDict.headers[0] + "\nあ /亜;亜の注釈/")
     }
 }
