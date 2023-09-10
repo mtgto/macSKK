@@ -11,6 +11,7 @@
 "SettingsNoteDictionaries" = "If you want to add a dictionary, place your dictionary file in the dictionary folder and activate it on this panel.";
 "SettingsFileDictionariesTitle" = "Dictionary files";
 "SettingsFileDictionariesSubtitle" = "You can reorder the priorities of dictionary by drag & drop";
+"SettingsNoteDirectMode" = "Set Front-Most to target app and select \"Direct input from (AppName)\" in Input Menu.";
 "LoadingStatusLoaded" = "%d entries";
 "LoadingStatusLoading" = "Loading…";
 "LoadingStatusError" = "Error: %@";
@@ -24,3 +25,4 @@
 "UNNewVersionBody" = "macSKK %@ is now available.";
 "User Dictionary" = "User Dictionary";
 "Delete" = "Delete";
+"Unregistered" = "Unregistered";
