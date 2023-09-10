@@ -19,6 +19,9 @@ class FileDict: NSObject, DictProtocol, Identifiable {
     var version: NSFileVersion?
     private(set) var dict: MemoryDict
 
+    /// シリアライズ時に先頭に付ける
+    static let headers = [";; -*- mode: fundamental; coding: utf-8 -*-"]
+
     // MARK: NSFilePresenter
     var presentedItemURL: URL? { fileURL }
     let presentedItemOperationQueue: OperationQueue = OperationQueue()
@@ -96,9 +99,9 @@ class FileDict: NSObject, DictProtocol, Identifiable {
     /// ユーザー辞書をSKK辞書形式に変換する
     func serialize() -> String {
         // FIXME: 送り仮名あり・なしでエントリを分けるようにする?
-        return dict.entries.map { entry in
+        return (Self.headers + dict.entries.map { entry in
             return "\(entry.key) /\(serializeWords(entry.value))/"
-        }.joined(separator: "\n")
+        }).joined(separator: "\n")
     }
 
     var entryCount: Int { return dict.entries.count }

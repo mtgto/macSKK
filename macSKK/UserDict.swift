@@ -160,7 +160,10 @@ class UserDict: NSObject, DictProtocol {
                 }
             }
         } else if let dict = dict as? FileDict {
-            return dict.delete(yomi: yomi, word: word)
+            if dict.delete(yomi: yomi, word: word) {
+                savePublisher.send(())
+                return true
+            }
         }
         return false
     }
