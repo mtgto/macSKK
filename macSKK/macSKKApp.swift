@@ -23,6 +23,7 @@ func isTest() -> Bool {
 
 @main
 struct macSKKApp: App {
+    @NSApplicationDelegateAdaptor private var appDelegate: AppDelegate
     /// ユニットテスト実行時はnil
     private let server: IMKServer?
     @ObservedObject var settingsViewModel: SettingsViewModel
@@ -68,12 +69,6 @@ struct macSKKApp: App {
             setupNotification()
             setupReleaseFetcher()
             setupDirectMode()
-            Task {
-                for await _ in NotificationCenter.default.notifications(named: NSApplication.willTerminateNotification) {
-                    logger.log("アプリケーションが終了する前にユーザー辞書の永続化を行います")
-                    try dictionary.save()
-                }
-            }
         }
     }
 
