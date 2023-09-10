@@ -24,7 +24,7 @@ class UserDict: NSObject, DictProtocol {
     /// プライベートモードのユーザー辞書。プライベートモードが有効な時に変換や単語登録するとuserDictEntriesとは別に更新されます。
     /// マイ辞書ファイルには永続化されません。
     /// プライベートモード時に変換・登録された単語だけ登録されるので、このあと非プライベートモードに遷移するとリセットされます。
-    private(set) var privateUserDictEntries: [String: [Word]] = [:]
+    private(set) var privateUserDict: MemoryDict = MemoryDict(entries: [:])
     private let savePublisher = PassthroughSubject<Void, Never>()
     private let privateMode: CurrentValueSubject<Bool, Never>
     private var cancellables: Set<AnyCancellable> = []
@@ -71,7 +71,7 @@ class UserDict: NSObject, DictProtocol {
             // プライベートモードを解除したときにそれまでのエントリを削除する
             if !privateMode {
                 logger.log("プライベートモードが解除されました")
-                self?.privateUserDictEntries = [:]
+                self?.privateUserDict = MemoryDict(entries: [:])
             }
         }
         .store(in: &cancellables)
@@ -85,8 +85,7 @@ class UserDict: NSObject, DictProtocol {
     func refer(_ yomi: String) -> [Word] {
         var result = dict.refer(yomi)
         if privateMode.value {
-            let founds = privateUserDictEntries[yomi] ?? []
-            founds.forEach { found in
+            privateUserDict.refer(yomi).forEach { found in
                 if !result.contains(found) {
                     result.append(found)
                 }
@@ -114,15 +113,7 @@ class UserDict: NSObject, DictProtocol {
      */
     func add(yomi: String, word: Word) {
         if privateMode.value {
-            if var words = privateUserDictEntries[yomi] {
-                let index = words.firstIndex { $0.word == word.word }
-                if let index {
-                    words.remove(at: index)
-                }
-                privateUserDictEntries[yomi] = [word] + words
-            } else {
-                privateUserDictEntries[yomi] = [word]
-            }
+            privateUserDict.add(yomi: yomi, word: word)
         } else if let dict = dict as? FileDict {
             dict.add(yomi: yomi, word: word)
             savePublisher.send(())
@@ -152,13 +143,7 @@ class UserDict: NSObject, DictProtocol {
      */
     func delete(yomi: String, word: Word.Word) -> Bool {
         if privateMode.value {
-            if var entries = privateUserDictEntries[yomi] {
-                if let index = entries.firstIndex(where: { $0.word == word }) {
-                    entries.remove(at: index)
-                    privateUserDictEntries[yomi] = entries
-                    return true
-                }
-            }
+            return privateUserDict.delete(yomi: yomi, word: word)
         } else if let dict = dict as? FileDict {
             if dict.delete(yomi: yomi, word: word) {
                 savePublisher.send(())

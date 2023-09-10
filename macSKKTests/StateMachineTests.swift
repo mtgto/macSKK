@@ -1542,13 +1542,13 @@ final class StateMachineTests: XCTestCase {
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertNil(dictionary.entries())
-        XCTAssertTrue(dictionary.privateUserDictEntries.isEmpty)
+        XCTAssertTrue(dictionary.privateUserDict.entries.isEmpty)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertNil(dictionary.entries())
-        XCTAssertFalse(dictionary.privateUserDictEntries.isEmpty)
+        XCTAssertFalse(dictionary.privateUserDict.entries.isEmpty)
         wait(for: [expectation], timeout: 1.0)
     }
 
