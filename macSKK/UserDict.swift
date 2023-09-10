@@ -191,8 +191,6 @@ class UserDict: NSObject, DictProtocol {
 }
 
 extension UserDict: NSFilePresenter {
-    // TODO: dictSettingsに追加
-    // TODO: .DS_Storeのようなファイルも追加しようとしてないか確認
     func presentedSubitemDidAppear(at url: URL) {
         do {
             if try isValidFile(url) {
@@ -227,7 +225,6 @@ extension UserDict: NSFilePresenter {
                     NotificationCenter.default.post(name: notificationNameDictFileDidAppear, object: url)
                 } else {
                     // 辞書ファイルが別フォルダに移動したときにはpresentedSubitem:at:didMoveToも呼ばれる
-                    // FIXME: 辞書ファイルが削除されたときはdidMoveTo呼ばれるのか確認する
                     logger.log("ファイル \(url.lastPathComponent, privacy: .public) が更新されましたが辞書フォルダ外なので無視します")
                 }
 
@@ -240,7 +237,6 @@ extension UserDict: NSFilePresenter {
     }
 
     // 子要素を他フォルダに移動した場合に発生する
-    // TODO: dictSettingsを更新
     func presentedSubitem(at oldURL: URL, didMoveTo newURL: URL) {
         logger.log("ファイル \(oldURL.lastPathComponent, privacy: .public) が辞書フォルダから移動されました")
         NotificationCenter.default.post(name: notificationNameDictFileDidMove, object: oldURL)
