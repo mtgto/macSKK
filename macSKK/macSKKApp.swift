@@ -91,6 +91,9 @@ struct macSKKApp: App {
                     candidatesPanel.setCursorPosition(NSRect(origin: NSPoint(x: 100, y: 640), size: CGSize(width: 0, height: 30)))
                     candidatesPanel.show()
                 }
+                Button("Hide AnnotataionsPanel") {
+                    candidatesPanel.orderOut(nil)
+                }
                 Button("SystemAnnotation") {
                     candidatesPanel.viewModel.systemAnnotations = ["インライン": (String(repeating: "これはシステム辞書の注釈です。", count: 5))]
                 }

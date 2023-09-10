@@ -24,7 +24,7 @@ final class CandidatesPanel: NSPanel {
     }
 
     func setSystemAnnotation(_ systemAnnotation: String, for word: Word.Word) {
-        viewModel.systemAnnotations.updateValue(systemAnnotation, forKey: word)
+        viewModel.systemAnnotations[word] = systemAnnotation
     }
 
     func setCursorPosition(_ cursorPosition: NSRect) {

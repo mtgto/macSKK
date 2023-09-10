@@ -87,15 +87,14 @@ class InputController: IMKInputController {
                                                                       currentPage: page.current,
                                                                       totalPageCount: page.total)
                     self?.candidatesPanel.setCandidates(currentCandidates, selected: candidates.selected)
-                    self?.selectedWord.send(candidates.selected.word)
                     self?.candidatesPanel.show()
                 } else {
-                    self?.candidatesPanel.setCandidates(.inline, selected: candidates.selected)
-                    self?.selectedWord.send(candidates.selected.word)
-                    if !candidates.selected.annotations.isEmpty {
-                        self?.candidatesPanel.setCandidates(.inline, selected: candidates.selected)
+                    if candidates.selected.annotations.isEmpty {
+                        self?.candidatesPanel.orderOut(nil)
+                    } else {
                         self?.candidatesPanel.show()
                     }
+                    self?.candidatesPanel.setCandidates(.inline, selected: candidates.selected)
                 }
             } else {
                 // 変換→キャンセル→再変換しても注釈が表示されなくならないように状態を変えておく
