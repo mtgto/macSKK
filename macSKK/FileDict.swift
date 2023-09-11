@@ -17,6 +17,8 @@ class FileDict: NSObject, DictProtocol, Identifiable {
     let fileURL: URL
     let encoding: String.Encoding
     var version: NSFileVersion?
+    /// 保存してない変更があるかどうか (UIDocumentのパクり)
+    private(set) var hasUnsavedChanges: Bool = false
     private(set) var dict: MemoryDict
 
     /// シリアライズ時に先頭に付ける
@@ -62,6 +64,10 @@ class FileDict: NSObject, DictProtocol, Identifiable {
     }
 
     func save() throws {
+        if !hasUnsavedChanges {
+            logger.log("辞書 \(self.id, privacy: .public) は変更されていないため保存は行いません")
+            return
+        }
         guard let data = serialize().data(using: encoding) else {
             fatalError("辞書 \(self.id) のシリアライズに失敗しました")
         }
@@ -80,6 +86,7 @@ class FileDict: NSObject, DictProtocol, Identifiable {
                 }
                 do {
                     try data.write(to: newURL)
+                    self.hasUnsavedChanges = false
                 } catch {
                     logger.error("辞書 \(self.id, privacy: .public) の書き込みに失敗しました: \(error)")
                     writingError = error as NSError
@@ -123,10 +130,15 @@ class FileDict: NSObject, DictProtocol, Identifiable {
 
     func add(yomi: String, word: Word) {
         dict.add(yomi: yomi, word: word)
+        hasUnsavedChanges = true
     }
 
     func delete(yomi: String, word: Word.Word) -> Bool {
-        return dict.delete(yomi: yomi, word: word)
+        if dict.delete(yomi: yomi, word: word) {
+            hasUnsavedChanges = true
+            return true
+        }
+        return false
     }
 
     // ユニットテスト用

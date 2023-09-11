@@ -23,6 +23,7 @@ func isTest() -> Bool {
 
 @main
 struct macSKKApp: App {
+    @NSApplicationDelegateAdaptor private var appDelegate: AppDelegate
     /// ユニットテスト実行時はnil
     private let server: IMKServer?
     @ObservedObject var settingsViewModel: SettingsViewModel
