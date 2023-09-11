@@ -10,21 +10,23 @@ import Foundation
 class UserDict: NSObject, DictProtocol {
     static let userDictFilename = "skk-jisyo.utf8"
     let dictionariesDirectoryURL: URL
-    let fileURL: URL
+    let userDictFileURL: URL
     /**
      * ユーザー辞書。
      *
      * 通常起動時はFileDict形式で "skk-jisyo.utf8" というファイル名。
      * ユニットテスト用に差し替え可能なMemoryDict形式も取れるようにしている。
      */
-    let dict: DictProtocol
+    let userDict: DictProtocol
     /// 有効になっている辞書。優先度が高い順。
     var dicts: [DictProtocol]
-    /// 非プライベートモードのユーザー辞書。変換や単語登録すると更新されマイ辞書ファイルに永続化されます。
-    /// プライベートモードのユーザー辞書。プライベートモードが有効な時に変換や単語登録するとuserDictEntriesとは別に更新されます。
-    /// マイ辞書ファイルには永続化されません。
-    /// プライベートモード時に変換・登録された単語だけ登録されるので、このあと非プライベートモードに遷移するとリセットされます。
-    private(set) var privateUserDictEntries: [String: [Word]] = [:]
+    /**
+     * プライベートモードのユーザー辞書。プライベートモードが有効な時に変換や単語登録するとユーザー辞書とは別に更新されます。
+     *
+     * マイ辞書ファイルには永続化されません。
+     * プライベートモード時に変換・登録された単語だけ登録されるので、このあと非プライベートモードに遷移するとリセットされます。
+     */
+    private(set) var privateUserDict = MemoryDict(entries: [:])
     private let savePublisher = PassthroughSubject<Void, Never>()
     private let privateMode: CurrentValueSubject<Bool, Never>
     private var cancellables: Set<AnyCancellable> = []
@@ -44,15 +46,15 @@ class UserDict: NSObject, DictProtocol {
             logger.log("辞書フォルダがないため作成します")
             try FileManager.default.createDirectory(at: dictionariesDirectoryURL, withIntermediateDirectories: true)
         }
-        fileURL = dictionariesDirectoryURL.appending(path: Self.userDictFilename)
-        if !FileManager.default.fileExists(atPath: fileURL.path()) {
+        userDictFileURL = dictionariesDirectoryURL.appending(path: Self.userDictFilename)
+        if !FileManager.default.fileExists(atPath: userDictFileURL.path()) {
             logger.log("ユーザー辞書ファイルがないため作成します")
-            try Data().write(to: fileURL, options: .withoutOverwriting)
+            try Data().write(to: userDictFileURL, options: .withoutOverwriting)
         }
         if let userDictEntries {
-            self.dict = MemoryDict(entries: userDictEntries)
+            self.userDict = MemoryDict(entries: userDictEntries)
         } else {
-            self.dict = try FileDict(contentsOf: fileURL, encoding: .utf8)
+            self.userDict = try FileDict(contentsOf: userDictFileURL, encoding: .utf8)
         }
         super.init()
         NSFileCoordinator.addFilePresenter(self)
@@ -61,7 +63,7 @@ class UserDict: NSObject, DictProtocol {
             // 短期間に複数の保存要求があっても60秒に一回にまとめる
             .debounce(for: .seconds(60), scheduler: DispatchQueue.global(qos: .background))
             .sink { [weak self] _ in
-                if let fileDict = self?.dict as? FileDict {
+                if let fileDict = self?.userDict as? FileDict {
                     logger.log("ユーザー辞書を永続化します")
                     try? fileDict.save()
                 }
@@ -71,7 +73,7 @@ class UserDict: NSObject, DictProtocol {
             // プライベートモードを解除したときにそれまでのエントリを削除する
             if !privateMode {
                 logger.log("プライベートモードが解除されました")
-                self?.privateUserDictEntries = [:]
+                self?.privateUserDict = MemoryDict(entries: [:])
             }
         }
         .store(in: &cancellables)
@@ -83,10 +85,9 @@ class UserDict: NSObject, DictProtocol {
 
     // MARK: DictProtocol
     func refer(_ yomi: String) -> [Word] {
-        var result = dict.refer(yomi)
+        var result = userDict.refer(yomi)
         if privateMode.value {
-            let founds = privateUserDictEntries[yomi] ?? []
-            founds.forEach { found in
+            privateUserDict.refer(yomi).forEach { found in
                 if !result.contains(found) {
                     result.append(found)
                 }
@@ -114,16 +115,8 @@ class UserDict: NSObject, DictProtocol {
      */
     func add(yomi: String, word: Word) {
         if privateMode.value {
-            if var words = privateUserDictEntries[yomi] {
-                let index = words.firstIndex { $0.word == word.word }
-                if let index {
-                    words.remove(at: index)
-                }
-                privateUserDictEntries[yomi] = [word] + words
-            } else {
-                privateUserDictEntries[yomi] = [word]
-            }
-        } else if let dict = dict as? FileDict {
+            privateUserDict.add(yomi: yomi, word: word)
+        } else if let dict = userDict as? FileDict {
             dict.add(yomi: yomi, word: word)
             savePublisher.send(())
         }
@@ -152,14 +145,8 @@ class UserDict: NSObject, DictProtocol {
      */
     func delete(yomi: String, word: Word.Word) -> Bool {
         if privateMode.value {
-            if var entries = privateUserDictEntries[yomi] {
-                if let index = entries.firstIndex(where: { $0.word == word }) {
-                    entries.remove(at: index)
-                    privateUserDictEntries[yomi] = entries
-                    return true
-                }
-            }
-        } else if let dict = dict as? FileDict {
+            return privateUserDict.delete(yomi: yomi, word: word)
+        } else if let dict = userDict as? FileDict {
             if dict.delete(yomi: yomi, word: word) {
                 savePublisher.send(())
                 return true
@@ -170,7 +157,7 @@ class UserDict: NSObject, DictProtocol {
 
     /// ユーザー辞書を永続化する
     func save() throws {
-        if let dict = dict as? FileDict {
+        if let dict = userDict as? FileDict {
             try dict.save()
         } else {
             // ユニットテストなど特殊な場合のみ
@@ -191,8 +178,6 @@ class UserDict: NSObject, DictProtocol {
 }
 
 extension UserDict: NSFilePresenter {
-    // TODO: dictSettingsに追加
-    // TODO: .DS_Storeのようなファイルも追加しようとしてないか確認
     func presentedSubitemDidAppear(at url: URL) {
         do {
             if try isValidFile(url) {
@@ -227,7 +212,6 @@ extension UserDict: NSFilePresenter {
                     NotificationCenter.default.post(name: notificationNameDictFileDidAppear, object: url)
                 } else {
                     // 辞書ファイルが別フォルダに移動したときにはpresentedSubitem:at:didMoveToも呼ばれる
-                    // FIXME: 辞書ファイルが削除されたときはdidMoveTo呼ばれるのか確認する
                     logger.log("ファイル \(url.lastPathComponent, privacy: .public) が更新されましたが辞書フォルダ外なので無視します")
                 }
 
@@ -240,7 +224,6 @@ extension UserDict: NSFilePresenter {
     }
 
     // 子要素を他フォルダに移動した場合に発生する
-    // TODO: dictSettingsを更新
     func presentedSubitem(at oldURL: URL, didMoveTo newURL: URL) {
         logger.log("ファイル \(oldURL.lastPathComponent, privacy: .public) が辞書フォルダから移動されました")
         NotificationCenter.default.post(name: notificationNameDictFileDidMove, object: oldURL)

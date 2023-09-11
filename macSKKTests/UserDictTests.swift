@@ -31,11 +31,11 @@ final class UserDictTests: XCTestCase {
         let word2 = Word("伊")
         // addのテスト
         userDict.add(yomi: "い", word: word1)
-        XCTAssertEqual(userDict.privateUserDictEntries, ["い": [word1]])
+        XCTAssertEqual(userDict.privateUserDict.entries, ["い": [word1]])
         userDict.add(yomi: "い", word: word2)
-        XCTAssertEqual(userDict.privateUserDictEntries, ["い": [word2, word1]])
+        XCTAssertEqual(userDict.privateUserDict.entries, ["い": [word2, word1]])
         userDict.add(yomi: "い", word: word1)
-        XCTAssertEqual(userDict.privateUserDictEntries, ["い": [word1, word2]])
+        XCTAssertEqual(userDict.privateUserDict.entries, ["い": [word1, word2]])
         // referのテスト
         XCTAssertEqual(userDict.refer("い").map { $0.word }, ["井", "伊"])
         // deleteのテスト
@@ -43,6 +43,6 @@ final class UserDictTests: XCTestCase {
         XCTAssertEqual(userDict.refer("い").map { $0.word }, ["伊"])
         // プライベートモードが解除されるとプライベートモードでのエントリがリセットされる
         privateMode.send(false)
-        XCTAssertTrue(userDict.privateUserDictEntries.isEmpty)
+        XCTAssertTrue(userDict.privateUserDict.entries.isEmpty)
     }
 }
