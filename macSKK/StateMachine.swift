@@ -647,6 +647,16 @@ class StateMachine {
                     }
                 }
                 updateMarkedText()
+            } else if !input.isAlphabet() {
+                // 非ローマ字で特殊な記号でない場合。特殊な辞書で数字が読みとして使われている場合を想定。
+                if okuri == nil {
+                    // ローマ字が残っていた場合は消去してキー入力をそのままくっつける
+                    state.inputMethod = .composing(composing.resetRomaji().appendText(Romaji.Moji(firstRomaji: input, kana: input)))
+                    updateMarkedText()
+                } else {
+                    // 送り仮名入力モード時は入力しなかった扱いとする
+                }
+                return true
             } else {  // converted.kakutei == nil
                 if !text.isEmpty && okuri == nil && action.shiftIsPressed() {
                     state.inputMethod = .composing(
