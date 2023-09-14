@@ -30,10 +30,18 @@ struct Romaji: Equatable {
     }
 
     /**
-     * 入力されたローマ字をMojiに変換した結果
+     * 入力されたローマ字をMojiに変換した結果。Romaji.convertの返値として利用する。
+     *
+     * 例
+     * - aを入力: input: "", kakutei: "あ"
+     * - bを入力: input: "b", kakutei: nil
+     * - bbと入力: input: "b", kakutei: "っ"
+     * - dgと入力: input: "g", kakutei: nil (dのあとに続けられないgを入力したのでdは無効となった)
      */
     struct ConvertedMoji: Equatable {
+        /// 未確定で残っているローマ字
         let input: String
+        /// 確定した文字。
         let kakutei: Moji?
     }
 

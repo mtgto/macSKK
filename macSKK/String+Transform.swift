@@ -38,4 +38,15 @@ extension String {
         }
         return converted
     }
+
+    /**
+     * アルファベットだけで構成されているかを返す。
+     *
+     * どちらかに決めないといけないので空文字列はtrue (そっちの方が自然だから)
+     */
+    func isAlphabet() -> Bool {
+        return self.unicodeScalars.allSatisfy {
+            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".unicodeScalars.contains($0)
+        }
+    }
 }

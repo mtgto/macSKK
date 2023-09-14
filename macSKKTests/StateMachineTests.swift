@@ -394,19 +394,27 @@ final class StateMachineTests: XCTestCase {
     }
 
     func testHandleComposingContainNumber() throws {
-        try XCTSkipIf(true, "日本語変換中は数字を入力できないようにしているため以下のテストはスキップ")
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(4).sink { events in
+        stateMachine.inputMethodEvent.collect(8).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
             XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("あ1")])))
             XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("あ1s")])))
             XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("あ1す")])))
+            XCTAssertEqual(events[4], .markedText(MarkedText([.markerCompose, .plain("あ1す!")])), "シフトを押しながらでもアルファベットじゃなければ送り仮名入力にはならない")
+            XCTAssertEqual(events[5], .markedText(MarkedText([.markerCompose, .plain("あ1す!。")])), ".は特殊な変換のほうが優先される")
+            XCTAssertEqual(events[6], .markedText(MarkedText([.markerCompose, .plain("あ1す!。*s")])))
+            XCTAssertEqual(events[7], .markedText(MarkedText([.markerCompose, .plain("あ1す!。*t")])), "送り仮名で非アルファベットは無視され、inputMethodEventにも送信されない")
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "1")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "s")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "!", characterIgnoringModifier: "1", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ".")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "s", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "2")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t")))
         wait(for: [expectation], timeout: 1.0)
     }
 

@@ -41,4 +41,13 @@ final class StringTransformTests: XCTestCase {
         XCTAssertEqual("あっ".toKatakana(), "アッ")
         XCTAssertEqual("ぐう゛ぇ".toKatakana(), "グヴェ")
     }
+
+    func testIsAlphabet() {
+        XCTAssertTrue("".isAlphabet(), "空文字列はtrue")
+        XCTAssertTrue("abcdefghijklmnopqrstuvwxyz".isAlphabet())
+        XCTAssertTrue("ABCDEFGHIJKLMNOPQRSTUVWXYZ".isAlphabet())
+        XCTAssertFalse("1".isAlphabet())
+        XCTAssertFalse("å".isAlphabet(), "Option+A")
+        XCTAssertFalse("!".isAlphabet())
+    }
 }
