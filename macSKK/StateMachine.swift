@@ -867,7 +867,7 @@ class StateMachine {
         if let specialState = state.specialState {
             // state.markedTextを更新してinputMethodEventSubjectにstate.displayText()をsendする
             state.specialState = specialState.appendText(text)
-            inputMethodEventSubject.send(.markedText(state.displayText()))
+            updateMarkedText()
         } else {
             if text.isEmpty {
                 // 空文字列で確定するときは先にmarkedTextを削除する
