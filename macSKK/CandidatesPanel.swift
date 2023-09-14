@@ -31,6 +31,12 @@ final class CandidatesPanel: NSPanel {
         self.cursorPosition = cursorPosition
     }
 
+    /**
+     * 表示する。スクリーンからはみ出す位置が指定されている場合は自動で調整する。
+     *
+     * - 下にはみ出る場合: テキストの上側に表示する
+     * - 右にはみ出す場合: スクリーン右端に接するように表示する
+     */
     func show() {
         guard let viewController = contentViewController as? NSHostingController<CandidatesView> else {
             fatalError("ビューコントローラの状態が壊れている")
@@ -51,11 +57,17 @@ final class CandidatesPanel: NSPanel {
             height = 200
         }
         setContentSize(NSSize(width: width, height: height))
-        if cursorPosition.origin.y > height {
-            setFrameTopLeftPoint(cursorPosition.origin)
+        var origin = cursorPosition.origin
+        if let mainScreen = NSScreen.main {
+            if origin.x + width > mainScreen.visibleFrame.size.width {
+                origin.x = mainScreen.frame.size.width - width
+            }
+        }
+        if origin.y > height {
+            setFrameTopLeftPoint(origin)
         } else {
             // スクリーン下にはみ出す場合はテキスト入力位置の上に表示する
-            setFrameOrigin(CGPoint(x: cursorPosition.origin.x, y: cursorPosition.origin.y + cursorPosition.size.height))
+            setFrameOrigin(CGPoint(x: origin.x, y: origin.y + cursorPosition.size.height))
         }
         level = .floating
         orderFrontRegardless()
