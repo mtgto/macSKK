@@ -7,6 +7,7 @@
 "SettingsNameDirectMode" = "Direct Mode";
 "SettingsNameKeyEvent" = "Key Event";
 "SettingsNameSystemDict" = "System Dict";
+"SettingsNameUserDictTitle" = "User Dictionary";
 "SettingsOpenDictionaryFolder" = "Show Dictionaries in Finder";
 "SettingsNoteDictionaries" = "If you want to add a dictionary, place your dictionary file in the dictionary folder and activate it on this panel.";
 "SettingsFileDictionariesTitle" = "Dictionary files";

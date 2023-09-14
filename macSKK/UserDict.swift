@@ -29,6 +29,14 @@ class UserDict: NSObject, DictProtocol {
     private(set) var privateUserDict = MemoryDict(entries: [:])
     private let savePublisher = PassthroughSubject<Void, Never>()
     private let privateMode: CurrentValueSubject<Bool, Never>
+    // 最新の値が読めるようにしておかないとsink時にすでにユーザー辞書読み込みが終わっていると次のイベントが流れない。
+    private let entryCountSubject = CurrentValueSubject<Int, Never>(0)
+    /**
+     * ユーザー辞書のエントリ数。
+     *
+     * プライベートモード時にも非プライベートモード時のエントリ数を返します。
+     */
+    let entryCount: AnyPublisher<Int, Never>
     private var cancellables: Set<AnyCancellable> = []
 
     // MARK: NSFilePresenter
@@ -53,9 +61,13 @@ class UserDict: NSObject, DictProtocol {
         }
         if let userDictEntries {
             self.userDict = MemoryDict(entries: userDictEntries)
+            entryCountSubject.send(userDictEntries.count)
         } else {
-            self.userDict = try FileDict(contentsOf: userDictFileURL, encoding: .utf8)
+            let userDict = try FileDict(contentsOf: userDictFileURL, encoding: .utf8)
+            self.userDict = userDict
+            entryCountSubject.send(userDict.dict.entries.count)
         }
+        entryCount = entryCountSubject.removeDuplicates().eraseToAnyPublisher()
         super.init()
         NSFileCoordinator.addFilePresenter(self)
 
@@ -119,6 +131,7 @@ class UserDict: NSObject, DictProtocol {
         } else if let dict = userDict as? FileDict {
             dict.add(yomi: yomi, word: word)
             savePublisher.send(())
+            entryCountSubject.send(dict.dict.entries.count)
         }
     }
 
@@ -149,6 +162,7 @@ class UserDict: NSObject, DictProtocol {
         } else if let dict = userDict as? FileDict {
             if dict.delete(yomi: yomi, word: word) {
                 savePublisher.send(())
+                entryCountSubject.send(dict.dict.entries.count)
                 return true
             }
         }
