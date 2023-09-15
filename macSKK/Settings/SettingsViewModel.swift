@@ -6,7 +6,7 @@ import Foundation
 import SwiftUI
 
 final class DictSetting: ObservableObject, Identifiable {
-    typealias ID = String
+    typealias ID = FileDict.ID
     @Published var filename: String
     @Published var enabled: Bool
     @Published var encoding: String.Encoding
@@ -99,7 +99,9 @@ final class SettingsViewModel: ObservableObject {
     @Published var fetchingRelease: Bool = false
     /// すべての利用可能なSKK辞書の設定
     @Published var dictSettings: [DictSetting] = []
-    /// 利用可能な辞書の読み込み状態
+    /// ユーザー辞書の読み込み状況
+    @Published var userDictLoadingStatus: LoadStatus = .loading
+    /// 利用可能なユーザー辞書以外の辞書の読み込み状態
     @Published var dictLoadingStatuses: [DictSetting.ID: LoadStatus] = [:]
     /// 直接入力するアプリケーションのBundle Identifier
     @Published var directModeApplications: [DirectModeApplication] = []
@@ -181,6 +183,11 @@ final class SettingsViewModel: ObservableObject {
         $dictSettings.filter({ !$0.isEmpty }).first().sink { [weak self] _ in
             self?.setupNotification()
         }.store(in: &cancellables)
+
+        dictionary.entryCount.sink { [weak self] entryCount in
+            self?.userDictLoadingStatus = .loaded(entryCount)
+        }
+        .store(in: &cancellables)
     }
 
     // PreviewProvider用

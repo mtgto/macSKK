@@ -11,6 +11,16 @@ struct DictionariesView: View {
         VStack {
             Form {
                 Section {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(UserDict.userDictFilename)
+                            .font(.body)
+                        Text(loadingStatus(of: settingsViewModel.userDictLoadingStatus))
+                            .font(.footnote)
+                    }
+                } header: {
+                    Text("SettingsNameUserDictTitle")
+                }
+                Section {
                     List {
                         ForEach($settingsViewModel.dictSettings) { dictSetting in
                             HStack(alignment: .top) {
@@ -18,7 +28,7 @@ struct DictionariesView: View {
                                     VStack(alignment: .leading, spacing: 2) {
                                         Text(dictSetting.id)
                                             .font(.body)
-                                        Text(loadingStatus(of: dictSetting.wrappedValue))
+                                        Text(loadingStatus(setting: dictSetting.wrappedValue))
                                             .font(.footnote)
                                     }
                                 }
@@ -66,23 +76,27 @@ struct DictionariesView: View {
         }
     }
 
-    private func loadingStatus(of setting: DictSetting) -> String {
+    private func loadingStatus(setting: DictSetting) -> String {
         if let status = settingsViewModel.dictLoadingStatuses[setting.id] {
-            switch status {
-            case .loaded(let count):
-                return String(format: NSLocalizedString("LoadingStatusLoaded", comment: "%d エントリ"), count)
-            case .loading:
-                return NSLocalizedString("LoadingStatusLoading", comment: "読み込み中…")
-            case .disabled:
-                return NSLocalizedString("LoadingStatusDisabled", comment: "無効")
-            case .fail(let error):
-                return String(format: NSLocalizedString("LoadingStatusError", comment: "エラー: %@"), error as NSError)
-            }
+            return loadingStatus(of: status)
         } else if !setting.enabled {
             // 元々無効になっていて、設定を今回の起動で切り替えてない辞書
             return NSLocalizedString("LoadingStatusDisabled", comment: "無効")
         } else {
             return NSLocalizedString("LoadingStatusUnknown", comment: "不明")
+        }
+    }
+
+    private func loadingStatus(of status: LoadStatus) -> String {
+        switch status {
+        case .loaded(let count):
+            return String(format: NSLocalizedString("LoadingStatusLoaded", comment: "%d エントリ"), count)
+        case .loading:
+            return NSLocalizedString("LoadingStatusLoading", comment: "読み込み中…")
+        case .disabled:
+            return NSLocalizedString("LoadingStatusDisabled", comment: "無効")
+        case .fail(let error):
+            return String(format: NSLocalizedString("LoadingStatusError", comment: "エラー: %@"), error as NSError)
         }
     }
 }
