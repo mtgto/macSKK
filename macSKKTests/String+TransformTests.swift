@@ -43,11 +43,22 @@ final class StringTransformTests: XCTestCase {
     }
 
     func testIsAlphabet() {
-        XCTAssertTrue("".isAlphabet(), "空文字列はtrue")
-        XCTAssertTrue("abcdefghijklmnopqrstuvwxyz".isAlphabet())
-        XCTAssertTrue("ABCDEFGHIJKLMNOPQRSTUVWXYZ".isAlphabet())
-        XCTAssertFalse("1".isAlphabet())
-        XCTAssertFalse("å".isAlphabet(), "Option+A")
-        XCTAssertFalse("!".isAlphabet())
+        XCTAssertTrue("".isAlphabet, "空文字列はtrue")
+        XCTAssertTrue("abcdefghijklmnopqrstuvwxyz".isAlphabet)
+        XCTAssertTrue("ABCDEFGHIJKLMNOPQRSTUVWXYZ".isAlphabet)
+        XCTAssertFalse("1".isAlphabet)
+        XCTAssertFalse("å".isAlphabet, "Option+A")
+        XCTAssertFalse("!".isAlphabet)
+        XCTAssertFalse("あ".isAlphabet)
+    }
+
+    func testIsOkuriAri() {
+        XCTAssertFalse("".isOkuriAri, "空文字列はfalse")
+        XCTAssertTrue("あr".isOkuriAri)
+        XCTAssertFalse("あいうえお".isOkuriAri)
+        XCTAssertFalse("い58".isOkuriAri)
+        XCTAssertFalse("skk".isOkuriAri, "Abbrevの見出し")
+        XCTAssertFalse("b".isOkuriAri)
+        XCTAssertFalse("ん".isOkuriAri)
     }
 }

@@ -27,6 +27,8 @@ class FileDict: NSObject, DictProtocol, Identifiable {
 
     /// シリアライズ時に先頭に付ける
     static let headers = [";; -*- mode: fundamental; coding: utf-8 -*-"]
+    static let okuriAriHeader = ";; okuri-ari entries."
+    static let okuriNashiHeader = ";; okuri-nasi entries."
 
     // MARK: NSFilePresenter
     var presentedItemURL: URL? { fileURL }
@@ -110,10 +112,24 @@ class FileDict: NSObject, DictProtocol, Identifiable {
 
     /// ユーザー辞書をSKK辞書形式に変換する
     func serialize() -> String {
-        // FIXME: 送り仮名あり・なしでエントリを分けるようにする?
-        return (Self.headers + dict.entries.map { entry in
-            return "\(entry.key) /\(serializeWords(entry.value))/"
-        }).joined(separator: "\n")
+        if readonly {
+            return (Self.headers + dict.entries.map { entry in
+                return "\(entry.key) /\(serializeWords(entry.value))/"
+            }).joined(separator: "\n")
+        }
+        var result: [String] = Self.headers + [Self.okuriAriHeader]
+        for yomi in dict.okuriAriYomis.reversed() {
+            if let words = dict.entries[yomi] {
+                result.append("\(yomi) /\(serializeWords(words))/")
+            }
+        }
+        result.append(Self.okuriNashiHeader)
+        for yomi in dict.okuriNashiYomis.reversed() {
+            if let words = dict.entries[yomi] {
+                result.append("\(yomi) /\(serializeWords(words))/")
+            }
+        }
+        return result.joined(separator: "\n")
     }
 
     var entryCount: Int { return dict.entryCount }

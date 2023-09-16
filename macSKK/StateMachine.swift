@@ -267,7 +267,7 @@ class StateMachine {
 
         switch state.inputMode {
         case .hiragana, .katakana, .hankaku:
-            if input.isAlphabet() && !action.optionIsPressed() {
+            if input.isAlphabet && !action.optionIsPressed() {
                 let result = Romaji.convert(input)
                 if let moji = result.kakutei {
                     if action.shiftIsPressed() {
@@ -647,7 +647,7 @@ class StateMachine {
                     }
                 }
                 updateMarkedText()
-            } else if !input.isAlphabet() {
+            } else if !input.isAlphabet {
                 // 非ローマ字で特殊な記号でない場合。特殊な辞書で数字が読みとして使われている場合を想定。
                 if okuri == nil {
                     // ローマ字が残っていた場合は消去してキー入力をそのままくっつける
