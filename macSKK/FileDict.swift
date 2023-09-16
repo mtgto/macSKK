@@ -20,6 +20,10 @@ class FileDict: NSObject, DictProtocol, Identifiable {
     /// 保存してない変更があるかどうか (UIDocumentのパクり)
     private(set) var hasUnsavedChanges: Bool = false
     private(set) var dict: MemoryDict
+    /**
+     * 読み込み専用で保存しないかどうか
+     */
+    private let readonly: Bool
 
     /// シリアライズ時に先頭に付ける
     static let headers = [";; -*- mode: fundamental; coding: utf-8 -*-"]
@@ -28,13 +32,14 @@ class FileDict: NSObject, DictProtocol, Identifiable {
     var presentedItemURL: URL? { fileURL }
     let presentedItemOperationQueue: OperationQueue = OperationQueue()
 
-    init(contentsOf fileURL: URL, encoding: String.Encoding) throws {
+    init(contentsOf fileURL: URL, encoding: String.Encoding, readonly: Bool) throws {
         // iCloud Documents使うときには辞書フォルダが複数になりうるけど、それまではひとまずファイル名をIDとして使う
         self.id = fileURL.lastPathComponent
         self.fileURL = fileURL
         self.encoding = encoding
-        self.dict = MemoryDict(entries: [:])
+        self.dict = MemoryDict(entries: [:], readonly: readonly)
         self.version = NSFileVersion.currentVersionOfItem(at: fileURL)
+        self.readonly = readonly
         super.init()
         try load(fileURL)
         NSFileCoordinator.addFilePresenter(self)
@@ -48,7 +53,7 @@ class FileDict: NSObject, DictProtocol, Identifiable {
             if let self {
                 do {
                     let source = try String(contentsOf: url, encoding: self.encoding)
-                    let memoryDict = try MemoryDict(dictId: self.id, source: source)
+                    let memoryDict = try MemoryDict(dictId: self.id, source: source, readonly: readonly)
                     self.dict = memoryDict
                     self.version = NSFileVersion.currentVersionOfItem(at: url)
                     logger.log("辞書 \(self.id, privacy: .public) から \(self.dict.entries.count) エントリ読み込みました")
@@ -111,7 +116,7 @@ class FileDict: NSObject, DictProtocol, Identifiable {
         }).joined(separator: "\n")
     }
 
-    var entryCount: Int { return dict.entries.count }
+    var entryCount: Int { return dict.entryCount }
 
     private func serializeWords(_ words: [Word]) -> String {
         return words.map { word in
@@ -142,8 +147,8 @@ class FileDict: NSObject, DictProtocol, Identifiable {
     }
 
     // ユニットテスト用
-    func setEntries(_ entries: [String: [Word]]) {
-        self.dict = MemoryDict(entries: entries)
+    func setEntries(_ entries: [String: [Word]], readonly: Bool) {
+        self.dict = MemoryDict(entries: entries, readonly: readonly)
     }
 }
 

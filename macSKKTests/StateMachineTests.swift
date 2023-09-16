@@ -1513,9 +1513,9 @@ final class StateMachineTests: XCTestCase {
         let annotation1 = Annotation(dictId: "dict1", text: "dict1")
         let annotation2 = Annotation(dictId: "dict2", text: "dict2")
         let annotation3 = Annotation(dictId: "dict3", text: "dict2")
-        let dict1 = MemoryDict(entries: ["う": [Word("雨", annotation: annotation1)]])
-        let dict2 = MemoryDict(entries: ["う": [Word("雨", annotation: annotation2)]])
-        let dict3 = MemoryDict(entries: ["う": [Word("雨", annotation: annotation3)]])
+        let dict1 = MemoryDict(entries: ["う": [Word("雨", annotation: annotation1)]], readonly: true)
+        let dict2 = MemoryDict(entries: ["う": [Word("雨", annotation: annotation2)]], readonly: true)
+        let dict3 = MemoryDict(entries: ["う": [Word("雨", annotation: annotation3)]], readonly: true)
         dictionary.dicts = [dict1, dict2, dict3]
 
         let expectation = XCTestExpectation()
@@ -1537,7 +1537,7 @@ final class StateMachineTests: XCTestCase {
     func testPrivateMode() throws {
         let privateMode = CurrentValueSubject<Bool, Never>(false)
         // プライベートモードが有効ならユーザー辞書を参照はするが保存はしない
-        let dict = MemoryDict(entries: ["と": [Word("都")]])
+        let dict = MemoryDict(entries: ["と": [Word("都")]], readonly: true)
         dictionary = try UserDict(dicts: [dict], userDictEntries: [:], privateMode: privateMode)
 
         let expectation = XCTestExpectation()

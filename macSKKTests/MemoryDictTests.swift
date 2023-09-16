@@ -21,11 +21,12 @@ class MemoryDictTests: XCTestCase {
             けい /京;10^16/
 
             """
-        let dict = try MemoryDict(dictId: "testDict", source: source)
+        let dict = try MemoryDict(dictId: "testDict", source: source, readonly: false)
         XCTAssertEqual(dict.entries["あg"]?.map { $0.word }, ["挙", "揚", "上"])
         XCTAssertEqual(dict.entries["あb"]?.map { $0.word }, ["浴"])
         XCTAssertEqual(dict.entries["あ"]?.map { $0.word }, ["阿", "唖", "亜", "娃"])
         XCTAssertEqual(dict.entries["けい"]?.map { $0.word }, ["京"])
+        XCTAssertEqual(dict.okuriNashiYomis, ["けい", "あ", "greek", "cyrillic", "Greek", "Cyrillic"], "辞書登場順の逆順に並ぶ")
     }
 
     func testParseSpecialSource() throws {
@@ -36,9 +37,32 @@ class MemoryDictTests: XCTestCase {
             GPL /GNU General Public License;(concat "http:\\057\\057www.gnu.org\\057licenses\\057gpl.ja.html")/
 
             """
-        let dict = try MemoryDict(dictId: "testDict", source: source)
+        let dict = try MemoryDict(dictId: "testDict", source: source, readonly: false)
         XCTAssertEqual(dict.entries["わi"]?.map { $0.word }, ["湧", "沸", "涌"])
         XCTAssertEqual(dict.entries["ao"]?.map { $0.word }, ["and/or"])
         XCTAssertEqual(dict.entries["GPL"]?.map { $0.annotation?.text }, ["http://www.gnu.org/licenses/gpl.ja.html"])
+        XCTAssertEqual(dict.okuriNashiYomis, ["GPL", "ao"], "abbrev辞書の読みは末尾がアルファベットだが送り無し扱い")
+    }
+
+    func testAdd() throws {
+        var dict = MemoryDict(entries: [:], readonly: false)
+        XCTAssertEqual(dict.entryCount, 0)
+        let word1 = Word("井")
+        let word2 = Word("伊")
+        dict.add(yomi: "い", word: word1)
+        XCTAssertEqual(dict.refer("い"), [word1])
+        dict.add(yomi: "い", word: word2)
+        XCTAssertEqual(dict.refer("い"), [word2, word1])
+        dict.add(yomi: "い", word: word1)
+        XCTAssertEqual(dict.refer("い"), [word1, word2])
+    }
+
+    func testDelete() throws {
+        var dict = MemoryDict(entries: ["あr": [Word("有"), Word("在")]], readonly: false)
+        XCTAssertFalse(dict.delete(yomi: "あr", word: "或"))
+        XCTAssertTrue(dict.delete(yomi: "あr", word: "在"))
+        XCTAssertEqual(dict.refer("あr"), [Word("有")])
+        XCTAssertFalse(dict.delete(yomi: "いいい", word: "いいい"))
+        XCTAssertFalse(dict.delete(yomi: "あr", word: "在"))
     }
 }
