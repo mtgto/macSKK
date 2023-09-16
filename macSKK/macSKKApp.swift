@@ -228,8 +228,4 @@ struct macSKKApp: App {
             }
         }
     }
-
-    private func loadFileDict(fileURL: URL, encoding: String.Encoding) throws -> FileDict {
-        return try FileDict(contentsOf: fileURL, encoding: encoding)
-    }
 }
