@@ -116,6 +116,8 @@ class StateMachine {
                 addFixedText(" ")
             }
             return true
+        case .tab:
+            return false
         case .stickyShift:
             switch state.inputMode {
             case .hiragana, .katakana, .hankaku:
@@ -383,6 +385,9 @@ class StateMachine {
                 updateMarkedText()
                 return true
             }
+        case .tab:
+            // TODO: 補完候補があれば補完する
+            return true
         case .stickyShift:
             if case .direct = state.inputMode {
                 return handleComposingPrintable(
@@ -748,6 +753,8 @@ class StateMachine {
                 updateCandidates(selecting: nil)
             }
             updateMarkedText()
+            return true
+        case .tab:
             return true
         case .stickyShift, .ctrlJ, .ctrlQ:
             // 選択中候補で確定

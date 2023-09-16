@@ -29,6 +29,7 @@
 		CE6DBACD2A864A3B00F5A227 /* DictionariesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE6DBACC2A864A3B00F5A227 /* DictionariesView.swift */; };
 		CE6DBACF2A8663E600F5A227 /* SKK-JISYO.sample.utf-8 in Resources */ = {isa = PBXBuildFile; fileRef = CE6DBACE2A8663E600F5A227 /* SKK-JISYO.sample.utf-8 */; };
 		CE7F9AD92AADEBF9001B1877 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE7F9AD82AADEBF9001B1877 /* AppDelegate.swift */; };
+		CE7F9ADC2AB53E53001B1877 /* CompletionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE7F9ADB2AB53E53001B1877 /* CompletionView.swift */; };
 		CE84A3B929570C37009394C4 /* InputController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE84A3B829570C37009394C4 /* InputController.swift */; };
 		CE84A3DC2957174D009394C4 /* State.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE84A3DB2957174D009394C4 /* State.swift */; };
 		CE84A3DE29571797009394C4 /* Action.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE84A3DD29571797009394C4 /* Action.swift */; };
@@ -129,6 +130,7 @@
 		CE6DBACC2A864A3B00F5A227 /* DictionariesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionariesView.swift; sourceTree = "<group>"; };
 		CE6DBACE2A8663E600F5A227 /* SKK-JISYO.sample.utf-8 */ = {isa = PBXFileReference; lastKnownFileType = text; path = "SKK-JISYO.sample.utf-8"; sourceTree = "<group>"; };
 		CE7F9AD82AADEBF9001B1877 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		CE7F9ADB2AB53E53001B1877 /* CompletionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletionView.swift; sourceTree = "<group>"; };
 		CE84A3B829570C37009394C4 /* InputController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputController.swift; sourceTree = "<group>"; };
 		CE84A3DB2957174D009394C4 /* State.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = State.swift; sourceTree = "<group>"; };
 		CE84A3DD29571797009394C4 /* Action.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Action.swift; sourceTree = "<group>"; };
@@ -238,11 +240,6 @@
 				CE5EB6AE2AAC0DEB00389B98 /* MemoryDict.swift */,
 				CEA78FAF2964209B00B67E25 /* UserDict.swift */,
 				CE84A3E6295DA4DA009394C4 /* Romaji.swift */,
-				CEF08239296BCDB000646366 /* InputModePanel.swift */,
-				CEF08256296D8CBD00646366 /* CandidatesPanel.swift */,
-				CEF0825A296D8FF000646366 /* CandidatesView.swift */,
-				CEB0888D2A7F393600EFD1E3 /* AnnotationView.swift */,
-				CEF0825C296DB58600646366 /* CandidatesViewModel.swift */,
 				CE40D9A22A6D0C3900D44799 /* SystemDict.swift */,
 				CEB0888F2A7F73B400EFD1E3 /* Pasteboard.swift */,
 				CE6DBA8C2A845CE400F5A227 /* Release.swift */,
@@ -253,6 +250,7 @@
 				CEA78FAB2960401F00B67E25 /* String+Transform.swift */,
 				CED7F51E2AB5F4A7007FC6BD /* Character+Additions.swift */,
 				CE485A892A8FA5C6008271EF /* UserNotificationDelegate.swift */,
+				CE7F9ADA2AB53E31001B1877 /* View */,
 				CEC376E929651DE000D9C432 /* Settings */,
 				CEB088922A81342E00EFD1E3 /* macSKK-Bridging-Header.h */,
 				CEB088952A81353400EFD1E3 /* DictionaryServiceExtention.h */,
@@ -293,6 +291,19 @@
 				CED7CA572A83BFE9004EF988 /* fixture */,
 			);
 			path = macSKKTests;
+			sourceTree = "<group>";
+		};
+		CE7F9ADA2AB53E31001B1877 /* View */ = {
+			isa = PBXGroup;
+			children = (
+				CEF08239296BCDB000646366 /* InputModePanel.swift */,
+				CEF08256296D8CBD00646366 /* CandidatesPanel.swift */,
+				CEF0825A296D8FF000646366 /* CandidatesView.swift */,
+				CEB0888D2A7F393600EFD1E3 /* AnnotationView.swift */,
+				CEF0825C296DB58600646366 /* CandidatesViewModel.swift */,
+				CE7F9ADB2AB53E53001B1877 /* CompletionView.swift */,
+			);
+			path = View;
 			sourceTree = "<group>";
 		};
 		CEC376E929651DE000D9C432 /* Settings */ = {
@@ -501,6 +512,7 @@
 				CEB141722A87D16C005E7252 /* DictionaryView.swift in Sources */,
 				CEE2D9772A99FE1B00A4CD76 /* Word.swift in Sources */,
 				CEF0825D296DB58600646366 /* CandidatesViewModel.swift in Sources */,
+				CE7F9ADC2AB53E53001B1877 /* CompletionView.swift in Sources */,
 				CE6DBA8D2A845CE400F5A227 /* Release.swift in Sources */,
 				CED7CA5B2A83DE7F004EF988 /* SettingsViewModel.swift in Sources */,
 				CE5EB6AF2AAC0DEB00389B98 /* MemoryDict.swift in Sources */,

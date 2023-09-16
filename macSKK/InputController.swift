@@ -292,6 +292,8 @@ class InputController: IMKInputController {
 
         if keyCode == 36 {  // エンター
             return .enter
+        } else if keyCode == 48 {
+            return .tab
         } else if keyCode == 123 {
             return .left
         } else if keyCode == 124 {
