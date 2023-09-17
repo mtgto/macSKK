@@ -51,18 +51,25 @@ class MemoryDictTests: XCTestCase {
         let word2 = Word("伊")
         dict.add(yomi: "い", word: word1)
         XCTAssertEqual(dict.refer("い"), [word1])
+        XCTAssertEqual(dict.okuriNashiYomis, ["い"])
+        dict.add(yomi: "う", word: Word("宇"))
+        XCTAssertEqual(dict.okuriNashiYomis, ["い", "う"])
         dict.add(yomi: "い", word: word2)
         XCTAssertEqual(dict.refer("い"), [word2, word1])
+        XCTAssertEqual(dict.okuriNashiYomis, ["う", "い"])
         dict.add(yomi: "い", word: word1)
         XCTAssertEqual(dict.refer("い"), [word1, word2])
     }
 
     func testDelete() throws {
         var dict = MemoryDict(entries: ["あr": [Word("有"), Word("在")]], readonly: false)
+        XCTAssertEqual(dict.okuriAriYomis, ["あr"])
         XCTAssertFalse(dict.delete(yomi: "あr", word: "或"))
         XCTAssertTrue(dict.delete(yomi: "あr", word: "在"))
         XCTAssertEqual(dict.refer("あr"), [Word("有")])
         XCTAssertFalse(dict.delete(yomi: "いいい", word: "いいい"))
         XCTAssertFalse(dict.delete(yomi: "あr", word: "在"))
+        XCTAssertTrue(dict.delete(yomi: "あr", word: "有"))
+        XCTAssertEqual(dict.okuriAriYomis, [])
     }
 }

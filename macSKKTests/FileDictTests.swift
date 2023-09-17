@@ -34,6 +34,14 @@ final class FileDictTests: XCTestCase {
         dict.add(yomi: "あ", word: Word("亜", annotation: Annotation(dictId: "testDict", text: "亜の注釈")))
         dict.add(yomi: "あ", word: Word("阿", annotation: Annotation(dictId: "testDict", text: "阿の注釈")))
         dict.add(yomi: "あr", word: Word("有", annotation: Annotation(dictId: "testDict", text: "有の注釈")))
-        XCTAssertEqual(dict.serialize(), FileDict.headers[0] + "\nあ /亜;亜の注釈/")
+        dict.add(yomi: "あr", word: Word("在", annotation: Annotation(dictId: "testDict", text: "在の注釈")))
+        let expected = [
+            FileDict.headers[0],
+            FileDict.okuriAriHeader,
+            "あr /在;在の注釈/有;有の注釈/",
+            FileDict.okuriNashiHeader,
+            "あ /阿;阿の注釈/亜;亜の注釈/",
+        ].joined(separator: "\n")
+        XCTAssertEqual(dict.serialize(), expected)
     }
 }

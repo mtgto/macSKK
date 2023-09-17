@@ -31,10 +31,10 @@ struct MemoryDict: DictProtocol {
         for match in source.matches(of: pattern) {
             guard let yomi = match.output[1].substring.map({ String($0) }) else { continue }
             guard let wordsText = match.output[2].substring else { continue }
-            if let first = yomi.first, let last = yomi.last, !readonly && (!last.isASCII || first.isASCII) {
-                okuriNashiYomis.append(yomi)
-            } else {
+            if yomi.isOkuriAri {
                 okuriAriYomis.append(yomi)
+            } else {
+                okuriNashiYomis.append(yomi)
             }
             let words = wordsText.split(separator: Character("/")).map { word -> Word in
                 let words = word.split(separator: Character(";"), maxSplits: 1)
@@ -51,6 +51,15 @@ struct MemoryDict: DictProtocol {
     init(entries: [String: [Word]], readonly: Bool) {
         self.readonly = readonly
         self.entries = entries
+        if !readonly {
+            for yomi in entries.keys {
+                if yomi.isOkuriAri {
+                    okuriAriYomis.append(yomi)
+                } else {
+                    okuriNashiYomis.append(yomi)
+                }
+            }
+        }
     }
 
     var entryCount: Int { return entries.count }
@@ -72,8 +81,26 @@ struct MemoryDict: DictProtocol {
                 words.remove(at: index)
             }
             entries[yomi] = [word] + words
+            if !readonly {
+                if yomi.isOkuriAri {
+                    if let index = okuriAriYomis.firstIndex(of: yomi) {
+                        okuriAriYomis.remove(at: index)
+                    }
+                } else {
+                    if let index = okuriNashiYomis.firstIndex(of: yomi) {
+                        okuriNashiYomis.remove(at: index)
+                    }
+                }
+            }
         } else {
             entries[yomi] = [word]
+        }
+        if !readonly {
+            if yomi.isOkuriAri {
+                okuriAriYomis.append(yomi)
+            } else {
+                okuriNashiYomis.append(yomi)
+            }
         }
     }
 
@@ -91,6 +118,15 @@ struct MemoryDict: DictProtocol {
                 words.remove(at: index)
                 entries[yomi] = words
                 return true
+            }
+            if yomi.isOkuriAri {
+                if let index = okuriAriYomis.firstIndex(of: yomi) {
+                    okuriAriYomis.remove(at: index)
+                }
+            } else {
+                if let index = okuriNashiYomis.firstIndex(of: yomi) {
+                    okuriNashiYomis.remove(at: index)
+                }
             }
         }
         return false
