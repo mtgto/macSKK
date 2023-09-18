@@ -113,9 +113,9 @@ class FileDict: NSObject, DictProtocol, Identifiable {
     /// ユーザー辞書をSKK辞書形式に変換する
     func serialize() -> String {
         if readonly {
-            return (Self.headers + dict.entries.map { entry in
+            return dict.entries.map { entry in
                 return "\(entry.key) /\(serializeWords(entry.value))/"
-            }).joined(separator: "\n")
+            }.joined(separator: "\n")
         }
         var result: [String] = Self.headers + [Self.okuriAriHeader]
         for yomi in dict.okuriAriYomis.reversed() {
@@ -129,6 +129,7 @@ class FileDict: NSObject, DictProtocol, Identifiable {
                 result.append("\(yomi) /\(serializeWords(words))/")
             }
         }
+        result.append("")
         return result.joined(separator: "\n")
     }
 

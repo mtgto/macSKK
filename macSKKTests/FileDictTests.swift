@@ -30,7 +30,7 @@ final class FileDictTests: XCTestCase {
     func testSerialize() throws {
         let dict = try FileDict(contentsOf: fileURL, encoding: .utf8, readonly: false)
         XCTAssertEqual(dict.serialize(),
-                       [FileDict.headers[0], FileDict.okuriAriHeader, FileDict.okuriNashiHeader].joined(separator: "\n"))
+                       [FileDict.headers[0], FileDict.okuriAriHeader, FileDict.okuriNashiHeader, ""].joined(separator: "\n"))
         dict.add(yomi: "あ", word: Word("亜", annotation: Annotation(dictId: "testDict", text: "亜の注釈")))
         dict.add(yomi: "あ", word: Word("阿", annotation: Annotation(dictId: "testDict", text: "阿の注釈")))
         dict.add(yomi: "あr", word: Word("有", annotation: Annotation(dictId: "testDict", text: "有の注釈")))
@@ -41,6 +41,7 @@ final class FileDictTests: XCTestCase {
             "あr /在;在の注釈/有;有の注釈/",
             FileDict.okuriNashiHeader,
             "あ /阿;阿の注釈/亜;亜の注釈/",
+            "",
         ].joined(separator: "\n")
         XCTAssertEqual(dict.serialize(), expected)
     }
