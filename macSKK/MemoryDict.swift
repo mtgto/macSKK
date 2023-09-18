@@ -11,6 +11,9 @@ struct MemoryDict: DictProtocol {
      * okuriNashiYomisを管理するのに使います。
      */
     private let readonly: Bool
+    /**
+     * 辞書のエントリ一覧。キーは読み、値は変換候補 (優先度の高い順)
+     */
     private(set) var entries: [String: [Word]]
     /**
      * 送りなしの読みの配列。最近変換したものが後に登場する。
@@ -70,6 +73,9 @@ struct MemoryDict: DictProtocol {
     }
 
     /// 辞書にエントリを追加する。
+    ///
+    /// すでに同じ読みが登録されている場合、
+    /// ユーザー辞書で最近変換したものが次回も変換候補になるように値の配列の先頭に追加する。
     ///
     /// - Parameters:
     ///   - yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
