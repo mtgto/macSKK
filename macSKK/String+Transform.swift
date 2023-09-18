@@ -42,11 +42,19 @@ extension String {
     /**
      * アルファベットだけで構成されているかを返す。
      *
-     * どちらかに決めないといけないので空文字列はtrue (そっちの方が自然だから)
+     * どちらかに決めないといけないので空文字列はtrue
      */
-    func isAlphabet() -> Bool {
-        return self.unicodeScalars.allSatisfy {
-            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".unicodeScalars.contains($0)
+    var isAlphabet: Bool { self.allSatisfy { $0.isAlphabet } }
+
+    /**
+     * 自身が見出し語のとき、送り仮名ありの見出し語かどうかを返す。
+     *
+     * どちらかに決めないといけないので一文字もしくは空文字列はfalse
+     */
+    var isOkuriAri: Bool {
+        if let first = first, let last = last, count > 1 {
+            return last.isAlphabet && !first.isAlphabet
         }
+        return false
     }
 }

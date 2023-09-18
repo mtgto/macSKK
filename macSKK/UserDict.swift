@@ -26,7 +26,7 @@ class UserDict: NSObject, DictProtocol {
      * マイ辞書ファイルには永続化されません。
      * プライベートモード時に変換・登録された単語だけ登録されるので、このあと非プライベートモードに遷移するとリセットされます。
      */
-    private(set) var privateUserDict = MemoryDict(entries: [:])
+    private(set) var privateUserDict = MemoryDict(entries: [:], readonly: true)
     private let savePublisher = PassthroughSubject<Void, Never>()
     private let privateMode: CurrentValueSubject<Bool, Never>
     // 最新の値が読めるようにしておかないとsink時にすでにユーザー辞書読み込みが終わっていると次のイベントが流れない。
@@ -60,10 +60,10 @@ class UserDict: NSObject, DictProtocol {
             try Data().write(to: userDictFileURL, options: .withoutOverwriting)
         }
         if let userDictEntries {
-            self.userDict = MemoryDict(entries: userDictEntries)
+            self.userDict = MemoryDict(entries: userDictEntries, readonly: true)
             entryCountSubject.send(userDictEntries.count)
         } else {
-            let userDict = try FileDict(contentsOf: userDictFileURL, encoding: .utf8)
+            let userDict = try FileDict(contentsOf: userDictFileURL, encoding: .utf8, readonly: false)
             self.userDict = userDict
             entryCountSubject.send(userDict.dict.entries.count)
         }
@@ -85,7 +85,7 @@ class UserDict: NSObject, DictProtocol {
             // プライベートモードを解除したときにそれまでのエントリを削除する
             if !privateMode {
                 logger.log("プライベートモードが解除されました")
-                self?.privateUserDict = MemoryDict(entries: [:])
+                self?.privateUserDict = MemoryDict(entries: [:], readonly: true)
             }
         }
         .store(in: &cancellables)

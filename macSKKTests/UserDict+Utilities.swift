@@ -6,7 +6,7 @@
 extension UserDict {
     func setEntries(_ entries: [String: [Word]]) {
         if let dict = userDict as? FileDict {
-            dict.setEntries(entries)
+            dict.setEntries(entries, readonly: true)
         }
     }
 
