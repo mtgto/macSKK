@@ -191,10 +191,10 @@ extension FileDict: NSFilePresenter {
     // BのpresentedItemDidChangeは呼び出される。
     func presentedItemDidChange() {
         if let version = NSFileVersion.currentVersionOfItem(at: fileURL), version == self.version {
-            logger.log("辞書 \(self.id, privacy: .public) が変更されましたがバージョンが変更されてないため何もしません")
+            logger.log("辞書 \(self.id, privacy: .public) がアプリ外で変更されたため読み込みます")
         } else {
             logger.log("辞書 \(self.id, privacy: .public) が変更されたので読み込みます")
-            try? load(fileURL)
         }
+        try? load(fileURL)
     }
 }
