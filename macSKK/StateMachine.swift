@@ -22,6 +22,17 @@ class StateMachine {
     private let inputMethodEventSubject = PassthroughSubject<InputMethodEvent, Never>()
     let candidateEvent: AnyPublisher<Candidates?, Never>
     private let candidateEventSubject = PassthroughSubject<Candidates?, Never>()
+    /**
+     * 現在入力中の未変換の読み部分の文字列が更新されたときに通知される。
+     *
+     * 通知される文字列は全角ひらがな(Abbrev以外)もしくは英数(Abbrev)。
+     * 送り仮名がローマ字で一文字でも入力されたときは新しく通知はされない。
+     * 入力中の文字列のカーソルを左右に移動した場合はカーソルの左側までが更新された文字列として通知される。
+     */
+    let yomiEvent: AnyPublisher<String, Never>
+    private let yomiEventSubject = PassthroughSubject<String, Never>()
+    /// 読みの一部と補完結果(読み)のペア
+    var completion: (String, String)? = nil
 
     // TODO: inlineCandidateCount, displayCandidateCountを環境設定にするかも
     /// 変換候補パネルを表示するまで表示する変換候補の数
@@ -33,6 +44,7 @@ class StateMachine {
         state = initialState
         inputMethodEvent = inputMethodEventSubject.eraseToAnyPublisher()
         candidateEvent = candidateEventSubject.removeDuplicates().eraseToAnyPublisher()
+        yomiEvent = yomiEventSubject.removeDuplicates().eraseToAnyPublisher()
     }
 
     func handle(_ action: Action) -> Bool {

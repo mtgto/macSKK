@@ -45,4 +45,10 @@ final class UserDictTests: XCTestCase {
         privateMode.send(false)
         XCTAssertTrue(userDict.privateUserDict.entries.isEmpty)
     }
+
+    func testFindCompletion() throws {
+        let privateMode = CurrentValueSubject<Bool, Never>(false)
+        let userDict = try UserDict(dicts: [], userDictEntries: [:], privateMode: privateMode)
+        XCTAssertNil(userDict.findCompletion(prefix: ""), "辞書が空だとnil")
+    }
 }

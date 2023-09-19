@@ -122,6 +122,13 @@ class InputController: IMKInputController {
                 self?.directMode = bundleIdentifiers.contains(bundleIdentifier)
             }
         }.store(in: &cancellables)
+        stateMachine.yomiEvent.sink { [weak self] yomi in
+            if let completion = dictionary.findCompletion(prefix: yomi) {
+                // TODO: CompletionPanelに表示する
+                // TODO: StateMachineにセットする
+                self?.stateMachine.completion = (yomi, completion)
+            }
+        }.store(in: &cancellables)
     }
 
     override func handle(_ event: NSEvent!, client sender: Any!) -> Bool {
