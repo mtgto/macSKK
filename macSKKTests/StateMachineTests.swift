@@ -360,6 +360,7 @@ final class StateMachineTests: XCTestCase {
 
     func testHandleComposingNandQ() {
         let expectation = XCTestExpectation()
+        expectation.expectedFulfillmentCount = 2
         stateMachine.inputMethodEvent.collect(6).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("お")])))
             XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("おn")])))
@@ -367,6 +368,11 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[3], .modeChanged(.katakana, .zero))
             XCTAssertEqual(events[4], .markedText(MarkedText([.markerCompose, .plain("n")])))
             XCTAssertEqual(events[5], .fixedText("ん"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        stateMachine.yomiEvent.collect(2).sink { events in
+            XCTAssertEqual(events[0], "お")
+            XCTAssertEqual(events[1], "")
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o", withShift: true)))

@@ -901,6 +901,11 @@ class StateMachine {
     /// 現在のMarkedText状態をinputMethodEventSubject.sendする
     private func updateMarkedText() {
         inputMethodEventSubject.send(.markedText(state.displayText()))
+        if case let .composing(composing) = state.inputMethod, composing.okuri == nil {
+            yomiEventSubject.send(composing.subText().joined())
+        } else {
+            yomiEventSubject.send("")
+        }
     }
 
     /// 現在の変換候補選択状態をcandidateEventSubject.sendする

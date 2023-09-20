@@ -189,7 +189,8 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
     }
 
     /// 辞書を引く際の読みを返す。
-    /// カーソルがある場合はカーソルより左側の文字列だけを対象にする
+    /// カーソルがある場合はカーソルより左側の文字列だけを対象にする。
+    /// 末尾がnの場合は「ん」と入力したとして解釈する
     func yomi(for mode: InputMode) -> String {
         switch mode {
         case .direct:  // Abbrev
