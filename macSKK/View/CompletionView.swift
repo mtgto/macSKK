@@ -5,11 +5,11 @@ import SwiftUI
 
 /// 補完候補を表示するビュー
 struct CompletionView: View {
-    @Binding var completion: String
+    @ObservedObject var viewModel: CompletionViewModel
 
     var body: some View {
         VStack {
-            Text(completion)
+            Text(viewModel.completion)
                 .font(.caption)
             Text("Tabで補完")
                 .font(.caption)
@@ -22,9 +22,6 @@ struct CompletionView: View {
 
 struct CompletionView_Previews: PreviewProvider {
     static var previews: some View {
-        CompletionView(completion: .constant("あいうえおかきくけこさしすせそ"))
-            .preferredColorScheme(.light)
-        CompletionView(completion: .constant("あいうえおかきくけこさしすせそ"))
-            .preferredColorScheme(.dark)
+        CompletionView(viewModel: CompletionViewModel(completion: "あいうえおかきくけこさしすせそ"))
     }
 }
