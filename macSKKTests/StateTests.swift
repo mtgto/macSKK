@@ -95,6 +95,18 @@ final class StateTests: XCTestCase {
         XCTAssertEqual(state.yomi(for: .katakana), "あいu")
     }
 
+    func testComposingStateYomiAbbrevCursor() {
+        var state = ComposingState(
+            isShift: true,
+            text: ["a", "b"],
+            okuri: nil,
+            romaji: "",
+            cursor: nil)
+        XCTAssertEqual(state.yomi(for: .direct), "ab")
+        state.cursor = 1
+        XCTAssertEqual(state.yomi(for: .direct), "a")
+    }
+
     func testComposingStateMoveCorsorEmptyText() {
         var state = ComposingState(isShift: true, text: [], okuri: nil, romaji: "", cursor: nil)
         state = state.moveCursorLeft()

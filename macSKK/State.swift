@@ -193,7 +193,7 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
     func yomi(for mode: InputMode) -> String {
         switch mode {
         case .direct:  // Abbrev
-            return text.joined()
+            return subText().joined()
         case .hiragana, .katakana, .hankaku:
             let newText: [String] = romaji == "n" ? subText() + ["ん"] : subText()
             return newText.joined() + (okuri?.first?.firstRomaji ?? "")
