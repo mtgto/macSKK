@@ -32,4 +32,14 @@ protocol DictProtocol {
      * - Returns: エントリを削除できたかどうか
      */
     mutating func delete(yomi: String, word: Word.Word) -> Bool
+
+    /**
+     * 現在入力中のprefixに続く入力候補を1つ返す。見つからなければnilを返す。
+     *
+     * 以下のように補完候補を探します。
+     * ※将来この仕様は変更する可能性が大いにあります。
+     *
+     * - ユーザー辞書の送りなしの読みのうち、最近変換したものから選択する。
+     */
+    func findCompletion(prefix: String) -> String?
 }

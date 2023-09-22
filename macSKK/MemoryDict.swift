@@ -148,6 +148,15 @@ struct MemoryDict: DictProtocol {
         return false
     }
 
+    func findCompletion(prefix: String) -> String? {
+        for yomi in okuriNashiYomis.reversed() {
+            if yomi.hasPrefix(prefix) {
+                return yomi
+            }
+        }
+        return nil
+    }
+
     static func decode(_ word: String) -> String {
         if word.hasPrefix(#"(concat ""#) && word.hasSuffix(#"")"#) {
             return String(word.dropFirst(9).dropLast(2).replacingOccurrences(of: "\\057", with: "/"))

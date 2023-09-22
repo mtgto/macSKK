@@ -479,6 +479,9 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[9], .markedText(MarkedText([])))
             expectation.fulfill()
         }.store(in: &cancellables)
+        stateMachine.yomiEvent.collect(1).sink { events in
+
+        }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "s", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "h", withShift: true)))
