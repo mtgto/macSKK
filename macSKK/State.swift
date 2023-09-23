@@ -46,13 +46,13 @@ enum InputMethodState: Equatable, MarkedTextProtocol {
      *
      * 入力文字列に対する応答例:
      * - Shift-A, I
-     *   - [.plain("▽あい")]
+     *   - [.markerCompose, .plain("あい")]
      * - Shift-A, Shift-I
-     *   - [.plain("▽あ\*い")]
+     *   - [.markerCompose, .plain("あ\*い")]
      * - Shift-A, I, left-key
-     *   - [.plain("▽あ"), .cursor, .plain("い")]
+     *   - [.markerCompose, .plain("あ"), .cursor, .plain("い")]
      * - Shift-A, space
-     *   - [.emphasize("▼阿")]
+     *   - [.markerSelect, .emphasize("阿")]
      */
     func markedTextElements(inputMode: InputMode) -> [MarkedText.Element] {
         switch self {
