@@ -41,7 +41,14 @@ struct MemoryDict: DictProtocol {
             }
             let words = wordsText.split(separator: Character("/")).map { word -> Word in
                 let words = word.split(separator: Character(";"), maxSplits: 1)
-                let annotation = words.count == 2 ? Annotation(dictId: dictId, text: Self.decode(String(words[1]))) : nil
+                let annotation: Annotation?
+                if words.count == 2 {
+                    // 注釈の先頭に "*" がついていたらユーザー独自の注釈を表す
+                    let annotationText = words[1].first == "*" ? String(words[1].suffix(from: words[1].startIndex + 1)) : String(words[1])
+                    annotation = Annotation(dictId: dictId, text: Self.decode(annotationText))
+                } else {
+                    annotation = nil
+                }
                 return Word(Self.decode(String(words[0])), annotation: annotation)
             }
             dict[yomi] = words

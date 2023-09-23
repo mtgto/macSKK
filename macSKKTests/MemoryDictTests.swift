@@ -44,6 +44,16 @@ class MemoryDictTests: XCTestCase {
         XCTAssertEqual(dict.okuriNashiYomis, ["GPL", "ao"], "abbrev辞書の読みは末尾がアルファベットだが送り無し扱い")
     }
 
+    func testParseIncludingUserAnnotation() throws {
+        // 注釈の先頭のアスタリスクはユーザー自身の注釈を表す
+        let source = """
+            いぬ /犬;*かわいい/
+
+            """
+        let dict = try MemoryDict(dictId: "testDict", source: source, readonly: false)
+        XCTAssertEqual(dict.entries["いぬ"]?.first?.annotation, Annotation(dictId: "testDict", text: "かわいい"))
+    }
+
     func testAdd() throws {
         var dict = MemoryDict(entries: [:], readonly: false)
         XCTAssertEqual(dict.entryCount, 0)
