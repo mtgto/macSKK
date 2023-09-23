@@ -693,7 +693,7 @@ class StateMachine {
     func handleSelecting(_ action: Action, selecting: SelectingState, specialState: SpecialState?) -> Bool {
         switch action.keyEvent {
         case .enter:
-            addWordToUserDict(yomi: selecting.yomi, word: selecting.candidates[selecting.candidateIndex])
+            addWordToUserDict(yomi: selecting.yomi, word: selecting.candidates[selecting.candidateIndex].word)
             updateCandidates(selecting: nil)
             state.inputMethod = .normal
             addFixedText(selecting.fixedText())
@@ -751,7 +751,7 @@ class StateMachine {
             return true
         case .stickyShift, .ctrlJ, .ctrlQ:
             // 選択中候補で確定
-            addWordToUserDict(yomi: selecting.yomi, word: selecting.candidates[selecting.candidateIndex])
+            addWordToUserDict(yomi: selecting.yomi, word: selecting.candidates[selecting.candidateIndex].word)
             updateCandidates(selecting: nil)
             addFixedText(selecting.fixedText())
             state.inputMethod = .normal
@@ -770,7 +770,7 @@ class StateMachine {
                     let diff = index - 1 - (selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount
                     if selecting.candidateIndex + diff < selecting.candidates.count {
                         let newSelecting = selecting.addCandidateIndex(diff: diff)
-                        addWordToUserDict(yomi: newSelecting.yomi, word: newSelecting.candidates[newSelecting.candidateIndex])
+                        addWordToUserDict(yomi: newSelecting.yomi, word: newSelecting.candidates[newSelecting.candidateIndex].word)
                         updateCandidates(selecting: nil)
                         state.inputMethod = .normal
                         addFixedText(newSelecting.fixedText())
@@ -779,7 +779,7 @@ class StateMachine {
                 }
             }
             // 選択中候補で確定
-            addWordToUserDict(yomi: selecting.yomi, word: selecting.candidates[selecting.candidateIndex])
+            addWordToUserDict(yomi: selecting.yomi, word: selecting.candidates[selecting.candidateIndex].word)
             updateCandidates(selecting: nil)
             addFixedText(selecting.fixedText())
             state.inputMethod = .normal
@@ -931,9 +931,15 @@ class StateMachine {
         return result
     }
 
-    func addWordToUserDict(yomi: String, word referredWord: ReferredWord) {
-        // FIXME: ユーザー辞書に残す注釈は複数は載せられないので最初の1つを選択。もっといい方法があるかも? (連結するとか)
-        let word = Word(referredWord.word, annotation: referredWord.annotations.first)
+    /**
+     * ユーザー辞書にエントリを追加します。
+     *
+     * 他の辞書から選択した変換を追加する場合はその辞書の注釈は保存しないこと。
+     *
+     * FIXME: 単語登録時にユーザーが独自の注釈を登録できるようにする。
+     */
+    func addWordToUserDict(yomi: String, word: Word.Word, annotation: Annotation? = nil) {
+        let word = Word(word, annotation: annotation)
         dictionary.add(yomi: yomi, word: word)
     }
 
@@ -951,7 +957,7 @@ class StateMachine {
     /// StateMachine外で選択されている変換候補が二回選択されたときに通知される
     func didDoubleSelectCandidate(_ candidate: ReferredWord) {
         if case .selecting(let selecting) = state.inputMethod {
-            addWordToUserDict(yomi: selecting.yomi, word: candidate)
+            addWordToUserDict(yomi: selecting.yomi, word: candidate.word)
             updateCandidates(selecting: nil)
             state.inputMethod = .normal
             addFixedText(candidate.word)

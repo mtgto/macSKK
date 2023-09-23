@@ -1639,6 +1639,14 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    func testAddWordToUserDict() {
+        stateMachine.addWordToUserDict(yomi: "あ", word: "あああ")
+        XCTAssertEqual(dictionary.refer("あ"), [Word("あああ", annotation: nil)])
+        let annotation = Annotation(dictId: "test", text: "test辞書の注釈")
+        stateMachine.addWordToUserDict(yomi: "い", word: "いいい", annotation: annotation)
+        XCTAssertEqual(dictionary.refer("い"), [Word("いいい", annotation: annotation)])
+    }
+
     private func nextInputMethodEvent() async -> InputMethodEvent {
         var cancellation: Cancellable?
         let cancel = { cancellation?.cancel() }

@@ -59,6 +59,15 @@ class MemoryDictTests: XCTestCase {
         XCTAssertEqual(dict.okuriNashiYomis, ["う", "い"])
         dict.add(yomi: "い", word: word1)
         XCTAssertEqual(dict.refer("い"), [word1, word2])
+        let annotation = Annotation(dictId: "test", text: "宇の注釈")
+        dict.add(yomi: "う", word: Word("宇", annotation: annotation))
+        XCTAssertEqual(dict.refer("う"), [Word("宇", annotation: annotation)])
+        // 注釈なしで登録済みのエントリを上書きしても注釈が残る
+        dict.add(yomi: "う", word: Word("宇", annotation: nil))
+        XCTAssertEqual(dict.refer("う"), [Word("宇", annotation: annotation)])
+        let annotation2 = Annotation(dictId: "test2", text: "宇の注釈の更新版")
+        dict.add(yomi: "う", word: Word("宇", annotation: annotation2))
+        XCTAssertEqual(dict.refer("う"), [Word("宇", annotation: annotation2)])
     }
 
     func testDelete() throws {
