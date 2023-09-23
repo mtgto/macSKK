@@ -1,15 +1,15 @@
 macSKK [![test](https://github.com/mtgto/macSKK/actions/workflows/test.yml/badge.svg)](https://github.com/mtgto/macSKK/actions/workflows/test.yml)
 ====
-macSKKはmacOS用の[SKK](https://ja.wikipedia.org/wiki/SKK)方式の日本語入力メソッドです。
+macSKKはmacOS用の[SKK](https://ja.wikipedia.org/wiki/SKK)方式の日本語入力システム (インプットメソッド) です。
 
-macOS用のSKK方式の日本語入力メソッドにはすでに[AquaSKK](https://github.com/codefirst/aquaskk/)がありますが、いくつか独自の機能を作りたいと思い新たに開発しています。
+macOS用のSKK方式の日本語入力システムにはすでに[AquaSKK](https://github.com/codefirst/aquaskk/)がありますが、いくつか独自の機能を作りたいと思い新たに開発しています。
 
 macSKKを使用するには macOS 13.3 以降が必要です。
 Universal Binaryでビルドしていますが、動作確認はApple Silicon環境でのみ行っています。
 
 ## 特徴
 
-- インプットメソッドはパスワードなどの機密情報を処理する可能性があるため安全性が求められるプログラムです。そのためmacSKKはmacOSのSandbox機構を使いネットワーク通信やファイルの読み書きに制限をかけることでセキュリティホールを攻撃されたときの被害を減らすように心掛けます。
+- 日本語入力システムはパスワードなどの機密情報を処理する可能性があるため安全性が求められるプログラムです。そのためmacSKKはmacOSのSandbox機構を使いネットワーク通信やファイルの読み書きに制限をかけることでセキュリティホールを攻撃されたときの被害を減らすように心掛けます。
 - 不正なコードが含まれるリスクを避けるため、サードパーティによる外部ライブラリは使用していません。
 - すべてをSwiftだけでコーディングしており、イベント処理にCombineを、UI部分にはSwiftUIを使用しています。
 - 単語登録モードや送り仮名入力中などキー入力による状態変化管理が複雑なのでユニットテストを書いてエンバグのリスクを減らす努力をしています。
@@ -35,14 +35,15 @@ Universal Binaryでビルドしていますが、動作確認はApple Silicon環
 
 ## インストール
 
-2023年現在、Mac App Storeではインプットメソッドを配布することができないため、[Appleのソフトウェア公証](https://support.apple.com/ja-jp/guide/security/sec3ad8e6e53/1/web/1)を受けたアプリケーションバイナリを[GitHub Releases](https://github.com/mtgto/macSKK/releases/latest)で配布しています。dmgをダウンロードしマウントした中にあるpkgからインストールしてください。
+2023年現在、Mac App Storeでは日本語入力システムを配布することができないため、[Appleのソフトウェア公証](https://support.apple.com/ja-jp/guide/security/sec3ad8e6e53/1/web/1)を受けたアプリケーションバイナリを[GitHub Releases](https://github.com/mtgto/macSKK/releases/latest)で配布しています。dmgファイルをダウンロードしマウントした中にあるpkgファイルからインストールしてください。
 
 macSKKのインストール後に、システム設定→キーボード→入力ソースから「ひらがな (macSKK)」と「ABC (macSKK)」を追加してください。カタカナ、全角英数、半角カナは追加しなくても問題ありません。
 もしインストール直後に表示されなかったり、さしかえても反映されない場合はログアウト & ログインを試してみてください。
 
 ## アンインストール
 
-インストーラにアンインストーラを同梱予定です。
+現在アンインストールする手順は用意していないためお手数ですが手動でお願いします。
+今後、dmg内にアンインストーラを同梱予定です。
 
 手動で行うには、システム設定→キーボード→入力ソースから「ひらがな (macSKK)」「ABC (macSKK)」を削除後、以下のファイルを削除してください。
 
