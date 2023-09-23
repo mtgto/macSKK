@@ -932,8 +932,8 @@ class StateMachine {
     }
 
     func addWordToUserDict(yomi: String, word referredWord: ReferredWord) {
-        // FIXME: ユーザー辞書に残す注釈は複数は載せられないので最初の1つを選択。もっといい方法があるかも? (連結するとか)
-        let word = Word(referredWord.word, annotation: referredWord.annotations.first)
+        // ユーザー辞書には使用元の辞書の注釈は載せない
+        let word = Word(referredWord.word, annotation: nil)
         dictionary.add(yomi: yomi, word: word)
     }
 

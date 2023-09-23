@@ -1639,6 +1639,12 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    func testAddWordToUserDict() {
+        let referredWord = ReferredWord("あああ", annotations: [Annotation(dictId: "test", text: "test辞書の注釈")])
+        stateMachine.addWordToUserDict(yomi: "あ", word: referredWord)
+        XCTAssertEqual(dictionary.refer("あ"), [Word("あああ", annotation: nil)], "注釈は除いてユーザー辞書に追加される")
+    }
+
     private func nextInputMethodEvent() async -> InputMethodEvent {
         var cancellation: Cancellable?
         let cancel = { cancellation?.cancel() }
