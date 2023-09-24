@@ -97,8 +97,9 @@ class MemoryDictTests: XCTestCase {
         XCTAssertNil(dict.findCompletion(prefix: ""), "辞書が空だとnil")
         dict.add(yomi: "あいうえおか", word: Word("アイウエオカ"))
         XCTAssertEqual(dict.findCompletion(prefix: "あいうえ"), "あいうえおか")
+        XCTAssertNil(dict.findCompletion(prefix: "あいうえおか"), "完全一致する読みは補完候補とはしない")
         dict.add(yomi: "あいうえお", word: Word("アイウエオ"))
         XCTAssertEqual(dict.findCompletion(prefix: "あいうえ"), "あいうえお", "あとで追加したエントリの読みを優先する")
-        XCTAssertEqual(dict.findCompletion(prefix: "あいうえおか"), "あいうえおか")
+        XCTAssertEqual(dict.findCompletion(prefix: "あいうえお"), "あいうえおか")
     }
 }

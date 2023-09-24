@@ -40,6 +40,7 @@ protocol DictProtocol {
      * ※将来この仕様は変更する可能性が大いにあります。
      *
      * - ユーザー辞書の送りなしの読みのうち、最近変換したものから選択する。
+     * - prefixと読みが完全に一致する場合は補完候補とはしない
      */
     func findCompletion(prefix: String) -> String?
 }
