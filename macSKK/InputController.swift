@@ -129,10 +129,15 @@ class InputController: IMKInputController {
             }
         }.store(in: &cancellables)
         stateMachine.yomiEvent.sink { [weak self] yomi in
-            if let self, let completion = dictionary.findCompletion(prefix: yomi) {
-                self.completionPanel.viewModel.completion = completion
-                self.completionPanel.show(at: self.cursorPosition)
-                self.stateMachine.completion = (yomi, completion)
+            if let self {
+                if let completion = dictionary.findCompletion(prefix: yomi) {
+                    self.completionPanel.viewModel.completion = completion
+                    self.completionPanel.show(at: self.cursorPosition)
+                    self.stateMachine.completion = (yomi, completion)
+                } else {
+                    self.completionPanel.orderOut(nil)
+                    // FIXME: StateMachine.completionも更新したほうがいいかも?
+                }
             }
         }.store(in: &cancellables)
     }
@@ -186,8 +191,9 @@ class InputController: IMKInputController {
 
     // MARK: - IMKStateSetting
     override func deactivateServer(_ sender: Any!) {
-        // 他の入力に切り替わるときには入力候補は消す + 現在表示中の候補を確定させる
+        // 他の入力に切り替わるときには入力候補や補完候補は消す + 現在表示中の候補を確定させる
         candidatesPanel.orderOut(sender)
+        completionPanel.orderOut(sender)
         super.deactivateServer(sender)
     }
 
