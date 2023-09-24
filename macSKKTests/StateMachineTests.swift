@@ -404,6 +404,37 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    func testHandleComposingYomi() {
+        let expectation = XCTestExpectation()
+        expectation.expectedFulfillmentCount = 2
+        stateMachine.inputMethodEvent.collect(7).sink { events in
+            XCTAssertEqual(events[0], .modeChanged(.katakana, .zero))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("s")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("ソ")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("ソt")])))
+            XCTAssertEqual(events[4], .markedText(MarkedText([.markerCompose, .plain("ソッt")])))
+            XCTAssertEqual(events[5], .markedText(MarkedText([.markerCompose, .plain("ソット")])))
+            XCTAssertEqual(events[6], .markedText(MarkedText([.markerCompose, .plain("ソット*k")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        stateMachine.yomiEvent.collect(5).sink { events in
+            XCTAssertEqual(events[0], "")
+            XCTAssertEqual(events[1], "そ", "カタカナモードでも読みにはひらがなが流れる")
+            XCTAssertEqual(events[2], "", "おnのように2文字目がローマ字の場合は空文字列が送信される")
+            XCTAssertEqual(events[3], "そっと", "「そっt」の状態ではローマ字を含むので送信しない")
+            XCTAssertEqual(events[4], "")
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "s", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "k", withShift: true)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     func testHandleComposingContainNumber() throws {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(8).sink { events in
