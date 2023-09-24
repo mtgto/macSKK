@@ -254,6 +254,8 @@ class InputController: IMKInputController {
                     return .ctrlJ
                 case "g":
                     return .cancel
+                case "q":
+                    return .ctrlQ
                 case "h":
                     return .backspace
                 case "b":
