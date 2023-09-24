@@ -131,12 +131,13 @@ class InputController: IMKInputController {
         stateMachine.yomiEvent.sink { [weak self] yomi in
             if let self {
                 if let completion = dictionary.findCompletion(prefix: yomi) {
-                    self.completionPanel.viewModel.completion = completion
-                    self.completionPanel.show(at: self.cursorPosition)
                     self.stateMachine.completion = (yomi, completion)
+                    self.completionPanel.viewModel.completion = completion
+                    // TODO: 下に1ピクセルずらしたい
+                    self.completionPanel.show(at: self.cursorPosition)
                 } else {
+                    self.stateMachine.completion = nil
                     self.completionPanel.orderOut(nil)
-                    // FIXME: StateMachine.completionも更新したほうがいいかも?
                 }
             }
         }.store(in: &cancellables)

@@ -398,7 +398,17 @@ class StateMachine {
                 return true
             }
         case .tab:
-            // TODO: 補完候補があれば補完する
+            if let completion {
+                // カーソル位置に関わらずカーソル位置はリセットされる
+                let newText = completion.1.map({ String($0) })
+                state.inputMethod = .composing(ComposingState(isShift: composing.isShift,
+                                                              text: newText,
+                                                              okuri: nil,
+                                                              romaji: "",
+                                                              cursor: nil))
+                self.completion = nil
+                updateMarkedText()
+            }
             return true
         case .stickyShift:
             if case .direct = state.inputMode {
