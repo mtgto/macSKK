@@ -149,9 +149,11 @@ struct MemoryDict: DictProtocol {
     }
 
     func findCompletion(prefix: String) -> String? {
-        for yomi in okuriNashiYomis.reversed() {
-            if yomi.count > prefix.count && yomi.hasPrefix(prefix) {
-                return yomi
+        if !prefix.isEmpty {
+            for yomi in okuriNashiYomis.reversed() {
+                if yomi.count > prefix.count && yomi.hasPrefix(prefix) {
+                    return yomi
+                }
             }
         }
         return nil
