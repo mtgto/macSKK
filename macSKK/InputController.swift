@@ -133,8 +133,9 @@ class InputController: IMKInputController {
                 if let completion = dictionary.findCompletion(prefix: yomi) {
                     self.stateMachine.completion = (yomi, completion)
                     self.completionPanel.viewModel.completion = completion
-                    // TODO: 下に1ピクセルずらしたい
-                    self.completionPanel.show(at: self.cursorPosition)
+                    // 下線分1ピクセル下に余白を設ける
+                    let cursorPosition = self.cursorPosition.offsetBy(dx: 0, dy: -1)
+                    self.completionPanel.show(at: cursorPosition)
                 } else {
                     self.stateMachine.completion = nil
                     self.completionPanel.orderOut(nil)
