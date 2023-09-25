@@ -10,12 +10,12 @@ struct CompletionView: View {
     var body: some View {
         VStack {
             Text(viewModel.completion)
-                .font(.caption)
+                .font(.body)
             Text("Tabで補完")
                 .font(.caption)
                 .frame(maxWidth: .infinity)
-                .presentationBackground(.background)
         }
+        .padding(2)
         .fixedSize()
     }
 }
