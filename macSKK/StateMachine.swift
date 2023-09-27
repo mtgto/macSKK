@@ -904,6 +904,7 @@ class StateMachine {
                 inputMethodEventSubject.send(.markedText(MarkedText([])))
             } else {
                 inputMethodEventSubject.send(.fixedText(text))
+                yomiEventSubject.send("")
             }
         }
     }

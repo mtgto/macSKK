@@ -386,6 +386,7 @@ final class StateMachineTests: XCTestCase {
 
     func testHandleComposingVandQ() {
         let expectation = XCTestExpectation()
+        expectation.expectedFulfillmentCount = 2
         stateMachine.inputMethodEvent.collect(6).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("v")])))
             XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("う゛")])))
@@ -393,6 +394,13 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[3], .modeChanged(.katakana, .zero))
             XCTAssertEqual(events[4], .markedText(MarkedText([.markerCompose, .plain("v")])))
             XCTAssertEqual(events[5], .markedText(MarkedText([.markerCompose, .plain("ヴ")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        stateMachine.yomiEvent.collect(4).sink { events in
+            XCTAssertEqual(events[0], "")
+            XCTAssertEqual(events[1], "う゛")
+            XCTAssertEqual(events[2], "")
+            XCTAssertEqual(events[3], "う゛")
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "v", withShift: true)))
@@ -432,6 +440,29 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "k", withShift: true)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    func testHandleComposingYomiQ() {
+        let expectation = XCTestExpectation()
+        expectation.expectedFulfillmentCount = 2
+        stateMachine.inputMethodEvent.collect(4).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("t")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("ty")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("ちょ")])))
+            XCTAssertEqual(events[3], .fixedText("チョ"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        stateMachine.yomiEvent.collect(3).sink { events in
+            XCTAssertEqual(events[0], "")
+            XCTAssertEqual(events[1], "ちょ")
+            XCTAssertEqual(events[2], "", "カタカナで確定した")
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "y")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
         wait(for: [expectation], timeout: 1.0)
     }
 
