@@ -22,6 +22,17 @@ class StateMachine {
     private let inputMethodEventSubject = PassthroughSubject<InputMethodEvent, Never>()
     let candidateEvent: AnyPublisher<Candidates?, Never>
     private let candidateEventSubject = PassthroughSubject<Candidates?, Never>()
+    /**
+     * 現在入力中の未変換の読み部分の文字列が更新されたときに通知される。
+     *
+     * 通知される文字列は全角ひらがな(Abbrev以外)もしくは英数(Abbrev)。
+     * 送り仮名がローマ字で一文字でも入力されたときは新しく通知はされない。
+     * 入力中の文字列のカーソルを左右に移動した場合はカーソルの左側までが更新された文字列として通知される。
+     */
+    let yomiEvent: AnyPublisher<String, Never>
+    private let yomiEventSubject = PassthroughSubject<String, Never>()
+    /// 読みの一部と補完結果(読み)のペア
+    var completion: (String, String)? = nil
 
     // TODO: inlineCandidateCount, displayCandidateCountを環境設定にするかも
     /// 変換候補パネルを表示するまで表示する変換候補の数
@@ -33,6 +44,7 @@ class StateMachine {
         state = initialState
         inputMethodEvent = inputMethodEventSubject.eraseToAnyPublisher()
         candidateEvent = candidateEventSubject.removeDuplicates().eraseToAnyPublisher()
+        yomiEvent = yomiEventSubject.removeDuplicates().eraseToAnyPublisher()
     }
 
     func handle(_ action: Action) -> Bool {
@@ -116,6 +128,8 @@ class StateMachine {
                 addFixedText(" ")
             }
             return true
+        case .tab:
+            return false
         case .stickyShift:
             switch state.inputMode {
             case .hiragana, .katakana, .hankaku:
@@ -383,6 +397,19 @@ class StateMachine {
                 updateMarkedText()
                 return true
             }
+        case .tab:
+            if let completion {
+                // カーソル位置に関わらずカーソル位置はリセットされる
+                let newText = completion.1.map({ String($0) })
+                state.inputMethod = .composing(ComposingState(isShift: composing.isShift,
+                                                              text: newText,
+                                                              okuri: nil,
+                                                              romaji: "",
+                                                              cursor: nil))
+                self.completion = nil
+                updateMarkedText()
+            }
+            return true
         case .stickyShift:
             if case .direct = state.inputMode {
                 return handleComposingPrintable(
@@ -749,6 +776,8 @@ class StateMachine {
             }
             updateMarkedText()
             return true
+        case .tab:
+            return true
         case .stickyShift, .ctrlJ, .ctrlQ:
             // 選択中候補で確定
             addWordToUserDict(yomi: selecting.yomi, word: selecting.candidates[selecting.candidateIndex].word)
@@ -875,6 +904,7 @@ class StateMachine {
                 inputMethodEventSubject.send(.markedText(MarkedText([])))
             } else {
                 inputMethodEventSubject.send(.fixedText(text))
+                yomiEventSubject.send("")
             }
         }
     }
@@ -882,6 +912,13 @@ class StateMachine {
     /// 現在のMarkedText状態をinputMethodEventSubject.sendする
     private func updateMarkedText() {
         inputMethodEventSubject.send(.markedText(state.displayText()))
+        // 読み部分を取得してyomiEventに通知する
+        if case let .composing(composing) = state.inputMethod, composing.okuri == nil && composing.romaji.isEmpty {
+            // ComposingState#yomi(for:) との違いは未確定ローマ字が"n"のときに「ん」として扱うか否か
+            yomiEventSubject.send(composing.subText().joined())
+        } else {
+            yomiEventSubject.send("")
+        }
     }
 
     /// 現在の変換候補選択状態をcandidateEventSubject.sendする

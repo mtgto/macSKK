@@ -23,14 +23,18 @@ class InputController: IMKInputController {
     private static let notFoundRange = NSRange(location: NSNotFound, length: NSNotFound)
     private let inputModePanel: InputModePanel
     private let candidatesPanel: CandidatesPanel
+    private let completionPanel: CompletionPanel
     /// 変換候補として選択されている単語を流すストリーム
     private let selectedWord = PassthroughSubject<Word.Word?, Never>()
     /// 入力を処理しないで直接入力させるかどうか
     private var directMode: Bool = false
+    /// 最後に受け取ったカーソル位置
+    private var cursorPosition: NSRect = .zero
 
     override init!(server: IMKServer!, delegate: Any!, client inputClient: Any!) {
         inputModePanel = InputModePanel()
         candidatesPanel = CandidatesPanel()
+        completionPanel = CompletionPanel()
         super.init(server: server, delegate: delegate, client: inputClient)
 
         guard let textInput = inputClient as? IMKTextInput else {
@@ -76,30 +80,32 @@ class InputController: IMKInputController {
             }
         }.store(in: &cancellables)
         stateMachine.candidateEvent.sink { [weak self] candidates in
-            if let candidates {
-                // 下線のスタイルがthickのときに被らないように1ピクセル下に余白を設ける
-                var cursorPosition = candidates.cursorPosition.offsetBy(dx: 0, dy: -1)
-                cursorPosition.size.height += 1
-                self?.candidatesPanel.setCursorPosition(cursorPosition)
+            if let self {
+                if let candidates {
+                    // 下線のスタイルがthickのときに被らないように1ピクセル下に余白を設ける
+                    var cursorPosition = candidates.cursorPosition.offsetBy(dx: 0, dy: -1)
+                    cursorPosition.size.height += 1
+                    self.candidatesPanel.setCursorPosition(cursorPosition)
 
-                if let page = candidates.page {
-                    let currentCandidates: CurrentCandidates = .panel(words: page.words,
-                                                                      currentPage: page.current,
-                                                                      totalPageCount: page.total)
-                    self?.candidatesPanel.setCandidates(currentCandidates, selected: candidates.selected)
-                    self?.candidatesPanel.show()
-                } else {
-                    if candidates.selected.annotations.isEmpty {
-                        self?.candidatesPanel.orderOut(nil)
+                    if let page = candidates.page {
+                        let currentCandidates: CurrentCandidates = .panel(words: page.words,
+                                                                          currentPage: page.current,
+                                                                          totalPageCount: page.total)
+                        self.candidatesPanel.setCandidates(currentCandidates, selected: candidates.selected)
+                        self.candidatesPanel.show()
                     } else {
-                        self?.candidatesPanel.show()
+                        if candidates.selected.annotations.isEmpty {
+                            self.candidatesPanel.orderOut(nil)
+                        } else {
+                            self.candidatesPanel.show()
+                        }
+                        self.candidatesPanel.setCandidates(.inline, selected: candidates.selected)
                     }
-                    self?.candidatesPanel.setCandidates(.inline, selected: candidates.selected)
+                } else {
+                    // 変換→キャンセル→再変換しても注釈が表示されなくならないように状態を変えておく
+                    self.selectedWord.send(nil)
+                    self.candidatesPanel.orderOut(nil)
                 }
-            } else {
-                // 変換→キャンセル→再変換しても注釈が表示されなくならないように状態を変えておく
-                self?.selectedWord.send(nil)
-                self?.candidatesPanel.orderOut(nil)
             }
         }.store(in: &cancellables)
         candidatesPanel.viewModel.$selected.compactMap { $0 }.sink { [weak self] selected in
@@ -122,6 +128,20 @@ class InputController: IMKInputController {
                 self?.directMode = bundleIdentifiers.contains(bundleIdentifier)
             }
         }.store(in: &cancellables)
+        stateMachine.yomiEvent.sink { [weak self] yomi in
+            if let self {
+                if let completion = dictionary.findCompletion(prefix: yomi) {
+                    self.stateMachine.completion = (yomi, completion)
+                    self.completionPanel.viewModel.completion = completion
+                    // 下線分1ピクセル下に余白を設ける
+                    let cursorPosition = self.cursorPosition.offsetBy(dx: 0, dy: -1)
+                    self.completionPanel.show(at: cursorPosition)
+                } else {
+                    self.stateMachine.completion = nil
+                    self.completionPanel.orderOut(nil)
+                }
+            }
+        }.store(in: &cancellables)
     }
 
     override func handle(_ event: NSEvent!, client sender: Any!) -> Bool {
@@ -129,7 +149,6 @@ class InputController: IMKInputController {
             return false
         }
         // 左下座標基準でwidth=1, height=(通常だとフォントサイズ)のNSRect
-        var cursorPosition: NSRect = .zero
         if let textInput = sender as? IMKTextInput {
             // カーソル位置あたりを取得する
             _ = textInput.attributes(forCharacterIndex: 0, lineHeightRectangle: &cursorPosition)
@@ -174,8 +193,9 @@ class InputController: IMKInputController {
 
     // MARK: - IMKStateSetting
     override func deactivateServer(_ sender: Any!) {
-        // 他の入力に切り替わるときには入力候補は消す + 現在表示中の候補を確定させる
+        // 他の入力に切り替わるときには入力候補や補完候補は消す + 現在表示中の候補を確定させる
         candidatesPanel.orderOut(sender)
+        completionPanel.orderOut(sender)
         super.deactivateServer(sender)
     }
 
@@ -195,7 +215,6 @@ class InputController: IMKInputController {
             return
         }
         // カーソル位置あたりを取得する
-        var cursorPosition: NSRect = .zero
         _ = textInput.attributes(forCharacterIndex: 0, lineHeightRectangle: &cursorPosition)
         inputModePanel.show(at: cursorPosition.origin, mode: inputMode, privateMode: privateMode.value)
     }
@@ -294,6 +313,8 @@ class InputController: IMKInputController {
 
         if keyCode == 36 {  // エンター
             return .enter
+        } else if keyCode == 48 {
+            return .tab
         } else if keyCode == 123 {
             return .left
         } else if keyCode == 124 {

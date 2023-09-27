@@ -91,4 +91,16 @@ class MemoryDictTests: XCTestCase {
         XCTAssertTrue(dict.delete(yomi: "あr", word: "有"))
         XCTAssertEqual(dict.okuriAriYomis, [])
     }
+
+    func testFindCompletion() throws {
+        var dict = MemoryDict(entries: [:], readonly: false)
+        XCTAssertNil(dict.findCompletion(prefix: ""), "辞書が空だとnil")
+        dict.add(yomi: "あいうえおか", word: Word("アイウエオカ"))
+        XCTAssertNil(dict.findCompletion(prefix: ""), "prefixが空だとnil")
+        XCTAssertEqual(dict.findCompletion(prefix: "あいうえ"), "あいうえおか")
+        XCTAssertNil(dict.findCompletion(prefix: "あいうえおか"), "完全一致する読みは補完候補とはしない")
+        dict.add(yomi: "あいうえお", word: Word("アイウエオ"))
+        XCTAssertEqual(dict.findCompletion(prefix: "あいうえ"), "あいうえお", "あとで追加したエントリの読みを優先する")
+        XCTAssertEqual(dict.findCompletion(prefix: "あいうえお"), "あいうえおか")
+    }
 }

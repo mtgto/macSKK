@@ -68,6 +68,11 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    func testHandleNormalTab() throws {
+        // Normal時はタブは処理しない (Composingでは補完に使用する)
+        XCTAssertFalse(stateMachine.handle(Action(keyEvent: .tab, originalEvent: nil, cursorPosition: .zero)))
+    }
+
     func testHandleNormalEnter() throws {
         // 未入力状態ならfalse
         XCTAssertFalse(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil, cursorPosition: .zero)))
@@ -355,6 +360,7 @@ final class StateMachineTests: XCTestCase {
 
     func testHandleComposingNandQ() {
         let expectation = XCTestExpectation()
+        expectation.expectedFulfillmentCount = 2
         stateMachine.inputMethodEvent.collect(6).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("お")])))
             XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("おn")])))
@@ -362,6 +368,11 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[3], .modeChanged(.katakana, .zero))
             XCTAssertEqual(events[4], .markedText(MarkedText([.markerCompose, .plain("n")])))
             XCTAssertEqual(events[5], .fixedText("ん"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        stateMachine.yomiEvent.collect(2).sink { events in
+            XCTAssertEqual(events[0], "お")
+            XCTAssertEqual(events[1], "", "おnのように2文字目がローマ字の場合は空文字列が送信される")
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o", withShift: true)))
@@ -375,6 +386,7 @@ final class StateMachineTests: XCTestCase {
 
     func testHandleComposingVandQ() {
         let expectation = XCTestExpectation()
+        expectation.expectedFulfillmentCount = 2
         stateMachine.inputMethodEvent.collect(6).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("v")])))
             XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("う゛")])))
@@ -384,12 +396,73 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[5], .markedText(MarkedText([.markerCompose, .plain("ヴ")])))
             expectation.fulfill()
         }.store(in: &cancellables)
+        stateMachine.yomiEvent.collect(4).sink { events in
+            XCTAssertEqual(events[0], "")
+            XCTAssertEqual(events[1], "う゛")
+            XCTAssertEqual(events[2], "")
+            XCTAssertEqual(events[3], "う゛")
+            expectation.fulfill()
+        }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "v", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "v", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u")))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    func testHandleComposingYomi() {
+        let expectation = XCTestExpectation()
+        expectation.expectedFulfillmentCount = 2
+        stateMachine.inputMethodEvent.collect(7).sink { events in
+            XCTAssertEqual(events[0], .modeChanged(.katakana, .zero))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("s")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("ソ")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("ソt")])))
+            XCTAssertEqual(events[4], .markedText(MarkedText([.markerCompose, .plain("ソッt")])))
+            XCTAssertEqual(events[5], .markedText(MarkedText([.markerCompose, .plain("ソット")])))
+            XCTAssertEqual(events[6], .markedText(MarkedText([.markerCompose, .plain("ソット*k")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        stateMachine.yomiEvent.collect(5).sink { events in
+            XCTAssertEqual(events[0], "")
+            XCTAssertEqual(events[1], "そ", "カタカナモードでも読みにはひらがなが流れる")
+            XCTAssertEqual(events[2], "", "おnのように2文字目がローマ字の場合は空文字列が送信される")
+            XCTAssertEqual(events[3], "そっと", "「そっt」の状態ではローマ字を含むので送信しない")
+            XCTAssertEqual(events[4], "")
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "s", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "k", withShift: true)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    func testHandleComposingYomiQ() {
+        let expectation = XCTestExpectation()
+        expectation.expectedFulfillmentCount = 2
+        stateMachine.inputMethodEvent.collect(4).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("t")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("ty")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("ちょ")])))
+            XCTAssertEqual(events[3], .fixedText("チョ"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        stateMachine.yomiEvent.collect(3).sink { events in
+            XCTAssertEqual(events[0], "")
+            XCTAssertEqual(events[1], "ちょ")
+            XCTAssertEqual(events[2], "", "カタカナで確定した")
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "y")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
         wait(for: [expectation], timeout: 1.0)
     }
 
@@ -467,6 +540,9 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[8], .markedText(MarkedText([.markerCompose])))
             XCTAssertEqual(events[9], .markedText(MarkedText([])))
             expectation.fulfill()
+        }.store(in: &cancellables)
+        stateMachine.yomiEvent.collect(1).sink { events in
+
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "s", withShift: true)))
@@ -963,6 +1039,36 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    func testHandleComposingTab() {
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(2).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("い")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("いろは")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i", withShift: true)))
+        stateMachine.completion = ("い", "いろは")
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .tab, originalEvent: nil, cursorPosition: .zero)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    func testHandleComposingTabCursor() {
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(4).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("い")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("いお")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("い"), .cursor, .plain("お")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("いろは")])), "カーソル位置は補完でリセットされる")
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .left, originalEvent: nil, cursorPosition: .zero)))
+        stateMachine.completion = ("い", "いろは")
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .tab, originalEvent: nil, cursorPosition: .zero)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     func testHandleComposingAbbrevSpace() {
         dictionary.setEntries(["b": [Word("美")]])
 
@@ -1249,6 +1355,21 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .backspace, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .backspace, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .backspace, originalEvent: nil, cursorPosition: .zero)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    func testHandleSelectingTab() {
+        dictionary.setEntries(["お": [Word("尾")]])
+
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(2).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("お")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerSelect, .emphasized("尾")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .tab, originalEvent: nil, cursorPosition: .zero)))
         wait(for: [expectation], timeout: 1.0)
     }
 

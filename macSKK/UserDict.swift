@@ -169,6 +169,25 @@ class UserDict: NSObject, DictProtocol {
         return false
     }
 
+    /**
+     * 現在入力中のprefixに続く入力候補を1つ返す。見つからなければnilを返す。
+     *
+     * 以下のように補完候補を探します。
+     * ※将来この仕様は変更する可能性が大いにあります。
+     *
+     * - prefixが空文字列ならnilを返す
+     * - ユーザー辞書の送りなしの読みのうち、最近変換したものから選択する。
+     * - prefixと読みが完全に一致する場合は補完候補とはしない
+
+     */
+    func findCompletion(prefix: String) -> String? {
+        if privateMode.value {
+            return privateUserDict.findCompletion(prefix: prefix) ?? userDict.findCompletion(prefix: prefix)
+        } else {
+            return userDict.findCompletion(prefix: prefix)
+        }
+    }
+
     /// ユーザー辞書を永続化する
     func save() throws {
         if let dict = userDict as? FileDict {

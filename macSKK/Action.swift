@@ -13,6 +13,7 @@ struct Action {
         case enter
         case backspace
         case space
+        case tab
         case stickyShift
         /**
          * 印字可能な文字の入力 (space以外).

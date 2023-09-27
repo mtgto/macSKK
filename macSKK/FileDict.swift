@@ -163,6 +163,10 @@ class FileDict: NSObject, DictProtocol, Identifiable {
         return false
     }
 
+    func findCompletion(prefix: String) -> String? {
+        return dict.findCompletion(prefix: prefix)
+    }
+
     // ユニットテスト用
     func setEntries(_ entries: [String: [Word]], readonly: Bool) {
         self.dict = MemoryDict(entries: entries, readonly: readonly)
