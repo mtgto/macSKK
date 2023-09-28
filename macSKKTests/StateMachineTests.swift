@@ -266,6 +266,22 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    func testHandleNormalShiftQ() {
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(4).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("あ")])))
+            XCTAssertEqual(events[2], .fixedText("あ"))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q", withShift: true)), "二回目は何も起きない")
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q", withShift: true)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     func testHandleNormalCtrlQ() {
         let expectation = XCTestExpectation()
         stateMachine = StateMachine(initialState: IMEState(inputMode: .direct))

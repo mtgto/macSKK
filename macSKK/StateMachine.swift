@@ -236,19 +236,33 @@ class StateMachine {
     /// 状態がnormalのときのprintableイベントのhandle
     func handleNormalPrintable(input: String, action: Action, specialState: SpecialState?) -> Bool {
         if input.lowercased() == "q" {
-            switch state.inputMode {
-            case .hiragana:
-                state.inputMode = .katakana
-                inputMethodEventSubject.send(.modeChanged(.katakana, action.cursorPosition))
+            if action.shiftIsPressed() {
+                // 見出し語入力へ遷移する
+                switch state.inputMode {
+                case .hiragana, .katakana, .hankaku:
+                    state.inputMethod = .composing(ComposingState(isShift: true, text: [], okuri: nil, romaji: ""))
+                    updateMarkedText()
+                case .eisu:
+                    addFixedText("Ｑ")
+                case .direct:
+                    addFixedText("Q")
+                }
                 return true
-            case .katakana, .hankaku:
-                state.inputMode = .hiragana
-                inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
-                return true
-            case .eisu:
-                break
-            case .direct:
-                break
+            } else {
+                switch state.inputMode {
+                case .hiragana:
+                    state.inputMode = .katakana
+                    inputMethodEventSubject.send(.modeChanged(.katakana, action.cursorPosition))
+                    return true
+                case .katakana, .hankaku:
+                    state.inputMode = .hiragana
+                    inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
+                    return true
+                case .eisu:
+                    break
+                case .direct:
+                    break
+                }
             }
         } else if input.lowercased() == "l" {
             switch state.inputMode {
@@ -539,13 +553,20 @@ class StateMachine {
             if okuri == nil {
                 // AquaSKKの挙動に合わせてShift-Qのときは送り無視で確定、次の入力へ進む
                 if action.shiftIsPressed() {
-                    state.inputMethod = .composing(ComposingState(isShift: true, text: [], okuri: nil, romaji: ""))
                     switch state.inputMode {
                     case .hiragana:
-                        addFixedText(text.joined())
+                        if !text.isEmpty {
+                            addFixedText(text.joined())
+                            state.inputMethod = .composing(ComposingState(isShift: true, text: [], okuri: nil, romaji: ""))
+                            updateMarkedText()
+                        }
                         return true
                     case .katakana, .hankaku:
-                        addFixedText(text.map { $0.toKatakana() }.joined())
+                        if !text.isEmpty {
+                            addFixedText(text.map { $0.toKatakana() }.joined())
+                            state.inputMethod = .composing(ComposingState(isShift: true, text: [], okuri: nil, romaji: ""))
+                            updateMarkedText()
+                        }
                         return true
                     case .direct:
                         // 普通にqを入力させる
