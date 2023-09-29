@@ -259,6 +259,7 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[3], .modeChanged(.hiragana, .zero))
             expectation.fulfill()
         }.store(in: &cancellables)
+
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .ctrlQ, originalEvent: nil, cursorPosition: .zero)))
@@ -268,13 +269,28 @@ final class StateMachineTests: XCTestCase {
 
     func testHandleNormalShiftQ() {
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(4).sink { events in
-            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose])))
-            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("あ")])))
-            XCTAssertEqual(events[2], .fixedText("あ"))
-            XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose])))
+        stateMachine.inputMethodEvent.collect(10).sink { events in
+            XCTAssertEqual(events[0], .modeChanged(.direct, .zero))
+            XCTAssertEqual(events[1], .fixedText("Q"))
+            XCTAssertEqual(events[2], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[3], .modeChanged(.eisu, .zero))
+            XCTAssertEqual(events[4], .fixedText("Ｑ"))
+            XCTAssertEqual(events[5], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[6], .markedText(MarkedText([.markerCompose])))
+            XCTAssertEqual(events[7], .markedText(MarkedText([.markerCompose, .plain("あ")])))
+            XCTAssertEqual(events[8], .fixedText("あ"))
+            XCTAssertEqual(events[9], .markedText(MarkedText([.markerCompose])))
             expectation.fulfill()
         }.store(in: &cancellables)
+        // 直接入力
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "l")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q", withShift: true)))
+        // 英数入力
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .ctrlJ, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "l", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q", withShift: true)))
+        // ひらがな入力
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .ctrlJ, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q", withShift: true)), "二回目は何も起きない")
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
