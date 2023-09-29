@@ -259,7 +259,6 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[3], .modeChanged(.hiragana, .zero))
             expectation.fulfill()
         }.store(in: &cancellables)
-
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .ctrlQ, originalEvent: nil, cursorPosition: .zero)))

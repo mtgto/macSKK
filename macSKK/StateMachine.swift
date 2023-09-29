@@ -233,21 +233,27 @@ class StateMachine {
         }
     }
 
-    /// 状態がnormalのときのprintableイベントのhandle
+    /**
+     * 状態がnormalのときのprintableイベントのhandle
+     *
+     * - Parameters:
+     *   - input: ``Action/KeyEvent/printable(_:)`` の引数であるcharacterIgnoringModifiersな文字列
+     *   - specialState: 単語登録モードや単語登録解除モード
+     */
     func handleNormalPrintable(input: String, action: Action, specialState: SpecialState?) -> Bool {
-        if input.lowercased() == "q" {
+        if input == "q" {
             if action.shiftIsPressed() {
                 // 見出し語入力へ遷移する
                 switch state.inputMode {
                 case .hiragana, .katakana, .hankaku:
                     state.inputMethod = .composing(ComposingState(isShift: true, text: [], okuri: nil, romaji: ""))
                     updateMarkedText()
+                    return true
                 case .eisu:
-                    addFixedText("Ｑ")
+                    break
                 case .direct:
-                    addFixedText("Q")
+                    break
                 }
-                return true
             } else {
                 switch state.inputMode {
                 case .hiragana:
@@ -258,13 +264,11 @@ class StateMachine {
                     state.inputMode = .hiragana
                     inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
                     return true
-                case .eisu:
-                    break
-                case .direct:
+                case .eisu, .direct:
                     break
                 }
             }
-        } else if input.lowercased() == "l" {
+        } else if input == "l" {
             switch state.inputMode {
             case .hiragana, .katakana, .hankaku:
                 if action.shiftIsPressed() {
@@ -455,7 +459,7 @@ class StateMachine {
         case .printable(let input):
             return handleComposingPrintable(
                 input: input,
-                converted: Romaji.convert(romaji + input.lowercased()),
+                converted: Romaji.convert(romaji + input),
                 action: action,
                 composing: composing,
                 specialState: specialState)
@@ -549,7 +553,7 @@ class StateMachine {
         let text = composing.text
         let okuri = composing.okuri
 
-        if input.lowercased() == "q" && converted.kakutei == nil {
+        if input == "q" && converted.kakutei == nil {
             if okuri == nil {
                 // AquaSKKの挙動に合わせてShift-Qのときは送り無視で確定、次の入力へ進む
                 if action.shiftIsPressed() {
@@ -599,7 +603,7 @@ class StateMachine {
                     ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: ""))
                 return false
             }
-        } else if input.lowercased() == "l" && converted.kakutei == nil {
+        } else if input == "l" && converted.kakutei == nil {
             // 入力済みを確定してからlを打ったのと同じ処理をする
             if okuri == nil {
                 switch state.inputMode {
