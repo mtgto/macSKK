@@ -14,7 +14,7 @@ final class FileDictTests: XCTestCase {
         let word = Word("井")
         XCTAssertFalse(dict.hasUnsavedChanges)
         dict.add(yomi: "い", word: word)
-        XCTAssertEqual(dict.refer("い"), [word])
+        XCTAssertEqual(dict.refer("い", option: nil), [word])
         XCTAssertTrue(dict.hasUnsavedChanges)
     }
 

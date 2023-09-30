@@ -75,7 +75,7 @@ struct MemoryDict: DictProtocol {
     var entryCount: Int { return entries.count }
 
     // MARK: DictProtocol
-    func refer(_ yomi: String) -> [Word] {
+    func refer(_ yomi: String, option: DictPreferringOption?) -> [Word] {
         return entries[yomi] ?? []
     }
 

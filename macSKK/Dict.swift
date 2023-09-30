@@ -3,14 +3,23 @@
 
 import Foundation
 
+/// 辞書を引くときに優先するエントリを指定するオプション
+enum DictPreferringOption {
+    /// 接頭辞を優先して返す
+    case prefix
+    /// 接尾辞を優先して返す
+    case suffix
+}
+
 protocol DictProtocol {
     /**
      * 辞書を引き変換候補順に返す
      *
      * - Parameters:
      *   - yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
+     *   - option: 辞書を引くときに接頭辞や接尾辞を優先するかどうか。nilなら優先なし
      */
-    func refer(_ yomi: String) -> [Word]
+    func refer(_ yomi: String, option: DictPreferringOption?) -> [Word]
 
     /**
      * 辞書にエントリを追加する。

@@ -146,8 +146,8 @@ class FileDict: NSObject, DictProtocol, Identifiable {
     }
 
     // MARK: DictProtocol
-    func refer(_ yomi: String) -> [Word] {
-        return dict.refer(yomi)
+    func refer(_ yomi: String, option: DictPreferringOption?) -> [Word] {
+        return dict.refer(yomi, option: option)
     }
 
     func add(yomi: String, word: Word) {

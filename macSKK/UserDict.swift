@@ -96,17 +96,17 @@ class UserDict: NSObject, DictProtocol {
     }
 
     // MARK: DictProtocol
-    func refer(_ yomi: String) -> [Word] {
-        var result = userDict.refer(yomi)
+    func refer(_ yomi: String, option: DictPreferringOption? = nil) -> [Word] {
+        var result = userDict.refer(yomi, option: option)
         if privateMode.value {
-            privateUserDict.refer(yomi).forEach { found in
+            privateUserDict.refer(yomi, option: option).forEach { found in
                 if !result.contains(found) {
                     result.append(found)
                 }
             }
         }
         dicts.forEach { dict in
-            dict.refer(yomi).forEach { found in
+            dict.refer(yomi, option: option).forEach { found in
                 if !result.contains(found) {
                     result.append(found)
                 }
