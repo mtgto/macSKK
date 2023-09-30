@@ -105,8 +105,16 @@ class MemoryDictTests: XCTestCase {
     }
 
     func testReferWithOption() {
-        let dict = MemoryDict(entries: ["あき>": [Word("空き")], "あき": [Word("秋")]], readonly: true)
+        let dict = MemoryDict(entries: ["あき>": [Word("空き")],
+                                        "あき": [Word("秋")],
+                                        ">し": [Word("氏")],
+                                        "し": [Word("詩")]],
+                              readonly: true)
         XCTAssertEqual(dict.refer("あき", option: nil), [Word("秋")])
         XCTAssertEqual(dict.refer("あき", option: .prefix), [Word("空き"), Word("秋")])
+        XCTAssertEqual(dict.refer("あき", option: .suffix), [Word("秋")])
+        XCTAssertEqual(dict.refer("し", option: nil), [Word("詩")])
+        XCTAssertEqual(dict.refer("し", option: .suffix), [Word("氏"), Word("詩")])
+        XCTAssertEqual(dict.refer("し", option: .prefix), [Word("詩")])
     }
 }

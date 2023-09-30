@@ -76,10 +76,16 @@ struct MemoryDict: DictProtocol {
 
     // MARK: DictProtocol
     func refer(_ yomi: String, option: DictPreferringOption?) -> [Word] {
-        if case .prefix = option {
-            return (entries[yomi + ">"] ?? []) + refer(yomi, option: nil)
+        if let option {
+            switch option {
+            case .prefix:
+                return refer(yomi + ">", option: nil) + refer(yomi, option: nil)
+            case .suffix:
+                return refer(">" + yomi, option: nil) + refer(yomi, option: nil)
+            }
+        } else {
+            return entries[yomi] ?? []
         }
-        return entries[yomi] ?? []
     }
 
     /// 辞書にエントリを追加する。
