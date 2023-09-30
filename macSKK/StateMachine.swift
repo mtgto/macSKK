@@ -384,7 +384,7 @@ class StateMachine {
                 state.inputMethod = .normal
                 return true
             } else {
-                return handleComposingStartConvert(action, composing: composing, specialState: specialState, option: nil)
+                return handleComposingStartConvert(action, composing: composing, specialState: specialState)
             }
         case .tab:
             if let completion {
@@ -602,7 +602,8 @@ class StateMachine {
             }
         } else if input == "." && action.shiftIsPressed() && state.inputMode != .direct && !composing.text.isEmpty { // ">"
             // 接頭辞が入力されたものとして ">" より前で変換を開始する
-            return handleComposingStartConvert(action, composing: composing, specialState: specialState, option: .prefix)
+            let newComposing = composing.appendText(Romaji.Moji(firstRomaji: "", kana: ">"))
+            return handleComposingStartConvert(action, composing: newComposing, specialState: specialState)
         }
         switch state.inputMode {
         case .hiragana, .katakana, .hankaku:
@@ -726,12 +727,17 @@ class StateMachine {
         }
     }
 
-    func handleComposingStartConvert(_ action: Action, composing: ComposingState, specialState: SpecialState?, option: DictPreferringOption? = nil) -> Bool {
+    func handleComposingStartConvert(_ action: Action, composing: ComposingState, specialState: SpecialState?) -> Bool {
         // 未確定ローマ字はn以外は入力されずに削除される. nだけは"ん"として変換する
         // 変換候補がないときは辞書登録へ
         let trimmedComposing = composing.trim()
-        let yomiText = trimmedComposing.yomi(for: state.inputMode)
-        let candidates = candidates(for: yomiText)
+        var yomiText = trimmedComposing.yomi(for: state.inputMode)
+        var referOption: DictPreferringOption? = nil
+        if yomiText.hasSuffix(">") {
+            yomiText = String(yomiText.dropLast())
+            referOption = .prefix
+        }
+        let candidates = candidates(for: yomiText, option: referOption)
         if candidates.isEmpty {
             if specialState != nil {
                 // 登録中に変換不能な変換をした場合は空文字列に変換する
