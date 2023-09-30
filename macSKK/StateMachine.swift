@@ -457,9 +457,15 @@ class StateMachine {
                 return true
             }
         case .printable(let input):
+            let converted: Romaji.ConvertedMoji
+            if !input.isAlphabet, let characters = action.characters() {
+                converted = Romaji.convert(romaji + characters)
+            } else {
+                converted = Romaji.convert(romaji + input)
+            }
             return handleComposingPrintable(
                 input: input,
-                converted: Romaji.convert(romaji + input),
+                converted: converted,
                 action: action,
                 composing: composing,
                 specialState: specialState)
@@ -702,8 +708,12 @@ class StateMachine {
             } else if !input.isAlphabet {
                 // 非ローマ字で特殊な記号でない場合。特殊な辞書で数字が読みとして使われている場合を想定。
                 if okuri == nil {
-                    // ローマ字が残っていた場合は消去してキー入力をそのままくっつける
-                    state.inputMethod = .composing(composing.resetRomaji().appendText(Romaji.Moji(firstRomaji: input, kana: input)))
+                    if let characters = action.characters() {
+                        state.inputMethod = .composing(composing.resetRomaji().appendText(Romaji.Moji(firstRomaji: "", kana: characters)))
+                    } else {
+                        // ローマ字が残っていた場合は消去してキー入力をそのままくっつける
+                        state.inputMethod = .composing(composing.resetRomaji().appendText(Romaji.Moji(firstRomaji: input, kana: input)))
+                    }
                     updateMarkedText()
                 } else {
                     // 送り仮名入力モード時は入力しなかった扱いとする
