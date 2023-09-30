@@ -886,12 +886,15 @@ final class StateMachineTests: XCTestCase {
 
     func testHandleComposingPrintableSymbol() {
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(5).sink { events in
+        stateMachine.inputMethodEvent.collect(8).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("s")])))
             XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("ー")])), "Romaji.symbolTableに対応")
             XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("ーt")])))
             XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("ーty")])))
             XCTAssertEqual(events[4], .markedText(MarkedText([.markerCompose, .plain("ー、")])))
+            XCTAssertEqual(events[5], .markedText(MarkedText([.markerCompose, .plain("ー、<")])))
+            XCTAssertEqual(events[6], .markedText(MarkedText([.markerCompose, .plain("ー、<。")])))
+            XCTAssertEqual(events[7], .markedText(MarkedText([.markerCompose, .plain("ー、<。>")])))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "s", withShift: true)))
@@ -899,6 +902,9 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "y")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ",")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "<", characterIgnoringModifier: ",", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ".")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ">", characterIgnoringModifier: ".", withShift: true)))
         wait(for: [expectation], timeout: 1.0)
     }
 
@@ -1815,11 +1821,21 @@ final class StateMachineTests: XCTestCase {
 
     private func printableKeyEventAction(character: Character, characterIgnoringModifier: Character? = nil, withShift: Bool = false) -> Action {
         if withShift {
-            return Action(
-                keyEvent: .printable(String(character)),
-                originalEvent: generateKeyEventWithShift(character: character),
-                cursorPosition: .zero
-            )
+            if let characterIgnoringModifier {
+                return Action(
+                    keyEvent: .printable(String(characterIgnoringModifier)),
+                    originalEvent: generateNSEvent(characters: String(character),
+                                                   charactersIgnoringModifiers: String(characterIgnoringModifier),
+                                                   modifierFlags: [.shift]),
+                    cursorPosition: .zero
+                )
+            } else {
+                return Action(
+                    keyEvent: .printable(String(character)),
+                    originalEvent: generateKeyEventWithShift(character: character),
+                    cursorPosition: .zero
+                )
+            }
         } else {
             let characters = String(character)
             let charactersIgnoringModifier: String
