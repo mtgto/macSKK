@@ -629,6 +629,9 @@ class StateMachine {
                     ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: ""))
                 return false
             }
+        } else if input == "." && action.shiftIsPressed() && state.inputMode != .direct && !composing.text.isEmpty { // ">"
+            // 接頭辞が入力されたものとして ">" より前で変換を開始する
+            return true
         }
         switch state.inputMode {
         case .hiragana, .katakana, .hankaku:
