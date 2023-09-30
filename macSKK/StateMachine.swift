@@ -736,6 +736,9 @@ class StateMachine {
         if yomiText.hasSuffix(">") {
             yomiText = String(yomiText.dropLast())
             referOption = .prefix
+        } else if yomiText.hasPrefix(">") {
+            yomiText = String(yomiText.dropFirst())
+            referOption = .suffix
         }
         let candidates = candidates(for: yomiText, option: referOption)
         if candidates.isEmpty {

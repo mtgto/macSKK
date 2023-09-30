@@ -630,6 +630,29 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    func testHandleComposingSpaceSuffix() {
+        dictionary.setEntries([">あ": [Word("亜")], "あ": [Word("阿")]])
+
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(7).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain(">")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain(">あ")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerSelect, .emphasized("亜")])))
+            XCTAssertEqual(events[4], .markedText(MarkedText([.markerSelect, .emphasized("阿")])))
+            XCTAssertEqual(events[5], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[6], .markedText(MarkedText([.plain("[登録：>あ]")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ">", characterIgnoringModifier: ".", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     // 送り仮名入力でShiftキーを押すのを子音側でするパターン
     func testHandleComposingOkuriari() {
         dictionary.setEntries(["とr": [Word("取"), Word("撮")]])
