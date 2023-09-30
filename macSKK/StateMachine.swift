@@ -384,36 +384,7 @@ class StateMachine {
                 state.inputMethod = .normal
                 return true
             } else {
-                // 未確定ローマ字はn以外は入力されずに削除される. nだけは"ん"として変換する
-                // 変換候補がないときは辞書登録へ
-                let trimmedComposing = composing.trim()
-                let yomiText = trimmedComposing.yomi(for: state.inputMode)
-                let candidates = candidates(for: yomiText)
-                if candidates.isEmpty {
-                    if specialState != nil {
-                        // 登録中に変換不能な変換をした場合は空文字列に変換する
-                        state.inputMethod = .normal
-                    } else {
-                        // 単語登録に遷移する
-                        state.specialState = .register(
-                            RegisterState(
-                                prev: RegisterState.PrevState(mode: state.inputMode, composing: trimmedComposing),
-                                yomi: yomiText))
-                        state.inputMethod = .normal
-                        state.inputMode = .hiragana
-                        inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
-                    }
-                } else {
-                    // TODO: 複数の辞書からの重複エントリを取り除く
-                    let selectingState = SelectingState(
-                        prev: SelectingState.PrevState(mode: state.inputMode, composing: trimmedComposing),
-                        yomi: yomiText, candidates: candidates, candidateIndex: 0,
-                        cursorPosition: action.cursorPosition)
-                    updateCandidates(selecting: selectingState)
-                    state.inputMethod = .selecting(selectingState)
-                }
-                updateMarkedText()
-                return true
+                return handleComposingStartConvert(action, composing: composing, specialState: specialState, option: nil)
             }
         case .tab:
             if let completion {
@@ -631,7 +602,7 @@ class StateMachine {
             }
         } else if input == "." && action.shiftIsPressed() && state.inputMode != .direct && !composing.text.isEmpty { // ">"
             // 接頭辞が入力されたものとして ">" より前で変換を開始する
-            return true
+            return handleComposingStartConvert(action, composing: composing, specialState: specialState, option: .prefix)
         }
         switch state.inputMode {
         case .hiragana, .katakana, .hankaku:
@@ -753,6 +724,38 @@ class StateMachine {
         default:
             fatalError("inputMode=\(state.inputMode), handleComposingで\(input)が入力された")
         }
+    }
+
+    func handleComposingStartConvert(_ action: Action, composing: ComposingState, specialState: SpecialState?, option: DictPreferringOption? = nil) -> Bool {
+        // 未確定ローマ字はn以外は入力されずに削除される. nだけは"ん"として変換する
+        // 変換候補がないときは辞書登録へ
+        let trimmedComposing = composing.trim()
+        let yomiText = trimmedComposing.yomi(for: state.inputMode)
+        let candidates = candidates(for: yomiText)
+        if candidates.isEmpty {
+            if specialState != nil {
+                // 登録中に変換不能な変換をした場合は空文字列に変換する
+                state.inputMethod = .normal
+            } else {
+                // 単語登録に遷移する
+                state.specialState = .register(
+                    RegisterState(
+                        prev: RegisterState.PrevState(mode: state.inputMode, composing: trimmedComposing),
+                        yomi: yomiText))
+                state.inputMethod = .normal
+                state.inputMode = .hiragana
+                inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
+            }
+        } else {
+            let selectingState = SelectingState(
+                prev: SelectingState.PrevState(mode: state.inputMode, composing: trimmedComposing),
+                yomi: yomiText, candidates: candidates, candidateIndex: 0,
+                cursorPosition: action.cursorPosition)
+            updateCandidates(selecting: selectingState)
+            state.inputMethod = .selecting(selectingState)
+        }
+        updateMarkedText()
+        return true
     }
 
     func handleSelecting(_ action: Action, selecting: SelectingState, specialState: SpecialState?) -> Bool {
