@@ -103,4 +103,10 @@ class MemoryDictTests: XCTestCase {
         XCTAssertEqual(dict.findCompletion(prefix: "あいうえ"), "あいうえお", "あとで追加したエントリの読みを優先する")
         XCTAssertEqual(dict.findCompletion(prefix: "あいうえお"), "あいうえおか")
     }
+
+    func testReferWithOption() {
+        let dict = MemoryDict(entries: ["あき>": [Word("空き")], "あき": [Word("秋")]], readonly: true)
+        XCTAssertEqual(dict.refer("あき", option: nil), [Word("秋")])
+        XCTAssertEqual(dict.refer("あき", option: .prefix), [Word("空き"), Word("秋")])
+    }
 }

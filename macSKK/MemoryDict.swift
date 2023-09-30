@@ -76,6 +76,9 @@ struct MemoryDict: DictProtocol {
 
     // MARK: DictProtocol
     func refer(_ yomi: String, option: DictPreferringOption?) -> [Word] {
+        if case .prefix = option {
+            return (entries[yomi + ">"] ?? []) + refer(yomi, option: nil)
+        }
         return entries[yomi] ?? []
     }
 
