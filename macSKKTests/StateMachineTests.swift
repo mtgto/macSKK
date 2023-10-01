@@ -886,6 +886,7 @@ final class StateMachineTests: XCTestCase {
 
     func testHandleComposingPrintableSymbol() {
         let expectation = XCTestExpectation()
+        expectation.expectedFulfillmentCount = 2
         stateMachine.inputMethodEvent.collect(8).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("s")])))
             XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("ー")])), "Romaji.symbolTableに対応")
@@ -895,6 +896,16 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[5], .markedText(MarkedText([.markerCompose, .plain("ー、<")])))
             XCTAssertEqual(events[6], .markedText(MarkedText([.markerCompose, .plain("ー、<。")])))
             XCTAssertEqual(events[7], .markedText(MarkedText([.markerCompose, .plain("ー、<。>")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        stateMachine.yomiEvent.collect(7).sink { events in
+            XCTAssertEqual(events[0], "")
+            XCTAssertEqual(events[1], "ー")
+            XCTAssertEqual(events[2], "", "確定前のローマ字 (t) が入力されたので一度空文字列が送信される")
+            XCTAssertEqual(events[3], "ー、")
+            XCTAssertEqual(events[4], "ー、<")
+            XCTAssertEqual(events[5], "ー、<。")
+            XCTAssertEqual(events[6], "ー、<。>")
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "s", withShift: true)))
