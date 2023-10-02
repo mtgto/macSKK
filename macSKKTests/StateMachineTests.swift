@@ -886,12 +886,26 @@ final class StateMachineTests: XCTestCase {
 
     func testHandleComposingPrintableSymbol() {
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(5).sink { events in
+        expectation.expectedFulfillmentCount = 2
+        stateMachine.inputMethodEvent.collect(8).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("s")])))
             XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("ー")])), "Romaji.symbolTableに対応")
             XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("ーt")])))
             XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("ーty")])))
             XCTAssertEqual(events[4], .markedText(MarkedText([.markerCompose, .plain("ー、")])))
+            XCTAssertEqual(events[5], .markedText(MarkedText([.markerCompose, .plain("ー、<")])))
+            XCTAssertEqual(events[6], .markedText(MarkedText([.markerCompose, .plain("ー、<。")])))
+            XCTAssertEqual(events[7], .markedText(MarkedText([.markerCompose, .plain("ー、<。>")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        stateMachine.yomiEvent.collect(7).sink { events in
+            XCTAssertEqual(events[0], "")
+            XCTAssertEqual(events[1], "ー")
+            XCTAssertEqual(events[2], "", "確定前のローマ字 (t) が入力されたので一度空文字列が送信される")
+            XCTAssertEqual(events[3], "ー、")
+            XCTAssertEqual(events[4], "ー、<")
+            XCTAssertEqual(events[5], "ー、<。")
+            XCTAssertEqual(events[6], "ー、<。>")
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "s", withShift: true)))
@@ -899,6 +913,9 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "y")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ",")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "<", characterIgnoringModifier: ",", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ".")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ">", characterIgnoringModifier: ".", withShift: true)))
         wait(for: [expectation], timeout: 1.0)
     }
 
@@ -1815,11 +1832,21 @@ final class StateMachineTests: XCTestCase {
 
     private func printableKeyEventAction(character: Character, characterIgnoringModifier: Character? = nil, withShift: Bool = false) -> Action {
         if withShift {
-            return Action(
-                keyEvent: .printable(String(character)),
-                originalEvent: generateKeyEventWithShift(character: character),
-                cursorPosition: .zero
-            )
+            if let characterIgnoringModifier {
+                return Action(
+                    keyEvent: .printable(String(characterIgnoringModifier)),
+                    originalEvent: generateNSEvent(characters: String(character),
+                                                   charactersIgnoringModifiers: String(characterIgnoringModifier),
+                                                   modifierFlags: [.shift]),
+                    cursorPosition: .zero
+                )
+            } else {
+                return Action(
+                    keyEvent: .printable(String(character)),
+                    originalEvent: generateKeyEventWithShift(character: character),
+                    cursorPosition: .zero
+                )
+            }
         } else {
             let characters = String(character)
             let charactersIgnoringModifier: String
