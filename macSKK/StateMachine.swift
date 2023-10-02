@@ -712,7 +712,7 @@ class StateMachine {
                     if let characters = action.characters() {
                         state.inputMethod = .composing(composing.resetRomaji().appendText(Romaji.Moji(firstRomaji: "", kana: characters)))
                     } else {
-                        state.inputMethod = .composing(composing.resetRomaji().appendText(Romaji.Moji(firstRomaji: input, kana: input)))
+                        state.inputMethod = .composing(composing.resetRomaji().appendText(Romaji.Moji(firstRomaji: "", kana: input)))
                     }
                     updateMarkedText()
                 } else {
