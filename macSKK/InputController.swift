@@ -12,12 +12,8 @@ import InputMethodKit
 class InputController: IMKInputController {
     /// 入力元のアプリケーション情報
     struct TargetApplication {
-        enum ApplicationIdentifier {
-            case bundle(String) // bundle identifierをもつアプリケーション。引数はbundleIdentifier
-            case other(String) // bundle identifierをもたないアプリケーション。引数はuniqueClientIdentifierString
-        }
-        // Android StudioのAndroidエミュレータのようにbundle identifierをもたないGUIアプリケーションも存在する
-        let identifier: ApplicationIdentifier
+        // Android StudioのAndroidエミュレータのようにbundle identifierをもたないGUIアプリケーションはnil
+        let bundleIdentifier: String?
         // FIXME: NSRunningApplicationから取得するので、表示名が取れないときもあるかもしれない?
         let localizedName: String?
     }
@@ -46,15 +42,16 @@ class InputController: IMKInputController {
             return
         }
         if let bundleIdentifier = textInput.bundleIdentifier() {
-            targetApp = TargetApplication(identifier: .bundle(bundleIdentifier), localizedName: nil)
+            targetApp = TargetApplication(bundleIdentifier: bundleIdentifier, localizedName: nil)
             for app in NSRunningApplication.runningApplications(withBundleIdentifier: bundleIdentifier) {
                 if let localizedName = app.localizedName {
-                    targetApp = TargetApplication(identifier: .bundle(bundleIdentifier), localizedName: localizedName)
+                    targetApp = TargetApplication(bundleIdentifier: bundleIdentifier, localizedName: localizedName)
                     break
                 }
             }
         } else {
-            targetApp = TargetApplication(identifier: .other(textInput.uniqueClientIdentifierString()), localizedName: nil)
+            logger.log("Bundle Identifierをもたないアプリケーションから接続されました")
+            targetApp = TargetApplication(bundleIdentifier: nil, localizedName: nil)
         }
 
         stateMachine.inputMethodEvent.sink { [weak self] event in
@@ -131,14 +128,8 @@ class InputController: IMKInputController {
             }
         }.store(in: &cancellables)
         directModeBundleIdentifiers.sink { [weak self] bundleIdentifiers in
-            if let self {
-                switch self.targetApp.identifier {
-                case .bundle(let bundleIdentifier):
-                    self.directMode = bundleIdentifiers.contains(bundleIdentifier)
-                case .other:
-                    // TODO: 実装
-                    break
-                }
+            if let bundleIdentifier = self?.targetApp.bundleIdentifier {
+                self?.directMode = bundleIdentifiers.contains(bundleIdentifier)
             }
         }.store(in: &cancellables)
         stateMachine.yomiEvent.sink { [weak self] yomi in
@@ -190,12 +181,13 @@ class InputController: IMKInputController {
                                          keyEquivalent: "")
         privateModeItem.state = privateMode.value ? .on : .off
         preferenceMenu.addItem(privateModeItem)
-        logger.log("targetApp.localizedName: \(self.targetApp?.localizedName ?? "nil", privacy: .public)")
-        let directModeItem = NSMenuItem(title: String(format: NSLocalizedString("MenuItemDirectInput", comment: "\"%@\"では直接入力"), targetApp.localizedName ?? "?"),
-                                        action: #selector(toggleDirectMode),
-                                        keyEquivalent: "")
-        directModeItem.state = directMode ? .on : .off
-        preferenceMenu.addItem(directModeItem)
+        if targetApp.bundleIdentifier != nil {
+            let directModeItem = NSMenuItem(title: String(format: NSLocalizedString("MenuItemDirectInput", comment: "\"%@\"では直接入力"), targetApp.localizedName ?? "?"),
+                                            action: #selector(toggleDirectMode),
+                                            keyEquivalent: "")
+            directModeItem.state = directMode ? .on : .off
+            preferenceMenu.addItem(directModeItem)
+        }
         #if DEBUG
         // デバッグ用
         preferenceMenu.addItem(
@@ -257,12 +249,8 @@ class InputController: IMKInputController {
 
     /// 現在最前面にあるアプリからの入力をハンドルしないかどうかを切り替える
     @objc func toggleDirectMode() {
-        switch targetApp.identifier {
-        case .bundle(let bundleIdentifier):
+        if let bundleIdentifier = targetApp.bundleIdentifier {
             NotificationCenter.default.post(name: notificationNameToggleDirectMode, object: bundleIdentifier)
-        case .other:
-            // TODO: 実装
-            break
         }
     }
 
