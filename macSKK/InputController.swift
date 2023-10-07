@@ -12,7 +12,8 @@ import InputMethodKit
 class InputController: IMKInputController {
     /// 入力元のアプリケーション情報
     struct TargetApplication {
-        let bundleIdentifier: String
+        // Android StudioのAndroidエミュレータのようにbundle identifierをもたないGUIアプリケーションはnil
+        let bundleIdentifier: String?
         // FIXME: NSRunningApplicationから取得するので、表示名が取れないときもあるかもしれない?
         let localizedName: String?
     }
@@ -48,6 +49,9 @@ class InputController: IMKInputController {
                     break
                 }
             }
+        } else {
+            logger.log("Bundle Identifierをもたないアプリケーションから接続されました")
+            targetApp = TargetApplication(bundleIdentifier: nil, localizedName: nil)
         }
 
         stateMachine.inputMethodEvent.sink { [weak self] event in
@@ -124,7 +128,7 @@ class InputController: IMKInputController {
             }
         }.store(in: &cancellables)
         directModeBundleIdentifiers.sink { [weak self] bundleIdentifiers in
-            if let bundleIdentifier = self?.targetApp?.bundleIdentifier {
+            if let bundleIdentifier = self?.targetApp.bundleIdentifier {
                 self?.directMode = bundleIdentifiers.contains(bundleIdentifier)
             }
         }.store(in: &cancellables)
@@ -177,11 +181,13 @@ class InputController: IMKInputController {
                                          keyEquivalent: "")
         privateModeItem.state = privateMode.value ? .on : .off
         preferenceMenu.addItem(privateModeItem)
-        let directModeItem = NSMenuItem(title: String(format: NSLocalizedString("MenuItemDirectInput", comment: "\"%@\"では直接入力"), targetApp.localizedName ?? "?"),
-                                        action: #selector(toggleDirectMode),
-                                        keyEquivalent: "")
-        directModeItem.state = directMode ? .on : .off
-        preferenceMenu.addItem(directModeItem)
+        if targetApp.bundleIdentifier != nil {
+            let directModeItem = NSMenuItem(title: String(format: NSLocalizedString("MenuItemDirectInput", comment: "\"%@\"では直接入力"), targetApp.localizedName ?? "?"),
+                                            action: #selector(toggleDirectMode),
+                                            keyEquivalent: "")
+            directModeItem.state = directMode ? .on : .off
+            preferenceMenu.addItem(directModeItem)
+        }
         #if DEBUG
         // デバッグ用
         preferenceMenu.addItem(
@@ -243,7 +249,9 @@ class InputController: IMKInputController {
 
     /// 現在最前面にあるアプリからの入力をハンドルしないかどうかを切り替える
     @objc func toggleDirectMode() {
-        NotificationCenter.default.post(name: notificationNameToggleDirectMode, object: targetApp.bundleIdentifier)
+        if let bundleIdentifier = targetApp.bundleIdentifier {
+            NotificationCenter.default.post(name: notificationNameToggleDirectMode, object: bundleIdentifier)
+        }
     }
 
     #if DEBUG
