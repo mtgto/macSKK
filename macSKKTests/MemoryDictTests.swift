@@ -111,10 +111,10 @@ class MemoryDictTests: XCTestCase {
                                         "し": [Word("詩")]],
                               readonly: true)
         XCTAssertEqual(dict.refer("あき", option: nil), [Word("秋")])
-        XCTAssertEqual(dict.refer("あき", option: .prefix), [Word("空き"), Word("秋")])
-        XCTAssertEqual(dict.refer("あき", option: .suffix), [Word("秋")])
+        XCTAssertEqual(dict.refer("あき", option: .prefix), [Word("空き")])
+        XCTAssertEqual(dict.refer("あき", option: .suffix), [])
         XCTAssertEqual(dict.refer("し", option: nil), [Word("詩")])
-        XCTAssertEqual(dict.refer("し", option: .suffix), [Word("氏"), Word("詩")])
-        XCTAssertEqual(dict.refer("し", option: .prefix), [Word("詩")])
+        XCTAssertEqual(dict.refer("し", option: .suffix), [Word("氏")])
+        XCTAssertEqual(dict.refer("し", option: .prefix), [])
     }
 }

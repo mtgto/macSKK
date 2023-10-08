@@ -937,7 +937,7 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[4], .markedText(MarkedText([.markerCompose, .plain("ー、")])))
             XCTAssertEqual(events[5], .markedText(MarkedText([.markerCompose, .plain("ー、<")])))
             XCTAssertEqual(events[6], .markedText(MarkedText([.markerCompose, .plain("ー、<。")])))
-            XCTAssertEqual(events[7], .markedText(MarkedText([.markerCompose, .plain("ー、<。>")])))
+            XCTAssertEqual(events[7], .markedText(MarkedText([.markerCompose, .plain("ー、<。?")])))
             expectation.fulfill()
         }.store(in: &cancellables)
         stateMachine.yomiEvent.collect(7).sink { events in
@@ -947,7 +947,7 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[3], "ー、")
             XCTAssertEqual(events[4], "ー、<")
             XCTAssertEqual(events[5], "ー、<。")
-            XCTAssertEqual(events[6], "ー、<。>")
+            XCTAssertEqual(events[6], "ー、<。?")
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "s", withShift: true)))
@@ -957,7 +957,7 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ",")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "<", characterIgnoringModifier: ",", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ".")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ">", characterIgnoringModifier: ".", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "?", characterIgnoringModifier: "/", withShift: true)))
         wait(for: [expectation], timeout: 1.0)
     }
 

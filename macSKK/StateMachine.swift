@@ -732,16 +732,17 @@ class StateMachine {
         // 変換候補がないときは辞書登録へ
         let trimmedComposing = composing.trim()
         var yomiText = trimmedComposing.yomi(for: state.inputMode)
-        var referOption: DictPreferringOption? = nil
+        let candidateWords: [ReferredWord]
         if yomiText.hasSuffix(">") {
             yomiText = String(yomiText.dropLast())
-            referOption = .prefix
+            candidateWords = candidates(for: yomiText, option: .prefix) + candidates(for: yomiText, option: nil)
         } else if yomiText.hasPrefix(">") {
             yomiText = String(yomiText.dropFirst())
-            referOption = .suffix
+            candidateWords = candidates(for: yomiText, option: .suffix) + candidates(for: yomiText, option: nil)
+        } else {
+            candidateWords = candidates(for: yomiText, option: nil)
         }
-        let candidates = candidates(for: yomiText, option: referOption)
-        if candidates.isEmpty {
+        if candidateWords.isEmpty {
             if specialState != nil {
                 // 登録中に変換不能な変換をした場合は空文字列に変換する
                 state.inputMethod = .normal
@@ -758,7 +759,7 @@ class StateMachine {
         } else {
             let selectingState = SelectingState(
                 prev: SelectingState.PrevState(mode: state.inputMode, composing: trimmedComposing),
-                yomi: yomiText, candidates: candidates, candidateIndex: 0,
+                yomi: yomiText, candidates: candidateWords, candidateIndex: 0,
                 cursorPosition: action.cursorPosition)
             updateCandidates(selecting: selectingState)
             state.inputMethod = .selecting(selectingState)

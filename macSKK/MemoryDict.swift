@@ -79,9 +79,9 @@ struct MemoryDict: DictProtocol {
         if let option {
             switch option {
             case .prefix:
-                return refer(yomi + ">", option: nil) + refer(yomi, option: nil)
+                return refer(yomi + ">", option: nil)
             case .suffix:
-                return refer(">" + yomi, option: nil) + refer(yomi, option: nil)
+                return refer(">" + yomi, option: nil)
             }
         } else {
             return entries[yomi] ?? []
