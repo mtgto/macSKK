@@ -845,6 +845,13 @@ class StateMachine {
                 updateCandidates(selecting: nil)
                 updateMarkedText()
                 return true
+            } else if input == "." && action.shiftIsPressed() {
+                // 選択中候補で確定し、接尾辞入力に移行
+                addWordToUserDict(yomi: selecting.yomi, word: selecting.candidates[selecting.candidateIndex].word)
+                updateCandidates(selecting: nil)
+                addFixedText(selecting.fixedText())
+                state.inputMethod = .composing(ComposingState(isShift: true, text: [], okuri: nil, romaji: ""))
+                return handle(action)
             } else if selecting.candidateIndex >= inlineCandidateCount {
                 if let index = Int(input), 1 <= index && index <= 9 {
                     let diff = index - 1 - (selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount
