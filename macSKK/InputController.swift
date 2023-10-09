@@ -55,32 +55,36 @@ class InputController: IMKInputController {
         }
 
         stateMachine.inputMethodEvent.sink { [weak self] event in
-            switch event {
-            case .fixedText(let text):
-                if textInput.bundleIdentifier() == "com.jetbrains.intellij" {
-                    // AquaSKKと同様に、非確定文字列に確定予定文字列を先に表示する
-                    textInput.setMarkedText(
-                        text,
-                        selectionRange: NSRange(location: text.count, length: 0),
-                        replacementRange: Self.notFoundRange)
+            if let self {
+                switch event {
+                case .fixedText(let text):
+                    if textInput.bundleIdentifier() == "com.jetbrains.intellij" {
+                        // AquaSKKと同様に、非確定文字列に確定予定文字列を先に表示する
+                        textInput.setMarkedText(
+                            text,
+                            selectionRange: NSRange(location: text.count, length: 0),
+                            replacementRange: Self.notFoundRange)
+                    }
+                    textInput.insertText(text, replacementRange: Self.notFoundRange)
+                case .markedText(let markedText):
+                    let attributedText = markedText.attributedString
+                    let cursorRange: NSRange = markedText.cursorRange() ?? Self.notFoundRange
+                    // Thingsのメモ欄などで最初の一文字をShift押しながら入力すると "▽あ" が直接入力されてしまうことがあるのを回避するワークグラウンド
+                    if case .markerCompose = markedText.elements.first, markedText.elements.count == 2,
+                       case let .plain(text) = markedText.elements[1], text.count == 1 {
+                        textInput.setMarkedText(NSAttributedString(MarkedText.Element.markerCompose.attributedString),
+                                                selectionRange: cursorRange,
+                                                replacementRange: Self.notFoundRange)
+                    }
+                    textInput.setMarkedText(NSAttributedString(attributedText), selectionRange: cursorRange, replacementRange: Self.notFoundRange)
+                case .modeChanged(let inputMode, let cursorPosition):
+                    if !self.directMode {
+                        textInput.selectMode(inputMode.rawValue)
+                        self.inputModePanel.show(at: cursorPosition.origin,
+                                                  mode: inputMode,
+                                                  privateMode: privateMode.value)
+                    }
                 }
-                textInput.insertText(text, replacementRange: Self.notFoundRange)
-            case .markedText(let markedText):
-                let attributedText = markedText.attributedString
-                let cursorRange: NSRange = markedText.cursorRange() ?? Self.notFoundRange
-                // Thingsのメモ欄などで最初の一文字をShift押しながら入力すると "▽あ" が直接入力されてしまうことがあるのを回避するワークグラウンド
-                if case .markerCompose = markedText.elements.first, markedText.elements.count == 2,
-                   case let .plain(text) = markedText.elements[1], text.count == 1 {
-                    textInput.setMarkedText(NSAttributedString(MarkedText.Element.markerCompose.attributedString),
-                                            selectionRange: cursorRange,
-                                            replacementRange: Self.notFoundRange)
-                }
-                textInput.setMarkedText(NSAttributedString(attributedText), selectionRange: cursorRange, replacementRange: Self.notFoundRange)
-            case .modeChanged(let inputMode, let cursorPosition):
-                textInput.selectMode(inputMode.rawValue)
-                self?.inputModePanel.show(at: cursorPosition.origin,
-                                         mode: inputMode,
-                                         privateMode: privateMode.value)
             }
         }.store(in: &cancellables)
         stateMachine.candidateEvent.sink { [weak self] candidates in
@@ -222,7 +226,9 @@ class InputController: IMKInputController {
         }
         // カーソル位置あたりを取得する
         _ = textInput.attributes(forCharacterIndex: 0, lineHeightRectangle: &cursorPosition)
-        inputModePanel.show(at: cursorPosition.origin, mode: inputMode, privateMode: privateMode.value)
+        if !directMode {
+            inputModePanel.show(at: cursorPosition.origin, mode: inputMode, privateMode: privateMode.value)
+        }
     }
 
     @objc func showSettings() {
