@@ -611,6 +611,70 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    func testHandleComposingPrefix() {
+        dictionary.setEntries(["あ>": [Word("亜")], "あ": [Word("阿")]])
+
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(5).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerSelect, .emphasized("亜")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerSelect, .emphasized("阿")])))
+            XCTAssertEqual(events[3], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[4], .markedText(MarkedText([.plain("[登録：あ>]")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ">", characterIgnoringModifier: ".", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    func testHandleComposingPrefixAbbrev() {
+        dictionary.setEntries(["A": [Word("Å")]])
+
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(5).sink { events in
+            XCTAssertEqual(events[0], .modeChanged(.direct, .zero))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("A")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("A>")])), "Abbrev入力時は>で接頭辞変換しない")
+            XCTAssertEqual(events[4], .markedText(MarkedText([.markerSelect, .emphasized("Å")])), "Abbrev入力時も接頭辞として検索する")
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "/")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ">", characterIgnoringModifier: ".", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    func testHandleComposingSuffix() {
+        dictionary.setEntries([">あ": [Word("亜")], "あ": [Word("阿")]])
+
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(9).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerSelect, .emphasized("阿")])))
+            XCTAssertEqual(events[2], .fixedText("阿"))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain(">")])))
+            XCTAssertEqual(events[4], .markedText(MarkedText([.markerCompose, .plain(">あ")])))
+            XCTAssertEqual(events[5], .markedText(MarkedText([.markerSelect, .emphasized("亜")])))
+            XCTAssertEqual(events[6], .markedText(MarkedText([.markerSelect, .emphasized("阿")])))
+            XCTAssertEqual(events[7], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[8], .markedText(MarkedText([.plain("[登録：>あ]")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ">", characterIgnoringModifier: ".", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     // 送り仮名入力でShiftキーを押すのを子音側でするパターン
     func testHandleComposingOkuriari() {
         dictionary.setEntries(["とr": [Word("取"), Word("撮")]])
@@ -895,7 +959,7 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[4], .markedText(MarkedText([.markerCompose, .plain("ー、")])))
             XCTAssertEqual(events[5], .markedText(MarkedText([.markerCompose, .plain("ー、<")])))
             XCTAssertEqual(events[6], .markedText(MarkedText([.markerCompose, .plain("ー、<。")])))
-            XCTAssertEqual(events[7], .markedText(MarkedText([.markerCompose, .plain("ー、<。>")])))
+            XCTAssertEqual(events[7], .markedText(MarkedText([.markerCompose, .plain("ー、<。?")])))
             expectation.fulfill()
         }.store(in: &cancellables)
         stateMachine.yomiEvent.collect(7).sink { events in
@@ -905,7 +969,7 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[3], "ー、")
             XCTAssertEqual(events[4], "ー、<")
             XCTAssertEqual(events[5], "ー、<。")
-            XCTAssertEqual(events[6], "ー、<。>")
+            XCTAssertEqual(events[6], "ー、<。?")
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "s", withShift: true)))
@@ -915,7 +979,7 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ",")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "<", characterIgnoringModifier: ",", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ".")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ">", characterIgnoringModifier: ".", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "?", characterIgnoringModifier: "/", withShift: true)))
         wait(for: [expectation], timeout: 1.0)
     }
 

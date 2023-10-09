@@ -384,36 +384,7 @@ class StateMachine {
                 state.inputMethod = .normal
                 return true
             } else {
-                // 未確定ローマ字はn以外は入力されずに削除される. nだけは"ん"として変換する
-                // 変換候補がないときは辞書登録へ
-                let trimmedComposing = composing.trim()
-                let yomiText = trimmedComposing.yomi(for: state.inputMode)
-                let candidates = candidates(for: yomiText)
-                if candidates.isEmpty {
-                    if specialState != nil {
-                        // 登録中に変換不能な変換をした場合は空文字列に変換する
-                        state.inputMethod = .normal
-                    } else {
-                        // 単語登録に遷移する
-                        state.specialState = .register(
-                            RegisterState(
-                                prev: RegisterState.PrevState(mode: state.inputMode, composing: trimmedComposing),
-                                yomi: yomiText))
-                        state.inputMethod = .normal
-                        state.inputMode = .hiragana
-                        inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
-                    }
-                } else {
-                    // TODO: 複数の辞書からの重複エントリを取り除く
-                    let selectingState = SelectingState(
-                        prev: SelectingState.PrevState(mode: state.inputMode, composing: trimmedComposing),
-                        yomi: yomiText, candidates: candidates, candidateIndex: 0,
-                        cursorPosition: action.cursorPosition)
-                    updateCandidates(selecting: selectingState)
-                    state.inputMethod = .selecting(selectingState)
-                }
-                updateMarkedText()
-                return true
+                return handleComposingStartConvert(action, composing: composing, specialState: specialState)
             }
         case .tab:
             if let completion {
@@ -629,6 +600,10 @@ class StateMachine {
                     ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: ""))
                 return false
             }
+        } else if input == "." && action.shiftIsPressed() && state.inputMode != .direct && !composing.text.isEmpty { // ">"
+            // 接頭辞が入力されたものとして ">" より前で変換を開始する
+            let newComposing = composing.appendText(Romaji.Moji(firstRomaji: "", kana: ">"))
+            return handleComposingStartConvert(action, composing: newComposing, specialState: specialState)
         }
         switch state.inputMode {
         case .hiragana, .katakana, .hankaku:
@@ -752,6 +727,49 @@ class StateMachine {
         }
     }
 
+    func handleComposingStartConvert(_ action: Action, composing: ComposingState, specialState: SpecialState?) -> Bool {
+        // 未確定ローマ字はn以外は入力されずに削除される. nだけは"ん"として変換する
+        // 変換候補がないときは辞書登録へ
+        let trimmedComposing = composing.trim()
+        var yomiText = trimmedComposing.yomi(for: state.inputMode)
+        let candidateWords: [ReferredWord]
+        // FIXME: Abbrevモードでも接頭辞、接尾辞を検索するべきか再検討する。
+        // いまは ">"で終わる・始まる場合は、Abbrevモードであっても接頭辞・接尾辞を探しているものとして検索する
+        if yomiText.hasSuffix(">") {
+            yomiText = String(yomiText.dropLast())
+            candidateWords = candidates(for: yomiText, option: .prefix) + candidates(for: yomiText, option: nil)
+        } else if yomiText.hasPrefix(">") {
+            yomiText = String(yomiText.dropFirst())
+            candidateWords = candidates(for: yomiText, option: .suffix) + candidates(for: yomiText, option: nil)
+        } else {
+            candidateWords = candidates(for: yomiText, option: nil)
+        }
+        if candidateWords.isEmpty {
+            if specialState != nil {
+                // 登録中に変換不能な変換をした場合は空文字列に変換する
+                state.inputMethod = .normal
+            } else {
+                // 単語登録に遷移する
+                state.specialState = .register(
+                    RegisterState(
+                        prev: RegisterState.PrevState(mode: state.inputMode, composing: trimmedComposing),
+                        yomi: yomiText))
+                state.inputMethod = .normal
+                state.inputMode = .hiragana
+                inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
+            }
+        } else {
+            let selectingState = SelectingState(
+                prev: SelectingState.PrevState(mode: state.inputMode, composing: trimmedComposing),
+                yomi: yomiText, candidates: candidateWords, candidateIndex: 0,
+                cursorPosition: action.cursorPosition)
+            updateCandidates(selecting: selectingState)
+            state.inputMethod = .selecting(selectingState)
+        }
+        updateMarkedText()
+        return true
+    }
+
     func handleSelecting(_ action: Action, selecting: SelectingState, specialState: SpecialState?) -> Bool {
         switch action.keyEvent {
         case .enter:
@@ -829,6 +847,13 @@ class StateMachine {
                 updateCandidates(selecting: nil)
                 updateMarkedText()
                 return true
+            } else if input == "." && action.shiftIsPressed() {
+                // 選択中候補で確定し、接尾辞入力に移行
+                addWordToUserDict(yomi: selecting.yomi, word: selecting.candidates[selecting.candidateIndex].word)
+                updateCandidates(selecting: nil)
+                addFixedText(selecting.fixedText())
+                state.inputMethod = .composing(ComposingState(isShift: true, text: [], okuri: nil, romaji: ""))
+                return handle(action)
             } else if selecting.candidateIndex >= inlineCandidateCount {
                 if let index = Int(input), 1 <= index && index <= 9 {
                     let diff = index - 1 - (selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount
@@ -981,8 +1006,8 @@ class StateMachine {
     }
 
     /// 見出し語で辞書を引く。同じ文字列である変換候補が複数の辞書にある場合は最初の1つにまとめる。
-    func candidates(for yomi: String) -> [ReferredWord] {
-        let candidates = dictionary.refer(yomi)
+    func candidates(for yomi: String, option: DictReferringOption? = nil) -> [ReferredWord] {
+        let candidates = dictionary.refer(yomi, option: option)
         var result = [ReferredWord]()
         for candidate in candidates {
             if let index = result.firstIndex(where: { $0.word == candidate.word }) {

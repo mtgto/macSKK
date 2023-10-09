@@ -24,6 +24,27 @@ final class UserDictTests: XCTestCase {
         XCTAssertEqual(userDict.refer("い").compactMap({ $0.annotation?.dictId }), ["dict1", "dict2"])
     }
 
+    func testReferWithOption() throws {
+        let privateMode = CurrentValueSubject<Bool, Never>(false)
+        let dict = MemoryDict(entries: ["あき>": [Word("空き")],
+                                        "あき": [Word("秋")],
+                                        ">し": [Word("氏")],
+                                        "し": [Word("詩")]],
+                              readonly: true)
+        let userDict = try UserDict(dicts: [dict],
+                                    userDictEntries: ["あき>": [Word("飽き")],
+                                                      "あき": [Word("安芸")],
+                                                      ">し": [Word("詞")],
+                                                      "し": [Word("士")]],
+                                    privateMode: privateMode)
+        XCTAssertEqual(userDict.refer("あき", option: nil), [Word("安芸"), Word("秋")])
+        XCTAssertEqual(userDict.refer("あき", option: .prefix), [Word("飽き"), Word("空き")])
+        XCTAssertEqual(userDict.refer("あき", option: .suffix), [])
+        XCTAssertEqual(userDict.refer("し", option: nil), [Word("士"), Word("詩")])
+        XCTAssertEqual(userDict.refer("し", option: .suffix), [Word("詞"), Word("氏")])
+        XCTAssertEqual(userDict.refer("し", option: .prefix), [])
+    }
+
     func testPrivateMode() throws {
         let privateMode = CurrentValueSubject<Bool, Never>(true)
         let userDict = try UserDict(dicts: [], userDictEntries: [:], privateMode: privateMode)

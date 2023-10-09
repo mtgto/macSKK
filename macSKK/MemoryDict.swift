@@ -75,8 +75,17 @@ struct MemoryDict: DictProtocol {
     var entryCount: Int { return entries.count }
 
     // MARK: DictProtocol
-    func refer(_ yomi: String) -> [Word] {
-        return entries[yomi] ?? []
+    func refer(_ yomi: String, option: DictReferringOption?) -> [Word] {
+        if let option {
+            switch option {
+            case .prefix:
+                return refer(yomi + ">", option: nil)
+            case .suffix:
+                return refer(">" + yomi, option: nil)
+            }
+        } else {
+            return entries[yomi] ?? []
+        }
     }
 
     /// 辞書にエントリを追加する。
