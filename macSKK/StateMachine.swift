@@ -733,6 +733,8 @@ class StateMachine {
         let trimmedComposing = composing.trim()
         var yomiText = trimmedComposing.yomi(for: state.inputMode)
         let candidateWords: [ReferredWord]
+        // FIXME: Abbrevモードでも接頭辞、接尾辞を検索するべきか再検討する。
+        // いまは ">"で終わる・始まる場合は、Abbrevモードであっても接頭辞・接尾辞を探しているものとして検索する
         if yomiText.hasSuffix(">") {
             yomiText = String(yomiText.dropLast())
             candidateWords = candidates(for: yomiText, option: .prefix) + candidates(for: yomiText, option: nil)

@@ -611,7 +611,7 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleComposingSpacePrefix() {
+    func testHandleComposingPrefix() {
         dictionary.setEntries(["あ>": [Word("亜")], "あ": [Word("阿")]])
 
         let expectation = XCTestExpectation()
@@ -630,7 +630,26 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleComposingSpaceSuffix() {
+    func testHandleComposingPrefixAbbrev() {
+        dictionary.setEntries(["A": [Word("Å")]])
+
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(5).sink { events in
+            XCTAssertEqual(events[0], .modeChanged(.direct, .zero))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("A")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("A>")])), "Abbrev入力時は>で接頭辞変換しない")
+            XCTAssertEqual(events[4], .markedText(MarkedText([.markerSelect, .emphasized("Å")])), "Abbrev入力時も接頭辞として検索する")
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "/")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ">", characterIgnoringModifier: ".", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    func testHandleComposingSuffix() {
         dictionary.setEntries([">あ": [Word("亜")], "あ": [Word("阿")]])
 
         let expectation = XCTestExpectation()
