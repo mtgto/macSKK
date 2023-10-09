@@ -146,7 +146,7 @@ class FileDict: NSObject, DictProtocol, Identifiable {
     }
 
     // MARK: DictProtocol
-    func refer(_ yomi: String, option: DictPreferringOption?) -> [Word] {
+    func refer(_ yomi: String, option: DictReferringOption?) -> [Word] {
         return dict.refer(yomi, option: option)
     }
 

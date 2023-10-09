@@ -96,7 +96,7 @@ class UserDict: NSObject, DictProtocol {
     }
 
     // MARK: DictProtocol
-    func refer(_ yomi: String, option: DictPreferringOption? = nil) -> [Word] {
+    func refer(_ yomi: String, option: DictReferringOption? = nil) -> [Word] {
         var result = userDict.refer(yomi, option: option)
         if privateMode.value {
             privateUserDict.refer(yomi, option: option).forEach { found in
