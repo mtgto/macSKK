@@ -1011,9 +1011,11 @@ class StateMachine {
 
     /// 見出し語で辞書を引く。同じ文字列である変換候補が複数の辞書にある場合は最初の1つにまとめる。
     func candidates(for yomi: String, option: DictReferringOption? = nil) -> [ReferredWord] {
-        // yomiが数値を含む場合は "#" に置換して辞書を引く
-        
         let candidates = dictionary.refer(yomi, option: option)
+        if candidates.isEmpty {
+            // yomiが数値を含む場合は "#" に置換して辞書を引く
+
+        }
         var result = [ReferredWord]()
         for candidate in candidates {
             if let index = result.firstIndex(where: { $0.word == candidate.word }) {
@@ -1032,6 +1034,13 @@ class StateMachine {
             }
         }
         return result
+    }
+
+    /**
+     * 読みの中に含まれる整数をパースする
+     */
+    func parseNumber(yomi: String) -> Void {
+
     }
 
     /**

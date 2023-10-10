@@ -15,6 +15,8 @@
 		CE40D9A32A6D0C3900D44799 /* SystemDict.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE40D9A22A6D0C3900D44799 /* SystemDict.swift */; };
 		CE485A882A8FA195008271EF /* Release+UNNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE485A872A8FA195008271EF /* Release+UNNotification.swift */; };
 		CE485A8A2A8FA5C6008271EF /* UserNotificationDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE485A892A8FA5C6008271EF /* UserNotificationDelegate.swift */; };
+		CE4CB5CC2AD557D90046FA34 /* Yomi.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE4CB5CB2AD557D90046FA34 /* Yomi.swift */; };
+		CE4CB5CE2AD55DF90046FA34 /* YomiTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE4CB5CD2AD55DF90046FA34 /* YomiTests.swift */; };
 		CE5EB6AD2AAC0DE000389B98 /* FileDict.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE5EB6AC2AAC0DE000389B98 /* FileDict.swift */; };
 		CE5EB6AF2AAC0DEB00389B98 /* MemoryDict.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE5EB6AE2AAC0DEB00389B98 /* MemoryDict.swift */; };
 		CE5ECF362957034B00E7BE7D /* macSKKApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE5ECF352957034B00E7BE7D /* macSKKApp.swift */; };
@@ -114,6 +116,8 @@
 		CE40D9A22A6D0C3900D44799 /* SystemDict.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemDict.swift; sourceTree = "<group>"; };
 		CE485A872A8FA195008271EF /* Release+UNNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Release+UNNotification.swift"; sourceTree = "<group>"; };
 		CE485A892A8FA5C6008271EF /* UserNotificationDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserNotificationDelegate.swift; sourceTree = "<group>"; };
+		CE4CB5CB2AD557D90046FA34 /* Yomi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Yomi.swift; sourceTree = "<group>"; };
+		CE4CB5CD2AD55DF90046FA34 /* YomiTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YomiTests.swift; sourceTree = "<group>"; };
 		CE5EB6AC2AAC0DE000389B98 /* FileDict.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileDict.swift; sourceTree = "<group>"; };
 		CE5EB6AE2AAC0DEB00389B98 /* MemoryDict.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryDict.swift; sourceTree = "<group>"; };
 		CE5ECF322957034B00E7BE7D /* macSKK.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = macSKK.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -241,6 +245,7 @@
 				CE84A3DB2957174D009394C4 /* State.swift */,
 				CE84A3DF295717CB009394C4 /* StateMachine.swift */,
 				CEE2D9762A99FE1B00A4CD76 /* Word.swift */,
+				CE4CB5CB2AD557D90046FA34 /* Yomi.swift */,
 				CE84A3EA295DA715009394C4 /* Dict.swift */,
 				CE5EB6AC2AAC0DE000389B98 /* FileDict.swift */,
 				CE5EB6AE2AAC0DEB00389B98 /* MemoryDict.swift */,
@@ -295,6 +300,7 @@
 				CEA78FAD2961BA1D00B67E25 /* String+TransformTests.swift */,
 				CE06CA332AAC199500E80E5E /* UserDict+Utilities.swift */,
 				CED7CA572A83BFE9004EF988 /* fixture */,
+				CE4CB5CD2AD55DF90046FA34 /* YomiTests.swift */,
 			);
 			path = macSKKTests;
 			sourceTree = "<group>";
@@ -540,6 +546,7 @@
 				CED7CA3C2A839603004EF988 /* UpdateChecker.swift in Sources */,
 				CE5ECF362957034B00E7BE7D /* macSKKApp.swift in Sources */,
 				CEC061C82ABB0A0100A11614 /* CompletionPanel.swift in Sources */,
+				CE4CB5CC2AD557D90046FA34 /* Yomi.swift in Sources */,
 				CE84A3DE29571797009394C4 /* Action.swift in Sources */,
 				CE485A882A8FA195008271EF /* Release+UNNotification.swift in Sources */,
 				CED7CA3A2A839505004EF988 /* FetchUpdateServiceProtocol.swift in Sources */,
@@ -569,6 +576,7 @@
 				CE84A3ED295DA818009394C4 /* MemoryDictTests.swift in Sources */,
 				CE06CA342AAC199500E80E5E /* UserDict+Utilities.swift in Sources */,
 				CE84A3E9295DA504009394C4 /* RomajiTests.swift in Sources */,
+				CE4CB5CE2AD55DF90046FA34 /* YomiTests.swift in Sources */,
 				CEA78FAA295EBCAC00B67E25 /* StateMachineTests.swift in Sources */,
 				CEE2D9792A99FEC700A4CD76 /* WordTest.swift in Sources */,
 				CEF0823629685C0800646366 /* StateTests.swift in Sources */,

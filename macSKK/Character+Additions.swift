@@ -10,4 +10,8 @@ extension Character {
     var isAlphabet: Bool {
         "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".contains(self)
     }
+
+    var isNumber: Bool {
+        "0123456789".contains(self)
+    }
 }
