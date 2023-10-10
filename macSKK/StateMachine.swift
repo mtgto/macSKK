@@ -1014,7 +1014,9 @@ class StateMachine {
         let candidates = dictionary.refer(yomi, option: option)
         if candidates.isEmpty {
             // yomiが数値を含む場合は "#" に置換して辞書を引く
-
+            if let numberYomi = parseNumber(yomi: yomi) {
+                
+            }
         }
         var result = [ReferredWord]()
         for candidate in candidates {
@@ -1039,8 +1041,13 @@ class StateMachine {
     /**
      * 読みの中に含まれる整数をパースする
      */
-    func parseNumber(yomi: String) -> Void {
-
+    func parseNumber(yomi: String) -> NumberYomi? {
+        let numberYomi = NumberYomi(yomi: yomi)
+        if numberYomi.containsNumber {
+            return numberYomi
+        } else {
+            return nil
+        }
     }
 
     /**
