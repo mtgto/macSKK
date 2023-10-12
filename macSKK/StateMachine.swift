@@ -1011,11 +1011,11 @@ class StateMachine {
 
     /// 見出し語で辞書を引く。同じ文字列である変換候補が複数の辞書にある場合は最初の1つにまとめる。
     func candidates(for yomi: String, option: DictReferringOption? = nil) -> [ReferredWord] {
-        let candidates = dictionary.refer(yomi, option: option)
+        var candidates = dictionary.refer(yomi, option: option)
         if candidates.isEmpty {
             // yomiが数値を含む場合は "#" に置換して辞書を引く
             if let numberYomi = parseNumber(yomi: yomi) {
-                
+                candidates = dictionary.refer(numberYomi.toMidashiString(), option: nil)
             }
         }
         var result = [ReferredWord]()
