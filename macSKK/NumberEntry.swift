@@ -148,7 +148,7 @@ struct NumberCandidate {
                     case 1: // 全角
                         result.append(String(number).toZenkaku())
                     case 2: // 漢数字(位取りあり)
-                        result.append(number.toKanji1())
+                        result.append(toKanjiString(number: number))
                     case 3: // 漢数字(位取りなし)
                         result.append(Self.kanjiFormatter.string(from: NSNumber(value: number))!)
                     case 4: // 数字部分で辞書を引く
@@ -159,7 +159,7 @@ struct NumberCandidate {
                         if number < 10 && number > 99 && number % 10 == 0 {
                             return nil
                         }
-                        result.append(String(number / 10).toZenkaku() + (number % 10).toKanji1())
+                        result.append(String(number / 10).toZenkaku() + toKanjiString(number: number % 10))
                     default:
                         fatalError("未サポートの数値変換タイプ \(type) が指定されています")
                     }
@@ -175,5 +175,12 @@ struct NumberCandidate {
             }
         }
         return result
+    }
+
+    func toKanjiString(number: UInt64) -> String {
+        if number == 0 {
+            return ""
+        }
+        return toKanjiString(number: number / 10) + ["〇", "一", "二", "三", "四", "五", "六", "七", "八", "九"][Int(number % 10)]
     }
 }
