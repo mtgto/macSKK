@@ -5,6 +5,8 @@ import Foundation
 
 // いい名前が思いつかなかった。NumberEntry = NumberYomi + NumberCandidateとかにするかも。
 struct NumberYomi {
+    static let pattern = /#([01234589])/
+
     // TODO: Stringを作るコストをなくしyomiのSubstringでもっておく。ちょっとユニットテストがかきにくくなるしこれでもいいかも。
     enum Element: Equatable {
         /// 正規表現だと /[0-9]+/ となる文字列。巨大な整数の可能性があるのでStringのままもつ
@@ -57,6 +59,24 @@ struct NumberYomi {
             }
         }.joined()
     }
+
+    /**
+     * 数値入りの変換候補を読みに含まれる数値の情報を使って文字列に変換します
+     *
+     * もし読みと変換候補で数値情報の数に差があったり文字列に変換できない数値を含む場合はnilを返します
+     */
+    func toCandidateString(candidate: String) -> String? {
+        var result: String = ""
+        for element in elements {
+            switch element {
+            case .other:
+                break
+            case .number(let number):
+                break
+            }
+        }
+        return nil
+    }
 }
 
 // 数値入りの変換候補
@@ -93,5 +113,31 @@ struct NumberCandidate {
             result.append(.other(String(current)))
         }
         self.elements = result
+    }
+
+    /**
+     * 数値入りの変換候補を読みに含まれる数値の情報を使って文字列に変換します
+     *
+     * もし読みと変換候補で数値情報の数に差があったり文字列に変換できない数値を含む場合はnilを返します
+     */
+    func toString(yomi: NumberYomi) -> String? {
+        var result: String = ""
+        for (i, yomiElement) in yomi.elements.enumerated() {
+            switch yomiElement {
+            case .number(let number):
+                if case .number(let type) = elements[i] {
+                    result.append(number)
+                } else {
+                    return nil
+                }
+            case .other:
+                if case .other(let other) = elements[i] {
+                    result.append(other)
+                } else {
+                    return nil
+                }
+            }
+        }
+        return result
     }
 }

@@ -27,14 +27,18 @@ final class NumberEntryTests: XCTestCase {
         XCTAssertEqual(try NumberCandidate(yomi: "#0").elements, [.number(0)])
         XCTAssertEqual(try NumberCandidate(yomi: "あ#1い#2").elements, [.other("あ"), .number(1), .other("い"), .number(2)])
         XCTAssertEqual(try NumberCandidate(yomi: "#3うえお##4か#5#6き#8く#9け").elements, [.number(3),
-                                                                                           .other("うえお#"),
-                                                                                           .number(4),
-                                                                                           .other("か"),
-                                                                                           .number(5),
-                                                                                           .other("#6き"),
-                                                                                           .number(8),
-                                                                                           .other("く"),
-                                                                                           .number(9),
-                                                                                           .other("け")])
+                                                                                    .other("うえお#"),
+                                                                                    .number(4),
+                                                                                    .other("か"),
+                                                                                    .number(5),
+                                                                                    .other("#6き"),
+                                                                                    .number(8),
+                                                                                    .other("く"),
+                                                                                    .number(9),
+                                                                                    .other("け")])
+    }
+
+    func testNumberCandidateToString() throws {
+        XCTAssertEqual(try NumberCandidate(yomi: "第#1回").toString(yomi: NumberYomi(yomi: "だい100かい")), "第100回")
     }
 }
