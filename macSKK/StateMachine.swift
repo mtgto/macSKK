@@ -1042,8 +1042,7 @@ class StateMachine {
      * 読みの中に含まれる整数をパースする
      */
     func parseNumber(yomi: String) -> NumberYomi? {
-        let numberYomi = NumberYomi(yomi: yomi)
-        if numberYomi.containsNumber {
+        if let numberYomi = NumberYomi(yomi: yomi), numberYomi.containsNumber {
             return numberYomi
         } else {
             return nil

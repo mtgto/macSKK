@@ -9,8 +9,8 @@ struct NumberYomi {
 
     // TODO: Stringを作るコストをなくしyomiのSubstringでもっておく。ちょっとユニットテストがかきにくくなるしこれでもいいかも。
     enum Element: Equatable {
-        /// 正規表現だと /[0-9]+/ となる文字列。巨大な整数の可能性があるのでStringのままもつ
-        case number(String)
+        /// 正規表現だと /[0-9]+/ となる文字列。UInt64で収まらない数値はあきらめる
+        case number(UInt64)
         /// ``number`` 以外
         case other(String)
     }
@@ -27,15 +27,20 @@ struct NumberYomi {
         }
     }
 
-    init(yomi: String) {
+    init?(yomi: String) {
         // 連続する整数と連続する非整数をパースする
         var elements: [Element] = []
         var current = yomi[...]
         while !current.isEmpty {
-            let number = current.prefix(while: { $0.isNumber })
-            if !number.isEmpty {
-                elements.append(.number(String(number)))
-                current = yomi.suffix(from: number.endIndex)
+            let numberString = current.prefix(while: { $0.isNumber })
+            if !numberString.isEmpty {
+                if let number = UInt64(numberString) {
+                    elements.append(.number(number))
+                    current = yomi.suffix(from: numberString.endIndex)
+                } else {
+                    logger.log("巨大な数値が含まれているためパースできませんでした")
+                    return nil
+                }
             }
             let other = current.prefix(while: { !$0.isNumber })
             if !other.isEmpty {
@@ -82,6 +87,17 @@ struct NumberYomi {
 // 数値入りの変換候補
 struct NumberCandidate {
     static let pattern = /#([01234589])/
+    static let kanjiFormatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.locale = Locale(identifier: "ja-JP")
+        formatter.numberStyle = .spellOut
+        return formatter
+    }()
+    static let decimalFormatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        return formatter
+    }()
 
     enum Element: Equatable {
         /// 正規表現だと /#[01234589]/ となる文字列。引数は数値部分
@@ -126,7 +142,27 @@ struct NumberCandidate {
             switch yomiElement {
             case .number(let number):
                 if case .number(let type) = elements[i] {
-                    result.append(number)
+                    switch type {
+                    case 0:
+                        result.append(String(number))
+                    case 1: // 全角
+                        result.append(String(number).toZenkaku())
+                    case 2: // 漢数字(位取りあり)
+                        result.append(number.toKanji1())
+                    case 3: // 漢数字(位取りなし)
+                        result.append(Self.kanjiFormatter.string(from: NSNumber(value: number))!)
+                    case 4: // 数字部分で辞書を引く
+                        break
+                    case 8: // 3桁ごとに区切る
+                        result.append(Self.decimalFormatter.string(from: NSNumber(value: number))!)
+                    case 9: // 将棋の棋譜入力用
+                        if number < 10 && number > 99 && number % 10 == 0 {
+                            return nil
+                        }
+                        result.append(String(number / 10).toZenkaku() + (number % 10).toKanji1())
+                    default:
+                        fatalError("未サポートの数値変換タイプ \(type) が指定されています")
+                    }
                 } else {
                     return nil
                 }
