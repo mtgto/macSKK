@@ -45,6 +45,9 @@ final class NumberEntryTests: XCTestCase {
         XCTAssertEqual(try NumberCandidate(yomi: "#1位").toString(yomi: NumberYomi(yomi: "100い")!), "１００位")
         XCTAssertEqual(try NumberCandidate(yomi: "#2").toString(yomi: NumberYomi(yomi: "2309")!), "二三〇九")
         XCTAssertEqual(try NumberCandidate(yomi: "#3").toString(yomi: NumberYomi(yomi: "123456789")!), "一億二千三百四十五万六千七百八十九")
+        XCTAssertEqual(try NumberCandidate(yomi: "#0").toString(yomi: NumberYomi(yomi: "18446744073709551615")!), "18446744073709551615")
+        XCTAssertEqual(try NumberCandidate(yomi: "#1").toString(yomi: NumberYomi(yomi: "18446744073709551615")!), "１８４４６７４４０７３７０９５５１６１５")
+        XCTAssertEqual(try NumberCandidate(yomi: "#2").toString(yomi: NumberYomi(yomi: "18446744073709551615")!), "一八四四六七四四〇七三七〇九五五一六一五")
         XCTAssertEqual(try NumberCandidate(yomi: "#8").toString(yomi: NumberYomi(yomi: "18446744073709551615")!), "18,446,744,073,709,551,615")
         XCTAssertEqual(try NumberCandidate(yomi: "#9金").toString(yomi: NumberYomi(yomi: "34きん")!), "３四金")
     }
