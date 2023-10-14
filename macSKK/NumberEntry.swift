@@ -75,11 +75,6 @@ struct NumberCandidate {
         formatter.numberStyle = .spellOut
         return formatter
     }()
-    static let decimalFormatter: NumberFormatter = {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        return formatter
-    }()
 
     enum Element: Equatable {
         /// 正規表現だと /#[01234589]/ となる文字列。引数は数値部分
@@ -140,7 +135,7 @@ struct NumberCandidate {
                         // TODO: あとで対応する
                         return nil
                     case 8: // 3桁ごとに区切る
-                        result.append(Self.decimalFormatter.string(from: NSNumber(value: number))!)
+                        result.append(number.formatted(.number))
                     case 9: // 将棋の棋譜入力用
                         if number < 10 && number > 99 && number % 10 == 0 {
                             return nil
