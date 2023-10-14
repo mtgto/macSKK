@@ -692,21 +692,30 @@ final class StateMachineTests: XCTestCase {
     }
 
     func testHandleComposingNumber() {
-        dictionary.setEntries(["だい#": [Word("第#1"), Word("第#0"), Word("第#2"), Word("第#3"), Word("第 #0")]])
+        dictionary.setEntries(["だい#": [Word("第#1"), Word("第#0"), Word("第#2"), Word("第#3")]])
 
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(5).sink { events in
+        stateMachine.inputMethodEvent.collect(11).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("d")])))
             XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("だ")])))
             XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("だい")])))
-            XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("だい5")])))
-            XCTAssertEqual(events[4], .markedText(MarkedText([.markerSelect, .emphasized("第５")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("だい1")])))
+            XCTAssertEqual(events[4], .markedText(MarkedText([.markerCompose, .plain("だい10")])))
+            XCTAssertEqual(events[5], .markedText(MarkedText([.markerCompose, .plain("だい102")])))
+            XCTAssertEqual(events[6], .markedText(MarkedText([.markerCompose, .plain("だい1024")])))
+            XCTAssertEqual(events[7], .markedText(MarkedText([.markerSelect, .emphasized("第１０２４")])))
+            XCTAssertEqual(events[8], .markedText(MarkedText([.markerSelect, .emphasized("第1024")])))
+            XCTAssertEqual(events[9], .markedText(MarkedText([.markerSelect, .emphasized("第一〇二四")])))
+            XCTAssertEqual(events[10], .markedText(MarkedText([.markerSelect, .emphasized("第千二十四")])))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "d", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "5")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "1")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "0")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "2")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "4")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))

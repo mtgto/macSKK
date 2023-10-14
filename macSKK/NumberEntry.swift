@@ -64,24 +64,6 @@ struct NumberYomi {
             }
         }.joined()
     }
-
-    /**
-     * 数値入りの変換候補を読みに含まれる数値の情報を使って文字列に変換します
-     *
-     * もし読みと変換候補で数値情報の数に差があったり文字列に変換できない数値を含む場合はnilを返します
-     */
-    func toCandidateString(candidate: String) -> String? {
-        var result: String = ""
-        for element in elements {
-            switch element {
-            case .other:
-                break
-            case .number(let number):
-                break
-            }
-        }
-        return nil
-    }
 }
 
 // 数値入りの変換候補
@@ -152,7 +134,11 @@ struct NumberCandidate {
                     case 3: // 漢数字(位取りなし)
                         result.append(Self.kanjiFormatter.string(from: NSNumber(value: number))!)
                     case 4: // 数字部分で辞書を引く
-                        break
+                        // TODO: あとで対応する
+                        return nil
+                    case 5: // 小切手や手形の金額記入の際用いられる表記
+                        // TODO: あとで対応する
+                        return nil
                     case 8: // 3桁ごとに区切る
                         result.append(Self.decimalFormatter.string(from: NSNumber(value: number))!)
                     case 9: // 将棋の棋譜入力用

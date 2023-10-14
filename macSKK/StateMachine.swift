@@ -1015,7 +1015,11 @@ class StateMachine {
         if candidates.isEmpty {
             // yomiが数値を含む場合は "#" に置換して辞書を引く
             if let numberYomi = parseNumber(yomi: yomi) {
-                candidates = dictionary.refer(numberYomi.toMidashiString(), option: nil)
+                candidates = dictionary.refer(numberYomi.toMidashiString(), option: nil).compactMap({ word in
+                    guard let numberCandidate = try? NumberCandidate(yomi: word.word) else { return nil }
+                    guard let convertedWord = numberCandidate.toString(yomi: numberYomi) else { return nil }
+                    return Word(convertedWord, annotation: word.annotation)
+                })
             }
         }
         var result = [ReferredWord]()

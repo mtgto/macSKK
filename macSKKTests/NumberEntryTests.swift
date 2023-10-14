@@ -48,4 +48,9 @@ final class NumberEntryTests: XCTestCase {
         XCTAssertEqual(try NumberCandidate(yomi: "#8").toString(yomi: NumberYomi(yomi: "18446744073709551615")!), "18,446,744,073,709,551,615")
         XCTAssertEqual(try NumberCandidate(yomi: "#9金").toString(yomi: NumberYomi(yomi: "34きん")!), "３四金")
     }
+
+    func testNumberCandidateToStringTodo() throws {
+        XCTExpectFailure("未実装")
+        XCTAssertEqual(try NumberCandidate(yomi: "#5").toString(yomi: NumberYomi(yomi: "1995")!), "壱阡九百九拾伍")
+    }
 }
