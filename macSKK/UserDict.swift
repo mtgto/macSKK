@@ -55,14 +55,14 @@ class UserDict: NSObject, DictProtocol {
             try FileManager.default.createDirectory(at: dictionariesDirectoryURL, withIntermediateDirectories: true)
         }
         userDictFileURL = dictionariesDirectoryURL.appending(path: Self.userDictFilename)
-        if !FileManager.default.fileExists(atPath: userDictFileURL.path()) {
-            logger.log("ユーザー辞書ファイルがないため作成します")
-            try Data().write(to: userDictFileURL, options: .withoutOverwriting)
-        }
         if let userDictEntries {
             self.userDict = MemoryDict(entries: userDictEntries, readonly: true)
             entryCountSubject.send(userDictEntries.count)
         } else {
+            if !FileManager.default.fileExists(atPath: userDictFileURL.path()) {
+                logger.log("ユーザー辞書ファイルがないため作成します")
+                try Data().write(to: userDictFileURL, options: .withoutOverwriting)
+            }
             let userDict = try FileDict(contentsOf: userDictFileURL, encoding: .utf8, readonly: false)
             self.userDict = userDict
             entryCountSubject.send(userDict.dict.entries.count)
