@@ -233,12 +233,6 @@ class InputController: IMKInputController {
 
     @objc func showSettings() {
         NotificationCenter.default.post(name: notificationNameOpenSettings, object: nil)
-//        if #available(macOS 13, *) {
-//            NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
-//        } else {
-//            NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: nil)
-//        }
-//        NSApp.activate(ignoringOtherApps: true)
     }
 
     @objc func saveDict() {

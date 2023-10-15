@@ -65,33 +65,21 @@ struct SettingsView: View {
         .task(id: selectedSection) {
             updateWindowAndToolbar()
         }
-        .modifier(RemoveSidebarToggle())
         .frame(minWidth: 640, minHeight: 480)
     }
 
     // ウィンドウのスタイルの変更とツールバーからサイドバー切り替えのボタンを削除する
     func updateWindowAndToolbar() {
-        if let window = NSApp.windows.first(where: { $0.identifier?.rawValue == "com_apple_SwiftUI_Settings_window" }) {
-            window.titleVisibility = .visible
-            window.titlebarAppearsTransparent = true
-            window.styleMask = [.titled, .closable, .fullSizeContentView, .unifiedTitleAndToolbar]
-            window.toolbarStyle = .unified
-            // サイドバー切り替えボタンの削除はmacOS 14からはAPIが用意されるぽい
-            // https://developer.apple.com/documentation/swiftui/view/toolbar(removing:)
-            if let toolbar = window.toolbar {
-                if let index = toolbar.items.firstIndex(where: { $0.itemIdentifier.rawValue == "com.apple.SwiftUI.navigationSplitView.toggleSidebar" }) {
-                    toolbar.removeItem(at: index)
+        for window in NSApp.windows {
+            if let settingsWindow = window as? SettingsWindow {
+                // サイドバー切り替えボタンの削除はmacOS 14からはAPIが用意されるぽい
+                // https://developer.apple.com/documentation/swiftui/view/toolbar(removing:)
+                if let toolbar = window.toolbar {
+                    if let index = toolbar.items.firstIndex(where: { $0.itemIdentifier.rawValue == "com.apple.SwiftUI.navigationSplitView.toggleSidebar" }) {
+                        toolbar.removeItem(at: index)
+                    }
                 }
-            }
-        }
-    }
-
-    struct RemoveSidebarToggle: ViewModifier {
-        func body(content: Content) -> some View {
-            if #available(macOS 14, *) {
-                content.toolbar(removing: .sidebarToggle)
-            } else {
-                content
+                break
             }
         }
     }
