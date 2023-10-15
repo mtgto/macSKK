@@ -66,7 +66,7 @@ struct SettingsView: View {
             updateWindowAndToolbar()
         }
         .modifier(RemoveSidebarToggle())
-        .frame(minWidth: 640, minHeight: 360)
+        .frame(minWidth: 640, minHeight: 480)
     }
 
     // ウィンドウのスタイルの変更とツールバーからサイドバー切り替えのボタンを削除する

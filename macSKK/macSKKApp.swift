@@ -32,6 +32,7 @@ struct macSKKApp: App {
     private let dictionariesDirectoryUrl: URL
     private let userNotificationDelegate = UserNotificationDelegate()
     @State private var fetchReleaseTask: Task<Void, Error>?
+    private let settingsWindowController: NSWindowController
     #if DEBUG
     private let candidatesPanel: CandidatesPanel = CandidatesPanel()
     private let inputModePanel = InputModePanel()
@@ -46,7 +47,10 @@ struct macSKKApp: App {
                 appropriateFor: nil,
                 create: false
             ).appendingPathComponent("Dictionaries")
-            settingsViewModel = try SettingsViewModel(dictionariesDirectoryUrl: dictionariesDirectoryUrl)
+            let settingsViewModel = try SettingsViewModel(dictionariesDirectoryUrl: dictionariesDirectoryUrl)
+            let settingsWindow = SettingsWindow(settingsViewModel: settingsViewModel)
+            self.settingsViewModel = settingsViewModel
+            self.settingsWindowController = NSWindowController(window: settingsWindow)
         } catch {
             fatalError("辞書設定でエラーが発生しました: \(error)")
         }
@@ -74,8 +78,18 @@ struct macSKKApp: App {
 
     var body: some Scene {
         Settings {
-            SettingsView(settingsViewModel: settingsViewModel)
+            EmptyView()
         }
+//        WindowGroup("Settings", id: "SettingsView") {
+//            SettingsView(settingsViewModel: settingsViewModel)
+//                .task {
+//                    if let window = NSApplication.shared.mainWindow {
+//                        window.orderOut(nil)
+//                    } else {
+//                        print("みつからないよ")
+//                    }
+//                }
+//        }
         .commands {
             CommandGroup(after: .appSettings) {
                 Button("Save User Directory") {
@@ -86,6 +100,9 @@ struct macSKKApp: App {
                     }
                 }.keyboardShortcut("S")
                 #if DEBUG
+                Button("Show Settings") {
+                    settingsWindowController.showWindow(nil)
+                }
                 Button("AnnotationsPanel") {
                     let word = ReferredWord("インライン", annotations: [Annotation(dictId: "", text: String(repeating: "これはインラインのテスト用注釈です", count: 5))])
                     candidatesPanel.setCandidates(.inline, selected: word)
