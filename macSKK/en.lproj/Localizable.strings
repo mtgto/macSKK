@@ -1,6 +1,6 @@
 "MenuItemPreference" = "Preferences…";
 "MenuItemSaveDict" = "Save User Dictionary";
-"MenuPrivateMode" = "Private mode";
+"MenuItemPrivateMode" = "Private mode";
 "MenuItemDirectInput" = "Direct input from \"%@\"";
 "SettingsNameDictionaries" = "Dictionaries";
 "SettingsNameSoftwareUpdate" = "Software Update";
