@@ -65,6 +65,7 @@ struct SettingsView: View {
         .task(id: selectedSection) {
             updateWindowAndToolbar()
         }
+        .modifier(RemoveSidebarToggle())
         .frame(minWidth: 640, minHeight: 360)
     }
 
@@ -81,6 +82,16 @@ struct SettingsView: View {
                 if let index = toolbar.items.firstIndex(where: { $0.itemIdentifier.rawValue == "com.apple.SwiftUI.navigationSplitView.toggleSidebar" }) {
                     toolbar.removeItem(at: index)
                 }
+            }
+        }
+    }
+
+    struct RemoveSidebarToggle: ViewModifier {
+        func body(content: Content) -> some View {
+            if #available(macOS 14, *) {
+                content.toolbar(removing: .sidebarToggle)
+            } else {
+                content
             }
         }
     }
