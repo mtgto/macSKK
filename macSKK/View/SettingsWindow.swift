@@ -12,8 +12,4 @@ class SettingsWindow: NSWindow {
         contentViewController = viewController
         titlebarAppearsTransparent = true
     }
-
-    func show() {
-        makeKeyAndOrderFront(nil)
-    }
 }

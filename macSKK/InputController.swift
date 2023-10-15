@@ -232,12 +232,7 @@ class InputController: IMKInputController {
     }
 
     @objc func showSettings() {
-        if let delegate = NSApplication.shared.delegate as? AppDelegate {
-            logger.log("設定画面を表示します")
-            delegate.showSettingsWindow()
-        } else {
-            logger.log("AppDelegateがみつかりません: \(NSApp.delegate.debugDescription, privacy: .public)")
-        }
+        NotificationCenter.default.post(name: notificationNameOpenSettings, object: nil)
 //        if #available(macOS 13, *) {
 //            NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
 //        } else {
