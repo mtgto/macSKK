@@ -32,7 +32,6 @@ struct macSKKApp: App {
     private let dictionariesDirectoryUrl: URL
     private let userNotificationDelegate = UserNotificationDelegate()
     @State private var fetchReleaseTask: Task<Void, Error>?
-    private let settingsWindowController: NSWindowController
     #if DEBUG
     private let candidatesPanel: CandidatesPanel = CandidatesPanel()
     private let inputModePanel = InputModePanel()
@@ -48,9 +47,7 @@ struct macSKKApp: App {
                 create: false
             ).appendingPathComponent("Dictionaries")
             let settingsViewModel = try SettingsViewModel(dictionariesDirectoryUrl: dictionariesDirectoryUrl)
-            let settingsWindow = SettingsWindow(settingsViewModel: settingsViewModel)
             self.settingsViewModel = settingsViewModel
-            self.settingsWindowController = NSWindowController(window: settingsWindow)
         } catch {
             fatalError("辞書設定でエラーが発生しました: \(error)")
         }
@@ -63,6 +60,8 @@ struct macSKKApp: App {
         } else {
             server = nil
         }
+        let settingsWindow = SettingsWindow(settingsViewModel: settingsViewModel)
+        appDelegate.settingsWindowController = NSWindowController(window: settingsWindow)
         setupUserDefaults()
         if !isTest() {
             do {
@@ -101,7 +100,7 @@ struct macSKKApp: App {
                 }.keyboardShortcut("S")
                 #if DEBUG
                 Button("Show Settings") {
-                    settingsWindowController.showWindow(nil)
+                    appDelegate.settingsWindowController.showWindow(nil)
                 }
                 Button("AnnotationsPanel") {
                     let word = ReferredWord("インライン", annotations: [Annotation(dictId: "", text: String(repeating: "これはインラインのテスト用注釈です", count: 5))])

@@ -232,12 +232,18 @@ class InputController: IMKInputController {
     }
 
     @objc func showSettings() {
-        if #available(macOS 13, *) {
-            NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+        if let delegate = NSApplication.shared.delegate as? AppDelegate {
+            logger.log("設定画面を表示します")
+            delegate.showSettingsWindow()
         } else {
-            NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: nil)
+            logger.log("AppDelegateがみつかりません: \(NSApp.delegate.debugDescription, privacy: .public)")
         }
-        NSApp.activate(ignoringOtherApps: true)
+//        if #available(macOS 13, *) {
+//            NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+//        } else {
+//            NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: nil)
+//        }
+//        NSApp.activate(ignoringOtherApps: true)
     }
 
     @objc func saveDict() {
