@@ -85,7 +85,7 @@ struct macSKKApp: App {
             // macOS 14 Sonomaから入力メニュー (NSMenu) からSettingsを呼び出すやりかたが塞がれたので
             // 代わりにNSWindowControllerを使う方針に変更しました。
             // SwiftUIなmacOSアプリはSettingsを置いておかないと空のウィンドウアプリを作るのがMenuItemExtraくらいしかないので
-            // 使わないSettingsを使っています。
+            // 空のSettingsを置いています。
             EmptyView()
         }
         .commands {
