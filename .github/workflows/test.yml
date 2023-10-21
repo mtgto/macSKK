@@ -16,7 +16,7 @@ jobs:
     - uses: actions/checkout@v3
     - name: test
       run: |
-        xcodebuild -target macSKKTests -scheme macSKK -resultBundlePath TestResults test
+        xcodebuild -target macSKKTests -scheme macSKK -resultBundlePath TestResults DEVELOPMENT_TEAM= test
     - uses: kishikawakatsumi/xcresulttool@v1
       with:
         path: TestResults.xcresult
