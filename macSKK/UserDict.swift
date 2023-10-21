@@ -82,8 +82,10 @@ class UserDict: NSObject, DictProtocol {
             }
             .store(in: &cancellables)
         self.privateMode.drop(while: { !$0 }).removeDuplicates().sink { [weak self] privateMode in
-            // プライベートモードを解除したときにそれまでのエントリを削除する
-            if !privateMode {
+            if privateMode {
+                logger.log("プライベートモードが設定されました")
+            } else {
+                // プライベートモードを解除したときにそれまでのエントリを削除する
                 logger.log("プライベートモードが解除されました")
                 self?.privateUserDict = MemoryDict(entries: [:], readonly: true)
             }
