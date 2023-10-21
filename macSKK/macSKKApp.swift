@@ -89,7 +89,11 @@ struct macSKKApp: App {
             EmptyView()
         }
         .commands {
-            CommandGroup(after: .appSettings) {
+            CommandGroup(replacing: .appSettings) {
+                // macOS 14のAPI変更で入力メニューからアプリの設定を開きづらくなったため独自でウィンドウ表示するように変更
+                Button("Settings…") {
+                    NotificationCenter.default.post(name: notificationNameOpenSettings, object: nil)
+                }.keyboardShortcut(",")
                 Button("Save User Directory") {
                     do {
                         try dictionary.save()
@@ -98,10 +102,6 @@ struct macSKKApp: App {
                     }
                 }.keyboardShortcut("S")
                 #if DEBUG
-                Button("Show Settings") {
-                    //settingsWindowController.showWindow(nil)
-                    NotificationCenter.default.post(name: notificationNameOpenSettings, object: nil)
-                }.keyboardShortcut("P")
                 Button("AnnotationsPanel") {
                     let word = ReferredWord("インライン", annotations: [Annotation(dictId: "", text: String(repeating: "これはインラインのテスト用注釈です", count: 5))])
                     candidatesPanel.setCandidates(.inline, selected: word)
