@@ -16,6 +16,8 @@ let privateMode = CurrentValueSubject<Bool, Never>(false)
 let directModeBundleIdentifiers = CurrentValueSubject<[String], Never>([])
 // 直接入力モードを切り替えたいときに通知される通知の名前。
 let notificationNameToggleDirectMode = Notification.Name("toggleDirectMode")
+// 設定画面を開きたいときに通知される通知の名前
+let notificationNameOpenSettings = Notification.Name("openSettings")
 
 func isTest() -> Bool {
     return ProcessInfo.processInfo.environment["MACSKK_IS_TEST"] == "1"
@@ -27,6 +29,7 @@ struct macSKKApp: App {
     /// ユニットテスト実行時はnil
     private let server: IMKServer?
     @ObservedObject var settingsViewModel: SettingsViewModel
+    private let settingsWindowController: NSWindowController
     /// SKK辞書を配置するディレクトリ
     /// "~/Library/Containers/net.mtgto.inputmethod.macSKK/Data/Documents/Dictionaries"
     private let dictionariesDirectoryUrl: URL
@@ -46,7 +49,11 @@ struct macSKKApp: App {
                 appropriateFor: nil,
                 create: false
             ).appendingPathComponent("Dictionaries")
-            settingsViewModel = try SettingsViewModel(dictionariesDirectoryUrl: dictionariesDirectoryUrl)
+            let settingsViewModel = try SettingsViewModel(dictionariesDirectoryUrl: dictionariesDirectoryUrl)
+            let settingsWindow = SettingsWindow(settingsViewModel: settingsViewModel)
+            settingsWindowController = NSWindowController(window: settingsWindow)
+            self.settingsViewModel = settingsViewModel
+            settingsWindowController.windowFrameAutosaveName = "Settings"
         } catch {
             fatalError("辞書設定でエラーが発生しました: \(error)")
         }
@@ -69,15 +76,24 @@ struct macSKKApp: App {
             setupNotification()
             setupReleaseFetcher()
             setupDirectMode()
+            setupSettingsNotification()
         }
     }
 
     var body: some Scene {
         Settings {
-            SettingsView(settingsViewModel: settingsViewModel)
+            // macOS 14 Sonomaから入力メニュー (NSMenu) からSettingsを呼び出すやりかたが塞がれたので
+            // 代わりにNSWindowControllerを使う方針に変更しました。
+            // SwiftUIなmacOSアプリはSettingsを置いておかないと空のウィンドウアプリを作るのがMenuItemExtraくらいしかないので
+            // 空のSettingsを置いています。
+            EmptyView()
         }
         .commands {
-            CommandGroup(after: .appSettings) {
+            CommandGroup(replacing: .appSettings) {
+                // macOS 14のAPI変更で入力メニューからアプリの設定を開きづらくなったため独自でウィンドウ表示するように変更
+                Button("Settings…") {
+                    NotificationCenter.default.post(name: notificationNameOpenSettings, object: nil)
+                }.keyboardShortcut(",")
                 Button("Save User Directory") {
                     do {
                         try dictionary.save()
@@ -225,6 +241,14 @@ struct macSKKApp: App {
                 if let error {
                     logger.error("通知センターへの通知に失敗しました: \(error)")
                 }
+            }
+        }
+    }
+
+    private func setupSettingsNotification() {
+        Task {
+            for await notification in NotificationCenter.default.notifications(named: notificationNameOpenSettings) {
+                settingsWindowController.showWindow(notification.object)
             }
         }
     }
