@@ -11,5 +11,7 @@ class SettingsWindow: NSWindow {
         super.init(contentRect: .zero, styleMask: [.titled, .closable, .fullSizeContentView, .unifiedTitleAndToolbar], backing: .buffered, defer: true)
         contentViewController = viewController
         titlebarAppearsTransparent = true
+        isExcludedFromWindowsMenu = true
+        center()
     }
 }
