@@ -43,6 +43,7 @@ struct SettingsView: View {
             }
             .listStyle(.sidebar)
             .navigationSplitViewColumnWidth(215)
+            .modifier(RemoveSidebarToggle())
         } detail: {
             switch selectedSection {
             case .dictionaries:
@@ -97,8 +98,12 @@ struct SettingsView: View {
 
     // ウィンドウのスタイルの変更とツールバーからサイドバー切り替えのボタンを削除する
     func updateWindowAndToolbar() {
-        for window in NSApp.windows {
-            if let settingsWindow = window as? SettingsWindow {
+        if #unavailable(macOS 14) {
+            if let window = NSApp.windows.first(where: { $0.identifier?.rawValue == "com_apple_SwiftUI_Settings_window" }) {
+                window.titleVisibility = .visible
+                window.titlebarAppearsTransparent = true
+                window.styleMask = [.titled, .closable, .fullSizeContentView, .unifiedTitleAndToolbar]
+                window.toolbarStyle = .unified
                 // サイドバー切り替えボタンの削除はmacOS 14からはAPIが用意されるぽい
                 // https://developer.apple.com/documentation/swiftui/view/toolbar(removing:)
                 if let toolbar = window.toolbar {
@@ -106,7 +111,16 @@ struct SettingsView: View {
                         toolbar.removeItem(at: index)
                     }
                 }
-                break
+            }
+        }
+    }
+
+    struct RemoveSidebarToggle: ViewModifier {
+        func body(content: Content) -> some View {
+            if #available(macOS 14, *) {
+                content.toolbar(removing: .sidebarToggle)
+            } else {
+                content
             }
         }
     }
