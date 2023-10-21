@@ -86,14 +86,18 @@ struct macSKKApp: App {
             // 代わりにNSWindowControllerを使う方針に変更しました。
             // SwiftUIなmacOSアプリはSettingsを置いておかないと空のウィンドウアプリを作るのがMenuItemExtraくらいしかないので
             // 空のSettingsを置いています。
-            EmptyView()
+            if #available(macOS 14, *) {
+                EmptyView()
+            } else {
+                SettingsView(settingsViewModel: settingsViewModel)
+            }
         }
         .commands {
-            CommandGroup(replacing: .appSettings) {
+            CommandGroup(after: .appSettings) {
                 // macOS 14のAPI変更で入力メニューからアプリの設定を開きづらくなったため独自でウィンドウ表示するように変更
-                Button("Settings…") {
+                Button("Open Settings…") {
                     NotificationCenter.default.post(name: notificationNameOpenSettings, object: nil)
-                }.keyboardShortcut(",")
+                }
                 Button("Save User Directory") {
                     do {
                         try dictionary.save()

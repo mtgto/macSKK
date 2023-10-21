@@ -18,6 +18,8 @@ struct SettingsView: View {
     }
     @ObservedObject var settingsViewModel: SettingsViewModel
     @State private var selectedSection: Section = .dictionaries
+    @State private var histories: [Section] = [.dictionaries]
+    @State private var historyIndex: Int = 0
 
     var body: some View {
         NavigationSplitView(columnVisibility: .constant(.all)) {
@@ -41,6 +43,7 @@ struct SettingsView: View {
             }
             .listStyle(.sidebar)
             .navigationSplitViewColumnWidth(215)
+            .modifier(RemoveSidebarToggle())
         } detail: {
             switch selectedSection {
             case .dictionaries:
@@ -62,6 +65,31 @@ struct SettingsView: View {
             #endif
             }
         }
+        .onChange(of: selectedSection) { newSection in
+            if newSection != histories[historyIndex] {
+                histories.removeLast(histories.count - historyIndex - 1)
+                histories.append(newSection)
+                historyIndex += 1
+            }
+        }
+        .toolbar {
+            ToolbarItemGroup(placement: .navigation) {
+                Button {
+                    historyIndex -= 1
+                    selectedSection = histories[historyIndex]
+                } label: {
+                    Image(systemName: "chevron.backward")
+                }
+                .disabled(historyIndex == 0)
+                Button {
+                    historyIndex += 1
+                    selectedSection = histories[historyIndex]
+                } label: {
+                    Image(systemName: "chevron.forward")
+                }
+                .disabled(histories.count <= historyIndex + 1)
+            }
+        }
         .task(id: selectedSection) {
             updateWindowAndToolbar()
         }
@@ -70,8 +98,12 @@ struct SettingsView: View {
 
     // ウィンドウのスタイルの変更とツールバーからサイドバー切り替えのボタンを削除する
     func updateWindowAndToolbar() {
-        for window in NSApp.windows {
-            if let settingsWindow = window as? SettingsWindow {
+        if #unavailable(macOS 14) {
+            if let window = NSApp.windows.first(where: { $0.identifier?.rawValue == "com_apple_SwiftUI_Settings_window" }) {
+                window.titleVisibility = .visible
+                window.titlebarAppearsTransparent = true
+                window.styleMask = [.titled, .closable, .fullSizeContentView, .unifiedTitleAndToolbar]
+                window.toolbarStyle = .unified
                 // サイドバー切り替えボタンの削除はmacOS 14からはAPIが用意されるぽい
                 // https://developer.apple.com/documentation/swiftui/view/toolbar(removing:)
                 if let toolbar = window.toolbar {
@@ -79,7 +111,16 @@ struct SettingsView: View {
                         toolbar.removeItem(at: index)
                     }
                 }
-                break
+            }
+        }
+    }
+
+    struct RemoveSidebarToggle: ViewModifier {
+        func body(content: Content) -> some View {
+            if #available(macOS 14, *) {
+                content.toolbar(removing: .sidebarToggle)
+            } else {
+                content
             }
         }
     }
