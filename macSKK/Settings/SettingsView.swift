@@ -18,6 +18,8 @@ struct SettingsView: View {
     }
     @ObservedObject var settingsViewModel: SettingsViewModel
     @State private var selectedSection: Section = .dictionaries
+    @State private var histories: [Section] = [.dictionaries]
+    @State private var historyIndex: Int = 0
 
     var body: some View {
         NavigationSplitView(columnVisibility: .constant(.all)) {
@@ -60,6 +62,31 @@ struct SettingsView: View {
                 SystemDictView()
                     .navigationTitle(selectedSection.localizedStringKey)
             #endif
+            }
+        }
+        .onChange(of: selectedSection) { newSection in
+            if newSection != histories[historyIndex] {
+                histories.removeLast(histories.count - historyIndex - 1)
+                histories.append(newSection)
+                historyIndex += 1
+            }
+        }
+        .toolbar {
+            ToolbarItemGroup(placement: .navigation) {
+                Button {
+                    historyIndex -= 1
+                    selectedSection = histories[historyIndex]
+                } label: {
+                    Image(systemName: "chevron.backward")
+                }
+                .disabled(historyIndex == 0)
+                Button {
+                    historyIndex += 1
+                    selectedSection = histories[historyIndex]
+                } label: {
+                    Image(systemName: "chevron.forward")
+                }
+                .disabled(histories.count <= historyIndex + 1)
             }
         }
         .task(id: selectedSection) {
