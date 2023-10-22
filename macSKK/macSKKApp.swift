@@ -252,7 +252,8 @@ struct macSKKApp: App {
     private func setupSettingsNotification() {
         Task {
             for await notification in NotificationCenter.default.notifications(named: notificationNameOpenSettings) {
-                settingsWindowController.window?.makeKeyAndOrderFront(notification.object)
+                settingsWindowController.showWindow(notification.object)
+                NSApp.activate(ignoringOtherApps: true)
             }
         }
     }
