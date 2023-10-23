@@ -105,10 +105,15 @@ struct DictionariesView_Previews: PreviewProvider {
     static var previews: some View {
         let dictSettings = [
             DictSetting(filename: "SKK-JISYO.L", enabled: true, encoding: .japaneseEUC),
-            DictSetting(filename: "SKK-JISYO.sample.utf-8", enabled: false, encoding: .utf8)
+            DictSetting(filename: "SKK-JISYO.sample.utf-8", enabled: false, encoding: .utf8),
+            DictSetting(filename: "SKK-JISYO.dummy", enabled: true, encoding: .utf8),
         ]
         let settings = try! SettingsViewModel(dictSettings: dictSettings)
-        settings.dictLoadingStatuses = ["SKK-JISYO.L": .loaded(123456), "SKK-JISYO.sample.utf-8": .loading]
+        settings.dictLoadingStatuses = [
+            "SKK-JISYO.L": .loaded(123456),
+            "SKK-JISYO.sample.utf-8": .disabled,
+            "SKK-JISYO.dummy": .loading,
+        ]
         return DictionariesView(settingsViewModel: settings)
     }
 }
