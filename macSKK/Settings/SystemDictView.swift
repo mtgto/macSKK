@@ -28,6 +28,7 @@ struct SystemDictView: View {
                 TextEditor(text: .constant(displayText))
             }
         }
+        .padding()
     }
 }
 
