@@ -845,7 +845,7 @@
 				CODE_SIGN_ENTITLEMENTS = FetchUpdateService/FetchUpdateService.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = W3A6B7FDC7;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = FetchUpdateService/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = FetchUpdateService;
