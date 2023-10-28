@@ -11,16 +11,16 @@ struct SoftwareUpdateView: View {
         VStack {
             Form {
                 Section {
-                    LabeledContent("現在のバージョン:") {
+                    LabeledContent("Current Version:") {
                         Text(Bundle.main.infoDictionary!["CFBundleShortVersionString"] as! String)
                         if let latestRelease = settingsViewModel.latestRelease {
-                            Text("(最新バージョン: \(latestRelease.version.description))")
+                            Text("Latest Version: \(latestRelease.version.description)")
                                 .padding(.leading)
                         }
                     }
                     HStack {
                         Spacer()
-                        Button("アップデートを確認…") {
+                        Button("Check For Update") {
                             fetchReleases()
                         }
                         .disabled(settingsViewModel.fetchingRelease)
@@ -32,7 +32,7 @@ struct SoftwareUpdateView: View {
                         }
                     }
                 } footer: {
-                    Button("リリースページを開く") {
+                    Button("Open Release Page") {
                         if let url = URL(string: "https://github.com/mtgto/macSKK/releases") {
                             openURL(url)
                         }

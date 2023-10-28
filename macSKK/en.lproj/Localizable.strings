@@ -27,3 +27,9 @@
 "User Dictionary" = "User Dictionary";
 "Delete" = "Delete";
 "Unregistered" = "Unregistered";
+"Tab Completion" = "Tab Completion";
+"System Dict" = "System Dict";
+"Current Version:" = "Current Version";
+"Latest Version: %@" = "(Latest Verssion: %@)";
+"Check For Update" = "Check For Update…";
+"Open Release Page" = "Open Release Page";

@@ -11,7 +11,7 @@ struct CompletionView: View {
         VStack {
             Text(viewModel.completion)
                 .font(.body)
-            Text("Tabで補完")
+            Text("Tab Completion")
                 .font(.caption)
                 .frame(maxWidth: .infinity)
         }

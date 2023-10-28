@@ -15,7 +15,7 @@ struct AnnotationView: View {
                 if let systemAnnotation {
                     HStack(alignment: .top) {
                         VStack(alignment: .leading) {
-                            Text("システム辞書")
+                            Text("System Dict")
                                 .font(.headline)
                             Text(systemAnnotation)
                                 .textSelection(.enabled)
