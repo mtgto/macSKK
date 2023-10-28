@@ -448,7 +448,7 @@ class StateMachine {
             inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
             return true
         case .cancel:
-            if romaji.isEmpty {
+            if text.isEmpty || romaji.isEmpty {
                 // 下線テキストをリセットする
                 state.inputMethod = .normal
             } else {
