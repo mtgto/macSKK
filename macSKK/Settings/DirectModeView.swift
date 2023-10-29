@@ -4,9 +4,10 @@
 import SwiftUI
 
 struct DirectModeView: View {
-    @Binding var applications: [DirectModeApplication]
+    @StateObject var settingsViewModel: SettingsViewModel
 
     var body: some View {
+        let applications = settingsViewModel.directModeApplications
         VStack {
             Form {
                 if applications.isEmpty {
@@ -28,7 +29,7 @@ struct DirectModeView: View {
                                 Button {
                                     if let index = applications.firstIndex(of: application) {
                                         logger.log("Bundle Identifier \"\(applications[index].bundleIdentifier, privacy: .public)\" の直接入力が解除されました。")
-                                        applications.remove(at: index)
+                                        settingsViewModel.directModeApplications.remove(at: index)
                                     }
                                 } label: {
                                     Text("Delete")
@@ -40,8 +41,7 @@ struct DirectModeView: View {
                                     let workspace = NSWorkspace.shared
                                     if let index = applications.firstIndex(of: application),
                                        let appUrl = workspace.urlForApplication(withBundleIdentifier: application.bundleIdentifier) {
-                                        applications[index].displayName = FileManager.default.displayName(atPath: appUrl.path(percentEncoded: false))
-                                        applications[index].icon = workspace.icon(forFile: appUrl.path(percentEncoded: false))
+                                        settingsViewModel.updateDirectModeApplication(index: index, displayName: FileManager.default.displayName(atPath: appUrl.path(percentEncoded: false)), icon: workspace.icon(forFile: appUrl.path(percentEncoded: false)))
                                     }
                                 }
                             }
@@ -60,10 +60,10 @@ struct DirectModeView: View {
 
 struct DirectModeView_Previews: PreviewProvider {
     static var previews: some View {
-        DirectModeView(applications: .constant([
+        DirectModeView(settingsViewModel: try! SettingsViewModel(directModeApplications: [
             DirectModeApplication(bundleIdentifier: "net.mtgto.inputmethod.macSKK", icon: nil, displayName: nil),
         ]))
-        DirectModeView(applications: .constant([]))
+        DirectModeView(settingsViewModel: try! SettingsViewModel(directModeApplications: []))
             .previewDisplayName("空のとき")
     }
 }
