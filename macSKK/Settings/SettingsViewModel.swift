@@ -191,14 +191,25 @@ final class SettingsViewModel: ObservableObject {
     }
 
     // PreviewProvider用
-    internal init(dictSettings: [DictSetting]) throws {
+    internal init() throws {
         dictionariesDirectoryUrl = try FileManager.default.url(
             for: .documentDirectory,
             in: .userDomainMask,
             appropriateFor: nil,
             create: false
         ).appendingPathComponent("Dictionaries")
+    }
+
+    // DictionaryViewのPreviewProvider用
+    internal convenience init(dictSettings: [DictSetting]) throws {
+        try self.init()
         self.dictSettings = dictSettings
+    }
+
+    // DirectModeViewのPreviewProvider用
+    internal convenience init(directModeApplications: [DirectModeApplication]) throws {
+        try self.init()
+        self.directModeApplications = directModeApplications
     }
 
     /**
@@ -249,5 +260,10 @@ final class SettingsViewModel: ObservableObject {
         let release = try await LatestReleaseFetcher.shared.fetch()
         latestRelease = release
         return release
+    }
+
+    func updateDirectModeApplication(index: Int, displayName: String, icon: NSImage) {
+        directModeApplications[index].displayName = displayName
+        directModeApplications[index].icon = icon
     }
 }

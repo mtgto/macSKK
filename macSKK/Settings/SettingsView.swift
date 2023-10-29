@@ -53,7 +53,7 @@ struct SettingsView: View {
                 SoftwareUpdateView(settingsViewModel: settingsViewModel)
                     .navigationTitle(selectedSection.localizedStringKey)
             case .directMode:
-                DirectModeView(applications: $settingsViewModel.directModeApplications)
+                DirectModeView(settingsViewModel: settingsViewModel)
                     .navigationTitle(selectedSection.localizedStringKey)
             #if DEBUG
             case .keyEvent:

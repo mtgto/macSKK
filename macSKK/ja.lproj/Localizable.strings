@@ -27,3 +27,9 @@
 "User Dictionary" = "ユーザー辞書";
 "Delete" = "削除";
 "Unregistered" = "未登録です";
+"Tab Completion" = "Tabで補完";
+"System Dict" = "システム辞書";
+"Current Version:" = "現在のバージョン:";
+"Latest Version: %@" = "(最新バージョン: %@)";
+"Check For Update" = "アップデートを確認…";
+"Open Release Page" = "リリースページを開く";
