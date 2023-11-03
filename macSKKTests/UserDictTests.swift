@@ -20,8 +20,10 @@ final class UserDictTests: XCTestCase {
         let dict1 = MemoryDict(entries: ["い": [Word("胃", annotation: Annotation(dictId: "dict1", text: "d1ann")), Word("伊")]], readonly: true)
         let dict2 = MemoryDict(entries: ["い": [Word("胃", annotation: Annotation(dictId: "dict2", text: "d2ann")), Word("意")]], readonly: true)
         let userDict = try UserDict(dicts: [dict1, dict2], userDictEntries: [:], privateMode: privateMode)
-        XCTAssertEqual(userDict.refer("い").map({ $0.word }).sorted(), ["伊", "意", "胃", "胃"], "dict1, dict2に胃が1つずつある")
+        XCTAssertEqual(userDict.refer("い").map({ $0.word }), ["伊", "意", "胃", "胃"], "dict1, dict2に胃が1つずつある")
         XCTAssertEqual(userDict.refer("い").compactMap({ $0.annotation?.dictId }), ["dict1", "dict2"])
+        XCTAssertEqual(userDict.referDicts("い").map({ $0.word }), ["伊", "意", "胃"])
+        XCTAssertEqual(userDict.referDicts("い").map({ $0.annotations.map({ $0.dictId }) }), [["dict1", "dict2"], [], []])
     }
 
     func testReferWithOption() throws {

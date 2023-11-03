@@ -97,6 +97,37 @@ class UserDict: NSObject, DictProtocol {
         NSFileCoordinator.removeFilePresenter(self)
     }
 
+    /**
+     * 保持する辞書を順に引き変換候補順に返す。
+     *
+     * 複数の辞書に同じ変換がある場合、注釈を結合して返す
+     *
+     * - Parameters:
+     *   - yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
+     *   - option: 辞書を引くときに接頭辞や接尾辞から検索するかどうか。nilなら通常のエントリから検索する
+     */
+    func referDicts(_ yomi: String, option: DictReferringOption? = nil) -> [ReferredWord] {
+        var result: [ReferredWord] = []
+        let candidates = refer(yomi, option: option)
+        for candidate in candidates {
+            if let index = result.firstIndex(where: { $0.word == candidate.word }) {
+                // 注釈だけマージする
+                if let annotation = candidate.annotation {
+                    result[index].appendAnnotation(annotation)
+                }
+            } else {
+                let annotations: [Annotation]
+                if let annotation = candidate.annotation {
+                    annotations = [annotation]
+                } else {
+                    annotations = []
+                }
+                result.append(ReferredWord(yomi: yomi, word: candidate.word, annotations: annotations))
+            }
+        }
+        return result
+    }
+
     // MARK: DictProtocol
     func refer(_ yomi: String, option: DictReferringOption? = nil) -> [Word] {
         var result = userDict.refer(yomi, option: option)

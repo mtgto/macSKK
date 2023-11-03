@@ -1011,7 +1011,7 @@ class StateMachine {
 
     /// 見出し語で辞書を引く。同じ文字列である変換候補が複数の辞書にある場合は最初の1つにまとめる。
     func candidates(for yomi: String, option: DictReferringOption? = nil) -> [ReferredWord] {
-        var candidates = dictionary.refer(yomi, option: option)
+        var candidates = dictionary.referDicts(yomi, option: option)
         if candidates.isEmpty {
             // yomiが数値を含む場合は "#" に置換して辞書を引く
             if let numberYomi = parseNumber(yomi: yomi) {
@@ -1022,24 +1022,7 @@ class StateMachine {
                 })
             }
         }
-        var result = [ReferredWord]()
-        for candidate in candidates {
-            if let index = result.firstIndex(where: { $0.word == candidate.word }) {
-                // 注釈だけマージする
-                if let annotation = candidate.annotation {
-                    result[index].appendAnnotation(annotation)
-                }
-            } else {
-                let annotations: [Annotation]
-                if let annotation = candidate.annotation {
-                    annotations = [annotation]
-                } else {
-                    annotations = []
-                }
-                result.append(ReferredWord(yomi: yomi, word: candidate.word, annotations: annotations))
-            }
-        }
-        return result
+        return candidates
     }
 
     /**
