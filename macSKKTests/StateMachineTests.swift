@@ -692,10 +692,11 @@ final class StateMachineTests: XCTestCase {
     }
 
     func testHandleComposingNumber() {
-        dictionary.setEntries(["だい#": [Word("第#1"), Word("第#0"), Word("第#2"), Word("第#3")]])
+        let entries = ["だい#": [Word("第#1"), Word("第#0"), Word("第#2"), Word("第#3")]]
+        dictionary.dicts.append(MemoryDict(entries: entries, readonly: true))
 
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(11).sink { events in
+        stateMachine.inputMethodEvent.collect(12).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("d")])))
             XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("だ")])))
             XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("だい")])))
@@ -707,6 +708,7 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[8], .markedText(MarkedText([.markerSelect, .emphasized("第1024")])))
             XCTAssertEqual(events[9], .markedText(MarkedText([.markerSelect, .emphasized("第一〇二四")])))
             XCTAssertEqual(events[10], .markedText(MarkedText([.markerSelect, .emphasized("第千二十四")])))
+            XCTAssertEqual(events[11], .fixedText("第千二十四"))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "d", withShift: true)))
@@ -720,6 +722,8 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertEqual(dictionary.userDict.refer("だい#", option: nil), [Word("第#3")], "ユーザー辞書には#形式で保存する")
         wait(for: [expectation], timeout: 1.0)
     }
 
