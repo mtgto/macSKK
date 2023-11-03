@@ -479,6 +479,10 @@ class StateMachine {
             if okuri == nil { // 一度変換候補選択に遷移してからキャンセルで戻ると送り仮名ありになっている
                 if romaji.isEmpty {
                     state.inputMethod = .composing(composing.moveCursorLeft())
+                } else if text.isEmpty {
+                    // 未確定ローマ字しかないときは入力前に戻す (.cancelと同じ)
+                    // AquaSKKとほぼ同じだがAquaSKKはカーソル移動も機能するのでreturn falseになってそう
+                    state.inputMethod = .normal
                 } else {
                     // 未確定ローマ字があるときはローマ字を消す (AquaSKKと同じ)
                     state.inputMethod = .composing(ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: ""))
