@@ -114,7 +114,7 @@ class UserDict: NSObject, DictProtocol {
         }
         if candidates.isEmpty {
             // yomiが数値を含む場合は "#" に置換して辞書を引く
-            if let numberYomi = parseNumber(yomi: yomi) {
+            if let numberYomi = NumberYomi(yomi: yomi), numberYomi.containsNumber {
                 let midashi = numberYomi.toMidashiString()
                 candidates = refer(midashi, option: nil).compactMap({ word in
                     guard let numberCandidate = try? NumberCandidate(yomi: word.word) else { return nil }
@@ -221,7 +221,6 @@ class UserDict: NSObject, DictProtocol {
      * - prefixが空文字列ならnilを返す
      * - ユーザー辞書の送りなしの読みのうち、最近変換したものから選択する。
      * - prefixと読みが完全に一致する場合は補完候補とはしない
-
      */
     func findCompletion(prefix: String) -> String? {
         if privateMode.value {
@@ -250,17 +249,6 @@ class UserDict: NSObject, DictProtocol {
             }
         }
         return nil
-    }
-
-    /**
-     * 読みの中に含まれる整数をパースする
-     */
-    func parseNumber(yomi: String) -> NumberYomi? {
-        if let numberYomi = NumberYomi(yomi: yomi), numberYomi.containsNumber {
-            return numberYomi
-        } else {
-            return nil
-        }
     }
 }
 

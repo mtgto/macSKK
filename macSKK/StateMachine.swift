@@ -1019,17 +1019,6 @@ class StateMachine {
     }
 
     /**
-     * 読みの中に含まれる整数をパースする
-     */
-    func parseNumber(yomi: String) -> NumberYomi? {
-        if let numberYomi = NumberYomi(yomi: yomi), numberYomi.containsNumber {
-            return numberYomi
-        } else {
-            return nil
-        }
-    }
-
-    /**
      * ユーザー辞書にエントリを追加します。
      *
      * 他の辞書から選択した変換を追加する場合はその辞書の注釈は保存しないこと。
