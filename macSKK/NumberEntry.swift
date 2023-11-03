@@ -118,7 +118,7 @@ struct NumberCandidate {
         for (i, yomiElement) in yomi.elements.enumerated() {
             switch yomiElement {
             case .number(let number):
-                if case .number(let type) = elements[i] {
+                if i < elements.count, case .number(let type) = elements[i] {
                     switch type {
                     case 0:
                         result.append(String(number))
