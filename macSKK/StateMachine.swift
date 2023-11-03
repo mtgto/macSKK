@@ -1036,18 +1036,6 @@ class StateMachine {
      *
      * FIXME: 単語登録時にユーザーが独自の注釈を登録できるようにする。
      */
-    func addWordToUserDict(yomi: String, word: Word.Word, annotation: Annotation? = nil) {
-        let word = Word(word, annotation: annotation)
-        dictionary.add(yomi: yomi, word: word)
-    }
-
-    /**
-     * ユーザー辞書にエントリを追加します。
-     *
-     * 他の辞書から選択した変換を追加する場合はその辞書の注釈は保存しないこと。
-     *
-     * FIXME: 単語登録時にユーザーが独自の注釈を登録できるようにする。
-     */
     func addWordToUserDict(candidate: Candidate, annotation: Annotation? = nil) {
         dictionary.add(yomi: candidate.midashi, word: Word(candidate.candidateString, annotation: annotation))
     }
