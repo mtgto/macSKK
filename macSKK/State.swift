@@ -301,10 +301,12 @@ struct SelectingState: Equatable, MarkedTextProtocol {
     /// 候補選択状態に遷移する前の状態。
     let prev: PrevState
     /**
-     * 辞書登録する際の読み。
+     * 辞書登録する際の読み。ただし数値変換エントリの場合は例外あり。
+     *
      * ひらがなのみ、もしくは `ひらがな + アルファベット` もしくは `":" + アルファベット` (abbrev) のパターンがある。
-     * 数値変換エントリには "だい#" というような#入りの読みが辞書ファイルにはあるが、
-     * この場合もユーザーが入力した "だい5" のように#が入ってない文字列となる。
+     * 数値変換の場合、辞書上は "だい#1" のように登録されているがこの値は "だい5" のように実際のユーザー入力で置換されたものになる。
+     * 辞書に読み "だい#" と "だい5" がある場合、変換後にユーザー辞書に変換結果として保存するときは
+     * 数値変換したら前者の読み、しなかった場合は後者の読みで登録される。
      */
     let yomi: String
     /// 変換候補
@@ -348,7 +350,10 @@ struct RegisterState: SpecialStateProtocol {
     }
     /// 辞書登録状態に遷移する前の状態。
     let prev: PrevState
-    /// 辞書登録する際の読み。ひらがなのみ、もしくは `ひらがな + アルファベット` もしくは `":" + アルファベット` (abbrev) のパターンがある
+    /**
+     * 辞書登録する際の読み。
+     * ひらがなのみ、もしくは `ひらがな + アルファベット` もしくは `":" + アルファベット` (abbrev) のパターンがある。
+     */
     let yomi: String
     /// 入力中の登録単語。変換中のように未確定の文字列は含まず確定済文字列のみが入る
     var text: String = ""
@@ -584,7 +589,7 @@ struct IMEState {
             case .unregister(let unregisterState):
                 let selectingState = unregisterState.prev.selecting
                 let selectingCandidate = selectingState.candidates[selectingState.candidateIndex]
-                elements.append(.plain("\(selectingCandidate.yomi) /\(selectingCandidate.word)/ を削除します(yes/no)"))
+                elements.append(.plain("\(selectingCandidate.midashi) /\(selectingCandidate.candidateString)/ を削除します(yes/no)"))
                 if !unregisterState.text.isEmpty {
                     elements.append(.plain(unregisterState.text))
                 }

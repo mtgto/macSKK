@@ -115,11 +115,15 @@ class UserDict: NSObject, DictProtocol {
         if candidates.isEmpty {
             // yomiが数値を含む場合は "#" に置換して辞書を引く
             if let numberYomi = parseNumber(yomi: yomi) {
-                candidates = refer(numberYomi.toMidashiString(), option: nil).compactMap({ word in
+                let midashi = numberYomi.toMidashiString()
+                candidates = refer(midashi, option: nil).compactMap({ word in
                     guard let numberCandidate = try? NumberCandidate(yomi: word.word) else { return nil }
                     guard let convertedWord = numberCandidate.toString(yomi: numberYomi) else { return nil }
                     let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
-                    return Candidate(yomi: yomi, word: convertedWord, annotations: annotations, originalWord: word)
+                    return Candidate(yomi: yomi,
+                                     word: convertedWord,
+                                     annotations: annotations,
+                                     original: Candidate.Original(yomi: midashi, word: word.word))
                 })
             }
         }

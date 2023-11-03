@@ -357,7 +357,7 @@ final class StateTests: XCTestCase {
                 )
             ),
             yomi: "だい2",
-            candidates: [Candidate(yomi: "だい#", word: "第2")],
+            candidates: [Candidate(yomi: "だい2", word: "第2", original: Candidate.Original(yomi: "だい#", word: "第#"))],
             candidateIndex: 0,
             cursorPosition: .zero
         )
