@@ -653,7 +653,9 @@ class StateMachine {
                         } else {
                             let selectingState = SelectingState(
                                 prev: SelectingState.PrevState(mode: state.inputMode, composing: newComposing),
-                                yomi: yomiText, candidates: candidates, candidateIndex: 0,
+                                yomi: yomiText,
+                                candidates: candidates,
+                                candidateIndex: 0,
                                 cursorPosition: action.cursorPosition)
                             updateCandidates(selecting: selectingState)
                             state.inputMethod = .selecting(selectingState)
@@ -736,7 +738,7 @@ class StateMachine {
         // 変換候補がないときは辞書登録へ
         let trimmedComposing = composing.trim()
         var yomiText = trimmedComposing.yomi(for: state.inputMode)
-        let candidateWords: [ReferredWord]
+        let candidateWords: [Candidate]
         // FIXME: Abbrevモードでも接頭辞、接尾辞を検索するべきか再検討する。
         // いまは ">"で終わる・始まる場合は、Abbrevモードであっても接頭辞・接尾辞を探しているものとして検索する
         if yomiText.hasSuffix(">") {
@@ -765,7 +767,9 @@ class StateMachine {
         } else {
             let selectingState = SelectingState(
                 prev: SelectingState.PrevState(mode: state.inputMode, composing: trimmedComposing),
-                yomi: yomiText, candidates: candidateWords, candidateIndex: 0,
+                yomi: yomiText,
+                candidates: candidateWords,
+                candidateIndex: 0,
                 cursorPosition: action.cursorPosition)
             updateCandidates(selecting: selectingState)
             state.inputMethod = .selecting(selectingState)
@@ -1010,19 +1014,8 @@ class StateMachine {
     }
 
     /// 見出し語で辞書を引く。同じ文字列である変換候補が複数の辞書にある場合は最初の1つにまとめる。
-    func candidates(for yomi: String, option: DictReferringOption? = nil) -> [ReferredWord] {
-        var candidates = dictionary.referDicts(yomi, option: option)
-        if candidates.isEmpty {
-            // yomiが数値を含む場合は "#" に置換して辞書を引く
-            if let numberYomi = parseNumber(yomi: yomi) {
-                candidates = dictionary.refer(numberYomi.toMidashiString(), option: nil).compactMap({ word in
-                    guard let numberCandidate = try? NumberCandidate(yomi: word.word) else { return nil }
-                    guard let convertedWord = numberCandidate.toString(yomi: numberYomi) else { return nil }
-                    return Word(convertedWord, annotation: word.annotation)
-                })
-            }
-        }
-        return candidates
+    func candidates(for yomi: String, option: DictReferringOption? = nil) -> [Candidate] {
+        return dictionary.referDicts(yomi, option: option)
     }
 
     /**
@@ -1049,7 +1042,7 @@ class StateMachine {
     }
 
     /// StateMachine外で選択されている変換候補が更新されたときに通知される
-    func didSelectCandidate(_ candidate: ReferredWord) {
+    func didSelectCandidate(_ candidate: Candidate) {
         if case .selecting(var selecting) = state.inputMethod {
             if let candidateIndex = selecting.candidates.firstIndex(of: candidate) {
                 selecting.candidateIndex = candidateIndex
@@ -1060,7 +1053,7 @@ class StateMachine {
     }
 
     /// StateMachine外で選択されている変換候補が二回選択されたときに通知される
-    func didDoubleSelectCandidate(_ candidate: ReferredWord) {
+    func didDoubleSelectCandidate(_ candidate: Candidate) {
         if case .selecting(let selecting) = state.inputMethod {
             addWordToUserDict(yomi: selecting.yomi, word: candidate.word)
             updateCandidates(selecting: nil)

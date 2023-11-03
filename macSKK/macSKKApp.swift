@@ -107,7 +107,7 @@ struct macSKKApp: App {
                 }.keyboardShortcut("S")
                 #if DEBUG
                 Button("AnnotationsPanel") {
-                    let word = ReferredWord(yomi: "いんらいん", word: "インライン", annotations: [Annotation(dictId: "", text: String(repeating: "これはインラインのテスト用注釈です", count: 5))])
+                    let word = Candidate(yomi: "いんらいん", word: "インライン", annotations: [Annotation(dictId: "", text: String(repeating: "これはインラインのテスト用注釈です", count: 5))])
                     candidatesPanel.setCandidates(.inline, selected: word)
                     candidatesPanel.setCursorPosition(NSRect(origin: NSPoint(x: 100, y: 640), size: CGSize(width: 0, height: 30)))
                     candidatesPanel.show()
@@ -119,18 +119,18 @@ struct macSKKApp: App {
                     candidatesPanel.viewModel.systemAnnotations = ["インライン": (String(repeating: "これはシステム辞書の注釈です。", count: 5))]
                 }
                 Button("Show CandidatesPanel") {
-                    let words = [ReferredWord(yomi: "こんにちは", word: "こんにちは", annotations: [Annotation(dictId: "", text: "辞書の注釈")]),
-                                 ReferredWord(yomi: "こんばんは", word: "こんばんは"),
-                                 ReferredWord(yomi: "おはようございます", word: "おはようございます")]
+                    let words = [Candidate(yomi: "こんにちは", word: "こんにちは", annotations: [Annotation(dictId: "", text: "辞書の注釈")]),
+                                 Candidate(yomi: "こんばんは", word: "こんばんは"),
+                                 Candidate(yomi: "おはようございます", word: "おはようございます")]
                     candidatesPanel.setCandidates(.panel(words: words, currentPage: 0, totalPageCount: 1), selected: words.first)
                     candidatesPanel.setCursorPosition(NSRect(origin: NSPoint(x: 100, y: 20), size: CGSize(width: 0, height: 30)))
                     candidatesPanel.show()
                 }
                 Button("Add Word") {
-                    let words = [ReferredWord(yomi: "こんにちは", word: "こんにちは", annotations: [Annotation(dictId: "", text: "辞書の注釈")]),
-                                 ReferredWord(yomi: "こんばんは", word: "こんばんは"),
-                                 ReferredWord(yomi: "おはようございます", word: "おはようございます"),
-                                 ReferredWord(yomi: "ついかしたよ", word: "追加したよ", annotations: [Annotation(dictId: "", text: "辞書の注釈")])]
+                    let words = [Candidate(yomi: "こんにちは", word: "こんにちは", annotations: [Annotation(dictId: "", text: "辞書の注釈")]),
+                                 Candidate(yomi: "こんばんは", word: "こんばんは"),
+                                 Candidate(yomi: "おはようございます", word: "おはようございます"),
+                                 Candidate(yomi: "ついかしたよ", word: "追加したよ", annotations: [Annotation(dictId: "", text: "辞書の注釈")])]
                     candidatesPanel.setCandidates(.panel(words: words, currentPage: 0, totalPageCount: 1), selected: words.last)
                     candidatesPanel.viewModel.systemAnnotations = [words.last!.word: String(repeating: "これはシステム辞書の注釈です。", count: 5)]
                 }

@@ -86,9 +86,9 @@ struct CandidatesView: View {
 }
 
 struct CandidatesView_Previews: PreviewProvider {
-    private static let words: [ReferredWord] = (1..<9).map {
-        ReferredWord(yomi: "れいぶん", word: String(repeating: "例文\($0)", count: $0),
-                     annotations: [Annotation(dictId: "SKK-JISYO.L", text: "注釈\($0)")])
+    private static let words: [Candidate] = (1..<9).map {
+        Candidate(yomi: "れいぶん", word: String(repeating: "例文\($0)", count: $0),
+                  annotations: [Annotation(dictId: "SKK-JISYO.L", text: "注釈\($0)")])
     }
 
     private static func pageViewModel() -> CandidatesViewModel {

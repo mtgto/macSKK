@@ -14,7 +14,7 @@ enum CurrentCandidates {
     ///   - words: 現在表示されている変換候補
     ///   - currentPage: wordsが全体の変換候補表示の何ページ目かという数値 (0オリジン)
     ///   - totalPageCount: 全体の変換候補表示の最大ページ数
-    case panel(words: [ReferredWord], /// 現在表示されている変換候補
+    case panel(words: [Candidate], /// 現在表示されている変換候補
                currentPage: Int,
                totalPageCount: Int)
 }
@@ -22,9 +22,9 @@ enum CurrentCandidates {
 @MainActor
 final class CandidatesViewModel: ObservableObject {
     @Published var candidates: CurrentCandidates
-    @Published var selected: ReferredWord?
+    @Published var selected: Candidate?
     /// 二回連続で同じ値がセットされた (マウスで選択されたとき)
-    @Published var doubleSelected: ReferredWord?
+    @Published var doubleSelected: Candidate?
     /// 選択中の変換候補のシステム辞書での注釈。キーは変換候補
     @Published var systemAnnotations = Dictionary<Word.Word, String>()
     @Published var popoverIsPresented: Bool = false
@@ -33,7 +33,7 @@ final class CandidatesViewModel: ObservableObject {
     @Published var selectedAnnotations: [Annotation] = []
     private var cancellables: Set<AnyCancellable> = []
 
-    init(candidates: [ReferredWord], currentPage: Int, totalPageCount: Int) {
+    init(candidates: [Candidate], currentPage: Int, totalPageCount: Int) {
         self.candidates = .panel(words: candidates, currentPage: currentPage, totalPageCount: totalPageCount)
         if let first = candidates.first {
             self.selected = first

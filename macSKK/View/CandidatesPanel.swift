@@ -18,7 +18,7 @@ final class CandidatesPanel: NSPanel {
         contentViewController = viewController
     }
 
-    func setCandidates(_ candidates: CurrentCandidates, selected: ReferredWord?) {
+    func setCandidates(_ candidates: CurrentCandidates, selected: Candidate?) {
         viewModel.candidates = candidates
         viewModel.selected = selected
     }

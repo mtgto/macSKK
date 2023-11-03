@@ -304,14 +304,11 @@ struct SelectingState: Equatable, MarkedTextProtocol {
      * 辞書登録する際の読み。
      * ひらがなのみ、もしくは `ひらがな + アルファベット` もしくは `":" + アルファベット` (abbrev) のパターンがある。
      * 数値変換エントリには "だい#" というような#入りの読みが辞書ファイルにはあるが、
-     * この場合も "だい5" のように#が入ってない文字列となる。
-     * TODO:
-     *   数値変換エントリであつかいづらいのでユーザー辞書に保存するときの読みはReferredWordに持たせてここのyomiは消したい。
-     *   もしかしたらPrevStateのために必要かも?
+     * この場合もユーザーが入力した "だい5" のように#が入ってない文字列となる。
      */
     let yomi: String
     /// 変換候補
-    let candidates: [ReferredWord]
+    let candidates: [Candidate]
     var candidateIndex: Int = 0
     /// カーソル位置。この位置を基に変換候補パネルを表示する
     let cursorPosition: NSRect
@@ -527,7 +524,7 @@ struct Candidates: Equatable {
     /// パネル形式のときの現在ページと最大ページ数。
     struct Page: Equatable {
         /// 現在表示される変換候補。全体の変換候補の一部。
-        let words: [ReferredWord]
+        let words: [Candidate]
         /// 全体の変換候補表示の何ページ目かという数値 (0オリジン)
         let current: Int
         /// 全体の変換候補表示の最大ページ数
@@ -536,7 +533,7 @@ struct Candidates: Equatable {
 
     /// パネル形式のときの現在ページと最大ページ数。インライン変換中はnil
     let page: Page?
-    let selected: ReferredWord
+    let selected: Candidate
     let cursorPosition: NSRect
 }
 
@@ -586,7 +583,8 @@ struct IMEState {
                 }
             case .unregister(let unregisterState):
                 let selectingState = unregisterState.prev.selecting
-                elements.append(.plain("\(selectingState.yomi) /\(selectingState.candidates[selectingState.candidateIndex].word)/ を削除します(yes/no)"))
+                let selectingCandidate = selectingState.candidates[selectingState.candidateIndex]
+                elements.append(.plain("\(selectingCandidate.yomi) /\(selectingCandidate.word)/ を削除します(yes/no)"))
                 if !unregisterState.text.isEmpty {
                     elements.append(.plain(unregisterState.text))
                 }

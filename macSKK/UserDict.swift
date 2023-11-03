@@ -106,23 +106,29 @@ class UserDict: NSObject, DictProtocol {
      *   - yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
      *   - option: 辞書を引くときに接頭辞や接尾辞から検索するかどうか。nilなら通常のエントリから検索する
      */
-    func referDicts(_ yomi: String, option: DictReferringOption? = nil) -> [ReferredWord] {
-        var result: [ReferredWord] = []
-        let candidates = refer(yomi, option: option)
+    func referDicts(_ yomi: String, option: DictReferringOption? = nil) -> [Candidate] {
+        var result: [Candidate] = []
+        var candidates = refer(yomi, option: option).map { word in
+            let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
+            return Candidate(yomi: yomi, word: word.word, annotations: annotations)
+        }
+        if candidates.isEmpty {
+            // yomiが数値を含む場合は "#" に置換して辞書を引く
+            if let numberYomi = parseNumber(yomi: yomi) {
+                candidates = refer(numberYomi.toMidashiString(), option: nil).compactMap({ word in
+                    guard let numberCandidate = try? NumberCandidate(yomi: word.word) else { return nil }
+                    guard let convertedWord = numberCandidate.toString(yomi: numberYomi) else { return nil }
+                    let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
+                    return Candidate(yomi: yomi, word: convertedWord, annotations: annotations, originalWord: word)
+                })
+            }
+        }
         for candidate in candidates {
             if let index = result.firstIndex(where: { $0.word == candidate.word }) {
                 // 注釈だけマージする
-                if let annotation = candidate.annotation {
-                    result[index].appendAnnotation(annotation)
-                }
+                result[index].appendAnnotations(candidate.annotations)
             } else {
-                let annotations: [Annotation]
-                if let annotation = candidate.annotation {
-                    annotations = [annotation]
-                } else {
-                    annotations = []
-                }
-                result.append(ReferredWord(yomi: yomi, word: candidate.word, annotations: annotations))
+                result.append(candidate)
             }
         }
         return result
@@ -240,6 +246,17 @@ class UserDict: NSObject, DictProtocol {
             }
         }
         return nil
+    }
+
+    /**
+     * 読みの中に含まれる整数をパースする
+     */
+    func parseNumber(yomi: String) -> NumberYomi? {
+        if let numberYomi = NumberYomi(yomi: yomi), numberYomi.containsNumber {
+            return numberYomi
+        } else {
+            return nil
+        }
     }
 }
 
