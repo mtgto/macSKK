@@ -7,7 +7,7 @@ import XCTest
 
 final class CandidateTest: XCTestCase {
     func testAppendAnnotations() throws {
-        var candidate = Candidate(yomi: "ちゅうしゃく", word: "注釈")
+        var candidate = Candidate("注釈")
         XCTAssertEqual(candidate.annotations, [])
         let annotation1 = Annotation(dictId: "d1", text: "a1")
         candidate.appendAnnotations([annotation1])

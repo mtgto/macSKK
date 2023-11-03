@@ -16,12 +16,6 @@ struct Candidate: Hashable {
     }
 
     /**
-     * 辞書に登録されている読み。数値変換の場合は例外あり。
-     * 数値変換の場合辞書上は "だい#1" のように登録されているが、この値は "だい5" のように実際のユーザー入力で置換されたものになる。
-     */
-    let yomi: String
-
-    /**
      * 変換結果。数値変換の場合は例外あり。
      * 数値変換の場合、辞書には "第#1" のように登録されているが "第5" のようにユーザー入力で置換されている。
      */
@@ -41,7 +35,7 @@ struct Candidate: Hashable {
     /**
      * 辞書に登録されている読み。
      */
-    var midashi: String {
+    func toMidashiString(yomi: String) -> String {
         original?.yomi ?? yomi
     }
 
@@ -52,8 +46,7 @@ struct Candidate: Hashable {
         original?.word ?? word
     }
 
-    init(yomi: String, word: Word.Word, annotations: [Annotation] = [], original: Original? = nil) {
-        self.yomi = yomi
+    init(_ word: Word.Word, annotations: [Annotation] = [], original: Original? = nil) {
         self.word = word
         self.annotations = annotations
         self.original = original

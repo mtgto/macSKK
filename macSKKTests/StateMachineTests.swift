@@ -1946,12 +1946,12 @@ final class StateMachineTests: XCTestCase {
     }
 
     func testAddWordToUserDict() {
-        stateMachine.addWordToUserDict(candidate: Candidate(yomi: "あ", word: "あああ"))
+        stateMachine.addWordToUserDict(yomi: "あ", candidate: Candidate("あああ"))
         XCTAssertEqual(dictionary.refer("あ"), [Word("あああ", annotation: nil)])
         let annotation = Annotation(dictId: "test", text: "test辞書の注釈")
-        stateMachine.addWordToUserDict(candidate: Candidate(yomi: "い", word: "いいい"), annotation: annotation)
+        stateMachine.addWordToUserDict(yomi: "い", candidate: Candidate("いいい"), annotation: annotation)
         XCTAssertEqual(dictionary.refer("い"), [Word("いいい", annotation: annotation)])
-        stateMachine.addWordToUserDict(candidate: Candidate(yomi: "だい1", word: "第一", original: Candidate.Original(yomi: "だい#", word: "第#3")))
+        stateMachine.addWordToUserDict(yomi: "だい1", candidate: Candidate("第一", original: Candidate.Original(yomi: "だい#", word: "第#3")))
         XCTAssertEqual(dictionary.refer("だい#"), [Word("第#3", annotation: nil)])
     }
 

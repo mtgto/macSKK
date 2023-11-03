@@ -304,7 +304,8 @@ struct SelectingState: Equatable, MarkedTextProtocol {
      * 辞書登録する際の読み。ただし数値変換エントリの場合は例外あり。
      *
      * ひらがなのみ、もしくは `ひらがな + アルファベット` もしくは `":" + アルファベット` (abbrev) のパターンがある。
-     * 数値変換の場合、辞書上は "だい#1" のように登録されているがこの値は "だい5" のように実際のユーザー入力で置換されたものになる。
+     * 数値変換の場合は辞書上は "だい#" のように数値が入る部分が "#" になっているが、
+     * yomiの場合は "だい5" のように実際のユーザー入力で置換されたものになる。
      * 辞書に読み "だい#" と "だい5" がある場合、変換後にユーザー辞書に変換結果として保存するときは
      * 数値変換したら前者の読み、しなかった場合は後者の読みで登録される。
      */
@@ -317,7 +318,10 @@ struct SelectingState: Equatable, MarkedTextProtocol {
 
     func addCandidateIndex(diff: Int) -> Self {
         return SelectingState(
-            prev: prev, yomi: yomi, candidates: candidates, candidateIndex: candidateIndex + diff,
+            prev: prev,
+            yomi: yomi,
+            candidates: candidates,
+            candidateIndex: candidateIndex + diff,
             cursorPosition: cursorPosition)
     }
 
@@ -589,7 +593,7 @@ struct IMEState {
             case .unregister(let unregisterState):
                 let selectingState = unregisterState.prev.selecting
                 let selectingCandidate = selectingState.candidates[selectingState.candidateIndex]
-                elements.append(.plain("\(selectingCandidate.midashi) /\(selectingCandidate.candidateString)/ を削除します(yes/no)"))
+                elements.append(.plain("\(selectingCandidate.toMidashiString(yomi: selectingState.yomi)) /\(selectingCandidate.candidateString)/ を削除します(yes/no)"))
                 if !unregisterState.text.isEmpty {
                     elements.append(.plain(unregisterState.text))
                 }

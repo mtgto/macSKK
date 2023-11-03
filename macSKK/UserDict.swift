@@ -110,7 +110,7 @@ class UserDict: NSObject, DictProtocol {
         var result: [Candidate] = []
         var candidates = refer(yomi, option: option).map { word in
             let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
-            return Candidate(yomi: yomi, word: word.word, annotations: annotations)
+            return Candidate(word.word, annotations: annotations)
         }
         if candidates.isEmpty {
             // yomiが数値を含む場合は "#" に置換して辞書を引く
@@ -120,8 +120,7 @@ class UserDict: NSObject, DictProtocol {
                     guard let numberCandidate = try? NumberCandidate(yomi: word.word) else { return nil }
                     guard let convertedWord = numberCandidate.toString(yomi: numberYomi) else { return nil }
                     let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
-                    return Candidate(yomi: yomi,
-                                     word: convertedWord,
+                    return Candidate(convertedWord,
                                      annotations: annotations,
                                      original: Candidate.Original(yomi: midashi, word: word.word))
                 })

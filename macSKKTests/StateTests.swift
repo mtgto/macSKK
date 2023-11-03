@@ -157,7 +157,7 @@ final class StateTests: XCTestCase {
                 mode: .hiragana,
                 composing: ComposingState(isShift: true, text: ["あ"], romaji: "")),
             yomi: "あ",
-            candidates: [Candidate(yomi: "あ", word: "亜")],
+            candidates: [Candidate("亜")],
             candidateIndex: 0,
             cursorPosition: .zero
         )
@@ -176,7 +176,7 @@ final class StateTests: XCTestCase {
                 )
             ),
             yomi: "あ",
-            candidates: [Candidate(yomi: "あr", word: "有")],
+            candidates: [Candidate("有")],
             candidateIndex: 0,
             cursorPosition: .zero
         )
@@ -187,7 +187,7 @@ final class StateTests: XCTestCase {
         let composingState = ComposingState(isShift: true, text: ["お"], romaji: "")
         let selectingState = SelectingState(prev: SelectingState.PrevState(mode: .hiragana, composing: composingState),
                                             yomi: "お",
-                                            candidates: [Candidate(yomi: "お", word: "尾")],
+                                            candidates: [Candidate("尾")],
                                             candidateIndex: 0,
                                             cursorPosition: .zero)
         XCTAssertEqual(selectingState.markedTextElements(inputMode: .hiragana), [.markerSelect, .emphasized("尾")])
@@ -234,7 +234,7 @@ final class StateTests: XCTestCase {
                 )
             ),
             yomi: "あ",
-            candidates: [Candidate(yomi: "あr", word: "有")],
+            candidates: [Candidate("有")],
             candidateIndex: 0,
             cursorPosition: .zero
         )
@@ -270,7 +270,7 @@ final class StateTests: XCTestCase {
         let composingState = ComposingState(isShift: true, text: ["い"], romaji: "")
         let selectingState = SelectingState(prev: SelectingState.PrevState(mode: .hiragana, composing: composingState),
                                             yomi: "い",
-                                            candidates: [Candidate(yomi: "い", word: "井")],
+                                            candidates: [Candidate("井")],
                                             candidateIndex: 0,
                                             cursorPosition: .zero)
         let state = IMEState(inputMode: .hiragana,
@@ -289,7 +289,7 @@ final class StateTests: XCTestCase {
         let composingState = ComposingState(isShift: true, text: ["お"], romaji: "")
         let selectingState = SelectingState(prev: SelectingState.PrevState(mode: .hiragana, composing: composingState),
                                             yomi: "お",
-                                            candidates: [Candidate(yomi: "お", word: "尾")],
+                                            candidates: [Candidate("尾")],
                                             candidateIndex: 0,
                                             cursorPosition: .zero)
         let state = IMEState(inputMode: .hiragana,
@@ -309,7 +309,7 @@ final class StateTests: XCTestCase {
         let composingState = ComposingState(isShift: true, text: ["お"], romaji: "")
         let selectingState = SelectingState(prev: SelectingState.PrevState(mode: .hiragana, composing: composingState),
                                             yomi: "お",
-                                            candidates: [Candidate(yomi: "お", word: "尾")],
+                                            candidates: [Candidate("尾")],
                                             candidateIndex: 0,
                                             cursorPosition: .zero)
         let state = IMEState(inputMode: .hiragana,
@@ -332,7 +332,7 @@ final class StateTests: XCTestCase {
                 )
             ),
             yomi: "あr",
-            candidates: [Candidate(yomi: "あr", word: "有")],
+            candidates: [Candidate("有")],
             candidateIndex: 0,
             cursorPosition: .zero
         )
@@ -357,7 +357,7 @@ final class StateTests: XCTestCase {
                 )
             ),
             yomi: "だい2",
-            candidates: [Candidate(yomi: "だい2", word: "第2", original: Candidate.Original(yomi: "だい#", word: "第#"))],
+            candidates: [Candidate("第2", original: Candidate.Original(yomi: "だい#", word: "第#"))],
             candidateIndex: 0,
             cursorPosition: .zero
         )
