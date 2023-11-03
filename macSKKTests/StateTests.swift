@@ -157,7 +157,7 @@ final class StateTests: XCTestCase {
                 mode: .hiragana,
                 composing: ComposingState(isShift: true, text: ["あ"], romaji: "")),
             yomi: "あ",
-            candidates: [ReferredWord("亜")],
+            candidates: [ReferredWord(yomi: "あ", word: "亜")],
             candidateIndex: 0,
             cursorPosition: .zero
         )
@@ -176,7 +176,7 @@ final class StateTests: XCTestCase {
                 )
             ),
             yomi: "あ",
-            candidates: [ReferredWord("有")],
+            candidates: [ReferredWord(yomi: "あr", word: "有")],
             candidateIndex: 0,
             cursorPosition: .zero
         )
@@ -187,7 +187,7 @@ final class StateTests: XCTestCase {
         let composingState = ComposingState(isShift: true, text: ["お"], romaji: "")
         let selectingState = SelectingState(prev: SelectingState.PrevState(mode: .hiragana, composing: composingState),
                                             yomi: "お",
-                                            candidates: [ReferredWord("尾")],
+                                            candidates: [ReferredWord(yomi: "お", word: "尾")],
                                             candidateIndex: 0,
                                             cursorPosition: .zero)
         XCTAssertEqual(selectingState.markedTextElements(inputMode: .hiragana), [.markerSelect, .emphasized("尾")])
@@ -234,7 +234,7 @@ final class StateTests: XCTestCase {
                 )
             ),
             yomi: "あ",
-            candidates: [ReferredWord("有")],
+            candidates: [ReferredWord(yomi: "あr", word: "有")],
             candidateIndex: 0,
             cursorPosition: .zero
         )
@@ -270,7 +270,7 @@ final class StateTests: XCTestCase {
         let composingState = ComposingState(isShift: true, text: ["い"], romaji: "")
         let selectingState = SelectingState(prev: SelectingState.PrevState(mode: .hiragana, composing: composingState),
                                             yomi: "い",
-                                            candidates: [ReferredWord("井")],
+                                            candidates: [ReferredWord(yomi: "い", word: "井")],
                                             candidateIndex: 0,
                                             cursorPosition: .zero)
         let state = IMEState(inputMode: .hiragana,
@@ -289,7 +289,7 @@ final class StateTests: XCTestCase {
         let composingState = ComposingState(isShift: true, text: ["お"], romaji: "")
         let selectingState = SelectingState(prev: SelectingState.PrevState(mode: .hiragana, composing: composingState),
                                             yomi: "お",
-                                            candidates: [ReferredWord("尾")],
+                                            candidates: [ReferredWord(yomi: "お", word: "尾")],
                                             candidateIndex: 0,
                                             cursorPosition: .zero)
         let state = IMEState(inputMode: .hiragana,
@@ -309,7 +309,7 @@ final class StateTests: XCTestCase {
         let composingState = ComposingState(isShift: true, text: ["お"], romaji: "")
         let selectingState = SelectingState(prev: SelectingState.PrevState(mode: .hiragana, composing: composingState),
                                             yomi: "お",
-                                            candidates: [ReferredWord("尾")],
+                                            candidates: [ReferredWord(yomi: "お", word: "尾")],
                                             candidateIndex: 0,
                                             cursorPosition: .zero)
         let state = IMEState(inputMode: .hiragana,
@@ -331,8 +331,8 @@ final class StateTests: XCTestCase {
                     romaji: ""
                 )
             ),
-            yomi: "あ",
-            candidates: [ReferredWord("有")],
+            yomi: "あr",
+            candidates: [ReferredWord(yomi: "あr", word: "有")],
             candidateIndex: 0,
             cursorPosition: .zero
         )
@@ -342,6 +342,6 @@ final class StateTests: XCTestCase {
                              specialState: .unregister(unregisterState),
                              candidates: [])
         let displayText = state.displayText()
-        XCTAssertEqual(displayText.elements, [.plain("あ /有/ を削除します(yes/no)"), .plain("yes")])
+        XCTAssertEqual(displayText.elements, [.plain("あr /有/ を削除します(yes/no)"), .plain("yes")])
     }
 }

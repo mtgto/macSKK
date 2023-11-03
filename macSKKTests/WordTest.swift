@@ -7,7 +7,7 @@ import XCTest
 
 final class WordTest: XCTestCase {
     func testReferredWordAppendAnnotation() throws {
-        var referredWord = ReferredWord("注釈")
+        var referredWord = ReferredWord(yomi: "ちゅうしゃく", word: "注釈")
         XCTAssertEqual(referredWord.annotations, [])
         let annotation1 = Annotation(dictId: "d1", text: "a1")
         referredWord.appendAnnotation(annotation1)

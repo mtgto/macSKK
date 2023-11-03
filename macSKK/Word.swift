@@ -31,15 +31,21 @@ struct Word: Hashable {
 
 /// 複数の辞書から引いた、辞書ごとの注釈をもつことが可能なWord。
 struct ReferredWord: Hashable {
+    /**
+     * 辞書で登録されている読み。数値変換の場合 "だい#" のように #を含むことがある。
+     */
+    let yomi: String
     let word: Word.Word
     private(set) var annotations: [Annotation]
 
-    init(_ word: Word.Word, annotations: [Annotation] = []) {
+    init(yomi: String, word: Word.Word, annotations: [Annotation] = []) {
+        self.yomi = yomi
         self.word = word
         self.annotations = annotations
     }
 
     func hash(into hasher: inout Hasher) {
+        hasher.combine(yomi)
         hasher.combine(word)
     }
 

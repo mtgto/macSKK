@@ -1036,7 +1036,7 @@ class StateMachine {
                 } else {
                     annotations = []
                 }
-                result.append(ReferredWord(candidate.word, annotations: annotations))
+                result.append(ReferredWord(yomi: yomi, word: candidate.word, annotations: annotations))
             }
         }
         return result
