@@ -7,7 +7,7 @@ import Foundation
 struct NumberYomi {
     static let pattern = /#([01234589])/
 
-    // TODO: Stringを作るコストをなくしyomiのSubstringでもっておく。ちょっとユニットテストがかきにくくなるしこれでもいいかも。
+    // TODO: Stringを作るコストをなくしyomiのSubstringでもっておく。Substringだとユニットテストが書きにくくなるしこれでもいいかも。
     enum Element: Equatable {
         /// 正規表現だと /[0-9]+/ となる文字列。UInt64で収まらない数値はあきらめる
         case number(UInt64)
@@ -115,10 +115,13 @@ struct NumberCandidate {
      */
     func toString(yomi: NumberYomi) -> String? {
         var result: String = ""
+        if yomi.elements.count != elements.count {
+            return nil
+        }
         for (i, yomiElement) in yomi.elements.enumerated() {
             switch yomiElement {
             case .number(let number):
-                if i < elements.count, case .number(let type) = elements[i] {
+                if case .number(let type) = elements[i] {
                     switch type {
                     case 0:
                         result.append(String(number))
