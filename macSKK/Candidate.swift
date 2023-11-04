@@ -11,7 +11,15 @@ struct Candidate: Hashable {
      * 辞書上での表記
      */
     struct Original: Hashable {
-        let yomi: String
+        /**
+         * 辞書上の見出し語の表記。
+         * 数値変換の場合 "だい#" のような数値部分を "#" で表す表記がされている。
+         */
+        let midashi: String
+        /**
+         * 辞書上の変換結果の表記。
+         * 数値変換の場合 "第#1" のような変換フォーマットを表す表記がされている。
+         */
         let word: Word.Word
     }
 
@@ -22,8 +30,7 @@ struct Candidate: Hashable {
     let word: Word.Word
 
     /**
-     * 辞書上の変換結果の表記。現在は数値変換時のみ設定される。
-     * 数値変換の場合 "第#1" のような変換フォーマットを表す表記がされている。
+     * 辞書上の表記。現在は数値変換時のみ設定される。
      */
     let original: Original?
 
@@ -36,7 +43,7 @@ struct Candidate: Hashable {
      * 辞書に登録されている読み。
      */
     func toMidashiString(yomi: String) -> String {
-        original?.yomi ?? yomi
+        original?.midashi ?? yomi
     }
 
     /**

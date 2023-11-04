@@ -1024,7 +1024,7 @@ class StateMachine {
      * 他の辞書から選択した変換を追加する場合はその辞書の注釈は保存しないこと。
      *
      * - Parameters:
-     *   - yomi: ユーザーが入力した見出し語。整数変換の場合、辞書の見出しは "だい#" のような形式だが、この値は "だい5" のように "#" を含まない。
+     *   - yomi: ユーザーが入力した見出し語。整数変換エントリの辞書の見出しは "だい#" のような形式だが、この値は "だい5" のようにユーザーが入力したときの文字列なので "#" を含まない。
      *   - candidate: 追加したい変換候補
      */
     func addWordToUserDict(yomi: String, candidate: Candidate, annotation: Annotation? = nil) {

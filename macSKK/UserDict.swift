@@ -122,7 +122,7 @@ class UserDict: NSObject, DictProtocol {
                     let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
                     return Candidate(convertedWord,
                                      annotations: annotations,
-                                     original: Candidate.Original(yomi: midashi, word: word.word))
+                                     original: Candidate.Original(midashi: midashi, word: word.word))
                 })
             }
         }
