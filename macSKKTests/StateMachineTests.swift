@@ -735,7 +735,7 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "2")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil, cursorPosition: .zero)))
-        XCTAssertEqual(dictionary.userDict.refer("だい2", option: nil), [Word("第2")])
+        XCTAssertEqual(dictionary.userDict.refer("だい2", option: nil), [Word("第2")], "数値変換より通常のエントリを優先する")
         wait(for: [expectation], timeout: 1.0)
     }
 

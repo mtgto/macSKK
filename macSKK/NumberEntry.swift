@@ -3,7 +3,9 @@
 
 import Foundation
 
-// いい名前が思いつかなかった。NumberEntry = NumberYomi + NumberCandidateとかにするかも。
+/**
+ * 数値変換用のユーザーが入力した読み部分。"だい1" のような入力を受け取り、整数部分と非整数部分に分ける。
+ */
 struct NumberYomi {
     static let pattern = /#([01234589])/
 
@@ -17,26 +19,23 @@ struct NumberYomi {
 
     let elements: [Element]
 
-    var containsNumber: Bool {
-        elements.contains { element in
-            if case .number = element {
-                return true
-            } else {
-                return false
-            }
-        }
-    }
-
-    init?(yomi: String) {
+    /**
+     * ユーザーが入力した読み部分を受け取り初期化する。
+     *
+     * - Returns: 整数が一つも含まれない (整数が異常に巨大な場合を含む) ときは nil。
+     */
+    init?(_ yomi: String) {
         // 連続する整数と連続する非整数をパースする
         var elements: [Element] = []
         var current = yomi[...]
+        var containsNumber: Bool = false
         while !current.isEmpty {
             let numberString = current.prefix(while: { $0.isNumber })
             if !numberString.isEmpty {
                 if let number = UInt64(numberString) {
                     elements.append(.number(number))
                     current = yomi.suffix(from: numberString.endIndex)
+                    containsNumber = true
                 } else {
                     logger.log("巨大な数値が含まれているためパースできませんでした")
                     return nil
@@ -49,6 +48,9 @@ struct NumberYomi {
             }
         }
         self.elements = elements
+        if !containsNumber {
+            return nil
+        }
     }
 
     /**

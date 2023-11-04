@@ -114,7 +114,7 @@ class UserDict: NSObject, DictProtocol {
         }
         if candidates.isEmpty {
             // yomiが数値を含む場合は "#" に置換して辞書を引く
-            if let numberYomi = NumberYomi(yomi: yomi), numberYomi.containsNumber {
+            if let numberYomi = NumberYomi(yomi) {
                 let midashi = numberYomi.toMidashiString()
                 candidates = refer(midashi, option: nil).compactMap({ word in
                     guard let numberCandidate = try? NumberCandidate(yomi: word.word) else { return nil }
