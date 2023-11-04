@@ -50,7 +50,9 @@ final class NumberEntryTests: XCTestCase {
         XCTAssertEqual(try NumberCandidate(yomi: "#2").toString(yomi: NumberYomi(yomi: "9223372036854775807")!), "九二二三三七二〇三六八五四七七五八〇七")
         XCTAssertEqual(try NumberCandidate(yomi: "#8").toString(yomi: NumberYomi(yomi: "9223372036854775807")!), "9,223,372,036,854,775,807")
         XCTAssertEqual(try NumberCandidate(yomi: "#9金").toString(yomi: NumberYomi(yomi: "34きん")!), "３四金")
-        XCTAssertEqual(try NumberCandidate(yomi: "#9金").toString(yomi: NumberYomi(yomi: "34きん")!), "３四金")
+        XCTAssertEqual(try NumberCandidate(yomi: "#9").toString(yomi: NumberYomi(yomi: "3")!), nil)
+        XCTAssertEqual(try NumberCandidate(yomi: "#9").toString(yomi: NumberYomi(yomi: "111")!), nil)
+        XCTAssertEqual(try NumberCandidate(yomi: "#9").toString(yomi: NumberYomi(yomi: "50")!), nil)
         // SKK-JISYO.Lには数値変換らしきエントリで候補に "#数字" を含まないものがある。
         // 例えば "だい#" という見出しに "第" だけが登録されている。数値を切り捨ててほしいのかな…?
         XCTAssertEqual(try NumberCandidate(yomi: "第").toString(yomi: NumberYomi(yomi: "だい2")!), nil)

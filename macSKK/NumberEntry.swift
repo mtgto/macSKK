@@ -137,7 +137,7 @@ struct NumberCandidate {
                     case 8: // 3桁ごとに区切る
                         result.append(number.formatted(.number))
                     case 9: // 将棋の棋譜入力用
-                        if number < 10 && number > 99 && number % 10 == 0 {
+                        if number < 10 || number > 99 || number % 10 == 0 {
                             return nil
                         }
                         result.append(String(number / 10).toZenkaku() + toKanjiString(number: number % 10))
