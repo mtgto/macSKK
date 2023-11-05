@@ -102,6 +102,8 @@ class MemoryDictTests: XCTestCase {
         dict.add(yomi: "あいうえお", word: Word("アイウエオ"))
         XCTAssertEqual(dict.findCompletion(prefix: "あいうえ"), "あいうえお", "あとで追加したエントリの読みを優先する")
         XCTAssertEqual(dict.findCompletion(prefix: "あいうえお"), "あいうえおか")
+        dict.add(yomi: "だい#", word: Word("第1"))
+        XCTAssertNil(dict.findCompletion(prefix: "だい"), "数値変換の読みはnil")
     }
 
     func testReferWithOption() {

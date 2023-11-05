@@ -220,6 +220,7 @@ class UserDict: NSObject, DictProtocol {
      * - prefixが空文字列ならnilを返す
      * - ユーザー辞書の送りなしの読みのうち、最近変換したものから選択する。
      * - prefixと読みが完全に一致する場合は補完候補とはしない
+     * - 数値変換用の読みは補完候補としない
      */
     func findCompletion(prefix: String) -> String? {
         if privateMode.value {

@@ -160,7 +160,7 @@ struct MemoryDict: DictProtocol {
     func findCompletion(prefix: String) -> String? {
         if !prefix.isEmpty {
             for yomi in okuriNashiYomis.reversed() {
-                if yomi.count > prefix.count && yomi.hasPrefix(prefix) {
+                if yomi.count > prefix.count && yomi.hasPrefix(prefix) && !yomi.contains(where: { $0 == "#" }) {
                     return yomi
                 }
             }
