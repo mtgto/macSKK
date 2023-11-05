@@ -10,11 +10,14 @@
 		CE06CA2B2AAC171B00E80E5E /* FileDictTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE06CA292AAC171B00E80E5E /* FileDictTests.swift */; };
 		CE06CA2D2AAC172F00E80E5E /* empty.txt in Resources */ = {isa = PBXBuildFile; fileRef = CE06CA2C2AAC172F00E80E5E /* empty.txt */; };
 		CE06CA342AAC199500E80E5E /* UserDict+Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE06CA332AAC199500E80E5E /* UserDict+Utilities.swift */; };
+		CE313A1F2AF5213700A49142 /* Candidate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE313A1E2AF5213700A49142 /* Candidate.swift */; };
 		CE39DB212A8DFD8F00BC619F /* MarkedText.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE39DB202A8DFD8F00BC619F /* MarkedText.swift */; };
 		CE40D9A12A6D0C2F00D44799 /* SystemDictView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE40D9A02A6D0C2F00D44799 /* SystemDictView.swift */; };
 		CE40D9A32A6D0C3900D44799 /* SystemDict.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE40D9A22A6D0C3900D44799 /* SystemDict.swift */; };
 		CE485A882A8FA195008271EF /* Release+UNNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE485A872A8FA195008271EF /* Release+UNNotification.swift */; };
 		CE485A8A2A8FA5C6008271EF /* UserNotificationDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE485A892A8FA5C6008271EF /* UserNotificationDelegate.swift */; };
+		CE4CB5CC2AD557D90046FA34 /* NumberEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE4CB5CB2AD557D90046FA34 /* NumberEntry.swift */; };
+		CE4CB5CE2AD55DF90046FA34 /* NumberEntryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE4CB5CD2AD55DF90046FA34 /* NumberEntryTests.swift */; };
 		CE5EB6AD2AAC0DE000389B98 /* FileDict.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE5EB6AC2AAC0DE000389B98 /* FileDict.swift */; };
 		CE5EB6AF2AAC0DEB00389B98 /* MemoryDict.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE5EB6AE2AAC0DEB00389B98 /* MemoryDict.swift */; };
 		CE5ECF362957034B00E7BE7D /* macSKKApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE5ECF352957034B00E7BE7D /* macSKKApp.swift */; };
@@ -65,7 +68,7 @@
 		CED7CA5B2A83DE7F004EF988 /* SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED7CA5A2A83DE7F004EF988 /* SettingsViewModel.swift */; };
 		CED7F51F2AB5F4A7007FC6BD /* Character+Additions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED7F51E2AB5F4A7007FC6BD /* Character+Additions.swift */; };
 		CEE2D9772A99FE1B00A4CD76 /* Word.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEE2D9762A99FE1B00A4CD76 /* Word.swift */; };
-		CEE2D9792A99FEC700A4CD76 /* WordTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEE2D9782A99FEC700A4CD76 /* WordTest.swift */; };
+		CEE2D9792A99FEC700A4CD76 /* CandidateTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEE2D9782A99FEC700A4CD76 /* CandidateTest.swift */; };
 		CEE3717529653112000DB2C3 /* SoftwareUpdateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEE3717429653112000DB2C3 /* SoftwareUpdateView.swift */; };
 		CEF0823629685C0800646366 /* StateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF0823529685C0800646366 /* StateTests.swift */; };
 		CEF0823A296BCDB000646366 /* InputModePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF08239296BCDB000646366 /* InputModePanel.swift */; };
@@ -109,11 +112,14 @@
 		CE06CA292AAC171B00E80E5E /* FileDictTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileDictTests.swift; sourceTree = "<group>"; };
 		CE06CA2C2AAC172F00E80E5E /* empty.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = empty.txt; sourceTree = "<group>"; };
 		CE06CA332AAC199500E80E5E /* UserDict+Utilities.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UserDict+Utilities.swift"; sourceTree = "<group>"; };
+		CE313A1E2AF5213700A49142 /* Candidate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Candidate.swift; sourceTree = "<group>"; };
 		CE39DB202A8DFD8F00BC619F /* MarkedText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkedText.swift; sourceTree = "<group>"; };
 		CE40D9A02A6D0C2F00D44799 /* SystemDictView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemDictView.swift; sourceTree = "<group>"; };
 		CE40D9A22A6D0C3900D44799 /* SystemDict.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemDict.swift; sourceTree = "<group>"; };
 		CE485A872A8FA195008271EF /* Release+UNNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Release+UNNotification.swift"; sourceTree = "<group>"; };
 		CE485A892A8FA5C6008271EF /* UserNotificationDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserNotificationDelegate.swift; sourceTree = "<group>"; };
+		CE4CB5CB2AD557D90046FA34 /* NumberEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumberEntry.swift; sourceTree = "<group>"; };
+		CE4CB5CD2AD55DF90046FA34 /* NumberEntryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumberEntryTests.swift; sourceTree = "<group>"; };
 		CE5EB6AC2AAC0DE000389B98 /* FileDict.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileDict.swift; sourceTree = "<group>"; };
 		CE5EB6AE2AAC0DEB00389B98 /* MemoryDict.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryDict.swift; sourceTree = "<group>"; };
 		CE5ECF322957034B00E7BE7D /* macSKK.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = macSKK.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -172,7 +178,7 @@
 		CED7CA5A2A83DE7F004EF988 /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewModel.swift; sourceTree = "<group>"; };
 		CED7F51E2AB5F4A7007FC6BD /* Character+Additions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Character+Additions.swift"; sourceTree = "<group>"; };
 		CEE2D9762A99FE1B00A4CD76 /* Word.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Word.swift; sourceTree = "<group>"; };
-		CEE2D9782A99FEC700A4CD76 /* WordTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WordTest.swift; sourceTree = "<group>"; };
+		CEE2D9782A99FEC700A4CD76 /* CandidateTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CandidateTest.swift; sourceTree = "<group>"; };
 		CEE3717429653112000DB2C3 /* SoftwareUpdateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoftwareUpdateView.swift; sourceTree = "<group>"; };
 		CEF0823529685C0800646366 /* StateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateTests.swift; sourceTree = "<group>"; };
 		CEF08239296BCDB000646366 /* InputModePanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputModePanel.swift; sourceTree = "<group>"; };
@@ -241,6 +247,7 @@
 				CE84A3DB2957174D009394C4 /* State.swift */,
 				CE84A3DF295717CB009394C4 /* StateMachine.swift */,
 				CEE2D9762A99FE1B00A4CD76 /* Word.swift */,
+				CE4CB5CB2AD557D90046FA34 /* NumberEntry.swift */,
 				CE84A3EA295DA715009394C4 /* Dict.swift */,
 				CE5EB6AC2AAC0DE000389B98 /* FileDict.swift */,
 				CE5EB6AE2AAC0DEB00389B98 /* MemoryDict.swift */,
@@ -267,6 +274,7 @@
 				CE6DBAC62A85BF3E00F5A227 /* Localizable.strings */,
 				CEB0888B2A7F342000EFD1E3 /* Credits.rtf */,
 				CE5ECF3B2957034D00E7BE7D /* Preview Content */,
+				CE313A1E2AF5213700A49142 /* Candidate.swift */,
 			);
 			path = macSKK;
 			sourceTree = "<group>";
@@ -284,7 +292,8 @@
 			isa = PBXGroup;
 			children = (
 				CE84A3E8295DA504009394C4 /* RomajiTests.swift */,
-				CEE2D9782A99FEC700A4CD76 /* WordTest.swift */,
+				CEE2D9782A99FEC700A4CD76 /* CandidateTest.swift */,
+				CE4CB5CD2AD55DF90046FA34 /* NumberEntryTests.swift */,
 				CE84A3EC295DA818009394C4 /* MemoryDictTests.swift */,
 				CE06CA292AAC171B00E80E5E /* FileDictTests.swift */,
 				CEA78FB129646CA100B67E25 /* UserDictTests.swift */,
@@ -540,12 +549,14 @@
 				CED7CA3C2A839603004EF988 /* UpdateChecker.swift in Sources */,
 				CE5ECF362957034B00E7BE7D /* macSKKApp.swift in Sources */,
 				CEC061C82ABB0A0100A11614 /* CompletionPanel.swift in Sources */,
+				CE4CB5CC2AD557D90046FA34 /* NumberEntry.swift in Sources */,
 				CE84A3DE29571797009394C4 /* Action.swift in Sources */,
 				CE485A882A8FA195008271EF /* Release+UNNotification.swift in Sources */,
 				CED7CA3A2A839505004EF988 /* FetchUpdateServiceProtocol.swift in Sources */,
 				CEA78FB02964209B00B67E25 /* UserDict.swift in Sources */,
 				CEF08257296D8CBD00646366 /* CandidatesPanel.swift in Sources */,
 				CE97887B2A9B93EB00F9B196 /* DirectModeView.swift in Sources */,
+				CE313A1F2AF5213700A49142 /* Candidate.swift in Sources */,
 				CE6DBA8F2A845E8B00F5A227 /* ReleaseVersion.swift in Sources */,
 				CEB088902A7F73B400EFD1E3 /* Pasteboard.swift in Sources */,
 				CE84A3DC2957174D009394C4 /* State.swift in Sources */,
@@ -569,8 +580,9 @@
 				CE84A3ED295DA818009394C4 /* MemoryDictTests.swift in Sources */,
 				CE06CA342AAC199500E80E5E /* UserDict+Utilities.swift in Sources */,
 				CE84A3E9295DA504009394C4 /* RomajiTests.swift in Sources */,
+				CE4CB5CE2AD55DF90046FA34 /* NumberEntryTests.swift in Sources */,
 				CEA78FAA295EBCAC00B67E25 /* StateMachineTests.swift in Sources */,
-				CEE2D9792A99FEC700A4CD76 /* WordTest.swift in Sources */,
+				CEE2D9792A99FEC700A4CD76 /* CandidateTest.swift in Sources */,
 				CEF0823629685C0800646366 /* StateTests.swift in Sources */,
 				CED7CA3E2A8397E4004EF988 /* UpdateCheckerTests.swift in Sources */,
 				CEA78FB229646CA100B67E25 /* UserDictTests.swift in Sources */,

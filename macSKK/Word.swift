@@ -28,25 +28,3 @@ struct Word: Hashable {
         hasher.combine(word)
     }
 }
-
-/// 複数の辞書から引いた、辞書ごとの注釈をもつことが可能なWord。
-struct ReferredWord: Hashable {
-    let word: Word.Word
-    private(set) var annotations: [Annotation]
-
-    init(_ word: Word.Word, annotations: [Annotation] = []) {
-        self.word = word
-        self.annotations = annotations
-    }
-
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(word)
-    }
-
-    /// 注釈を追加する。すでに同じテキストをもつ注釈があれば追加されない。
-    mutating func appendAnnotation(_ annotation: Annotation) {
-        if annotations.allSatisfy({ $0.text != annotation.text }) {
-            annotations.append(annotation)
-        }
-    }
-}

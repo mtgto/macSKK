@@ -97,6 +97,46 @@ class UserDict: NSObject, DictProtocol {
         NSFileCoordinator.removeFilePresenter(self)
     }
 
+    /**
+     * 保持する辞書を順に引き変換候補順に返す。
+     *
+     * 複数の辞書に同じ変換がある場合、注釈を結合して返す
+     *
+     * - Parameters:
+     *   - yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
+     *   - option: 辞書を引くときに接頭辞や接尾辞から検索するかどうか。nilなら通常のエントリから検索する
+     */
+    func referDicts(_ yomi: String, option: DictReferringOption? = nil) -> [Candidate] {
+        var result: [Candidate] = []
+        var candidates = refer(yomi, option: option).map { word in
+            let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
+            return Candidate(word.word, annotations: annotations)
+        }
+        if candidates.isEmpty {
+            // yomiが数値を含む場合は "#" に置換して辞書を引く
+            if let numberYomi = NumberYomi(yomi) {
+                let midashi = numberYomi.toMidashiString()
+                candidates = refer(midashi, option: nil).compactMap({ word in
+                    guard let numberCandidate = try? NumberCandidate(yomi: word.word) else { return nil }
+                    guard let convertedWord = numberCandidate.toString(yomi: numberYomi) else { return nil }
+                    let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
+                    return Candidate(convertedWord,
+                                     annotations: annotations,
+                                     original: Candidate.Original(midashi: midashi, word: word.word))
+                })
+            }
+        }
+        for candidate in candidates {
+            if let index = result.firstIndex(where: { $0.word == candidate.word }) {
+                // 注釈だけマージする
+                result[index].appendAnnotations(candidate.annotations)
+            } else {
+                result.append(candidate)
+            }
+        }
+        return result
+    }
+
     // MARK: DictProtocol
     func refer(_ yomi: String, option: DictReferringOption? = nil) -> [Word] {
         var result = userDict.refer(yomi, option: option)
@@ -180,7 +220,7 @@ class UserDict: NSObject, DictProtocol {
      * - prefixが空文字列ならnilを返す
      * - ユーザー辞書の送りなしの読みのうち、最近変換したものから選択する。
      * - prefixと読みが完全に一致する場合は補完候補とはしない
-
+     * - 数値変換用の読みは補完候補としない
      */
     func findCompletion(prefix: String) -> String? {
         if privateMode.value {

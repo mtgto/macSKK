@@ -691,6 +691,54 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    func testHandleComposingNumber() {
+        let entries = ["だい#": [Word("第#1"), Word("第#0"), Word("第#2"), Word("第#3")], "だい2": [Word("第2")]]
+        dictionary.dicts.append(MemoryDict(entries: entries, readonly: true))
+
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(18).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("d")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("だ")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("だい")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("だい1")])))
+            XCTAssertEqual(events[4], .markedText(MarkedText([.markerCompose, .plain("だい10")])))
+            XCTAssertEqual(events[5], .markedText(MarkedText([.markerCompose, .plain("だい102")])))
+            XCTAssertEqual(events[6], .markedText(MarkedText([.markerCompose, .plain("だい1024")])))
+            XCTAssertEqual(events[7], .markedText(MarkedText([.markerSelect, .emphasized("第１０２４")])))
+            XCTAssertEqual(events[8], .markedText(MarkedText([.markerSelect, .emphasized("第1024")])))
+            XCTAssertEqual(events[9], .markedText(MarkedText([.markerSelect, .emphasized("第一〇二四")])))
+            XCTAssertEqual(events[10], .markedText(MarkedText([.markerSelect, .emphasized("第千二十四")])))
+            XCTAssertEqual(events[11], .fixedText("第千二十四"))
+            XCTAssertEqual(events[12], .markedText(MarkedText([.markerCompose, .plain("d")])))
+            XCTAssertEqual(events[13], .markedText(MarkedText([.markerCompose, .plain("だ")])))
+            XCTAssertEqual(events[14], .markedText(MarkedText([.markerCompose, .plain("だい")])))
+            XCTAssertEqual(events[15], .markedText(MarkedText([.markerCompose, .plain("だい2")])))
+            XCTAssertEqual(events[16], .markedText(MarkedText([.markerSelect, .emphasized("第2")])))
+            XCTAssertEqual(events[17], .fixedText("第2"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "d", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "1")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "0")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "2")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "4")))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "d", withShift: true)))
+        XCTAssertEqual(dictionary.userDict.refer("だい#", option: nil), [Word("第#3")], "ユーザー辞書には#形式で保存する")
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "2")))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertEqual(dictionary.userDict.refer("だい2", option: nil), [Word("第2")], "数値変換より通常のエントリを優先する")
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     // 送り仮名入力でShiftキーを押すのを子音側でするパターン
     func testHandleComposingOkuriari() {
         dictionary.setEntries(["とr": [Word("取"), Word("撮")]])
@@ -1910,11 +1958,13 @@ final class StateMachineTests: XCTestCase {
     }
 
     func testAddWordToUserDict() {
-        stateMachine.addWordToUserDict(yomi: "あ", word: "あああ")
+        stateMachine.addWordToUserDict(yomi: "あ", candidate: Candidate("あああ"))
         XCTAssertEqual(dictionary.refer("あ"), [Word("あああ", annotation: nil)])
         let annotation = Annotation(dictId: "test", text: "test辞書の注釈")
-        stateMachine.addWordToUserDict(yomi: "い", word: "いいい", annotation: annotation)
+        stateMachine.addWordToUserDict(yomi: "い", candidate: Candidate("いいい"), annotation: annotation)
         XCTAssertEqual(dictionary.refer("い"), [Word("いいい", annotation: annotation)])
+        stateMachine.addWordToUserDict(yomi: "だい1", candidate: Candidate("第一", original: Candidate.Original(midashi: "だい#", word: "第#3")))
+        XCTAssertEqual(dictionary.refer("だい#"), [Word("第#3", annotation: nil)])
     }
 
     private func nextInputMethodEvent() async -> InputMethodEvent {

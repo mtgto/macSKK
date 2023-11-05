@@ -300,17 +300,28 @@ struct SelectingState: Equatable, MarkedTextProtocol {
     }
     /// 候補選択状態に遷移する前の状態。
     let prev: PrevState
-    /// 辞書登録する際の読み。ひらがなのみ、もしくは `ひらがな + アルファベット` もしくは `":" + アルファベット` (abbrev) のパターンがある
+    /**
+     * 辞書登録する際の読み。ただし数値変換エントリの場合は例外あり。
+     *
+     * ひらがなのみ、もしくは `ひらがな + アルファベット` もしくは `":" + アルファベット` (abbrev) のパターンがある。
+     * 数値変換の場合は辞書上は "だい#" のように数値が入る部分が "#" になっているが、
+     * yomiの場合は "だい5" のように実際のユーザー入力で置換されたものになる。
+     * 辞書に読み "だい#" と "だい5" がある場合、変換後にユーザー辞書に変換結果として保存するときは
+     * 数値変換したら前者の読み、しなかった場合は後者の読みで登録される。
+     */
     let yomi: String
     /// 変換候補
-    let candidates: [ReferredWord]
+    let candidates: [Candidate]
     var candidateIndex: Int = 0
     /// カーソル位置。この位置を基に変換候補パネルを表示する
     let cursorPosition: NSRect
 
     func addCandidateIndex(diff: Int) -> Self {
         return SelectingState(
-            prev: prev, yomi: yomi, candidates: candidates, candidateIndex: candidateIndex + diff,
+            prev: prev,
+            yomi: yomi,
+            candidates: candidates,
+            candidateIndex: candidateIndex + diff,
             cursorPosition: cursorPosition)
     }
 
@@ -343,7 +354,10 @@ struct RegisterState: SpecialStateProtocol {
     }
     /// 辞書登録状態に遷移する前の状態。
     let prev: PrevState
-    /// 辞書登録する際の読み。ひらがなのみ、もしくは `ひらがな + アルファベット` もしくは `":" + アルファベット` (abbrev) のパターンがある
+    /**
+     * 辞書登録する際の読み。
+     * ひらがなのみ、もしくは `ひらがな + アルファベット` もしくは `":" + アルファベット` (abbrev) のパターンがある。
+     */
     let yomi: String
     /// 入力中の登録単語。変換中のように未確定の文字列は含まず確定済文字列のみが入る
     var text: String = ""
@@ -519,7 +533,7 @@ struct Candidates: Equatable {
     /// パネル形式のときの現在ページと最大ページ数。
     struct Page: Equatable {
         /// 現在表示される変換候補。全体の変換候補の一部。
-        let words: [ReferredWord]
+        let words: [Candidate]
         /// 全体の変換候補表示の何ページ目かという数値 (0オリジン)
         let current: Int
         /// 全体の変換候補表示の最大ページ数
@@ -528,7 +542,7 @@ struct Candidates: Equatable {
 
     /// パネル形式のときの現在ページと最大ページ数。インライン変換中はnil
     let page: Page?
-    let selected: ReferredWord
+    let selected: Candidate
     let cursorPosition: NSRect
 }
 
@@ -578,7 +592,8 @@ struct IMEState {
                 }
             case .unregister(let unregisterState):
                 let selectingState = unregisterState.prev.selecting
-                elements.append(.plain("\(selectingState.yomi) /\(selectingState.candidates[selectingState.candidateIndex].word)/ を削除します(yes/no)"))
+                let selectingCandidate = selectingState.candidates[selectingState.candidateIndex]
+                elements.append(.plain("\(selectingCandidate.toMidashiString(yomi: selectingState.yomi)) /\(selectingCandidate.candidateString)/ を削除します(yes/no)"))
                 if !unregisterState.text.isEmpty {
                     elements.append(.plain(unregisterState.text))
                 }
