@@ -161,7 +161,7 @@ final class StateTests: XCTestCase {
             candidateIndex: 0,
             cursorPosition: .zero
         )
-        XCTAssertEqual(selectingState.fixedText(), "亜")
+        XCTAssertEqual(selectingState.fixedText, "亜")
     }
 
     func testSelectingStateFixedTextOkuriari() throws {
@@ -180,7 +180,7 @@ final class StateTests: XCTestCase {
             candidateIndex: 0,
             cursorPosition: .zero
         )
-        XCTAssertEqual(selectingState.fixedText(), "有る")
+        XCTAssertEqual(selectingState.fixedText, "有る")
     }
 
     func testSelectingStateDisplayText() {

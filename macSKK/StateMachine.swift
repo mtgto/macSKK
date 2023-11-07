@@ -784,7 +784,7 @@ class StateMachine {
             addWordToUserDict(yomi: selecting.yomi, candidate: selecting.candidates[selecting.candidateIndex])
             updateCandidates(selecting: nil)
             state.inputMethod = .normal
-            addFixedText(selecting.fixedText())
+            addFixedText(selecting.fixedText)
             return true
         case .backspace, .up:
             let diff: Int
@@ -843,7 +843,7 @@ class StateMachine {
             // 選択中候補で確定
             addWordToUserDict(yomi: selecting.yomi, candidate: selecting.candidates[selecting.candidateIndex])
             updateCandidates(selecting: nil)
-            addFixedText(selecting.fixedText())
+            addFixedText(selecting.fixedText)
             state.inputMethod = .normal
             return handleNormal(action, specialState: nil)
         case .printable(let input):
@@ -859,7 +859,7 @@ class StateMachine {
                 // 選択中候補で確定し、接尾辞入力に移行
                 addWordToUserDict(yomi: selecting.yomi, candidate: selecting.candidates[selecting.candidateIndex])
                 updateCandidates(selecting: nil)
-                addFixedText(selecting.fixedText())
+                addFixedText(selecting.fixedText)
                 state.inputMethod = .composing(ComposingState(isShift: true, text: [], okuri: nil, romaji: ""))
                 return handle(action)
             } else if selecting.candidateIndex >= inlineCandidateCount {
@@ -870,7 +870,7 @@ class StateMachine {
                         addWordToUserDict(yomi: selecting.yomi, candidate: newSelecting.candidates[newSelecting.candidateIndex])
                         updateCandidates(selecting: nil)
                         state.inputMethod = .normal
-                        addFixedText(newSelecting.fixedText())
+                        addFixedText(newSelecting.fixedText)
                         return true
                     }
                 }
@@ -878,7 +878,7 @@ class StateMachine {
             // 選択中候補で確定
             addWordToUserDict(yomi: selecting.yomi, candidate: selecting.candidates[selecting.candidateIndex])
             updateCandidates(selecting: nil)
-            addFixedText(selecting.fixedText())
+            addFixedText(selecting.fixedText)
             state.inputMethod = .normal
             return handleNormal(action, specialState: nil)
         case .cancel:
@@ -955,7 +955,7 @@ class StateMachine {
                 // エンター押したときと違って辞書登録はスキップ (仮)
                 updateCandidates(selecting: nil)
                 state.inputMethod = .normal
-                addFixedText(selecting.fixedText())
+                addFixedText(selecting.fixedText)
             }
         }
     }

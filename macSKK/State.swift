@@ -325,8 +325,8 @@ struct SelectingState: Equatable, MarkedTextProtocol {
             cursorPosition: cursorPosition)
     }
 
-    /// 読みを文字列を返す
-    func fixedText() -> String {
+    /// 現在選択されている変換候補を文字列を返す
+    var fixedText: String {
         let text = candidates[candidateIndex].word
         let okuri = prev.composing.okuri?.map { $0.string(for: prev.mode) }
         if let okuri {
