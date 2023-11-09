@@ -1155,6 +1155,27 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    func testHandleComposingRightRomajiOnly() {
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(5).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.plain("k")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.plain("s")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.plain("sh")])))
+            XCTAssertEqual(events[4], .markedText(MarkedText([])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "k")))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .right, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertEqual(stateMachine.state.inputMethod, .normal, "ローマ字のみで右矢印キーが押されたら未入力に戻す")
+        XCTAssertFalse(stateMachine.handle(Action(keyEvent: .right, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "s")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "h")))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .right, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertEqual(stateMachine.state.inputMethod, .normal)
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     func testHandleComposingLeftOkuri() {
         dictionary.setEntries(["あs": [Word("褪")]])
 
