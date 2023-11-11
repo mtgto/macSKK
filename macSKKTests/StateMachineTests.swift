@@ -1134,14 +1134,17 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleComposingLeftRomajiOnly() {
+    func testHandleComposingCursorRomajiOnly() {
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(5).sink { events in
+        stateMachine.inputMethodEvent.collect(8).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.plain("k")])))
             XCTAssertEqual(events[1], .markedText(MarkedText([])))
             XCTAssertEqual(events[2], .markedText(MarkedText([.plain("s")])))
-            XCTAssertEqual(events[3], .markedText(MarkedText([.plain("sh")])))
-            XCTAssertEqual(events[4], .markedText(MarkedText([])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([])))
+            XCTAssertEqual(events[4], .markedText(MarkedText([.plain("t")])))
+            XCTAssertEqual(events[5], .markedText(MarkedText([])))
+            XCTAssertEqual(events[6], .markedText(MarkedText([.plain("n")])))
+            XCTAssertEqual(events[7], .markedText(MarkedText([])))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "k")))
@@ -1149,32 +1152,14 @@ final class StateMachineTests: XCTestCase {
         XCTAssertEqual(stateMachine.state.inputMethod, .normal, "ローマ字のみで左矢印キーが押されたら未入力に戻す")
         XCTAssertFalse(stateMachine.handle(Action(keyEvent: .left, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "s")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "h")))
-        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .left, originalEvent: nil, cursorPosition: .zero)))
-        XCTAssertEqual(stateMachine.state.inputMethod, .normal)
-        wait(for: [expectation], timeout: 1.0)
-    }
-
-    func testHandleComposingRomajiOnly() {
-        let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(6).sink { events in
-            XCTAssertEqual(events[0], .markedText(MarkedText([.plain("k")])))
-            XCTAssertEqual(events[1], .markedText(MarkedText([])))
-            XCTAssertEqual(events[2], .markedText(MarkedText([.plain("s")])))
-            XCTAssertEqual(events[3], .markedText(MarkedText([])))
-            XCTAssertEqual(events[4], .markedText(MarkedText([.plain("t")])))
-            XCTAssertEqual(events[5], .markedText(MarkedText([])))
-            expectation.fulfill()
-        }.store(in: &cancellables)
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "k")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .right, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertEqual(stateMachine.state.inputMethod, .normal, "ローマ字のみで右矢印キーが押されたら未入力に戻す")
         XCTAssertFalse(stateMachine.handle(Action(keyEvent: .right, originalEvent: nil, cursorPosition: .zero)))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "s")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .ctrlA, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertEqual(stateMachine.state.inputMethod, .normal, "ローマ字のみでCtrl-Aが押されたら未入力に戻す")
         XCTAssertFalse(stateMachine.handle(Action(keyEvent: .ctrlA, originalEvent: nil, cursorPosition: .zero)))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .ctrlE, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertEqual(stateMachine.state.inputMethod, .normal, "ローマ字のみでCtrl-Eが押されたら未入力に戻す")
         XCTAssertFalse(stateMachine.handle(Action(keyEvent: .ctrlE, originalEvent: nil, cursorPosition: .zero)))
