@@ -13,11 +13,12 @@ jobs:
     # https://github.com/actions/runner-images/blob/main/images/macos/macos-13-Readme.md#xcode
     - name: Select Xcode version
       run: sudo xcode-select -s '/Applications/Xcode_15.0.1.app/Contents/Developer'
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: test
       run: |
-        xcodebuild -target macSKKTests -scheme macSKK -resultBundlePath TestResults DEVELOPMENT_TEAM= test
+        xcodebuild -target macSKKTests -scheme macSKK -resultBundlePath TestResults DEVELOPMENT_TEAM= test | xcpretty
     - uses: kishikawakatsumi/xcresulttool@v1
       with:
         path: TestResults.xcresult
+        show-passed-tests: false
       if: success() || failure()
