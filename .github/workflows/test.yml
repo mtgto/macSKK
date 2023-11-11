@@ -20,4 +20,5 @@ jobs:
     - uses: kishikawakatsumi/xcresulttool@v1
       with:
         path: TestResults.xcresult
+        show-passed-tests: false
       if: success() || failure()
