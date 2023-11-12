@@ -19,6 +19,8 @@ class MemoryDictTests: XCTestCase {
             greek /α/β/γ/δ/ε/ζ/η/θ/ι/κ/λ/μ/ν/ξ/ο/π/ρ/σ/τ/υ/φ/χ/ψ/ω/
             あ /阿/唖/亜/娃/
             けい /京;10^16/
+            おおk /大/多/[く/多/]/[き/大/]/
+            いt /[った/行/言/]/
 
             """
         let dict = try MemoryDict(dictId: "testDict", source: source, readonly: false)
@@ -26,6 +28,7 @@ class MemoryDictTests: XCTestCase {
         XCTAssertEqual(dict.entries["あb"]?.map { $0.word }, ["浴"])
         XCTAssertEqual(dict.entries["あ"]?.map { $0.word }, ["阿", "唖", "亜", "娃"])
         XCTAssertEqual(dict.entries["けい"]?.map { $0.word }, ["京"])
+        XCTAssertEqual(dict.entries["おおk"]?.map { $0.word }, ["大", "多", "多", "大"])
         XCTAssertEqual(dict.okuriNashiYomis, ["けい", "あ", "greek", "cyrillic", "Greek", "Cyrillic"], "辞書登場順の逆順に並ぶ")
     }
 

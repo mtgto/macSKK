@@ -9,6 +9,8 @@ enum DictReferringOption {
     case prefix
     /// 接尾辞を返す
     case suffix
+    /// 送り仮名ブロック。引数は例えば「大き」なら「き」のように送り仮名の1文字目
+    case okuri(Character)
 }
 
 protocol DictProtocol {
@@ -19,7 +21,7 @@ protocol DictProtocol {
      *
      * - Parameters:
      *   - yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
-     *   - option: 辞書を引くときに接頭辞や接尾辞から検索するかどうか。nilなら通常のエントリから検索する
+     *   - option: 辞書を引くときに接頭辞、接尾辞や送り仮名ブロックから検索するかどうか。nilなら通常のエントリから検索する
      */
     func refer(_ yomi: String, option: DictReferringOption?) -> [Word]
 

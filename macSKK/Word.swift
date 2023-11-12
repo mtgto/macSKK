@@ -17,14 +17,20 @@ struct Annotation: Equatable {
 struct Word: Hashable {
     typealias Word = String
     let word: Word
+    /// 送り仮名ブロックのひらがな文字
+    let okuri: Character?
     let annotation: Annotation?
 
-    init(_ word: Self.Word, annotation: Annotation? = nil) {
+    init(_ word: Self.Word, okuri: Character? = nil, annotation: Annotation? = nil) {
         self.word = word
         self.annotation = annotation
+        self.okuri = okuri
     }
 
     func hash(into hasher: inout Hasher) {
         hasher.combine(word)
+        if let okuri {
+            hasher.combine(okuri)
+        }
     }
 }
