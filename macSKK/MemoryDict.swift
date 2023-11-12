@@ -30,14 +30,23 @@ struct MemoryDict: DictProtocol {
         var dict: [String: [Word]] = [:]
         var okuriNashiYomis: [String] = []
         var okuriAriYomis: [String] = []
-        let pattern = try Regex(#"^(\S+) (/(?:[^/\n\r]+/)+)$"#).anchorsMatchLineEndings()
+        let pattern = /^(?<yomi>[^;]\S*) (?<wordsText>\/(?:[^\/\n\r]+\/)+)$/.anchorsMatchLineEndings()
+        let wordsPattern = /(?:(?<word>[^\/\[\]]+)|(?:\[(?<okuri>.)\/(?:<wordForOkuri>[^\/]+)\/\]))+\//
         for match in source.matches(of: pattern) {
-            guard let yomi = match.output[1].substring.map({ String($0) }) else { continue }
-            guard let wordsText = match.output[2].substring else { continue }
+            let yomi = String(match.yomi)
+            let wordsText = match.wordsText
             if yomi.isOkuriAri {
                 okuriAriYomis.append(yomi)
             } else {
                 okuriNashiYomis.append(yomi)
+            }
+            let words2 = wordsText.dropFirst().matches(of: wordsPattern).map { match in
+                let hoge = match.word
+                let hoge2 = match.wordWithOkuri
+                if yomi == "おおk" {
+                    print(hoge)
+                    print(hoge2)
+                }
             }
             let words = wordsText.split(separator: Character("/")).map { word -> Word in
                 let words = word.split(separator: Character(";"), maxSplits: 1)
@@ -74,6 +83,10 @@ struct MemoryDict: DictProtocol {
 
     var entryCount: Int { return entries.count }
 
+    static func parseEntry(_ line: String) -> (String, [Word]) {
+        return ("", [])
+    }
+
     // MARK: DictProtocol
     func refer(_ yomi: String, option: DictReferringOption?) -> [Word] {
         if let option {
@@ -82,6 +95,8 @@ struct MemoryDict: DictProtocol {
                 return refer(yomi + ">", option: nil)
             case .suffix:
                 return refer(">" + yomi, option: nil)
+            case .okuri(let kana):
+                return []
             }
         } else {
             return entries[yomi] ?? []
