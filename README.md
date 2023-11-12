@@ -24,6 +24,7 @@ Universal Binaryでビルドしていますが、動作確認はApple Silicon環
   - ddskkを使っているときのGUI版Emacs.appなど
 - [x] 過去の入力を使った入力補完
 - [ ] Java AWT製アプリケーションで入力ができない問題のワークアラウンド対応 (JetBrain製品など)
+- [ ] キー配列の設定 (Dvorakなど)
 
 ### 実装予定の独自機能
 
