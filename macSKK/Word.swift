@@ -17,11 +17,11 @@ struct Annotation: Equatable {
 struct Word: Hashable {
     typealias Word = String
     let word: Word
-    /// 送り仮名ブロックのひらがな文字
-    let okuri: Character?
+    /// 送り仮名ブロックのひらがな ("った" のように2文字以上のことがある)
+    let okuri: String?
     let annotation: Annotation?
 
-    init(_ word: Self.Word, okuri: Character? = nil, annotation: Annotation? = nil) {
+    init(_ word: Self.Word, okuri: String? = nil, annotation: Annotation? = nil) {
         self.word = word
         self.annotation = annotation
         self.okuri = okuri
