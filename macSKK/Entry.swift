@@ -4,7 +4,7 @@
 import Foundation
 
 struct Entry {
-    let yomi: Substring
+    let yomi: String
     let candidates: [Word]
 
     init?(line: String, dictId: FileDict.ID) {
@@ -16,7 +16,7 @@ struct Entry {
         if words.count != 2 || words[0].last == " " {
             return nil
         }
-        yomi = words[0]
+        yomi = String(words[0])
         guard let candidates = Self.parseWords(words[1], dictId: dictId) else { return nil }
         self.candidates = candidates
     }

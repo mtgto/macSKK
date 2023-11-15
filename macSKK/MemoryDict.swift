@@ -32,37 +32,18 @@ struct MemoryDict: DictProtocol {
         var okuriAriYomis: [String] = []
 
         source.enumerateLines { line, stop in
-            let words = line.split(separator: " ")
-            guard words.count >= 2 else { return }
-        }
-
-        let pattern = /^(?<yomi>[^;]\S*) (?<wordsText>\/(?:[^\/\n\r]+\/)+)$/.anchorsMatchLineEndings()
-        let wordsPattern = /(?:(?<word>[^\/\[\]]+)|(?:\[(?<okuri>.)\/(?:<wordForOkuri>[^\/]+)\/\]))+\//
-        for match in source.matches(of: pattern) {
-            let yomi = String(match.yomi)
-            let wordsText = match.wordsText
-            if yomi.isOkuriAri {
-                okuriAriYomis.append(yomi)
-            } else {
-                okuriNashiYomis.append(yomi)
-            }
-            let words2 = wordsText.dropFirst().matches(of: wordsPattern).map { match in
-                if yomi == "おおk" {
-                }
-            }
-            let words = wordsText.split(separator: Character("/")).map { word -> Word in
-                let words = word.split(separator: Character(";"), maxSplits: 1)
-                let annotation: Annotation?
-                if words.count == 2 {
-                    // 注釈の先頭に "*" がついていたらユーザー独自の注釈を表す
-                    let annotationText = words[1].first == "*" ? String(words[1].suffix(from: words[1].startIndex + 1)) : String(words[1])
-                    annotation = Annotation(dictId: dictId, text: Self.decode(annotationText))
+            if let entry = Entry(line: line, dictId: dictId) {
+                if let candidates = dict[entry.yomi] {
+                    dict[entry.yomi] = candidates + entry.candidates
                 } else {
-                    annotation = nil
+                    dict[entry.yomi] = entry.candidates
                 }
-                return Word(Self.decode(String(words[0])), annotation: annotation)
+                if entry.yomi.isOkuriAri {
+                    okuriAriYomis.append(entry.yomi)
+                } else {
+                    okuriNashiYomis.append(entry.yomi)
+                }
             }
-            dict[yomi] = words
         }
         entries = dict
         self.okuriNashiYomis = okuriNashiYomis.reversed()
@@ -179,54 +160,5 @@ struct MemoryDict: DictProtocol {
             }
         }
         return nil
-    }
-
-    static func parseEntry(_ line: String) -> (String, [Word])? {
-        let words = line.split(separator: " ", maxSplits: 1)
-        if words.count != 2 {
-            return nil
-        }
-        let yomi = words[0]
-        let wordsText = words[1]
-        return (String(yomi), [])
-    }
-
-    static func parseWords(_ wordsText: Substring, dictId: FileDict.ID) -> [Word]? {
-        if wordsText == "/" {
-            return []
-        } else if wordsText.first != "/" {
-            return nil
-        }
-        let rest = wordsText.dropFirst()
-        if rest.first == "[" {
-            return []
-        } else {
-            let array = rest.split(separator: "/", maxSplits: 1)
-            guard array.count != 2 else { return nil }
-            let word = parseWord(array[0], dictId: dictId)
-            guard let words = parseWords(array[1], dictId: dictId) else { return nil }
-            return [word] + words
-        }
-    }
-
-    static func parseWord(_ wordText: Substring, dictId: FileDict.ID) -> Word {
-        let words = wordText.split(separator: Character(";"), maxSplits: 1)
-        let annotation: Annotation?
-        if words.count == 2 {
-            // 注釈の先頭に "*" がついていたらユーザー独自の注釈を表す
-            let annotationText = words[1].first == "*" ? words[1].dropFirst() : words[1]
-            annotation = Annotation(dictId: dictId, text: Self.decode(String(annotationText)))
-        } else {
-            annotation = nil
-        }
-        return Word(Self.decode(String(words[0])), annotation: annotation)
-    }
-
-    static func decode(_ word: String) -> String {
-        if word.hasPrefix(#"(concat ""#) && word.hasSuffix(#"")"#) {
-            return String(word.dropFirst(9).dropLast(2).replacingOccurrences(of: "\\057", with: "/"))
-        } else {
-            return word
-        }
     }
 }

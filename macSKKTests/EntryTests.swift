@@ -8,7 +8,7 @@ import XCTest
 final class EntryTests: XCTestCase {
     func testInit() throws {
         let entry = Entry(line: "あg /挙/揚/上/", dictId: "")
-        XCTAssertEqual(entry?.yomi, Substring("あg"))
+        XCTAssertEqual(entry?.yomi, "あg")
         XCTAssertEqual(entry?.candidates.map { $0.word }, ["挙", "揚", "上"])
     }
 
