@@ -11,11 +11,9 @@ struct Entry {
         if line.first == ";" {
             // コメント行
             return nil
-        } else if line.last != "/" {
-            return nil
         }
         let words = line.split(separator: " /", maxSplits: 1)
-        if words.count != 2 {
+        if words.count != 2 || words[0].last == " " {
             return nil
         }
         yomi = words[0]
@@ -30,6 +28,8 @@ struct Entry {
     static func parseWords(_ wordsText: Substring, dictId: FileDict.ID) -> [Word]? {
         if wordsText.isEmpty {
             return []
+        } else if wordsText.first == "/" || wordsText.last != "/" {
+            return nil
         }
         if wordsText.first == "[" {
             // 送り仮名ブロックのパース ややこしいからリファクタしたい
