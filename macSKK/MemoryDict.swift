@@ -99,13 +99,13 @@ struct MemoryDict: DictProtocol {
     mutating func add(yomi: String, word: Word) {
         if var words = entries[yomi] {
             let removed: Word?
-            let index = words.firstIndex { $0.word == word.word }
+            let index = words.firstIndex { $0.word == word.word && $0.okuri == word.okuri }
             if let index {
                 removed = words.remove(at: index)
             } else {
                 removed = nil
             }
-            entries[yomi] = [Word(word.word, annotation: word.annotation ?? removed?.annotation)] + words
+            entries[yomi] = [Word(word.word, okuri: word.okuri, annotation: word.annotation ?? removed?.annotation)] + words
             if !readonly {
                 if yomi.isOkuriAri {
                     if let index = okuriAriYomis.firstIndex(of: yomi) {

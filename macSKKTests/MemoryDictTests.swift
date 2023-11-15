@@ -92,6 +92,11 @@ class MemoryDictTests: XCTestCase {
         let annotation2 = Annotation(dictId: "test2", text: "宇の注釈の更新版")
         dict.add(yomi: "う", word: Word("宇", annotation: annotation2))
         XCTAssertEqual(dict.refer("う", option: nil), [Word("宇", annotation: annotation2)])
+        // 送り仮名ブロックありとなしは共存する
+        dict.add(yomi: "いt", word: Word("行"))
+        XCTAssertEqual(dict.refer("いt", option: nil), [Word("行")])
+        dict.add(yomi: "いt", word: Word("行", okuri: "った"))
+        XCTAssertEqual(dict.refer("いt", option: nil), [Word("行", okuri: "った"), Word("行")])
     }
 
     func testDelete() throws {
