@@ -47,6 +47,17 @@ class MemoryDictTests: XCTestCase {
         XCTAssertEqual(dict.okuriNashiYomis, ["GPL", "ao"], "abbrev辞書の読みは末尾がアルファベットだが送り無し扱い")
     }
 
+    func testParseDuplicatedYomi() throws {
+        let source = """
+            あお /青/
+            あお /蒼/
+            あお /碧/
+
+            """
+        let dict = try MemoryDict(dictId: "testDict", source: source, readonly: false)
+        XCTAssertEqual(dict.entries["あお"]?.map { $0.word }, ["青", "蒼", "碧"])
+    }
+
     func testParseIncludingUserAnnotation() throws {
         // 注釈の先頭のアスタリスクはユーザー自身の注釈を表す
         let source = """
@@ -113,7 +124,8 @@ class MemoryDictTests: XCTestCase {
         let dict = MemoryDict(entries: ["あき>": [Word("空き")],
                                         "あき": [Word("秋")],
                                         ">し": [Word("氏")],
-                                        "し": [Word("詩")]],
+                                        "し": [Word("詩")],
+                                        "いt": [Word("言"), Word("行", okuri: "った")]],
                               readonly: true)
         XCTAssertEqual(dict.refer("あき", option: nil), [Word("秋")])
         XCTAssertEqual(dict.refer("あき", option: .prefix), [Word("空き")])
@@ -121,5 +133,7 @@ class MemoryDictTests: XCTestCase {
         XCTAssertEqual(dict.refer("し", option: nil), [Word("詩")])
         XCTAssertEqual(dict.refer("し", option: .suffix), [Word("氏")])
         XCTAssertEqual(dict.refer("し", option: .prefix), [])
+        XCTAssertEqual(dict.refer("いt", option: nil), [Word("言"), Word("行", okuri: "った")])
+        XCTAssertEqual(dict.refer("いt", option: .okuri("った")), [Word("行", okuri: "った"), Word("言")])
     }
 }
