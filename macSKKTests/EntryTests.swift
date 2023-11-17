@@ -43,4 +43,10 @@ final class EntryTests: XCTestCase {
         XCTAssertNil(Entry(line: "いt /[った//]/", dictId: ""), "変換候補が空")
         XCTAssertNil(Entry(line: "いt /[った/行/", dictId: ""), "送り仮名ブロックが閉じていない")
     }
+
+    func testSerialize() {
+        ["あg /挙/揚/上/", "あ /亜;注釈/", "おおk /大/多/[く/多/]/[き/大/]/", "いt /[った/行/言/]/入/"].forEach { line in
+            XCTAssertEqual(Entry(line: line, dictId: "")?.serialize(), line)
+        }
+    }
 }

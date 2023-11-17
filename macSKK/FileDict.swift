@@ -114,7 +114,7 @@ class FileDict: NSObject, DictProtocol, Identifiable {
     func serialize() -> String {
         if readonly {
             return dict.entries.map { entry in
-                return "\(entry.key) /\(serializeWords(entry.value))/"
+                "\(entry.key) /\(serializeWords(entry.value))/"
             }.joined(separator: "\n")
         }
         var result: [String] = Self.headers + [Self.okuriAriHeader]
@@ -136,6 +136,7 @@ class FileDict: NSObject, DictProtocol, Identifiable {
     var entryCount: Int { return dict.entryCount }
 
     private func serializeWords(_ words: [Word]) -> String {
+        // 送り仮名ブロックの読みが一致しているものは1つにまとめる
         return words.map { word in
             if let annotation = word.annotation {
                 return word.word + ";" + annotation.text
