@@ -1543,6 +1543,27 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    func testHandleSelectingOkuriBlock() {
+        dictionary.setEntries(["おおk": [Word("多"), Word("大", okuri: "き")]])
+
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(5).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("お")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("おお")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("おお*k")])))
+            // 送りありブロックが優先されて辞書順では後ろの "大" から選択される
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerSelect, .emphasized("大き")])))
+            XCTAssertEqual(events[4], .fixedText("大き"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "k", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil, cursorPosition: .zero)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     func testHandleSelectingBackspace() {
         dictionary.setEntries(["と": [Word("戸"), Word("都")]])
 
@@ -1969,12 +1990,12 @@ final class StateMachineTests: XCTestCase {
     }
 
     func testAddWordToUserDict() {
-        stateMachine.addWordToUserDict(yomi: "あ", candidate: Candidate("あああ"))
+        stateMachine.addWordToUserDict(yomi: "あ", okuri: nil, candidate: Candidate("あああ"))
         XCTAssertEqual(dictionary.refer("あ"), [Word("あああ", annotation: nil)])
         let annotation = Annotation(dictId: "test", text: "test辞書の注釈")
-        stateMachine.addWordToUserDict(yomi: "い", candidate: Candidate("いいい"), annotation: annotation)
+        stateMachine.addWordToUserDict(yomi: "い", okuri: nil, candidate: Candidate("いいい"), annotation: annotation)
         XCTAssertEqual(dictionary.refer("い"), [Word("いいい", annotation: annotation)])
-        stateMachine.addWordToUserDict(yomi: "だい1", candidate: Candidate("第一", original: Candidate.Original(midashi: "だい#", word: "第#3")))
+        stateMachine.addWordToUserDict(yomi: "だい1", okuri: nil, candidate: Candidate("第一", original: Candidate.Original(midashi: "だい#", word: "第#3")))
         XCTAssertEqual(dictionary.refer("だい#"), [Word("第#3", annotation: nil)])
     }
 
