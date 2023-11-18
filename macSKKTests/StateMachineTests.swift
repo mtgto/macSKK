@@ -1997,6 +1997,8 @@ final class StateMachineTests: XCTestCase {
         XCTAssertEqual(dictionary.refer("い"), [Word("いいい", annotation: annotation)])
         stateMachine.addWordToUserDict(yomi: "だい1", okuri: nil, candidate: Candidate("第一", original: Candidate.Original(midashi: "だい#", word: "第#3")))
         XCTAssertEqual(dictionary.refer("だい#"), [Word("第#3", annotation: nil)])
+        stateMachine.addWordToUserDict(yomi: "いt", okuri: "った", candidate: Candidate("言"))
+        XCTAssertEqual(dictionary.refer("いt"), [Word("言", okuri: "った", annotation: nil)])
     }
 
     private func nextInputMethodEvent() async -> InputMethodEvent {
