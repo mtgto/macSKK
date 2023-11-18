@@ -111,6 +111,13 @@ class MemoryDictTests: XCTestCase {
         XCTAssertEqual(dict.okuriAriYomis, [])
     }
 
+    func testDeleteOkuriBlock() throws {
+        var dict = MemoryDict(entries: ["あr": [Word("有", okuri: "る"), Word("有", okuri: "り"), Word("有")]], readonly: false)
+        XCTAssertTrue(dict.delete(yomi: "あr", word: "有"))
+        XCTAssertEqual(dict.refer("あr", option: nil), [], "あr を読みとして持つ変換候補が全て削除された")
+        XCTAssertEqual(dict.okuriAriYomis, [])
+    }
+
     func testFindCompletion() throws {
         var dict = MemoryDict(entries: [:], readonly: false)
         XCTAssertNil(dict.findCompletion(prefix: ""), "辞書が空だとnil")

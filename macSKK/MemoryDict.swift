@@ -140,11 +140,6 @@ struct MemoryDict: DictProtocol {
     /// - Returns: エントリを削除できたかどうか
     mutating func delete(yomi: String, word: Word.Word) -> Bool {
         if var words = entries[yomi] {
-            if let index = words.firstIndex(where: { $0.word == word }) {
-                words.remove(at: index)
-                entries[yomi] = words
-                return true
-            }
             if yomi.isOkuriAri {
                 if let index = okuriAriYomis.firstIndex(of: yomi) {
                     okuriAriYomis.remove(at: index)
@@ -153,6 +148,11 @@ struct MemoryDict: DictProtocol {
                 if let index = okuriNashiYomis.firstIndex(of: yomi) {
                     okuriNashiYomis.remove(at: index)
                 }
+            }
+            let filtered = words.filter { $0.word != word }
+            if words.count != filtered.count {
+                entries[yomi] = filtered
+                return true
             }
         }
         return false
