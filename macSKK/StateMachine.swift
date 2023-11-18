@@ -85,7 +85,7 @@ class StateMachine {
                         state.specialState = nil
                         updateMarkedText()
                     } else {
-                        dictionary.add(yomi: registerState.yomi, word: Word(registerState.text))
+                        addWordToUserDict(yomi: registerState.yomi, okuri: registerState.okuri, candidate: Candidate(registerState.text))
                         state.specialState = nil
                         state.inputMode = registerState.prev.mode
                         addFixedText(registerState.text)

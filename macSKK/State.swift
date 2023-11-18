@@ -398,6 +398,15 @@ struct RegisterState: SpecialStateProtocol {
         }
     }
 
+    /// 送り仮名
+    var okuri: String? {
+        if let okuri = prev.composing.okuri {
+            return okuri.map { $0.kana }.joined()
+        } else {
+            return nil
+        }
+    }
+
     // MARK: - CursorProtocol
     func moveCursorLeft() -> Self {
         if text.isEmpty {
