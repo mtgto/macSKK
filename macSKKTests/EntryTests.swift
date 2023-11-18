@@ -26,6 +26,7 @@ final class EntryTests: XCTestCase {
     func testOkuriBlock() throws {
         XCTAssertEqual(Entry(line: "おおk /大/多/[く/多/]/[き/大/]/", dictId: "")?.candidates.map { $0.word }, ["大", "多", "多", "大"])
         XCTAssertEqual(Entry(line: "いt /[った/行/言/]/", dictId: "")?.candidates.map { $0.word }, ["行", "言"])
+        XCTAssertEqual(Entry(line: "いt /[った/行/]/[った/言/]/", dictId: "")?.candidates.map { $0.okuri }, ["った", "った"])
     }
 
     func testInvalidLine() {
@@ -45,8 +46,18 @@ final class EntryTests: XCTestCase {
     }
 
     func testSerialize() {
-        ["あg /挙/揚/上/", "あ /亜;注釈/", "おおk /大/多/[く/多/]/[き/大/]/", "いt /[った/行/言/]/入/"].forEach { line in
+        [
+            "あg /挙/揚/上/",
+            "あ /亜;注釈/",
+            "おおk /大/多/[く/多/]/[き/大/]/",
+            "いt /[った/行/言/]/入/",
+            "ふくm /含/[め/含/]/[む/含/]/[ま/含/]/[み/含/]/[も/含/]/",
+        ].forEach { line in
             XCTAssertEqual(Entry(line: line, dictId: "")?.serialize(), line)
         }
+        // シリアライズ時に送り仮名ブロックは同じ送り仮名でまとめられる
+        XCTAssertEqual(
+            Entry(line: "いt /[った/行/]/入/[った/言/]/", dictId: "")?.serialize(),
+            "いt /[った/行/言/]/入/")
     }
 }

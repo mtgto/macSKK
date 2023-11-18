@@ -36,18 +36,18 @@ struct Entry {
         return yomi + " /" + serializeWords(ArraySlice(candidates))
     }
 
-    private func serializeWords(_ words: ArraySlice<Word>) -> String {
+    private func serializeWords(_ words: any RandomAccessCollection<Word>) -> String {
         if let head = words.first {
             let tail = words.dropFirst()
             if let okuri = head.okuri {
                 // 送り仮名ブロックの読みが一致しているものは1つにまとめる
-                // 同じ送り仮名ブロックの読みを持つ変換候補は連続しているという前提
-                let sameOkuriWords = tail.prefix { $0.okuri == okuri }
+                let sameOkuriWords = tail.filter { $0.okuri == okuri }
+                let tail = tail.filter { $0.okuri != okuri }
                 if sameOkuriWords.isEmpty {
                     return "[\(okuri)/\(serializeWord(head))/]/" + serializeWords(tail)
                 } else {
                     let candidatesStr = ([head] + sameOkuriWords).map { serializeWord($0) }.joined(separator: "/")
-                    return "[\(okuri)/\(candidatesStr)/]/" + serializeWords(tail.dropFirst(sameOkuriWords.count))
+                    return "[\(okuri)/\(candidatesStr)/]/" + serializeWords(tail)
                 }
             } else {
                 return serializeWord(head) + "/" + serializeWords(tail)
