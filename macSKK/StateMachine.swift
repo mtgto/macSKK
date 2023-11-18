@@ -1046,7 +1046,8 @@ class StateMachine {
      *   - candidate: 追加したい変換候補
      */
     func addWordToUserDict(yomi: String, okuri: String?, candidate: Candidate, annotation: Annotation? = nil) {
-        dictionary.add(yomi: candidate.toMidashiString(yomi: yomi), word: Word(candidate.candidateString, annotation: annotation))
+        dictionary.add(yomi: candidate.toMidashiString(yomi: yomi),
+                       word: Word(candidate.candidateString, okuri: okuri, annotation: annotation))
     }
 
     /// StateMachine外で選択されている変換候補が更新されたときに通知される
