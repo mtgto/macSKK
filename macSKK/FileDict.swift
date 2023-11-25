@@ -114,19 +114,19 @@ class FileDict: NSObject, DictProtocol, Identifiable {
     func serialize() -> String {
         if readonly {
             return dict.entries.map { entry in
-                return "\(entry.key) /\(serializeWords(entry.value))/"
+                Entry(yomi: entry.key, candidates: entry.value).serialize()
             }.joined(separator: "\n")
         }
         var result: [String] = Self.headers + [Self.okuriAriHeader]
         for yomi in dict.okuriAriYomis.reversed() {
             if let words = dict.entries[yomi] {
-                result.append("\(yomi) /\(serializeWords(words))/")
+                result.append(Entry(yomi: yomi, candidates: words).serialize())
             }
         }
         result.append(Self.okuriNashiHeader)
         for yomi in dict.okuriNashiYomis.reversed() {
             if let words = dict.entries[yomi] {
-                result.append("\(yomi) /\(serializeWords(words))/")
+                result.append(Entry(yomi: yomi, candidates: words).serialize())
             }
         }
         result.append("")
@@ -134,16 +134,6 @@ class FileDict: NSObject, DictProtocol, Identifiable {
     }
 
     var entryCount: Int { return dict.entryCount }
-
-    private func serializeWords(_ words: [Word]) -> String {
-        return words.map { word in
-            if let annotation = word.annotation {
-                return word.word + ";" + annotation.text
-            } else {
-                return word.word
-            }
-        }.joined(separator: "/")
-    }
 
     // MARK: DictProtocol
     func refer(_ yomi: String, option: DictReferringOption?) -> [Word] {

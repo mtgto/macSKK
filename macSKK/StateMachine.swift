@@ -85,7 +85,7 @@ class StateMachine {
                         state.specialState = nil
                         updateMarkedText()
                     } else {
-                        dictionary.add(yomi: registerState.yomi, word: Word(registerState.text))
+                        addWordToUserDict(yomi: registerState.yomi, okuri: registerState.okuri, candidate: Candidate(registerState.text))
                         state.specialState = nil
                         state.inputMode = registerState.prev.mode
                         addFixedText(registerState.text)
@@ -646,7 +646,12 @@ class StateMachine {
                                                           okuri: (okuri ?? []) + [moji],
                                                           romaji: "",
                                                           cursor: composing.cursor)
-                        let candidates = candidates(for: yomiText)
+                        let candidates: [Candidate] =
+                        if let okuri {
+                            candidates(for: yomiText, option: .okuri(okuri.map { $0.kana }.joined() + moji.kana))
+                        } else {
+                            candidates(for: yomiText)
+                        }
                         if candidates.isEmpty {
                             if specialState != nil {
                                 // 登録中に変換不能な変換をした場合は空文字列に変換する
@@ -793,7 +798,7 @@ class StateMachine {
     func handleSelecting(_ action: Action, selecting: SelectingState, specialState: SpecialState?) -> Bool {
         switch action.keyEvent {
         case .enter:
-            addWordToUserDict(yomi: selecting.yomi, candidate: selecting.candidates[selecting.candidateIndex])
+            addWordToUserDict(yomi: selecting.yomi, okuri: selecting.okuri, candidate: selecting.candidates[selecting.candidateIndex])
             updateCandidates(selecting: nil)
             state.inputMethod = .normal
             addFixedText(selecting.fixedText)
@@ -853,7 +858,7 @@ class StateMachine {
             return true
         case .stickyShift, .ctrlJ, .ctrlQ:
             // 選択中候補で確定
-            addWordToUserDict(yomi: selecting.yomi, candidate: selecting.candidates[selecting.candidateIndex])
+            addWordToUserDict(yomi: selecting.yomi, okuri: selecting.okuri, candidate: selecting.candidates[selecting.candidateIndex])
             updateCandidates(selecting: nil)
             addFixedText(selecting.fixedText)
             state.inputMethod = .normal
@@ -869,7 +874,7 @@ class StateMachine {
                 return true
             } else if input == "." && action.shiftIsPressed() {
                 // 選択中候補で確定し、接尾辞入力に移行
-                addWordToUserDict(yomi: selecting.yomi, candidate: selecting.candidates[selecting.candidateIndex])
+                addWordToUserDict(yomi: selecting.yomi, okuri: selecting.okuri, candidate: selecting.candidates[selecting.candidateIndex])
                 updateCandidates(selecting: nil)
                 addFixedText(selecting.fixedText)
                 state.inputMethod = .composing(ComposingState(isShift: true, text: [], okuri: nil, romaji: ""))
@@ -879,7 +884,7 @@ class StateMachine {
                     let diff = index - 1 - (selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount
                     if selecting.candidateIndex + diff < selecting.candidates.count {
                         let newSelecting = selecting.addCandidateIndex(diff: diff)
-                        addWordToUserDict(yomi: selecting.yomi, candidate: newSelecting.candidates[newSelecting.candidateIndex])
+                        addWordToUserDict(yomi: selecting.yomi, okuri: selecting.okuri, candidate: newSelecting.candidates[newSelecting.candidateIndex])
                         updateCandidates(selecting: nil)
                         state.inputMethod = .normal
                         addFixedText(newSelecting.fixedText)
@@ -888,7 +893,7 @@ class StateMachine {
                 }
             }
             // 選択中候補で確定
-            addWordToUserDict(yomi: selecting.yomi, candidate: selecting.candidates[selecting.candidateIndex])
+            addWordToUserDict(yomi: selecting.yomi, okuri: selecting.okuri, candidate: selecting.candidates[selecting.candidateIndex])
             updateCandidates(selecting: nil)
             addFixedText(selecting.fixedText)
             state.inputMethod = .normal
@@ -1036,11 +1041,13 @@ class StateMachine {
      * 他の辞書から選択した変換を追加する場合はその辞書の注釈は保存しないこと。
      *
      * - Parameters:
-     *   - yomi: ユーザーが入力した見出し語。整数変換エントリの辞書の見出しは "だい#" のような形式だが、この値は "だい5" のようにユーザーが入力したときの文字列なので "#" を含まない。
+     *   - yomi: ユーザーが入力した見出し語。送り仮名を含むときは "いr" のように送り仮名の一文字目の母音を除いたローマ字。整数変換エントリの辞書の見出しは "だい#" のような形式だが、この値は "だい5" のようにユーザーが入力したときの文字列なので "#" を含まない。
+     *   - okuri: 送り仮名として確定したひらがな。"A Ru" のように入力した場合 "る" の部分。
      *   - candidate: 追加したい変換候補
      */
-    func addWordToUserDict(yomi: String, candidate: Candidate, annotation: Annotation? = nil) {
-        dictionary.add(yomi: candidate.toMidashiString(yomi: yomi), word: Word(candidate.candidateString, annotation: annotation))
+    func addWordToUserDict(yomi: String, okuri: String?, candidate: Candidate, annotation: Annotation? = nil) {
+        dictionary.add(yomi: candidate.toMidashiString(yomi: yomi),
+                       word: Word(candidate.candidateString, okuri: okuri, annotation: annotation))
     }
 
     /// StateMachine外で選択されている変換候補が更新されたときに通知される
@@ -1057,7 +1064,7 @@ class StateMachine {
     /// StateMachine外で選択されている変換候補が二回選択されたときに通知される
     func didDoubleSelectCandidate(_ candidate: Candidate) {
         if case .selecting(let selecting) = state.inputMethod {
-            addWordToUserDict(yomi: selecting.yomi, candidate: candidate)
+            addWordToUserDict(yomi: selecting.yomi, okuri: selecting.okuri, candidate: candidate)
             updateCandidates(selecting: nil)
             state.inputMethod = .normal
             addFixedText(candidate.word)

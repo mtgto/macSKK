@@ -19,6 +19,8 @@ class MemoryDictTests: XCTestCase {
             greek /α/β/γ/δ/ε/ζ/η/θ/ι/κ/λ/μ/ν/ξ/ο/π/ρ/σ/τ/υ/φ/χ/ψ/ω/
             あ /阿/唖/亜/娃/
             けい /京;10^16/
+            おおk /大/多/[く/多/]/[き/大/]/
+            いt /[った/行/言/]/
 
             """
         let dict = try MemoryDict(dictId: "testDict", source: source, readonly: false)
@@ -26,6 +28,7 @@ class MemoryDictTests: XCTestCase {
         XCTAssertEqual(dict.entries["あb"]?.map { $0.word }, ["浴"])
         XCTAssertEqual(dict.entries["あ"]?.map { $0.word }, ["阿", "唖", "亜", "娃"])
         XCTAssertEqual(dict.entries["けい"]?.map { $0.word }, ["京"])
+        XCTAssertEqual(dict.entries["おおk"]?.map { $0.word }, ["大", "多", "多", "大"])
         XCTAssertEqual(dict.okuriNashiYomis, ["けい", "あ", "greek", "cyrillic", "Greek", "Cyrillic"], "辞書登場順の逆順に並ぶ")
     }
 
@@ -42,6 +45,17 @@ class MemoryDictTests: XCTestCase {
         XCTAssertEqual(dict.entries["ao"]?.map { $0.word }, ["and/or"])
         XCTAssertEqual(dict.entries["GPL"]?.map { $0.annotation?.text }, ["http://www.gnu.org/licenses/gpl.ja.html"])
         XCTAssertEqual(dict.okuriNashiYomis, ["GPL", "ao"], "abbrev辞書の読みは末尾がアルファベットだが送り無し扱い")
+    }
+
+    func testParseDuplicatedYomi() throws {
+        let source = """
+            あお /青/
+            あお /蒼/
+            あお /碧/
+
+            """
+        let dict = try MemoryDict(dictId: "testDict", source: source, readonly: false)
+        XCTAssertEqual(dict.entries["あお"]?.map { $0.word }, ["青", "蒼", "碧"])
     }
 
     func testParseIncludingUserAnnotation() throws {
@@ -78,6 +92,11 @@ class MemoryDictTests: XCTestCase {
         let annotation2 = Annotation(dictId: "test2", text: "宇の注釈の更新版")
         dict.add(yomi: "う", word: Word("宇", annotation: annotation2))
         XCTAssertEqual(dict.refer("う", option: nil), [Word("宇", annotation: annotation2)])
+        // 送り仮名ブロックありとなしは共存する
+        dict.add(yomi: "いt", word: Word("行"))
+        XCTAssertEqual(dict.refer("いt", option: nil), [Word("行")])
+        dict.add(yomi: "いt", word: Word("行", okuri: "った"))
+        XCTAssertEqual(dict.refer("いt", option: nil), [Word("行", okuri: "った"), Word("行")])
     }
 
     func testDelete() throws {
@@ -89,6 +108,13 @@ class MemoryDictTests: XCTestCase {
         XCTAssertFalse(dict.delete(yomi: "いいい", word: "いいい"))
         XCTAssertFalse(dict.delete(yomi: "あr", word: "在"))
         XCTAssertTrue(dict.delete(yomi: "あr", word: "有"))
+        XCTAssertEqual(dict.okuriAriYomis, [])
+    }
+
+    func testDeleteOkuriBlock() throws {
+        var dict = MemoryDict(entries: ["あr": [Word("有", okuri: "る"), Word("有", okuri: "り"), Word("有")]], readonly: false)
+        XCTAssertTrue(dict.delete(yomi: "あr", word: "有"))
+        XCTAssertEqual(dict.refer("あr", option: nil), [], "あr を読みとして持つ変換候補が全て削除された")
         XCTAssertEqual(dict.okuriAriYomis, [])
     }
 
@@ -110,7 +136,8 @@ class MemoryDictTests: XCTestCase {
         let dict = MemoryDict(entries: ["あき>": [Word("空き")],
                                         "あき": [Word("秋")],
                                         ">し": [Word("氏")],
-                                        "し": [Word("詩")]],
+                                        "し": [Word("詩")],
+                                        "いt": [Word("言"), Word("行", okuri: "った")]],
                               readonly: true)
         XCTAssertEqual(dict.refer("あき", option: nil), [Word("秋")])
         XCTAssertEqual(dict.refer("あき", option: .prefix), [Word("空き")])
@@ -118,5 +145,7 @@ class MemoryDictTests: XCTestCase {
         XCTAssertEqual(dict.refer("し", option: nil), [Word("詩")])
         XCTAssertEqual(dict.refer("し", option: .suffix), [Word("氏")])
         XCTAssertEqual(dict.refer("し", option: .prefix), [])
+        XCTAssertEqual(dict.refer("いt", option: nil), [Word("言"), Word("行", okuri: "った")])
+        XCTAssertEqual(dict.refer("いt", option: .okuri("った")), [Word("行", okuri: "った"), Word("言")])
     }
 }

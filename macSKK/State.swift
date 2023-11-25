@@ -336,6 +336,15 @@ struct SelectingState: Equatable, MarkedTextProtocol {
         }
     }
 
+    /// 送り仮名
+    var okuri: String? {
+        if let okuri = prev.composing.okuri {
+            return okuri.map { $0.kana }.joined()
+        } else {
+            return nil
+        }
+    }
+
     // MARK: - MarkedTextProtocol
     func markedTextElements(inputMode: InputMode) -> [MarkedText.Element] {
         var selectingText = candidates[candidateIndex].word
@@ -386,6 +395,15 @@ struct RegisterState: SpecialStateProtocol {
             return RegisterState(prev: prev, yomi: yomi, text: newText, cursor: cursor - 1)
         } else {
             return RegisterState(prev: prev, yomi: yomi, text: String(text.dropLast()), cursor: cursor)
+        }
+    }
+
+    /// 送り仮名
+    var okuri: String? {
+        if let okuri = prev.composing.okuri {
+            return okuri.map { $0.kana }.joined()
+        } else {
+            return nil
         }
     }
 

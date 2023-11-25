@@ -193,6 +193,41 @@ final class StateTests: XCTestCase {
         XCTAssertEqual(selectingState.markedTextElements(inputMode: .hiragana), [.markerSelect, .emphasized("尾")])
     }
 
+    func testSelectingStateOkuri() {
+        var selectingState = SelectingState(
+            prev: SelectingState.PrevState(
+                mode: .hiragana,
+                composing: ComposingState(
+                    isShift: true,
+                    text: ["お"],
+                    romaji: ""
+                )
+            ),
+            yomi: "お",
+            candidates: [Candidate("尾")],
+            candidateIndex: 0,
+            cursorPosition: .zero
+        )
+        XCTAssertEqual(selectingState.okuri, nil)
+
+        selectingState = SelectingState(
+            prev: SelectingState.PrevState(
+                mode: .hiragana,
+                composing: ComposingState(
+                    isShift: true,
+                    text: ["あ"],
+                    okuri: [Romaji.table["ru"]!],
+                    romaji: ""
+                )
+            ),
+            yomi: "あ",
+            candidates: [Candidate("有")],
+            candidateIndex: 0,
+            cursorPosition: .zero
+        )
+        XCTAssertEqual(selectingState.okuri, "る")
+    }
+
     func testRegisterStateAppendText() throws {
         var state = RegisterState(
             prev: RegisterState.PrevState(

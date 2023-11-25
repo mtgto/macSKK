@@ -30,28 +30,20 @@ struct MemoryDict: DictProtocol {
         var dict: [String: [Word]] = [:]
         var okuriNashiYomis: [String] = []
         var okuriAriYomis: [String] = []
-        let pattern = try Regex(#"^(\S+) (/(?:[^/\n\r]+/)+)$"#).anchorsMatchLineEndings()
-        for match in source.matches(of: pattern) {
-            guard let yomi = match.output[1].substring.map({ String($0) }) else { continue }
-            guard let wordsText = match.output[2].substring else { continue }
-            if yomi.isOkuriAri {
-                okuriAriYomis.append(yomi)
-            } else {
-                okuriNashiYomis.append(yomi)
-            }
-            let words = wordsText.split(separator: Character("/")).map { word -> Word in
-                let words = word.split(separator: Character(";"), maxSplits: 1)
-                let annotation: Annotation?
-                if words.count == 2 {
-                    // 注釈の先頭に "*" がついていたらユーザー独自の注釈を表す
-                    let annotationText = words[1].first == "*" ? String(words[1].suffix(from: words[1].startIndex + 1)) : String(words[1])
-                    annotation = Annotation(dictId: dictId, text: Self.decode(annotationText))
+
+        source.enumerateLines { line, stop in
+            if let entry = Entry(line: line, dictId: dictId) {
+                if let candidates = dict[entry.yomi] {
+                    dict[entry.yomi] = candidates + entry.candidates
                 } else {
-                    annotation = nil
+                    dict[entry.yomi] = entry.candidates
                 }
-                return Word(Self.decode(String(words[0])), annotation: annotation)
+                if entry.yomi.isOkuriAri {
+                    okuriAriYomis.append(entry.yomi)
+                } else {
+                    okuriNashiYomis.append(entry.yomi)
+                }
             }
-            dict[yomi] = words
         }
         entries = dict
         self.okuriNashiYomis = okuriNashiYomis.reversed()
@@ -82,6 +74,14 @@ struct MemoryDict: DictProtocol {
                 return refer(yomi + ">", option: nil)
             case .suffix:
                 return refer(">" + yomi, option: nil)
+            case .okuri(let okuri):
+                if let candidates = entries[yomi] {
+                    // 送り仮名が合致するもの → 送り仮名が設定されてないものの順に返す。
+                    // 送り仮名ブロックありなしの違い以外同じ変換結果となる文字列を複数返す (呼び出し元で重複をフィルタする)
+                    return candidates.filter({ $0.okuri == okuri }) + candidates.filter({ $0.okuri == nil })
+                } else {
+                    return []
+                }
             }
         } else {
             return entries[yomi] ?? []
@@ -92,6 +92,7 @@ struct MemoryDict: DictProtocol {
     ///
     /// すでに同じ読みが登録されている場合、
     /// ユーザー辞書で最近変換したものが次回も変換候補になるように値の配列の先頭に追加する。
+    /// 送り仮名ブロックが設定された変換候補は設定されてない同じ変換結果のものと共存する。
     ///
     /// - Parameters:
     ///   - yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
@@ -99,13 +100,13 @@ struct MemoryDict: DictProtocol {
     mutating func add(yomi: String, word: Word) {
         if var words = entries[yomi] {
             let removed: Word?
-            let index = words.firstIndex { $0.word == word.word }
+            let index = words.firstIndex { $0.word == word.word && $0.okuri == word.okuri }
             if let index {
                 removed = words.remove(at: index)
             } else {
                 removed = nil
             }
-            entries[yomi] = [Word(word.word, annotation: word.annotation ?? removed?.annotation)] + words
+            entries[yomi] = [Word(word.word, okuri: word.okuri, annotation: word.annotation ?? removed?.annotation)] + words
             if !readonly {
                 if yomi.isOkuriAri {
                     if let index = okuriAriYomis.firstIndex(of: yomi) {
@@ -139,11 +140,6 @@ struct MemoryDict: DictProtocol {
     /// - Returns: エントリを削除できたかどうか
     mutating func delete(yomi: String, word: Word.Word) -> Bool {
         if var words = entries[yomi] {
-            if let index = words.firstIndex(where: { $0.word == word }) {
-                words.remove(at: index)
-                entries[yomi] = words
-                return true
-            }
             if yomi.isOkuriAri {
                 if let index = okuriAriYomis.firstIndex(of: yomi) {
                     okuriAriYomis.remove(at: index)
@@ -152,6 +148,11 @@ struct MemoryDict: DictProtocol {
                 if let index = okuriNashiYomis.firstIndex(of: yomi) {
                     okuriNashiYomis.remove(at: index)
                 }
+            }
+            let filtered = words.filter { $0.word != word }
+            if words.count != filtered.count {
+                entries[yomi] = filtered
+                return true
             }
         }
         return false
@@ -166,13 +167,5 @@ struct MemoryDict: DictProtocol {
             }
         }
         return nil
-    }
-
-    static func decode(_ word: String) -> String {
-        if word.hasPrefix(#"(concat ""#) && word.hasSuffix(#"")"#) {
-            return String(word.dropFirst(9).dropLast(2).replacingOccurrences(of: "\\057", with: "/"))
-        } else {
-            return word
-        }
     }
 }
