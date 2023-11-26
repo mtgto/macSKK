@@ -6,6 +6,7 @@ import SwiftUI
 struct SettingsView: View {
     // rawValueはLocalizable.stringsのキー名
     enum Section: String, CaseIterable {
+        case general = "SettingsNameGeneral"
         case dictionaries = "SettingsNameDictionaries"
         case softwareUpdate = "SettingsNameSoftwareUpdate"
         case directMode = "SettingsNameDirectMode"
@@ -26,6 +27,8 @@ struct SettingsView: View {
             List(Section.allCases, id: \.rawValue, selection: $selectedSection) { section in
                 NavigationLink(value: section) {
                     switch section {
+                    case .general:
+                        Label(section.localizedStringKey, systemImage: "gear")
                     case .dictionaries:
                         Label(section.localizedStringKey, systemImage: "books.vertical")
                     case .softwareUpdate:
@@ -46,6 +49,9 @@ struct SettingsView: View {
             .modifier(RemoveSidebarToggle())
         } detail: {
             switch selectedSection {
+            case .general:
+                GeneralView()
+                    .navigationTitle(selectedSection.localizedStringKey)
             case .dictionaries:
                 DictionariesView(settingsViewModel: settingsViewModel)
                     .navigationTitle(selectedSection.localizedStringKey)

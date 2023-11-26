@@ -2,6 +2,7 @@
 "MenuItemSaveDict" = "Save User Dictionary";
 "MenuItemPrivateMode" = "Private mode";
 "MenuItemDirectInput" = "Direct input from \"%@\"";
+"SettingsNameGeneral" = "General";
 "SettingsNameDictionaries" = "Dictionaries";
 "SettingsNameSoftwareUpdate" = "Software Update";
 "SettingsNameDirectMode" = "Direct Mode";
