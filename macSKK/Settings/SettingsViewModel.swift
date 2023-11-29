@@ -10,7 +10,7 @@ final class DictSetting: ObservableObject, Identifiable {
     @Published var filename: String
     @Published var enabled: Bool
     @Published var encoding: String.Encoding
-    
+
     var id: String { filename }
     
     init(filename: String, enabled: Bool, encoding: String.Encoding) {
@@ -105,6 +105,10 @@ final class SettingsViewModel: ObservableObject {
     @Published var dictLoadingStatuses: [DictSetting.ID: LoadStatus] = [:]
     /// 直接入力するアプリケーションのBundle Identifier
     @Published var directModeApplications: [DirectModeApplication] = []
+    /// 選択可能なキー配列
+    @Published var inputSources: [InputSource] = []
+    /// 選択しているキー配列
+    @Published var selectedInputSource: InputSource? = nil
     // 辞書ディレクトリ
     let dictionariesDirectoryUrl: URL
     // バックグラウンドでの辞書を読み込みで読み込み状態が変わったときに通知される
@@ -212,6 +216,12 @@ final class SettingsViewModel: ObservableObject {
         self.directModeApplications = directModeApplications
     }
 
+    // GeneralViewのPreviewProvider用
+    internal convenience init(inputSources: [InputSource]) throws {
+        try self.init()
+        self.inputSources = inputSources
+    }
+
     /**
      * 辞書ファイルが追加・削除された通知を受け取りdictSettingsを更新する処理をセットアップします。
      *
@@ -265,5 +275,12 @@ final class SettingsViewModel: ObservableObject {
     func updateDirectModeApplication(index: Int, displayName: String, icon: NSImage) {
         directModeApplications[index].displayName = displayName
         directModeApplications[index].icon = icon
+    }
+
+    /// 利用可能なキー配列を読み込む
+    func loadInputSources() {
+        if let inputSources = InputSource.fetch() {
+            self.inputSources = inputSources
+        }
     }
 }

@@ -18,8 +18,8 @@ struct SettingsView: View {
         var localizedStringKey: LocalizedStringKey { LocalizedStringKey(rawValue) }
     }
     @ObservedObject var settingsViewModel: SettingsViewModel
-    @State private var selectedSection: Section = .dictionaries
-    @State private var histories: [Section] = [.dictionaries]
+    @State private var selectedSection: Section = .general
+    @State private var histories: [Section] = [.general]
     @State private var historyIndex: Int = 0
 
     var body: some View {
@@ -50,7 +50,7 @@ struct SettingsView: View {
         } detail: {
             switch selectedSection {
             case .general:
-                GeneralView()
+                GeneralView(settingsViewModel: settingsViewModel)
                     .navigationTitle(selectedSection.localizedStringKey)
             case .dictionaries:
                 DictionariesView(settingsViewModel: settingsViewModel)

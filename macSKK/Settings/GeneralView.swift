@@ -4,28 +4,28 @@
 import SwiftUI
 
 struct GeneralView: View {
-    @State var selection: String?
+    @StateObject var settingsViewModel: SettingsViewModel
 
     var body: some View {
         VStack {
             Form {
-                Section {
-                    Picker("キー配列", selection: $selection) {
-
+                Picker("キー配列", selection: $settingsViewModel.selectedInputSource) {
+                    Text("未選択").tag(Optional<InputSource>.none)
+                    ForEach(settingsViewModel.inputSources) { inputSource in
+                        Text(inputSource.localizedName).tag(Optional<InputSource>.some(inputSource))
                     }
-                } header: {
-                    Text("キー配列")
                 }
                 Button("キー配列取得") {
-                    let ary = InputSource.fetch()
-                    print(ary)
+                    print(settingsViewModel.selectedInputSource)
                 }
             }
             .formStyle(.grouped)
+        }.onAppear {
+            settingsViewModel.loadInputSources()
         }
     }
 }
 
 #Preview {
-    GeneralView()
+    GeneralView(settingsViewModel: try! SettingsViewModel(inputSources: [InputSource(id: "com.example.qwerty", localizedName: "Qwerty")]))
 }
