@@ -33,14 +33,21 @@ final class StateTests: XCTestCase {
     }
 
     func testComposingStateDropLastEmpty() {
-        let state = ComposingState(isShift: true, text: [], okuri: nil, romaji: "", cursor: nil)
+        var state = ComposingState(isShift: true, text: [], okuri: nil, romaji: "", cursor: nil)
         XCTAssertNil(state.dropLast())
+        state = ComposingState(isShift: true, text: [], okuri: nil, romaji: "k", cursor: nil)
+        XCTAssertNil(state.dropLast())
+        state = ComposingState(isShift: true, text: ["あ"], okuri: nil, romaji: "", cursor: nil)
+        XCTAssertNotNil(state.dropLast())
     }
 
     func testComposingStateDropLastTextAndRomaji() {
         let state = ComposingState(isShift: true, text: ["あ"], okuri: nil, romaji: "k", cursor: nil)
         let state2 = state.dropLast()
         XCTAssertEqual(state2?.romaji, "")
+        let state3 = state2?.dropLast()
+        XCTAssertNotNil(state3)
+        XCTAssertNil(state3?.dropLast())
     }
 
     func testComposingStateDropLastTextAndOkuri() {

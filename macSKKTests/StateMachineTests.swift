@@ -1134,9 +1134,9 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleComposingCursorRomajiOnly() {
+    func testHandleComposingRomajiOnly() {
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(8).sink { events in
+        stateMachine.inputMethodEvent.collect(10).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.plain("k")])))
             XCTAssertEqual(events[1], .markedText(MarkedText([])))
             XCTAssertEqual(events[2], .markedText(MarkedText([.plain("s")])))
@@ -1145,6 +1145,8 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[5], .markedText(MarkedText([])))
             XCTAssertEqual(events[6], .markedText(MarkedText([.plain("n")])))
             XCTAssertEqual(events[7], .markedText(MarkedText([])))
+            XCTAssertEqual(events[8], .markedText(MarkedText([.plain("b")])))
+            XCTAssertEqual(events[9], .markedText(MarkedText([])))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "k")))
@@ -1163,6 +1165,10 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .ctrlE, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertEqual(stateMachine.state.inputMethod, .normal, "ローマ字のみでCtrl-Eが押されたら未入力に戻す")
         XCTAssertFalse(stateMachine.handle(Action(keyEvent: .ctrlE, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "b")))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .backspace, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertEqual(stateMachine.state.inputMethod, .normal, "ローマ字のみでBackspaceが押されたら未入力に戻す")
+        XCTAssertFalse(stateMachine.handle(Action(keyEvent: .backspace, originalEvent: nil, cursorPosition: .zero)))
         wait(for: [expectation], timeout: 1.0)
     }
 
