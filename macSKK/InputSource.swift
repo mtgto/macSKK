@@ -14,11 +14,11 @@ struct InputSource: Hashable, Identifiable {
 
     // インストール済で利用可能なキー配列を取得する
     static func fetch() -> [InputSource]? {
-        let dict: [CFString: AnyObject] = [
+        let options: [CFString: AnyObject] = [
             kTISPropertyInputSourceType: kTISTypeKeyboardLayout,
             kTISPropertyInputSourceIsASCIICapable: kCFBooleanTrue,
         ]
-        guard let result = TISCreateInputSourceList(dict as CFDictionary, true).takeUnretainedValue() as? Array<TISInputSource> else {
+        guard let result = TISCreateInputSourceList(options as CFDictionary, true).takeUnretainedValue() as? Array<TISInputSource> else {
             return nil
         }
         return result.compactMap { inputSource -> InputSource? in
