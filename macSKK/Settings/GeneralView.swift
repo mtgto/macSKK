@@ -16,7 +16,7 @@ struct GeneralView: View {
                     }
                 }
                 Button("キー配列取得") {
-                    print(settingsViewModel.selectedInputSource)
+                    print(settingsViewModel.inputSources)
                 }
             }
             .formStyle(.grouped)

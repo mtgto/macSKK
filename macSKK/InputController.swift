@@ -229,6 +229,14 @@ class InputController: IMKInputController {
         if !directMode {
             inputModePanel.show(at: cursorPosition.origin, mode: inputMode, privateMode: privateMode.value)
         }
+        // キー配列を設定する
+        if let inputSourceID = UserDefaults.standard.string(forKey: InputSource.selectedInputSourceKey) {
+            logger.info("InputSourceIDを \(inputSourceID, privacy: .public) に設定します")
+            textInput.overrideKeyboard(withKeyboardNamed: inputSourceID)
+        } else {
+            logger.info("InputSourceIDは選択されていません。デバッグとしてDvorakを設定します")
+            textInput.overrideKeyboard(withKeyboardNamed: "com.apple.keylayout.Dvorak")
+        }
     }
 
     @objc func showSettings() {

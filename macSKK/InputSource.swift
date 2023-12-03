@@ -9,6 +9,8 @@ struct InputSource: Hashable, Identifiable {
     // inputSourceID
     let id: String
     let localizedName: String
+    // 選択中のinputSourceIDをUserDefaultsに保存するときのキー
+    static let selectedInputSourceKey: String = "selectedInputSource"
 
     // インストール済で利用可能なキー配列を取得する
     static func fetch() -> [InputSource]? {
