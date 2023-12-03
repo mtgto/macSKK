@@ -192,6 +192,12 @@ final class SettingsViewModel: ObservableObject {
             self?.userDictLoadingStatus = .loaded(entryCount)
         }
         .store(in: &cancellables)
+
+        $selectedInputSource.sink { selectedInputSource in
+            if let selectedInputSource {
+                UserDefaults.standard.set(selectedInputSource.id, forKey: InputSource.selectedInputSourceKey)
+            }
+        }.store(in: &cancellables)
     }
 
     // PreviewProvider用
