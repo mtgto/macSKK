@@ -195,7 +195,11 @@ final class SettingsViewModel: ObservableObject {
 
         $selectedInputSource.sink { selectedInputSource in
             if let selectedInputSource {
+                logger.info("キー配列を \(selectedInputSource.localizedName, privacy: .public) に設定しました")
                 UserDefaults.standard.set(selectedInputSource.id, forKey: InputSource.selectedInputSourceKey)
+            } else {
+                logger.info("キー配列の設定を削除しました")
+                UserDefaults.standard.removeObject(forKey: InputSource.selectedInputSourceKey)
             }
         }.store(in: &cancellables)
     }

@@ -9,14 +9,11 @@ struct GeneralView: View {
     var body: some View {
         VStack {
             Form {
-                Picker("キー配列", selection: $settingsViewModel.selectedInputSource) {
-                    Text("未選択").tag(Optional<InputSource>.none)
+                Picker("Keyboard Layout", selection: $settingsViewModel.selectedInputSource) {
+                    Text("Not Selected").tag(Optional<InputSource>.none)
                     ForEach(settingsViewModel.inputSources) { inputSource in
                         Text(inputSource.localizedName).tag(Optional<InputSource>.some(inputSource))
                     }
-                }
-                Button("キー配列取得") {
-                    print(settingsViewModel.inputSources)
                 }
             }
             .formStyle(.grouped)
