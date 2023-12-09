@@ -154,6 +154,7 @@ struct macSKKApp: App {
                 DictSetting(filename: "SKK-JISYO.L", enabled: true, encoding: .japaneseEUC).encode()
             ],
             "directModeBundleIdentifiers": [String](),
+            InputSource.selectedInputSourceKey: InputSource.defaultInputSourceId,
         ])
     }
 

@@ -108,7 +108,7 @@ final class SettingsViewModel: ObservableObject {
     /// 選択可能なキー配列
     @Published var inputSources: [InputSource] = []
     /// 選択しているキー配列
-    @Published var selectedInputSource: InputSource? = nil
+    @Published var selectedInputSourceId: InputSource.ID
     // 辞書ディレクトリ
     let dictionariesDirectoryUrl: URL
     // バックグラウンドでの辞書を読み込みで読み込み状態が変わったときに通知される
@@ -119,6 +119,11 @@ final class SettingsViewModel: ObservableObject {
         self.dictionariesDirectoryUrl = dictionariesDirectoryUrl
         if let bundleIdentifiers = UserDefaults.standard.array(forKey: "directModeBundleIdentifiers") as? [String] {
             directModeApplications = bundleIdentifiers.map { DirectModeApplication(bundleIdentifier: $0) }
+        }
+        if let selectedInputSourceId = UserDefaults.standard.string(forKey: InputSource.selectedInputSourceKey) {
+            self.selectedInputSourceId = selectedInputSourceId
+        } else {
+            selectedInputSourceId = InputSource.defaultInputSourceId
         }
 
         // SKK-JISYO.Lのようなファイルの読み込みが遅いのでバックグラウンドで処理
@@ -193,13 +198,12 @@ final class SettingsViewModel: ObservableObject {
         }
         .store(in: &cancellables)
 
-        $selectedInputSource.sink { selectedInputSource in
-            if let selectedInputSource {
-                logger.info("キー配列を \(selectedInputSource.localizedName, privacy: .public) に設定しました")
+        $selectedInputSourceId.sink { [weak self] selectedInputSourceId in
+            if let selectedInputSource = self?.inputSources.first(where: { $0.id == selectedInputSourceId }) {
+                logger.info("キー配列を \(selectedInputSource.localizedName, privacy: .public) (\(selectedInputSourceId, privacy: .public)) に設定しました")
                 UserDefaults.standard.set(selectedInputSource.id, forKey: InputSource.selectedInputSourceKey)
             } else {
-                logger.info("キー配列の設定を削除しました")
-                UserDefaults.standard.removeObject(forKey: InputSource.selectedInputSourceKey)
+                logger.error("キー配列 \(selectedInputSourceId, privacy: .public) が見つかりませんでした")
             }
         }.store(in: &cancellables)
     }
@@ -212,6 +216,7 @@ final class SettingsViewModel: ObservableObject {
             appropriateFor: nil,
             create: false
         ).appendingPathComponent("Dictionaries")
+        selectedInputSourceId = InputSource.defaultInputSourceId
     }
 
     // DictionaryViewのPreviewProvider用
@@ -290,7 +295,12 @@ final class SettingsViewModel: ObservableObject {
     /// 利用可能なキー配列を読み込む
     func loadInputSources() {
         if let inputSources = InputSource.fetch() {
-            self.inputSources = inputSources
+            // ABC (Qwerty) が一番上に来るようにソートする
+            if let defaultInputSource = inputSources.first(where: { $0.id == InputSource.defaultInputSourceId }) {
+                self.inputSources = [defaultInputSource] + inputSources.filter { $0.id != InputSource.defaultInputSourceId }
+            } else {
+                self.inputSources = inputSources
+            }
         }
     }
 }

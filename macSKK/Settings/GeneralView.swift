@@ -9,10 +9,9 @@ struct GeneralView: View {
     var body: some View {
         VStack {
             Form {
-                Picker("Keyboard Layout", selection: $settingsViewModel.selectedInputSource) {
-                    Text("Not Selected").tag(Optional<InputSource>.none)
+                Picker("Keyboard Layout", selection: $settingsViewModel.selectedInputSourceId) {
                     ForEach(settingsViewModel.inputSources) { inputSource in
-                        Text(inputSource.localizedName).tag(Optional<InputSource>.some(inputSource))
+                        Text(inputSource.localizedName)
                     }
                 }
             }
