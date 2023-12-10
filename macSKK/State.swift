@@ -153,7 +153,7 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
 
     /**
      * 入力中の文字列をカーソル位置から一文字削除する。
-     * 0文字で削除できないときやローマ字一文字だけのときはnilを返す
+     * カーソルより前が0文字で削除できないときやローマ字一文字だけのときはnilを返す
      */
     func dropLast() -> Self? {
         if !romaji.isEmpty {
@@ -168,10 +168,14 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
                 cursor: cursor)
         } else if text.isEmpty {
             return nil
-        } else if let cursor = cursor, cursor > 0 {
-            var newText = text
-            newText.remove(at: cursor - 1)
-            return ComposingState(isShift: isShift, text: newText, okuri: okuri, romaji: romaji, cursor: cursor - 1)
+        } else if let cursor = cursor {
+            if cursor > 0 {
+                var newText = text
+                newText.remove(at: cursor - 1)
+                return ComposingState(isShift: isShift, text: newText, okuri: okuri, romaji: romaji, cursor: cursor - 1)
+            } else {
+                return self
+            }
         } else {
             return ComposingState(isShift: isShift, text: text.dropLast(), okuri: okuri, romaji: romaji, cursor: cursor)
         }

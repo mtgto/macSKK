@@ -57,9 +57,12 @@ final class StateTests: XCTestCase {
     }
 
     func testComposingStateDropLastCursor() {
-        let state = ComposingState(
+        var state = ComposingState(
             isShift: true, text: ["あ", "い"], okuri: nil, romaji: "", cursor: 1)
         XCTAssertEqual(state.dropLast()?.text, ["い"])
+        state = ComposingState(
+            isShift: true, text: ["あ", "い"], okuri: nil, romaji: "", cursor: 0)
+        XCTAssertEqual(state.dropLast()?.text, ["あ", "い"], "カーソル位置が先頭のときはなにも削除しない")
     }
 
     func testComposingStateSubText() {
