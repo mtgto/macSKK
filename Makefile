@@ -12,6 +12,7 @@ CREDENTIALS_PROFILE := macSKK
 VERSION := $(shell xcodebuild -project macSKK.xcodeproj -target macSKK -showBuildSettings -json | jq -r '.[0].buildSettings.MARKETING_VERSION')
 
 WORKDIR := script/work
+SCRIPTSDIR := script/scripts
 XCARCHIVE := $(WORKDIR)/macSKK-$(VERSION).xcarchive
 APP := "$(WORKDIR)/export/macSKK.app"
 DSYMS := $(XCARCHIVE)/dSYMs
@@ -54,7 +55,7 @@ $(DICT_PKG): $(DICT)
 $(APP_PKG): $(APP)
 	mkdir -p $(WORKDIR)/app/Library/Input\ Methods
 	cp -r $< $(WORKDIR)/app/Library/Input\ Methods
-	pkgbuild --root $(WORKDIR)/app --component-plist script/app.plist --identifier $(APP_PKG_ID) --version $(VERSION) --install-location / $(APP_PKG)
+	pkgbuild --root $(WORKDIR)/app --component-plist script/app.plist --identifier $(APP_PKG_ID) --version $(VERSION) --install-location / --scripts $(SCRIPTSDIR) $(APP_PKG)
 
 $(INSTALLER_PKG): $(APP_PKG) $(DICT_PKG)
 	mkdir -p $(WORKDIR)/pkg
