@@ -202,6 +202,14 @@ class InputController: IMKInputController {
     }
 
     // MARK: - IMKStateSetting
+    override func activateServer(_ sender: Any!) {
+        if let textInput = sender as? IMKTextInput {
+            setCustomInputSource(textInput: textInput)
+        } else {
+            logger.warning("activateServerの引数clientがIMKTextInputではありません")
+        }
+    }
+
     override func deactivateServer(_ sender: Any!) {
         // 他の入力に切り替わるときには入力候補や補完候補は消す + 現在表示中の候補を確定させる
         candidatesPanel.orderOut(sender)
@@ -229,6 +237,8 @@ class InputController: IMKInputController {
         if !directMode {
             inputModePanel.show(at: cursorPosition.origin, mode: inputMode, privateMode: privateMode.value)
         }
+        // キー配列を設定する
+        setCustomInputSource(textInput: textInput)
     }
 
     @objc func showSettings() {
@@ -350,5 +360,15 @@ class InputController: IMKInputController {
             }
         }
         return nil
+    }
+
+    // キー配列を設定する
+    private func setCustomInputSource(textInput: IMKTextInput) {
+        if let inputSourceID = UserDefaults.standard.string(forKey: InputSource.selectedInputSourceKey) {
+            logger.info("InputSourceIDを \(inputSourceID, privacy: .public) に設定します")
+            textInput.overrideKeyboard(withKeyboardNamed: inputSourceID)
+        } else {
+            logger.info("InputSourceIDは選択されていません")
+        }
     }
 }

@@ -2,6 +2,7 @@
 "MenuItemSaveDict" = "ユーザー辞書を今すぐ保存";
 "MenuItemPrivateMode" = "プライベートモード";
 "MenuItemDirectInput" = "\"%@\"では直接入力";
+"SettingsNameGeneral" = "一般";
 "SettingsNameDictionaries" = "辞書";
 "SettingsNameSoftwareUpdate" = "ソフトウェアアップデート";
 "SettingsNameDirectMode" = "直接入力";
@@ -33,3 +34,4 @@
 "Latest Version: %@" = "(最新バージョン: %@)";
 "Check For Update" = "アップデートを確認…";
 "Open Release Page" = "リリースページを開く";
+"Keyboard Layout" = "キー配列";
