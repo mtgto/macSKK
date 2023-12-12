@@ -109,6 +109,8 @@ final class SettingsViewModel: ObservableObject {
     @Published var inputSources: [InputSource] = []
     /// 選択しているキー配列
     @Published var selectedInputSourceId: InputSource.ID
+    /// 注釈を表示するかどうか
+    @Published var showAnnotation: Bool
     // 辞書ディレクトリ
     let dictionariesDirectoryUrl: URL
     // バックグラウンドでの辞書を読み込みで読み込み状態が変わったときに通知される
@@ -125,6 +127,7 @@ final class SettingsViewModel: ObservableObject {
         } else {
             selectedInputSourceId = InputSource.defaultInputSourceId
         }
+        self.showAnnotation = UserDefaults.standard.bool(forKey: "showAnnotation")
 
         // SKK-JISYO.Lのようなファイルの読み込みが遅いのでバックグラウンドで処理
         $dictSettings.filter({ !$0.isEmpty }).receive(on: DispatchQueue.global()).sink { dictSettings in
@@ -206,6 +209,10 @@ final class SettingsViewModel: ObservableObject {
                 logger.error("キー配列 \(selectedInputSourceId, privacy: .public) が見つかりませんでした")
             }
         }.store(in: &cancellables)
+
+        $showAnnotation.sink { showAnnotation in
+            UserDefaults.standard.set(showAnnotation, forKey: "showAnnotation")
+        }.store(in: &cancellables)
     }
 
     // PreviewProvider用
@@ -217,6 +224,7 @@ final class SettingsViewModel: ObservableObject {
             create: false
         ).appendingPathComponent("Dictionaries")
         selectedInputSourceId = InputSource.defaultInputSourceId
+        showAnnotation = true
     }
 
     // DictionaryViewのPreviewProvider用

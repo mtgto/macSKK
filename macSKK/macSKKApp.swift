@@ -155,6 +155,7 @@ struct macSKKApp: App {
             ],
             "directModeBundleIdentifiers": [String](),
             InputSource.selectedInputSourceKey: InputSource.defaultInputSourceId,
+            "showAnnotation": true,
         ])
     }
 

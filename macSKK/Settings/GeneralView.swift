@@ -14,6 +14,9 @@ struct GeneralView: View {
                         Text(inputSource.localizedName)
                     }
                 }
+                Toggle(isOn: $settingsViewModel.showAnnotation, label: {
+                    Text("Show Annotation")
+                })
             }
             .formStyle(.grouped)
         }.onAppear {
