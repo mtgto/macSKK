@@ -36,7 +36,7 @@ struct macSKKApp: App {
     private let userNotificationDelegate = UserNotificationDelegate()
     @State private var fetchReleaseTask: Task<Void, Error>?
     #if DEBUG
-    private let candidatesPanel: CandidatesPanel = CandidatesPanel()
+    private let candidatesPanel: CandidatesPanel = CandidatesPanel(showAnnotationPopover: true)
     private let inputModePanel = InputModePanel()
     #endif
 

@@ -10,8 +10,15 @@ final class CandidatesPanel: NSPanel {
     let viewModel: CandidatesViewModel
     var cursorPosition: NSRect = .zero
 
-    init() {
-        viewModel = CandidatesViewModel(candidates: [], currentPage: 0, totalPageCount: 0)
+    /**
+     * - Parameters:
+     *   - showAnnotationPopover: パネル表示時に注釈を表示するかどうか
+     */
+    init(showAnnotationPopover: Bool) {
+        viewModel = CandidatesViewModel(candidates: [],
+                                        currentPage: 0,
+                                        totalPageCount: 0,
+                                        showAnnotationPopover: showAnnotationPopover)
         let rootView = CandidatesView(candidates: self.viewModel)
         let viewController = NSHostingController(rootView: rootView)
         super.init(contentRect: .zero, styleMask: [.nonactivatingPanel], backing: .buffered, defer: true)
@@ -29,6 +36,10 @@ final class CandidatesPanel: NSPanel {
 
     func setCursorPosition(_ cursorPosition: NSRect) {
         self.cursorPosition = cursorPosition
+    }
+
+    func setShowAnnotationPopover(_ showAnnotationPopover: Bool) {
+        self.viewModel.showAnnotationPopover = showAnnotationPopover
     }
 
     /**

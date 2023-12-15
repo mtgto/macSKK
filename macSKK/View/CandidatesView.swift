@@ -92,14 +92,21 @@ struct CandidatesView_Previews: PreviewProvider {
     }
 
     private static func pageViewModel() -> CandidatesViewModel {
-        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3)
+        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, showAnnotationPopover: true)
+        viewModel.selected = words.first
+        viewModel.systemAnnotations = [words.first!.word: String(repeating: "これはシステム辞書の注釈です。", count: 10)]
+        return viewModel
+    }
+
+    private static func pageWithoutPopoverViewModel() -> CandidatesViewModel {
+        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, showAnnotationPopover: false)
         viewModel.selected = words.first
         viewModel.systemAnnotations = [words.first!.word: String(repeating: "これはシステム辞書の注釈です。", count: 10)]
         return viewModel
     }
 
     private static func inlineViewModel() -> CandidatesViewModel {
-        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3)
+        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, showAnnotationPopover: true)
         viewModel.candidates = .inline
         viewModel.selected = words.first
         viewModel.systemAnnotations = [words.first!.word: String(repeating: "これはシステム辞書の注釈です。", count: 10)]
@@ -109,6 +116,8 @@ struct CandidatesView_Previews: PreviewProvider {
     static var previews: some View {
         CandidatesView(candidates: pageViewModel())
             .previewDisplayName("パネル表示")
+        CandidatesView(candidates: pageWithoutPopoverViewModel())
+            .previewDisplayName("パネル表示 (注釈なし)")
         CandidatesView(candidates: inlineViewModel())
             .previewDisplayName("インライン表示")
     }
