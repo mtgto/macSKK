@@ -57,12 +57,5 @@ final class CandidatesViewModel: ObservableObject {
             }
         }
         .store(in: &cancellables)
-
-        $showAnnotationPopover.removeDuplicates().sink { [weak self] showAnnotationPopover in
-            if !showAnnotationPopover {
-                self?.popoverIsPresented = false
-            }
-        }
-        .store(in: &cancellables)
     }
 }
