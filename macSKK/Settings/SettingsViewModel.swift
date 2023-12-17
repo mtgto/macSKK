@@ -198,12 +198,14 @@ final class SettingsViewModel: ObservableObject {
         }
         .store(in: &cancellables)
 
-        $selectedInputSourceId.sink { [weak self] selectedInputSourceId in
+        $selectedInputSourceId.removeDuplicates().sink { [weak self] selectedInputSourceId in
             if let selectedInputSource = self?.inputSources.first(where: { $0.id == selectedInputSourceId }) {
                 logger.info("キー配列を \(selectedInputSource.localizedName, privacy: .public) (\(selectedInputSourceId, privacy: .public)) に設定しました")
                 UserDefaults.standard.set(selectedInputSource.id, forKey: InputSource.selectedInputSourceKey)
             } else {
-                logger.error("キー配列 \(selectedInputSourceId, privacy: .public) が見つかりませんでした")
+                if let self, !self.inputSources.isEmpty {
+                    logger.error("キー配列 \(selectedInputSourceId, privacy: .public) が見つかりませんでした")
+                }
             }
         }.store(in: &cancellables)
     }
