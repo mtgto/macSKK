@@ -34,7 +34,7 @@ class InputController: IMKInputController {
 
     override init!(server: IMKServer!, delegate: Any!, client inputClient: Any!) {
         inputModePanel = InputModePanel()
-        candidatesPanel = CandidatesPanel(showAnnotationPopover: UserDefaults.standard.bool(forKey: "showAnnotation"))
+        candidatesPanel = CandidatesPanel(showAnnotationPopover: UserDefaults.standard.bool(forKey: UserDefaultsKeys.showAnnotation))
         completionPanel = CompletionPanel()
         super.init(server: server, delegate: delegate, client: inputClient)
 
@@ -89,7 +89,7 @@ class InputController: IMKInputController {
         }.store(in: &cancellables)
         stateMachine.candidateEvent.sink { [weak self] candidates in
             if let self {
-                let showAnnotation = UserDefaults.standard.bool(forKey: "showAnnotation")
+                let showAnnotation = UserDefaults.standard.bool(forKey: UserDefaultsKeys.showAnnotation)
                 self.candidatesPanel.setShowAnnotationPopover(showAnnotation)
                 if let candidates {
                     // 下線のスタイルがthickのときに被らないように1ピクセル下に余白を設ける
@@ -128,7 +128,7 @@ class InputController: IMKInputController {
             self?.stateMachine.didDoubleSelectCandidate(doubleSelected)
         }.store(in: &cancellables)
         selectedWord.removeDuplicates().compactMap({ $0 }).sink { [weak self] word in
-            if UserDefaults.standard.bool(forKey: "showAnnotation") {
+            if UserDefaults.standard.bool(forKey: UserDefaultsKeys.showAnnotation) {
                 if let systemAnnotation = SystemDict.lookup(word), !systemAnnotation.isEmpty {
                     self?.candidatesPanel.setSystemAnnotation(systemAnnotation, for: word)
                     self?.candidatesPanel.show()
@@ -368,7 +368,7 @@ class InputController: IMKInputController {
 
     // キー配列を設定する
     private func setCustomInputSource(textInput: IMKTextInput) {
-        if let inputSourceID = UserDefaults.standard.string(forKey: InputSource.selectedInputSourceKey) {
+        if let inputSourceID = UserDefaults.standard.string(forKey: UserDefaultsKeys.selectedInputSource) {
             logger.info("InputSourceIDを \(inputSourceID, privacy: .public) に設定します")
             textInput.overrideKeyboard(withKeyboardNamed: inputSourceID)
         } else {

@@ -9,8 +9,6 @@ struct InputSource: Hashable, Identifiable {
     // inputSourceID
     let id: String
     let localizedName: String
-    // 選択中のinputSourceIDをUserDefaultsに保存するときのキー
-    static let selectedInputSourceKey = "selectedInputSource"
     // 初期値はQWERTY
     static let defaultInputSourceId = "com.apple.keylayout.ABC"
 

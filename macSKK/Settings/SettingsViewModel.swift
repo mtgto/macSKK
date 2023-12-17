@@ -122,12 +122,12 @@ final class SettingsViewModel: ObservableObject {
         if let bundleIdentifiers = UserDefaults.standard.array(forKey: "directModeBundleIdentifiers") as? [String] {
             directModeApplications = bundleIdentifiers.map { DirectModeApplication(bundleIdentifier: $0) }
         }
-        if let selectedInputSourceId = UserDefaults.standard.string(forKey: InputSource.selectedInputSourceKey) {
+        if let selectedInputSourceId = UserDefaults.standard.string(forKey: UserDefaultsKeys.selectedInputSource) {
             self.selectedInputSourceId = selectedInputSourceId
         } else {
             selectedInputSourceId = InputSource.defaultInputSourceId
         }
-        self.showAnnotation = UserDefaults.standard.bool(forKey: "showAnnotation")
+        self.showAnnotation = UserDefaults.standard.bool(forKey: UserDefaultsKeys.showAnnotation)
 
         // SKK-JISYO.Lのようなファイルの読み込みが遅いのでバックグラウンドで処理
         $dictSettings.filter({ !$0.isEmpty }).receive(on: DispatchQueue.global()).sink { dictSettings in
@@ -204,14 +204,14 @@ final class SettingsViewModel: ObservableObject {
         $selectedInputSourceId.sink { [weak self] selectedInputSourceId in
             if let selectedInputSource = self?.inputSources.first(where: { $0.id == selectedInputSourceId }) {
                 logger.info("キー配列を \(selectedInputSource.localizedName, privacy: .public) (\(selectedInputSourceId, privacy: .public)) に設定しました")
-                UserDefaults.standard.set(selectedInputSource.id, forKey: InputSource.selectedInputSourceKey)
+                UserDefaults.standard.set(selectedInputSource.id, forKey: UserDefaultsKeys.selectedInputSource)
             } else {
                 logger.error("キー配列 \(selectedInputSourceId, privacy: .public) が見つかりませんでした")
             }
         }.store(in: &cancellables)
 
         $showAnnotation.sink { showAnnotation in
-            UserDefaults.standard.set(showAnnotation, forKey: "showAnnotation")
+            UserDefaults.standard.set(showAnnotation, forKey: UserDefaultsKeys.showAnnotation)
         }.store(in: &cancellables)
     }
 
