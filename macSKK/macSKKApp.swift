@@ -36,7 +36,7 @@ struct macSKKApp: App {
     private let userNotificationDelegate = UserNotificationDelegate()
     @State private var fetchReleaseTask: Task<Void, Error>?
     #if DEBUG
-    private let candidatesPanel: CandidatesPanel = CandidatesPanel()
+    private let candidatesPanel: CandidatesPanel = CandidatesPanel(showAnnotationPopover: true)
     private let inputModePanel = InputModePanel()
     #endif
 
@@ -150,11 +150,12 @@ struct macSKKApp: App {
 
     private func setupUserDefaults() {
         UserDefaults.standard.register(defaults: [
-            "dictionaries": [
+            UserDefaultsKeys.dictionaries: [
                 DictSetting(filename: "SKK-JISYO.L", enabled: true, encoding: .japaneseEUC).encode()
             ],
-            "directModeBundleIdentifiers": [String](),
-            InputSource.selectedInputSourceKey: InputSource.defaultInputSourceId,
+            UserDefaultsKeys.directModeBundleIdentifiers: [String](),
+            UserDefaultsKeys.selectedInputSource: InputSource.defaultInputSourceId,
+            UserDefaultsKeys.showAnnotation: true,
         ])
     }
 
