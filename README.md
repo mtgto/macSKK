@@ -49,6 +49,19 @@ SKK辞書は `~/Library/Containers/net.mtgto.inputmethod.macSKK/Data/Documents/D
 ユーザー辞書は `~/Library/Containers/net.mtgto.inputmethod.macSKK/Data/Documents/Dictionaries/skk-jisyo.utf8` にUTF-8形式で保存されます。
 ユーザー辞書はテキストエディタで更新可能です。別プロセスでユーザー辞書が更新された場合はmacSKKが自動で再読み込みを行います。
 
+## 設定
+
+入力メニューから「設定…」でGUIの設定画面を開くことができます。またプライベートモードのように入力メニューから直接有効・無効を切り替えるものがあります。
+
+設定は UserDefaults 形式で `~/Library/Containers/net.mtgto.inputmethod.macSKK/Data/Library/Preferences/net.mtgto.inputmethod.macSKK.plist` に保存されます。
+
+| キー                        | 値の型  | 設定の意味                              |
+| :-------------------------: | :-----: | :-------------------------------------: |
+| dictionaries                | Array   | 辞書設定                                |
+| directModeBundleIdentifiers | Array   | 直接入力モードにしているアプリケーションのBundle Identifier |
+| selectedInputSource         | String  | キー配列 (KeyLayout) のID               |
+| showAnnotation              | Boolean | 注釈を変換候補のそばに表示するか        |
+
 ## 機能
 
 ### 単語登録
@@ -82,13 +95,13 @@ AquaSKKと同様、単語登録モードでのみ `C-y` でクリップボード
 macSKKではタイプ0, 1, 2, 3, 8, 9に対応しています。
 数値として使えるのは0以上2^63-1 (Int64.max) までです。
 
-ユーザー辞書に追加される変換結果は "だい# /第#0/" のように実際の入力に使用した数値は含みません。
+ユーザー辞書に追加される変換結果は "だい# /第#0/" のように実際の入力に使用した数値は含まない形式で追加されます。
 
 ### キー配列の変更
 
 デフォルトではQWERTY配列になっていますが、設定画面からキー配列を変更できます。
 
-英語用のキー配列のみを選択リストに表示しています。
+システムで有効なキー配列のうち、英語用のキー配列のみを選択リストに表示しています。
 
 ### プライベートモード
 
@@ -110,7 +123,7 @@ macSKKではタイプ0, 1, 2, 3, 8, 9に対応しています。
 ユーザー辞書が更新された場合、一定期間おきにファイル書き出しが行われます。またmacSKKプロセスが正常終了する際にファイル書き出しが終わっていない更新がある場合はファイル書き出しを行ってから終了します。
 もし即座にファイル書き出ししたい場合は入力メニューから"ユーザー辞書を今すぐ保存"を選んでください。
 
-Command + Option + Escからの強制終了では保存されないので注意してください。
+Command + Option + Escからの強制終了時やシグナルを送っての終了時は保存されないので注意してください。
 
 ### バージョンの自動チェック
 
@@ -145,6 +158,8 @@ A. [macos_forward_to_ime_modifier_mask](https://wezfurlong.org/wezterm/config/lu
 ## 開発
 
 Xcodeでビルドし、 `~/Library/Input Methods` に `macSKK.app` を配置してからシステム設定→キーボード→入力ソースで `ひらがな (macSKK)` などを追加してください。
+
+macOS 14以降ではApp Sandboxの制限が強くなりました。すでにリリース版macSKKを使っている環境で開発版のmacSKKを使用すると起動時に `「"macSKK"がほかのアプリからのデータへのアクセスを求めています。」` というダイアログが表示されることがあります。これはリリース版で署名に使用しているTeam IDと異なるProvisioning Profileを使用している (もしくはAd hoc署名を使っている) 場合に同じユーザー辞書ファイルにアクセスすることで発生します。この状態で「許可」を選んでしまうとリリース版のmacSKKが逆に読み込めなくなるなどの想定しない問題が発生する可能性があります。お手数ですがBundle Identifierを変更するなどを検討してください。
 
 ### バージョンアップ
 
