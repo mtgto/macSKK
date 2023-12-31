@@ -55,7 +55,7 @@ class FileDict: NSObject, DictProtocol, Identifiable {
             if let self {
                 do {
                     let source = try String(contentsOf: url, encoding: self.encoding)
-                    let memoryDict = try MemoryDict(dictId: self.id, source: source, readonly: readonly)
+                    let memoryDict = MemoryDict(dictId: self.id, source: source, readonly: readonly)
                     self.dict = memoryDict
                     self.version = NSFileVersion.currentVersionOfItem(at: url)
                     logger.log("辞書 \(self.id, privacy: .public) から \(self.dict.entries.count) エントリ読み込みました")

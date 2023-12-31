@@ -23,7 +23,7 @@ class MemoryDictTests: XCTestCase {
             いt /[った/行/言/]/
 
             """
-        let dict = try MemoryDict(dictId: "testDict", source: source, readonly: false)
+        let dict = MemoryDict(dictId: "testDict", source: source, readonly: false)
         XCTAssertEqual(dict.entries["あg"]?.map { $0.word }, ["挙", "揚", "上"])
         XCTAssertEqual(dict.entries["あb"]?.map { $0.word }, ["浴"])
         XCTAssertEqual(dict.entries["あ"]?.map { $0.word }, ["阿", "唖", "亜", "娃"])
@@ -40,7 +40,7 @@ class MemoryDictTests: XCTestCase {
             GPL /GNU General Public License;(concat "http:\\057\\057www.gnu.org\\057licenses\\057gpl.ja.html")/
 
             """
-        let dict = try MemoryDict(dictId: "testDict", source: source, readonly: false)
+        let dict = MemoryDict(dictId: "testDict", source: source, readonly: false)
         XCTAssertEqual(dict.entries["わi"]?.map { $0.word }, ["湧", "沸", "涌"])
         XCTAssertEqual(dict.entries["ao"]?.map { $0.word }, ["and/or"])
         XCTAssertEqual(dict.entries["GPL"]?.map { $0.annotation?.text }, ["http://www.gnu.org/licenses/gpl.ja.html"])
@@ -54,7 +54,7 @@ class MemoryDictTests: XCTestCase {
             あお /碧/
 
             """
-        let dict = try MemoryDict(dictId: "testDict", source: source, readonly: false)
+        let dict = MemoryDict(dictId: "testDict", source: source, readonly: false)
         XCTAssertEqual(dict.entries["あお"]?.map { $0.word }, ["青", "蒼", "碧"])
     }
 
@@ -64,7 +64,7 @@ class MemoryDictTests: XCTestCase {
             いぬ /犬;*かわいい/
 
             """
-        let dict = try MemoryDict(dictId: "testDict", source: source, readonly: false)
+        let dict = MemoryDict(dictId: "testDict", source: source, readonly: false)
         XCTAssertEqual(dict.entries["いぬ"]?.first?.annotation, Annotation(dictId: "testDict", text: "かわいい"))
     }
 
