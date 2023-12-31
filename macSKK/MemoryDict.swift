@@ -25,7 +25,7 @@ struct MemoryDict: DictProtocol {
     /// 送りありの読みの配列。最近変換したものが後に登場する。
     private(set) var okuriAriYomis: [String] = []
 
-    init(dictId: FileDict.ID, source: String, readonly: Bool) throws {
+    init(dictId: FileDict.ID, source: String, readonly: Bool) {
         self.readonly = readonly
         var dict: [String: [Word]] = [:]
         var okuriNashiYomis: [String] = []
