@@ -1531,6 +1531,38 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    func testHandleRegisteringTab() {
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(12).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("あい")])))
+            XCTAssertEqual(events[2], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.plain("[登録：あい]")])))
+            // 単語登録で空文字列のときにTabキーを押すと単語登録までの読みが補完される
+            XCTAssertEqual(events[4], .markedText(MarkedText([.plain("[登録：あい]"), .markerCompose, .plain("あい")])))
+            XCTAssertEqual(events[5], .markedText(MarkedText([.plain("[登録：あい]"), .markerCompose, .plain("あ")])))
+            XCTAssertEqual(events[6], .markedText(MarkedText([.plain("[登録：あい]")])))
+            XCTAssertEqual(events[7], .markedText(MarkedText([.markerCompose, .plain("あい")])))
+            XCTAssertEqual(events[8], .markedText(MarkedText([.markerCompose, .plain("あい*k")])))
+            XCTAssertEqual(events[9], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[10], .markedText(MarkedText([.plain("[登録：あい*く]")])))
+            XCTAssertEqual(events[11], .markedText(MarkedText([.plain("[登録：あい*く]"), .markerCompose, .plain("あい*く")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .tab, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .tab, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .backspace, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .cancel, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .cancel, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "k", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u")))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .tab, originalEvent: nil, cursorPosition: .zero)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     func testHandleSelectingEnter() {
         dictionary.setEntries(["と": [Word("戸")]])
 
