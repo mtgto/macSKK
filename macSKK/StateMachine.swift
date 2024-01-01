@@ -383,6 +383,10 @@ class StateMachine {
                 addFixedText(" ")
                 state.inputMethod = .normal
                 return true
+            } else if composing.cursor == 0 {
+                state.inputMethod = .normal
+                updateMarkedText()
+                return true
             } else {
                 return handleComposingStartConvert(action, composing: composing, specialState: specialState)
             }
