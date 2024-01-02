@@ -24,10 +24,10 @@ struct LogView: View {
         .task {
             do {
                 let logStore = try OSLogStore(scope: .currentProcessIdentifier)
-                let entries = try logStore.getEntries()
+                let predicate = NSPredicate(format: "subsystem == %@", Bundle.main.bundleIdentifier!)
+                let entries = try logStore.getEntries(matching: predicate)
                     .compactMap { entry -> OSLogEntryLog? in
                         guard let entry = entry as? OSLogEntryLog else { return nil }
-                        guard entry.subsystem == Bundle.main.bundleIdentifier! else { return nil }
                         return entry
                     }
                 let format = Date.ISO8601FormatStyle.iso8601Date(timeZone: TimeZone.current)
