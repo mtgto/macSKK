@@ -65,7 +65,7 @@ struct SettingsView: View {
                 DirectModeView(settingsViewModel: settingsViewModel)
                     .navigationTitle(selectedSection.localizedStringKey)
             case .log:
-                LogView(log: "")
+                LogView(log: NSLocalizedString("LoadingStatusLoading", comment: "Loading…"))
             #if DEBUG
             case .keyEvent:
                 KeyEventView()

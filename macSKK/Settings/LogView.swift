@@ -9,27 +9,62 @@ struct LogView: View {
 
     var body: some View {
         Form {
-            Text(log)
-                .textSelection(.enabled)
+            TextEditor(text: .constant(log))
             Spacer()
             Button {
-                
+                let pasteboard = NSPasteboard.general
+                pasteboard.clearContents()
+                pasteboard.setString(log, forType: .string)
             } label: {
-                Text("クリップボードにコピー")
+                Text("Copy")
             }
 
         }
         .padding()
-        .onAppear(perform: {
+        .task {
             do {
                 let logStore = try OSLogStore(scope: .currentProcessIdentifier)
                 let entries = try logStore.getEntries()
-                self.log = entries.map { $0.composedMessage }.joined(separator: "\n")
+                    .compactMap { entry -> OSLogEntryLog? in
+                        guard let entry = entry as? OSLogEntryLog else { return nil }
+                        guard entry.subsystem == Bundle.main.bundleIdentifier! else { return nil }
+                        return entry
+                    }
+                let format = Date.ISO8601FormatStyle.iso8601Date(timeZone: TimeZone.current)
+                    .dateTimeSeparator(.space)
+                    .time(includingFractionalSeconds: true)
+                self.log = entries.map { entry in
+                    [
+                        "[\(entry.date.formatted(format))]",
+                        "[\(levelDescription(level: entry.level))]",
+                        "\(entry.composedMessage)",
+                    ].joined(separator: " ")
+                }.joined(separator: "\n")
             } catch {
                 self.log = "アプリケーションログが取得できません: \(error)"
                 logger.error("アプリケーションログが取得できません: \(error)")
             }
-        })
+        }
+    }
+
+    private func levelDescription(level: OSLogEntryLog.Level) -> String {
+        switch level {
+        case .undefined:
+            return "undefined"
+        case .debug:
+            return "debug"
+        case .info:
+            return "info"
+        case .notice:
+            return "notice"
+        case .error:
+            return "error"
+        case .fault:
+            return "fault"
+        @unknown default:
+            logger.error("未知のログレベル \(level.rawValue) が使用されました")
+            return "unknown"
+        }
     }
 }
 
