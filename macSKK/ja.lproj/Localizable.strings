@@ -6,6 +6,7 @@
 "SettingsNameDictionaries" = "辞書";
 "SettingsNameSoftwareUpdate" = "ソフトウェアアップデート";
 "SettingsNameDirectMode" = "直接入力";
+"SettingsNameLog" = "ログ";
 "SettingsNameKeyEvent" = "キーイベント";
 "SettingsNameSystemDict" = "システム辞書";
 "SettingsNameUserDictTitle" = "ユーザー辞書";
