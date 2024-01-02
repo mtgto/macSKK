@@ -66,6 +66,20 @@ struct NumberYomi {
             }
         }.joined()
     }
+
+    /**
+     * elementsから数値要素だけを取り出します
+     */
+    var numberElements: [UInt64] {
+        elements.compactMap {
+            switch $0 {
+            case .number(let number):
+                return number
+            default:
+                return nil
+            }
+        }
+    }
 }
 
 // 数値入りの変換候補
@@ -117,47 +131,48 @@ struct NumberCandidate {
      */
     func toString(yomi: NumberYomi) -> String? {
         var result: String = ""
-        if yomi.elements.count != elements.count {
+        var yomiNumbers = yomi.numberElements
+        let candidateNumberCount = elements.reduce(0, { count, element in
+            if case .number = element {
+                return count + 1
+            } else {
+                return count
+            }
+        })
+        // 読みと変換候補で数値情報の数が不一致
+        if yomiNumbers.count != candidateNumberCount {
             return nil
         }
-        for (i, yomiElement) in yomi.elements.enumerated() {
-            switch yomiElement {
-            case .number(let number):
-                if case .number(let type) = elements[i] {
-                    switch type {
-                    case 0:
-                        result.append(String(number))
-                    case 1: // 全角
-                        result.append(String(number).toZenkaku())
-                    case 2: // 漢数字(位取りあり)
-                        result.append(toKanjiString(number: number))
-                    case 3: // 漢数字(位取りなし)
-                        result.append(Self.kanjiFormatter.string(from: NSNumber(value: number))!)
-                    case 4: // 数字部分で辞書を引く
-                        // TODO: あとで対応する
+        for element in elements {
+            if case .number(let type) = element {
+                let number = yomiNumbers.removeFirst()
+                switch type {
+                case 0:
+                    result.append(String(number))
+                case 1: // 全角
+                    result.append(String(number).toZenkaku())
+                case 2: // 漢数字(位取りあり)
+                    result.append(toKanjiString(number: number))
+                case 3: // 漢数字(位取りなし)
+                    result.append(Self.kanjiFormatter.string(from: NSNumber(value: number))!)
+                case 4: // 数字部分で辞書を引く
+                    // TODO: あとで対応する
+                    return nil
+                case 5: // 小切手や手形の金額記入の際用いられる表記
+                    // TODO: あとで対応する
+                    return nil
+                case 8: // 3桁ごとに区切る
+                    result.append(number.formatted(.number))
+                case 9: // 将棋の棋譜入力用
+                    if number < 10 || number > 99 || number % 10 == 0 {
                         return nil
-                    case 5: // 小切手や手形の金額記入の際用いられる表記
-                        // TODO: あとで対応する
-                        return nil
-                    case 8: // 3桁ごとに区切る
-                        result.append(number.formatted(.number))
-                    case 9: // 将棋の棋譜入力用
-                        if number < 10 || number > 99 || number % 10 == 0 {
-                            return nil
-                        }
-                        result.append(String(number / 10).toZenkaku() + toKanjiString(number: number % 10))
-                    default:
-                        fatalError("未サポートの数値変換タイプ \(type) が指定されています")
                     }
-                } else {
-                    return nil
+                    result.append(String(number / 10).toZenkaku() + toKanjiString(number: number % 10))
+                default:
+                    fatalError("未サポートの数値変換タイプ \(type) が指定されています")
                 }
-            case .other:
-                if case .other(let other) = elements[i] {
-                    result.append(other)
-                } else {
-                    return nil
-                }
+            } else if case .other(let other) = element {
+                result.append(other)
             }
         }
         return result
