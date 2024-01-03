@@ -54,7 +54,7 @@ class FileDict: NSObject, DictProtocol, Identifiable {
         fileCoordinator.coordinate(readingItemAt: fileURL, error: &coordinationError) { [weak self] newURL in
             if let self {
                 do {
-                    let source = try String(contentsOf: url, encoding: self.encoding)
+                    let source = try self.loadString(url)
                     let memoryDict = MemoryDict(dictId: self.id, source: source, readonly: readonly)
                     self.dict = memoryDict
                     self.version = NSFileVersion.currentVersionOfItem(at: url)
@@ -67,6 +67,19 @@ class FileDict: NSObject, DictProtocol, Identifiable {
         }
         if let error = coordinationError ?? readingError {
             throw error
+        }
+    }
+
+    func loadString(_ url: URL) throws -> String {
+        if encoding == .japaneseEUC {
+            // JIS X 2013 を使ったEUC-JIS-2004の場合があるため失敗したらiconvでUTF-8に変換する
+            do {
+                return try String(contentsOf: url, encoding: .japaneseEUC)
+            } catch {
+                return try url.eucJis2004String()
+            }
+        } else {
+            return try String(contentsOf: url, encoding: encoding)
         }
     }
 
