@@ -18,6 +18,10 @@
 		CE485A882A8FA195008271EF /* Release+UNNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE485A872A8FA195008271EF /* Release+UNNotification.swift */; };
 		CE485A8A2A8FA5C6008271EF /* UserNotificationDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE485A892A8FA5C6008271EF /* UserNotificationDelegate.swift */; };
 		CE496C8C2B43968A001C623C /* LogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE496C8B2B43968A001C623C /* LogView.swift */; };
+		CE496C912B440892001C623C /* URL+EucJis2004.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE496C902B440892001C623C /* URL+EucJis2004.swift */; };
+		CE496C932B440B9B001C623C /* euc-jis-2004.txt in Resources */ = {isa = PBXBuildFile; fileRef = CE496C922B440B9B001C623C /* euc-jis-2004.txt */; };
+		CE496C952B440BBD001C623C /* URL+EucJis2004Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE496C942B440BBD001C623C /* URL+EucJis2004Tests.swift */; };
+		CE496C982B440CDA001C623C /* libiconv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = CE496C972B440CCA001C623C /* libiconv.tbd */; };
 		CE4CB5CC2AD557D90046FA34 /* NumberEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE4CB5CB2AD557D90046FA34 /* NumberEntry.swift */; };
 		CE4CB5CE2AD55DF90046FA34 /* NumberEntryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE4CB5CD2AD55DF90046FA34 /* NumberEntryTests.swift */; };
 		CE5EB6AD2AAC0DE000389B98 /* FileDict.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE5EB6AC2AAC0DE000389B98 /* FileDict.swift */; };
@@ -126,6 +130,10 @@
 		CE485A872A8FA195008271EF /* Release+UNNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Release+UNNotification.swift"; sourceTree = "<group>"; };
 		CE485A892A8FA5C6008271EF /* UserNotificationDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserNotificationDelegate.swift; sourceTree = "<group>"; };
 		CE496C8B2B43968A001C623C /* LogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogView.swift; sourceTree = "<group>"; };
+		CE496C902B440892001C623C /* URL+EucJis2004.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URL+EucJis2004.swift"; sourceTree = "<group>"; };
+		CE496C922B440B9B001C623C /* euc-jis-2004.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "euc-jis-2004.txt"; sourceTree = "<group>"; };
+		CE496C942B440BBD001C623C /* URL+EucJis2004Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URL+EucJis2004Tests.swift"; sourceTree = "<group>"; };
+		CE496C972B440CCA001C623C /* libiconv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libiconv.tbd; path = usr/lib/libiconv.tbd; sourceTree = SDKROOT; };
 		CE4CB5CB2AD557D90046FA34 /* NumberEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumberEntry.swift; sourceTree = "<group>"; };
 		CE4CB5CD2AD55DF90046FA34 /* NumberEntryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumberEntryTests.swift; sourceTree = "<group>"; };
 		CE5EB6AC2AAC0DE000389B98 /* FileDict.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileDict.swift; sourceTree = "<group>"; };
@@ -204,6 +212,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CE496C982B440CDA001C623C /* libiconv.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -224,6 +233,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		CE496C962B440CCA001C623C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				CE496C972B440CCA001C623C /* libiconv.tbd */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		CE5ECF292957034B00E7BE7D = {
 			isa = PBXGroup;
 			children = (
@@ -231,6 +248,7 @@
 				CED7CA2A2A8394F7004EF988 /* FetchUpdateService */,
 				CE5ECF462957034D00E7BE7D /* macSKKTests */,
 				CE5ECF332957034B00E7BE7D /* Products */,
+				CE496C962B440CCA001C623C /* Frameworks */,
 			);
 			indentWidth = 4;
 			sourceTree = "<group>";
@@ -277,6 +295,7 @@
 				CED7CA3B2A839603004EF988 /* UpdateChecker.swift */,
 				CEA78FAB2960401F00B67E25 /* String+Transform.swift */,
 				CED7F51E2AB5F4A7007FC6BD /* Character+Additions.swift */,
+				CE496C902B440892001C623C /* URL+EucJis2004.swift */,
 				CE485A892A8FA5C6008271EF /* UserNotificationDelegate.swift */,
 				CE7F9ADA2AB53E31001B1877 /* View */,
 				CEC376E929651DE000D9C432 /* Settings */,
@@ -313,12 +332,13 @@
 				CEA78FB129646CA100B67E25 /* UserDictTests.swift */,
 				CEF0823529685C0800646366 /* StateTests.swift */,
 				CEA78FA9295EBCAC00B67E25 /* StateMachineTests.swift */,
+				CEADA44C2B025A8A0026E2BD /* EntryTests.swift */,
 				CED7CA3D2A8397E4004EF988 /* UpdateCheckerTests.swift */,
 				CE6DBA902A846C1700F5A227 /* ReleaseVersionTests.swift */,
 				CEA78FAD2961BA1D00B67E25 /* String+TransformTests.swift */,
+				CE496C942B440BBD001C623C /* URL+EucJis2004Tests.swift */,
 				CE06CA332AAC199500E80E5E /* UserDict+Utilities.swift */,
 				CED7CA572A83BFE9004EF988 /* fixture */,
-				CEADA44C2B025A8A0026E2BD /* EntryTests.swift */,
 			);
 			path = macSKKTests;
 			sourceTree = "<group>";
@@ -375,6 +395,7 @@
 				CE06CA2C2AAC172F00E80E5E /* empty.txt */,
 				CED7CA582A83CD67004EF988 /* releases.atom */,
 				CEB1416F2A8773DB005E7252 /* SKK-JISYO.test.utf8 */,
+				CE496C922B440B9B001C623C /* euc-jis-2004.txt */,
 			);
 			path = fixture;
 			sourceTree = "<group>";
@@ -504,6 +525,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CEB141702A8773DB005E7252 /* SKK-JISYO.test.utf8 in Resources */,
+				CE496C932B440B9B001C623C /* euc-jis-2004.txt in Resources */,
 				CED7CA592A83CD67004EF988 /* releases.atom in Resources */,
 				CE06CA2D2AAC172F00E80E5E /* empty.txt in Resources */,
 			);
@@ -584,6 +606,7 @@
 				CE84A3DC2957174D009394C4 /* State.swift in Sources */,
 				CE496C8C2B43968A001C623C /* LogView.swift in Sources */,
 				CEE3717529653112000DB2C3 /* SoftwareUpdateView.swift in Sources */,
+				CE496C912B440892001C623C /* URL+EucJis2004.swift in Sources */,
 				CE39DB212A8DFD8F00BC619F /* MarkedText.swift in Sources */,
 				CE40D9A32A6D0C3900D44799 /* SystemDict.swift in Sources */,
 				CE5EB6AD2AAC0DE000389B98 /* FileDict.swift in Sources */,
@@ -606,6 +629,7 @@
 				CE4CB5CE2AD55DF90046FA34 /* NumberEntryTests.swift in Sources */,
 				CEADA44D2B025A8A0026E2BD /* EntryTests.swift in Sources */,
 				CEA78FAA295EBCAC00B67E25 /* StateMachineTests.swift in Sources */,
+				CE496C952B440BBD001C623C /* URL+EucJis2004Tests.swift in Sources */,
 				CEE2D9792A99FEC700A4CD76 /* CandidateTest.swift in Sources */,
 				CEF0823629685C0800646366 /* StateTests.swift in Sources */,
 				CED7CA3E2A8397E4004EF988 /* UpdateCheckerTests.swift in Sources */,
