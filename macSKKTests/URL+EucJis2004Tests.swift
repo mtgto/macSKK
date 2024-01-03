@@ -10,4 +10,16 @@ final class URLEucJis2004Tests: XCTestCase {
         let fileURL = Bundle(for: Self.self).url(forResource: "euc-jis-2004", withExtension: "txt")!
         XCTAssertEqual(try fileURL.eucJis2004String(), "川﨑")
     }
+
+    func testLoadFail() throws {
+        let fileURL = Bundle(for: Self.self).url(forResource: "SKK-JISYO.test", withExtension: "utf8")!
+        XCTAssertThrowsError(try fileURL.eucJis2004String()) {
+            XCTAssertEqual($0 as! EucJis2004Error, EucJis2004Error.convert)
+        }
+    }
+
+    func testLoadEmpty() throws {
+        let fileURL = Bundle(for: Self.self).url(forResource: "empty", withExtension: "txt")!
+        XCTAssertEqual(try fileURL.eucJis2004String(), "")
+    }
 }
