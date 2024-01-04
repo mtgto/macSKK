@@ -6,6 +6,7 @@ import SwiftUI
 
 struct LogView: View {
     @State var log: String
+    @State private var loading: Bool = false
 
     var body: some View {
         Form {
@@ -18,22 +19,20 @@ struct LogView: View {
             } label: {
                 Text("Copy")
             }
+            .disabled(loading)
 
         }
         .padding()
         .task {
+            loading = true
             do {
                 let logStore = try OSLogStore(scope: .currentProcessIdentifier)
                 let predicate = NSPredicate(format: "subsystem == %@", Bundle.main.bundleIdentifier!)
-                let entries = try logStore.getEntries(matching: predicate)
-                    .compactMap { entry -> OSLogEntryLog? in
-                        guard let entry = entry as? OSLogEntryLog else { return nil }
-                        return entry
-                    }
+                let logs = try logStore.getEntries(matching: predicate).compactMap { $0 as? OSLogEntryLog }
                 let format = Date.ISO8601FormatStyle.iso8601Date(timeZone: TimeZone.current)
                     .dateTimeSeparator(.space)
                     .time(includingFractionalSeconds: true)
-                self.log = entries.map { entry in
+                self.log = logs.map { entry in
                     [
                         "[\(entry.date.formatted(format))]",
                         "[\(levelDescription(level: entry.level))]",
@@ -44,6 +43,7 @@ struct LogView: View {
                 self.log = "アプリケーションログが取得できません: \(error)"
                 logger.error("アプリケーションログが取得できません: \(error)")
             }
+            loading = false
         }
     }
 
