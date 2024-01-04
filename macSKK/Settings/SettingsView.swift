@@ -66,6 +66,7 @@ struct SettingsView: View {
                     .navigationTitle(selectedSection.localizedStringKey)
             case .log:
                 LogView(log: NSLocalizedString("LoadingStatusLoading", comment: "Loading…"))
+                    .navigationTitle(selectedSection.localizedStringKey)
             #if DEBUG
             case .keyEvent:
                 KeyEventView()
