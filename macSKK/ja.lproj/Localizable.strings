@@ -6,6 +6,7 @@
 "SettingsNameDictionaries" = "辞書";
 "SettingsNameSoftwareUpdate" = "ソフトウェアアップデート";
 "SettingsNameDirectMode" = "直接入力";
+"SettingsNameLog" = "ログ";
 "SettingsNameKeyEvent" = "キーイベント";
 "SettingsNameSystemDict" = "システム辞書";
 "SettingsNameUserDictTitle" = "ユーザー辞書";
@@ -36,3 +37,4 @@
 "Open Release Page" = "リリースページを開く";
 "Keyboard Layout" = "キー配列";
 "Show Annotation" = "現在の変換候補の注釈を表示";
+"Copy" = "コピー";

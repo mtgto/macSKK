@@ -10,6 +10,7 @@ struct SettingsView: View {
         case dictionaries = "SettingsNameDictionaries"
         case softwareUpdate = "SettingsNameSoftwareUpdate"
         case directMode = "SettingsNameDirectMode"
+        case log = "SettingsNameLog"
         #if DEBUG
         case keyEvent = "SettingsNameKeyEvent"
         case systemDict = "SettingsNameSystemDict"
@@ -35,6 +36,8 @@ struct SettingsView: View {
                         Label(section.localizedStringKey, systemImage: "gear.badge")
                     case .directMode:
                         Label(section.localizedStringKey, systemImage: "hand.raised.app")
+                    case .log:
+                        Label(section.localizedStringKey, systemImage: "doc.plaintext")
                     #if DEBUG
                     case .keyEvent:
                         Label(section.localizedStringKey, systemImage: "keyboard")
@@ -60,6 +63,9 @@ struct SettingsView: View {
                     .navigationTitle(selectedSection.localizedStringKey)
             case .directMode:
                 DirectModeView(settingsViewModel: settingsViewModel)
+                    .navigationTitle(selectedSection.localizedStringKey)
+            case .log:
+                LogView(log: NSLocalizedString("LoadingStatusLoading", comment: "Loading…"))
                     .navigationTitle(selectedSection.localizedStringKey)
             #if DEBUG
             case .keyEvent:
