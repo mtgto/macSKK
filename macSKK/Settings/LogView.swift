@@ -31,10 +31,9 @@ struct LogView: View {
         .padding()
         .task {
             loading = true
-            switch await load().result {
-            case .success(let log):
-                self.log = log
-            case .failure(let error):
+            do {
+                self.log = try await load()
+            } catch {
                 self.log = "アプリケーションログが取得できません: \(error)"
                 logger.error("アプリケーションログが取得できません: \(error)")
             }
@@ -42,41 +41,39 @@ struct LogView: View {
         }
     }
 
-    private func load() async -> Task<String, Error> {
-        Task { () -> String in
-            func levelDescription(level: OSLogEntryLog.Level) -> String {
-                switch level {
-                case .undefined:
-                    return "undefined"
-                case .debug:
-                    return "debug"
-                case .info:
-                    return "info"
-                case .notice:
-                    return "notice"
-                case .error:
-                    return "error"
-                case .fault:
-                    return "fault"
-                @unknown default:
-                    logger.error("未知のログレベル \(level.rawValue) が使用されました")
-                    return "unknown"
-                }
+    private func load() async throws -> String {
+        func levelDescription(level: OSLogEntryLog.Level) -> String {
+            switch level {
+            case .undefined:
+                return "undefined"
+            case .debug:
+                return "debug"
+            case .info:
+                return "info"
+            case .notice:
+                return "notice"
+            case .error:
+                return "error"
+            case .fault:
+                return "fault"
+            @unknown default:
+                logger.error("未知のログレベル \(level.rawValue) が使用されました")
+                return "unknown"
             }
-            let logStore = try OSLogStore(scope: .currentProcessIdentifier)
-            let predicate = NSPredicate(format: "subsystem == %@", Bundle.main.bundleIdentifier!)
-            let logs = try logStore.getEntries(matching: predicate).compactMap { $0 as? OSLogEntryLog }
-            let format = Date.ISO8601FormatStyle.iso8601Date(timeZone: TimeZone.current)
-                .dateTimeSeparator(.space)
-                .time(includingFractionalSeconds: true)
-            return logs.map { entry in
-                [
-                    "[\(entry.date.formatted(format))]",
-                    "[\(levelDescription(level: entry.level))]",
-                    "\(entry.composedMessage)",
-                ].joined(separator: " ")
-            }.joined(separator: "\n")
         }
+        let logStore = try OSLogStore(scope: .currentProcessIdentifier)
+        let predicate = NSPredicate(format: "subsystem == %@", Bundle.main.bundleIdentifier!)
+        let logs = try logStore.getEntries(matching: predicate).compactMap { $0 as? OSLogEntryLog }
+        let format = Date.ISO8601FormatStyle.iso8601Date(timeZone: TimeZone.current)
+            .dateTimeSeparator(.space)
+            .time(includingFractionalSeconds: true)
+        return logs.map { entry in
+            [
+                "[\(entry.date.formatted(format))]",
+                "[\(levelDescription(level: entry.level))]",
+                "\(entry.composedMessage)",
+            ].joined(separator: " ")
+        }.joined(separator: "\n")
     }
 }
 
