@@ -20,7 +20,9 @@ extension URL {
             throw EucJis2004Error.unsupported
         }
         defer {
-            iconv_close(cd)
+            if iconv_close(cd) == -1 {
+                logger.error("iconv変換ディスクリプタの解放に失敗しました: \(errno)")
+            }
         }
         var inLeft = data.count
         // EUC-JIS-2004は1文字で1..2バイト (ASCIIは1バイト)、UTF-8は1..4バイト (ASCIIは1バイト) なのでバッファサイズは2倍用意する
@@ -33,7 +35,7 @@ extension URL {
                 let ret = iconv(cd, &inPtr, &inLeft, &outPtr, &outLeft)
                 if ret == -1 {
                     if errno == EBADF {
-                        logger.error("iconv変換デスクリプタの状態が異常です")
+                        logger.error("iconv変換ディスクリプタの状態が異常です")
                     } else if errno == EILSEQ {
                         logger.error("入力に不正なバイト列が存在します")
                     } else if errno == E2BIG {
