@@ -48,6 +48,7 @@ struct SettingsView: View {
                 }
             }
             .listStyle(.sidebar)
+            .frame(width: 215)
             .navigationSplitViewColumnWidth(215)
             .modifier(RemoveSidebarToggle())
         } detail: {
