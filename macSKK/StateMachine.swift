@@ -598,7 +598,8 @@ class StateMachine {
                 // 送り仮名があるときはローマ字部分をリセットする
                 state.inputMethod = .composing(
                     ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: ""))
-                return false
+                updateMarkedText()
+                return true
             }
         } else if input == "l" && converted.kakutei == nil {
             // 入力済みを確定してからlを打ったのと同じ処理をする
