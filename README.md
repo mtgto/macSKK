@@ -44,16 +44,18 @@ macSKKのインストール後に、システム設定→キーボード→入�
 もしインストール直後に表示されなかったり、バージョンアップしても反映されない場合はログアウト & ログインを試してみてください。
 
 SKK辞書は `~/Library/Containers/net.mtgto.inputmethod.macSKK/Data/Documents/Dictionaries` に配置してください。
-その後、入力メニュー→環境設定を開き、辞書設定で使用する辞書を有効に切り替えてください。EUC-JPでないエンコーディングの場合はiボタンからエンコーディングを切り替えてください。
+その後、入力メニュー→環境設定を開き、辞書設定で使用する辞書を有効に切り替えてください。EUC-JPでないエンコーディングの場合はiボタンからエンコーディングを切り替えてください。現在はEUC-JP (EUC-JIS-2004を含む) とUTF-8に対応しています。
+
+辞書の削除は上記フォルダから辞書ファイルをゴミ箱に移動するかファイルを削除してください。macSKKが自動で無効化します。
 
 ユーザー辞書は `~/Library/Containers/net.mtgto.inputmethod.macSKK/Data/Documents/Dictionaries/skk-jisyo.utf8` にUTF-8形式で保存されます。
 ユーザー辞書はテキストエディタで更新可能です。別プロセスでユーザー辞書が更新された場合はmacSKKが自動で再読み込みを行います。
 
 ## 設定
 
-入力メニューから「設定…」でGUIの設定画面を開くことができます。またプライベートモードのように入力メニューから直接有効・無効を切り替えるものがあります。
+macSKKが入力メソッドとして選択されているときに入力メニューから「設定…」でGUIの設定画面を開くことができます。またプライベートモードのように入力メニューから直接有効・無効を切り替えるものがあります。
 
-設定は UserDefaults 形式で `~/Library/Containers/net.mtgto.inputmethod.macSKK/Data/Library/Preferences/net.mtgto.inputmethod.macSKK.plist` に保存されます。
+設定は Plist 形式で `~/Library/Containers/net.mtgto.inputmethod.macSKK/Data/Library/Preferences/net.mtgto.inputmethod.macSKK.plist` に保存されます。
 
 | キー                        | 値の型  | 設定の意味                              |
 | :-------------------------: | :-----: | :-------------------------------------: |
