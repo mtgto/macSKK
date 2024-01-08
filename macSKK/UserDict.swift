@@ -232,6 +232,12 @@ class UserDict: NSObject, DictProtocol {
 
     /// ユーザー辞書を永続化する
     func save() throws {
+        // XcodeのEdit Scheme…でRun時とTest時の環境変数で設定しています。
+        // 普段利用しているmacSKKプロセスの書き込みと競合するのを回避するのが目的です。
+        if ProcessInfo.processInfo.environment["DISABLE_USER_DICT_SAVE"] == "1" {
+            logger.info("Xcodeから起動している状態なのでユーザー辞書の永続化はスキップします")
+            return
+        }
         if let dict = userDict as? FileDict {
             try dict.save()
         } else {
