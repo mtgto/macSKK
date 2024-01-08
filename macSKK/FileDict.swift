@@ -54,10 +54,10 @@ class FileDict: NSObject, DictProtocol, Identifiable {
         fileCoordinator.coordinate(readingItemAt: fileURL, error: &coordinationError) { [weak self] newURL in
             if let self {
                 do {
-                    let source = try self.loadString(url)
+                    let source = try self.loadString(newURL)
                     let memoryDict = MemoryDict(dictId: self.id, source: source, readonly: readonly)
                     self.dict = memoryDict
-                    self.version = NSFileVersion.currentVersionOfItem(at: url)
+                    self.version = NSFileVersion.currentVersionOfItem(at: newURL)
                     logger.log("辞書 \(self.id, privacy: .public) から \(self.dict.entries.count) エントリ読み込みました")
                 } catch {
                     logger.error("辞書 \(self.id, privacy: .public) の読み込みでエラーが発生しました: \(error)")
