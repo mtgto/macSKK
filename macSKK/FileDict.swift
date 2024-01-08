@@ -43,11 +43,11 @@ class FileDict: NSObject, DictProtocol, Identifiable {
         self.version = NSFileVersion.currentVersionOfItem(at: fileURL)
         self.readonly = readonly
         super.init()
-        try load(fileURL)
+        try load()
         NSFileCoordinator.addFilePresenter(self)
     }
 
-    func load(_ url: URL) throws {
+    func load() throws {
         var coordinationError: NSError?
         var readingError: NSError?
         let fileCoordinator = NSFileCoordinator(filePresenter: self)
@@ -183,13 +183,13 @@ extension FileDict: NSFilePresenter {
             logger.log("辞書 \(self.id, privacy: .public) のバージョンが自分自身に更新されたため何もしません")
         } else {
             logger.log("辞書 \(self.id, privacy: .public) のバージョンが更新されたので読み込みます")
-            try? load(fileURL)
+            try? load()
         }
     }
 
     func presentedItemDidLose(_ version: NSFileVersion) {
         logger.log("辞書 \(self.id, privacy: .public) が更新されたので読み込みます (バージョン情報が消失)")
-        try? load(fileURL)
+        try? load()
     }
 
     // NOTE: save() で保存した場合はバージョンが必ず更新されるのでこのメソッドは呼ばれない
@@ -202,6 +202,6 @@ extension FileDict: NSFilePresenter {
         } else {
             logger.log("辞書 \(self.id, privacy: .public) が変更されたので読み込みます")
         }
-        try? load(fileURL)
+        try? load()
     }
 }
