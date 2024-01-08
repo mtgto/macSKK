@@ -34,15 +34,6 @@ final class DictSetting: ObservableObject, Identifiable {
     }
 }
 
-/// 辞書の読み込み状態
-enum LoadStatus {
-    /// 正常に読み込み済み。引数は辞書がもっているエントリ数
-    case loaded(Int)
-    case loading
-    case disabled
-    case fail(Error)
-}
-
 /// 辞書のエンコーディングとして利用可能なもの
 enum AllowedEncoding: CaseIterable, CustomStringConvertible {
     case utf8
@@ -100,9 +91,9 @@ final class SettingsViewModel: ObservableObject {
     /// すべての利用可能なSKK辞書の設定
     @Published var dictSettings: [DictSetting] = []
     /// ユーザー辞書の読み込み状況
-    @Published var userDictLoadingStatus: LoadStatus = .loading
+    @Published var userDictLoadingStatus: DictLoadStatus = .loading
     /// 利用可能なユーザー辞書以外の辞書の読み込み状態
-    @Published var dictLoadingStatuses: [DictSetting.ID: LoadStatus] = [:]
+    @Published var dictLoadingStatuses: [DictSetting.ID: DictLoadStatus] = [:]
     /// 直接入力するアプリケーションのBundle Identifier
     @Published var directModeApplications: [DirectModeApplication] = []
     /// 選択可能なキー配列
@@ -114,7 +105,7 @@ final class SettingsViewModel: ObservableObject {
     // 辞書ディレクトリ
     let dictionariesDirectoryUrl: URL
     // バックグラウンドでの辞書を読み込みで読み込み状態が変わったときに通知される
-    private let loadStatusPublisher = PassthroughSubject<(DictSetting.ID, LoadStatus), Never>()
+    private let loadStatusPublisher = PassthroughSubject<(DictSetting.ID, DictLoadStatus), Never>()
     private var cancellables = Set<AnyCancellable>()
 
     init(dictionariesDirectoryUrl: URL) throws {
@@ -196,8 +187,8 @@ final class SettingsViewModel: ObservableObject {
             self?.setupNotification()
         }.store(in: &cancellables)
 
-        dictionary.entryCount.sink { [weak self] entryCount in
-            self?.userDictLoadingStatus = .loaded(entryCount)
+        dictionary.loadStatus.sink { [weak self] loadStatus in
+            self?.userDictLoadingStatus = loadStatus
         }
         .store(in: &cancellables)
 

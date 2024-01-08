@@ -13,6 +13,16 @@ enum DictReferringOption {
     case okuri(String)
 }
 
+/// 辞書の読み込み状態
+enum DictLoadStatus {
+    /// 正常に読み込み済み。引数は辞書がもっているエントリ数
+    case loaded(Int)
+    case loading
+    /// 無効に設定されている
+    case disabled
+    case fail(Error)
+}
+
 protocol DictProtocol {
     /**
      * 辞書を引き変換候補順に返す

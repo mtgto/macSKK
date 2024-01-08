@@ -5,13 +5,13 @@
 
 extension UserDict {
     func setEntries(_ entries: [String: [Word]]) {
-        if let dict = userDict as? FileDict {
+        if case .success(let userDict) = userDict, let dict = userDict as? FileDict {
             dict.setEntries(entries, readonly: true)
         }
     }
 
     func entries() -> [String: [Word]]? {
-        if let dict = userDict as? FileDict {
+        if case .success(let userDict) = userDict, let dict = userDict as? FileDict {
             return dict.dict.entries
         }
         return nil

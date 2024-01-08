@@ -87,7 +87,7 @@ struct DictionariesView: View {
         }
     }
 
-    private func loadingStatus(of status: LoadStatus) -> String {
+    private func loadingStatus(of status: DictLoadStatus) -> String {
         switch status {
         case .loaded(let count):
             return String(format: NSLocalizedString("LoadingStatusLoaded", comment: "%d エントリ"), count)
