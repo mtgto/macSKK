@@ -30,8 +30,13 @@ struct MemoryDict: DictProtocol {
         var dict: [String: [Word]] = [:]
         var okuriNashiYomis: [String] = []
         var okuriAriYomis: [String] = []
+        var lineNumber = 0
 
         source.enumerateLines { line, stop in
+            lineNumber += 1
+            if line.isEmpty || line.hasPrefix(";") {
+                return
+            }
             if let entry = Entry(line: line, dictId: dictId) {
                 if let candidates = dict[entry.yomi] {
                     dict[entry.yomi] = candidates + entry.candidates
@@ -43,6 +48,8 @@ struct MemoryDict: DictProtocol {
                 } else {
                     okuriNashiYomis.append(entry.yomi)
                 }
+            } else {
+                logger.warning("辞書 \(dictId, privacy: .public) の読み込みで \(lineNumber)行目で読み込みエラーが発生しました")
             }
         }
         entries = dict
