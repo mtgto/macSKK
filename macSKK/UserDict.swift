@@ -17,7 +17,7 @@ class UserDict: NSObject, DictProtocol {
      * 通常起動時はFileDict形式で "skk-jisyo.utf8" というファイル名。
      * ユニットテスト用に差し替え可能なMemoryDict形式も取れるようにしている。
      */
-    var userDict: Result<DictProtocol, Error>
+    var userDict: DictProtocol?
     /// 有効になっている辞書。優先度が高い順。
     var dicts: [DictProtocol]
     /**
@@ -52,7 +52,7 @@ class UserDict: NSObject, DictProtocol {
         userDictFileURL = dictionariesDirectoryURL.appending(path: Self.userDictFilename)
         loadStatus = loadStatusSubject.eraseToAnyPublisher()
         if let userDictEntries {
-            self.userDict = .success(MemoryDict(entries: userDictEntries, readonly: true))
+            self.userDict = MemoryDict(entries: userDictEntries, readonly: true)
         } else {
             if !FileManager.default.fileExists(atPath: userDictFileURL.path()) {
                 logger.log("ユーザー辞書ファイルがないため作成します")
@@ -60,10 +60,10 @@ class UserDict: NSObject, DictProtocol {
             }
             do {
                 let userDict = try FileDict(contentsOf: userDictFileURL, encoding: .utf8, readonly: false)
-                self.userDict = .success(userDict)
+                self.userDict = userDict
                 loadStatusSubject.send(.loaded(userDict.dict.entries.count))
             } catch {
-                self.userDict = .failure(error)
+                self.userDict = nil
                 loadStatusSubject.send(.fail(error))
             }
         }
@@ -138,7 +138,7 @@ class UserDict: NSObject, DictProtocol {
 
     // MARK: DictProtocol
     func refer(_ yomi: String, option: DictReferringOption? = nil) -> [Word] {
-        if case .success(let userDict) = userDict {
+        if let userDict = userDict {
             var result = userDict.refer(yomi, option: option)
             if privateMode.value {
                 privateUserDict.refer(yomi, option: option).forEach { found in
@@ -173,7 +173,7 @@ class UserDict: NSObject, DictProtocol {
     func add(yomi: String, word: Word) {
         if privateMode.value {
             privateUserDict.add(yomi: yomi, word: word)
-        } else if case .success(let userDict) = userDict, let dict = userDict as? FileDict {
+        } else if let dict = userDict as? FileDict {
             dict.add(yomi: yomi, word: word)
             savePublisher.send(())
             loadStatusSubject.send(.loaded(dict.dict.entries.count))
@@ -204,7 +204,7 @@ class UserDict: NSObject, DictProtocol {
     func delete(yomi: String, word: Word.Word) -> Bool {
         if privateMode.value {
             return privateUserDict.delete(yomi: yomi, word: word)
-        } else if case .success(let userDict) = userDict, let dict = userDict as? FileDict {
+        } else if let dict = userDict as? FileDict {
             if dict.delete(yomi: yomi, word: word) {
                 savePublisher.send(())
                 loadStatusSubject.send(.loaded(dict.dict.entries.count))
@@ -231,7 +231,7 @@ class UserDict: NSObject, DictProtocol {
                 return completion
             }
         }
-        if case .success(let userDict) = userDict {
+        if let userDict {
             return userDict.findCompletion(prefix: prefix)
         } else {
             return nil
@@ -246,7 +246,7 @@ class UserDict: NSObject, DictProtocol {
             logger.info("Xcodeから起動している状態なのでユーザー辞書の永続化はスキップします")
             return
         }
-        if case .success(let userDict) = userDict {
+        if let userDict {
             if let dict = userDict as? FileDict {
                 try dict.save()
             } else {
