@@ -132,7 +132,7 @@ final class SettingsViewModel: ObservableObject {
                             logger.log("SKK辞書 \(dictSetting.filename, privacy: .public) を読み込みます")
                             self.loadStatusPublisher.send((dictSetting.id, .loading))
                             let fileDict = try FileDict(contentsOf: fileURL, encoding: dictSetting.encoding, readonly: true)
-                            self.loadStatusPublisher.send((dictSetting.id, .loaded(fileDict.entryCount)))
+                            self.loadStatusPublisher.send((dictSetting.id, .loaded(success: fileDict.entryCount, failure: fileDict.failedEntryCount)))
                             logger.log("SKK辞書 \(dictSetting.filename, privacy: .public) から \(fileDict.entryCount) エントリ読み込みました")
                             return fileDict
                         } catch {

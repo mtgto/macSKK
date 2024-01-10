@@ -15,9 +15,10 @@
 "SettingsFileDictionariesTitle" = "Dictionary files";
 "SettingsFileDictionariesSubtitle" = "You can reorder the priorities of dictionary by drag & drop";
 "SettingsNoteDirectMode" = "Set Front-Most to target app and select \"Direct input from (AppName)\" in Input Menu.";
-"LoadingStatusLoaded" = "%d entries";
+"LoadingStatusLoaded %lld" = "%lld entries";
+"LoadingStatusLoaded %lld WithError %lld" = "%lld entries (%lld lines of parsing error)";
 "LoadingStatusLoading" = "Loading…";
-"LoadingStatusError" = "Error: %@";
+"LoadingStatusError %@" = "Error: %@";
 "LoadingStatusDisabled" = "Disabled";
 "LoadingStatusUnknown" = "Unknown";
 "Done" = "Done";

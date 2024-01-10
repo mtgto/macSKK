@@ -61,7 +61,7 @@ class UserDict: NSObject, DictProtocol {
             do {
                 let userDict = try FileDict(contentsOf: userDictFileURL, encoding: .utf8, readonly: false)
                 self.userDict = userDict
-                loadStatusSubject.send(.loaded(userDict.dict.entries.count))
+                loadStatusSubject.send(.loaded(success: userDict.entryCount, failure: userDict.failedEntryCount))
             } catch {
                 self.userDict = nil
                 loadStatusSubject.send(.fail(error))
@@ -176,7 +176,7 @@ class UserDict: NSObject, DictProtocol {
         } else if let dict = userDict as? FileDict {
             dict.add(yomi: yomi, word: word)
             savePublisher.send(())
-            loadStatusSubject.send(.loaded(dict.dict.entries.count))
+            loadStatusSubject.send(.loaded(success: dict.entryCount, failure: dict.failedEntryCount))
         }
     }
 
@@ -207,7 +207,7 @@ class UserDict: NSObject, DictProtocol {
         } else if let dict = userDict as? FileDict {
             if dict.delete(yomi: yomi, word: word) {
                 savePublisher.send(())
-                loadStatusSubject.send(.loaded(dict.dict.entries.count))
+                loadStatusSubject.send(.loaded(success: dict.entryCount, failure: dict.failedEntryCount))
                 return true
             }
         }

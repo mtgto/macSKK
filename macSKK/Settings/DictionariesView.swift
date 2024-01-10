@@ -81,38 +81,48 @@ struct DictionariesView: View {
             return loadingStatus(of: status)
         } else if !setting.enabled {
             // 元々無効になっていて、設定を今回の起動で切り替えてない辞書
-            return NSLocalizedString("LoadingStatusDisabled", comment: "無効")
+            return String(localized: "LoadingStatusDisabled")
         } else {
-            return NSLocalizedString("LoadingStatusUnknown", comment: "不明")
+            return String(localized: "LoadingStatusUnknown")
         }
     }
 
     private func loadingStatus(of status: DictLoadStatus) -> String {
         switch status {
-        case .loaded(let count):
-            return String(format: NSLocalizedString("LoadingStatusLoaded", comment: "%d エントリ"), count)
+        case .loaded(success: let entryCount, failure: let failureCount):
+            if failureCount == 0 {
+                return String(localized: "LoadingStatusLoaded \(entryCount)")
+            } else {
+                return String(localized: "LoadingStatusLoaded \(entryCount) WithError \(failureCount)")
+            }
         case .loading:
-            return NSLocalizedString("LoadingStatusLoading", comment: "読み込み中…")
+            return String(localized: "LoadingStatusLoading")
         case .disabled:
-            return NSLocalizedString("LoadingStatusDisabled", comment: "無効")
+            return String(localized: "LoadingStatusDisabled")
         case .fail(let error):
-            return String(format: NSLocalizedString("LoadingStatusError", comment: "エラー: %@"), error as NSError)
+            return String(localized: "LoadingStatusError \(error as NSError)")
         }
     }
 }
 
 struct DictionariesView_Previews: PreviewProvider {
+    enum DictionariesViewPreviewError: Error {
+        case dummy
+    }
+
     static var previews: some View {
         let dictSettings = [
             DictSetting(filename: "SKK-JISYO.L", enabled: true, encoding: .japaneseEUC),
             DictSetting(filename: "SKK-JISYO.sample.utf-8", enabled: false, encoding: .utf8),
             DictSetting(filename: "SKK-JISYO.dummy", enabled: true, encoding: .utf8),
+            DictSetting(filename: "SKK-JISYO.error", enabled: true, encoding: .utf8),
         ]
         let settings = try! SettingsViewModel(dictSettings: dictSettings)
         settings.dictLoadingStatuses = [
-            "SKK-JISYO.L": .loaded(123456),
+            "SKK-JISYO.L": .loaded(success: 123456, failure: 789),
             "SKK-JISYO.sample.utf-8": .disabled,
             "SKK-JISYO.dummy": .loading,
+            "SKK-JISYO.error": .fail(DictionariesViewPreviewError.dummy)
         ]
         return DictionariesView(settingsViewModel: settings)
     }
