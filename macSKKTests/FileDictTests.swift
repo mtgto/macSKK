@@ -8,6 +8,12 @@ import XCTest
 final class FileDictTests: XCTestCase {
     let fileURL = Bundle(for: FileDictTests.self).url(forResource: "empty", withExtension: "txt")!
 
+    func testLoadContainsBom() throws {
+        let fileURL = Bundle(for: Self.self).url(forResource: "utf8-bom", withExtension: "txt")!
+        let dict = try FileDict(contentsOf: fileURL, encoding: .utf8, readonly: true)
+        XCTAssertEqual(dict.dict.entries, ["ゆにこーど": [Word("ユニコード")]])
+    }
+
     func testAdd() throws {
         let dict = try FileDict(contentsOf: fileURL, encoding: .utf8, readonly: true)
         XCTAssertEqual(dict.entryCount, 0)

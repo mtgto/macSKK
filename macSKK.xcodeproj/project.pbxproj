@@ -13,6 +13,7 @@
 		CE2157662B2EA985006E4C41 /* UserDefaultsKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE2157652B2EA985006E4C41 /* UserDefaultsKeys.swift */; };
 		CE313A1F2AF5213700A49142 /* Candidate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE313A1E2AF5213700A49142 /* Candidate.swift */; };
 		CE39DB212A8DFD8F00BC619F /* MarkedText.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE39DB202A8DFD8F00BC619F /* MarkedText.swift */; };
+		CE3E44A52B4ED2D700105798 /* utf8-bom.txt in Resources */ = {isa = PBXBuildFile; fileRef = CE3E44A42B4ED2D700105798 /* utf8-bom.txt */; };
 		CE40D9A12A6D0C2F00D44799 /* SystemDictView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE40D9A02A6D0C2F00D44799 /* SystemDictView.swift */; };
 		CE40D9A32A6D0C3900D44799 /* SystemDict.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE40D9A22A6D0C3900D44799 /* SystemDict.swift */; };
 		CE485A882A8FA195008271EF /* Release+UNNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE485A872A8FA195008271EF /* Release+UNNotification.swift */; };
@@ -125,6 +126,7 @@
 		CE2157652B2EA985006E4C41 /* UserDefaultsKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsKeys.swift; sourceTree = "<group>"; };
 		CE313A1E2AF5213700A49142 /* Candidate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Candidate.swift; sourceTree = "<group>"; };
 		CE39DB202A8DFD8F00BC619F /* MarkedText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkedText.swift; sourceTree = "<group>"; };
+		CE3E44A42B4ED2D700105798 /* utf8-bom.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "utf8-bom.txt"; sourceTree = "<group>"; };
 		CE40D9A02A6D0C2F00D44799 /* SystemDictView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemDictView.swift; sourceTree = "<group>"; };
 		CE40D9A22A6D0C3900D44799 /* SystemDict.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemDict.swift; sourceTree = "<group>"; };
 		CE485A872A8FA195008271EF /* Release+UNNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Release+UNNotification.swift"; sourceTree = "<group>"; };
@@ -392,6 +394,7 @@
 		CED7CA572A83BFE9004EF988 /* fixture */ = {
 			isa = PBXGroup;
 			children = (
+				CE3E44A42B4ED2D700105798 /* utf8-bom.txt */,
 				CE06CA2C2AAC172F00E80E5E /* empty.txt */,
 				CED7CA582A83CD67004EF988 /* releases.atom */,
 				CEB1416F2A8773DB005E7252 /* SKK-JISYO.test.utf8 */,
@@ -528,6 +531,7 @@
 				CE496C932B440B9B001C623C /* euc-jis-2004.txt in Resources */,
 				CED7CA592A83CD67004EF988 /* releases.atom in Resources */,
 				CE06CA2D2AAC172F00E80E5E /* empty.txt in Resources */,
+				CE3E44A52B4ED2D700105798 /* utf8-bom.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -30,6 +30,10 @@ class FileDict: NSObject, DictProtocol, Identifiable {
     static let okuriAriHeader = ";; okuri-ari entries."
     static let okuriNashiHeader = ";; okuri-nasi entries."
 
+    enum FileDictError: Error {
+        case decode
+    }
+
     // MARK: NSFilePresenter
     var presentedItemURL: URL? { fileURL }
     let presentedItemOperationQueue: OperationQueue = OperationQueue()
@@ -78,9 +82,22 @@ class FileDict: NSObject, DictProtocol, Identifiable {
             } catch {
                 return try url.eucJis2004String()
             }
-        } else {
-            return try String(contentsOf: url, encoding: encoding)
+        } else if encoding == .utf8 {
+            let data = try Data(contentsOf: url)
+            // UTF-8 BOMがついているか検査
+            if data.starts(with: [0xEF, 0xBB, 0xBF]) {
+                guard let string = String(data: data.suffix(from: 3), encoding: .utf8) else {
+                    throw FileDictError.decode
+                }
+                return string
+            } else {
+                guard let string = String(data: data, encoding: .utf8) else {
+                    throw FileDictError.decode
+                }
+                return string
+            }
         }
+        return try String(contentsOf: url, encoding: encoding)
     }
 
     func save() throws {
