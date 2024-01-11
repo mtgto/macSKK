@@ -78,6 +78,12 @@ final class StateMachineTests: XCTestCase {
         XCTAssertFalse(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil, cursorPosition: .zero)))
     }
 
+    func testHandleNormalEisuKana() throws {
+        // Normal時は英数キー、かなキーは無視する
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .eisu, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .kana, originalEvent: nil, cursorPosition: .zero)))
+    }
+
     func testHandleNormalSpecialSymbol() throws {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(18).sink { events in

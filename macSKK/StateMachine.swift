@@ -230,6 +230,9 @@ class StateMachine {
             } else {
                 return false
             }
+        case .eisu, .kana:
+            // 何もしない (OSがIMEの切り替えはしてくれる)
+            return true
         }
     }
 
@@ -537,7 +540,7 @@ class StateMachine {
                 updateMarkedText()
             }
             return true
-        case .up, .down, .ctrlY:
+        case .up, .down, .ctrlY, .eisu, .kana:
             return true
         }
     }
@@ -935,7 +938,7 @@ class StateMachine {
                 updateMarkedText()
             }
             return true
-        case .ctrlY:
+        case .ctrlY, .eisu, .kana:
             return true
         }
     }

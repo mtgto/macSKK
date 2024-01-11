@@ -354,6 +354,10 @@ class InputController: IMKInputController {
             return .backspace
         } else if keyCode == 53 {  // ESC
             return .cancel
+        } else if keyCode == 102 { // 英数キー
+            return .eisu
+        } else if keyCode == 104 { // かなキー
+            return .kana
         } else if event.characters == " " {
             return .space
         } else if event.characters == ";" {

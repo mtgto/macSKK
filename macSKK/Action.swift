@@ -47,6 +47,10 @@ struct Action {
         case ctrlE
         /// Ctrl-Y. 登録モードでのみクリップボードからのペースト用
         case ctrlY
+        /// 英数キー
+        case eisu
+        /// かなキー
+        case kana
     }
 
     func shiftIsPressed() -> Bool {
