@@ -163,7 +163,15 @@ class FileDict: NSObject, DictProtocol, Identifiable {
         return result.joined(separator: "\n")
     }
 
+    /**
+     * 辞書がもっているエントリ数。
+     */
     var entryCount: Int { return dict.entryCount }
+
+    /**
+     * 読み込みに失敗した行数。コメント行、空行は除いた行数。
+     */
+    var failedEntryCount: Int { return dict.failedEntryCount }
 
     // MARK: DictProtocol
     func refer(_ yomi: String, option: DictReferringOption?) -> [Word] {
