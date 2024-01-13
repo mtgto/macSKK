@@ -14,6 +14,7 @@
 		CE313A1F2AF5213700A49142 /* Candidate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE313A1E2AF5213700A49142 /* Candidate.swift */; };
 		CE39DB212A8DFD8F00BC619F /* MarkedText.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE39DB202A8DFD8F00BC619F /* MarkedText.swift */; };
 		CE3E44A52B4ED2D700105798 /* utf8-bom.txt in Resources */ = {isa = PBXBuildFile; fileRef = CE3E44A42B4ED2D700105798 /* utf8-bom.txt */; };
+		CE3E44A72B52AFB400105798 /* kana-rule.conf in Resources */ = {isa = PBXBuildFile; fileRef = CE3E44A62B52AFB400105798 /* kana-rule.conf */; };
 		CE40D9A12A6D0C2F00D44799 /* SystemDictView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE40D9A02A6D0C2F00D44799 /* SystemDictView.swift */; };
 		CE40D9A32A6D0C3900D44799 /* SystemDict.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE40D9A22A6D0C3900D44799 /* SystemDict.swift */; };
 		CE485A882A8FA195008271EF /* Release+UNNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE485A872A8FA195008271EF /* Release+UNNotification.swift */; };
@@ -127,6 +128,7 @@
 		CE313A1E2AF5213700A49142 /* Candidate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Candidate.swift; sourceTree = "<group>"; };
 		CE39DB202A8DFD8F00BC619F /* MarkedText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkedText.swift; sourceTree = "<group>"; };
 		CE3E44A42B4ED2D700105798 /* utf8-bom.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "utf8-bom.txt"; sourceTree = "<group>"; };
+		CE3E44A62B52AFB400105798 /* kana-rule.conf */ = {isa = PBXFileReference; lastKnownFileType = text; path = "kana-rule.conf"; sourceTree = "<group>"; };
 		CE40D9A02A6D0C2F00D44799 /* SystemDictView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemDictView.swift; sourceTree = "<group>"; };
 		CE40D9A22A6D0C3900D44799 /* SystemDict.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemDict.swift; sourceTree = "<group>"; };
 		CE485A872A8FA195008271EF /* Release+UNNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Release+UNNotification.swift"; sourceTree = "<group>"; };
@@ -309,6 +311,7 @@
 				CE5ECF632957077D00E7BE7D /* InfoPlist.strings */,
 				CE6DBAC62A85BF3E00F5A227 /* Localizable.strings */,
 				CEB0888B2A7F342000EFD1E3 /* Credits.rtf */,
+				CE3E44A62B52AFB400105798 /* kana-rule.conf */,
 				CE5ECF3B2957034D00E7BE7D /* Preview Content */,
 			);
 			path = macSKK;
@@ -519,6 +522,7 @@
 				CE6DBACF2A8663E600F5A227 /* SKK-JISYO.sample.utf-8 in Resources */,
 				CE6DBAC42A85BF3E00F5A227 /* Localizable.strings in Resources */,
 				CE5ECF642957077D00E7BE7D /* InfoPlist.strings in Resources */,
+				CE3E44A72B52AFB400105798 /* kana-rule.conf in Resources */,
 				CE5ECF3A2957034D00E7BE7D /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
