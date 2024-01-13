@@ -729,13 +729,13 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "d", withShift: true)))
-        XCTAssertEqual(try dictionary.userDict?.refer("だい#", option: nil), [Word("第#3")], "ユーザー辞書には#形式で保存する")
+        XCTAssertEqual(dictionary.userDict?.refer("だい#", option: nil), [Word("第#3")], "ユーザー辞書には#形式で保存する")
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "2")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil, cursorPosition: .zero)))
-        XCTAssertEqual(try dictionary.userDict?.refer("だい2", option: nil), [Word("第2")], "数値変換より通常のエントリを優先する")
+        XCTAssertEqual(dictionary.userDict?.refer("だい2", option: nil), [Word("第2")], "数値変換より通常のエントリを優先する")
         wait(for: [expectation], timeout: 1.0)
     }
 
