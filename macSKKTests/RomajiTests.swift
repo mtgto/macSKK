@@ -30,4 +30,9 @@ class RomajiTests: XCTestCase {
         XCTAssertEqual(Romaji.convert("ty,"), Romaji.ConvertedMoji(input: "", kakutei: Romaji.symbolTable[","]))
         XCTAssertEqual(Romaji.convert("xts["), Romaji.ConvertedMoji(input: "", kakutei: Romaji.symbolTable["["]))
     }
+
+    func testInit() throws {
+        let fileURL = Bundle(for: Self.self).url(forResource: "kana-rule-for-test", withExtension: "conf")!
+        let romaji = try Romaji(contentsOf: fileURL)
+    }
 }

@@ -3,24 +3,36 @@
 
 import Foundation
 
-struct Romaji: Equatable {
+struct Romaji: Equatable, Sendable {
     struct Moji: Equatable {
+        init(firstRomaji: String, kana: String, katakana: String? = nil, hankaku: String? = nil) {
+            self.firstRomaji = firstRomaji
+            self.kana = kana
+            self.katakana = katakana
+            self.hankaku = hankaku
+        }
+
         /**
          * SKK辞書で表現されるローマ字
          *
          * - TODO: EmacsのSKK基準で実装する。とりあえず不明なものは空文字列にしている。
          */
         let firstRomaji: String
+        /// ひらがなモードでの表記
         let kana: String
+        /// カタカナモードでの表記
+        let katakana: String?
+        /// 半角カナモードでの表記
+        let hankaku: String?
 
         func string(for mode: InputMode) -> String {
             switch mode {
             case .hiragana:
                 return kana
             case .katakana:
-                return kana.toKatakana()
+                return katakana ?? kana.toKatakana()
             case .hankaku:
-                return kana.toKatakana().toHankaku()
+                return hankaku ?? kana.toKatakana().toHankaku()
             case .direct:  // Abbrevモード用
                 return firstRomaji
             default:
@@ -307,5 +319,43 @@ struct Romaji: Equatable {
             return convert(String(c))
         }
         return ConvertedMoji(input: input, kakutei: nil)
+    }
+
+    enum RomajiError: Error {
+        /// 不正な設定
+        case invalid
+    }
+
+    let table: [String: Moji]
+
+    init(contentsOf url: URL) throws {
+        var table: [String: Moji] = [:]
+        var error: RomajiError? = nil
+        var lineNumber = 0
+        try String(contentsOf: url, encoding: .utf8).enumerateLines { line, stop in
+            lineNumber += 1
+            // #で始まる行はコメント行
+            if line.starts(with: "#") || line.isEmpty {
+                return
+            }
+            // TODO: 正規表現などで一要素目がキーボードから直接入力できるASCII文字であることを検査する
+            let elements = line.split(separator: ",", maxSplits: 5).map {
+                $0.replacingOccurrences(of: "&comma;", with: ",")
+            }
+            if elements.count < 2 || elements.contains(where: { $0.isEmpty }) {
+                logger.error("ローマ字変換定義ファイルの \(lineNumber) 行目の記述が壊れています")
+                error = RomajiError.invalid
+                stop = true
+                return
+            }
+            let firstRomaji = elements.count == 5 ? elements[4] : String(elements[0].first!)
+            let katakana = elements.count > 2 ? elements[2] : nil
+            let hankaku = elements.count > 3 ? elements[3] : nil
+            table[elements[0]] = Moji(firstRomaji: firstRomaji, kana: elements[1], katakana: katakana, hankaku: hankaku)
+        }
+        if let error {
+            throw error
+        }
+        self.table = table
     }
 }
