@@ -6,7 +6,7 @@ import XCTest
 @testable import macSKK
 
 class RomajiTests: XCTestCase {
-    func testConvert() throws {
+    func testStaticConvert() throws {
         XCTAssertEqual(Romaji.convert("o"), Romaji.ConvertedMoji(input: "", kakutei: Romaji.table["o"]))
         XCTAssertEqual(Romaji.convert("ta"), Romaji.ConvertedMoji(input: "", kakutei: Romaji.table["ta"]))
         XCTAssertEqual(Romaji.convert("n"), Romaji.ConvertedMoji(input: "n", kakutei: nil))
@@ -34,5 +34,21 @@ class RomajiTests: XCTestCase {
     func testInit() throws {
         let fileURL = Bundle(for: Self.self).url(forResource: "kana-rule-for-test", withExtension: "conf")!
         let romaji = try Romaji(contentsOf: fileURL)
+    }
+
+    func testConvert() throws {
+        let fileURL = Bundle(for: Self.self).url(forResource: "kana-rule-for-test", withExtension: "conf")!
+        let kanaRule = try Romaji(contentsOf: fileURL)
+        XCTAssertEqual(kanaRule.convert("a"), Romaji.ConvertedMoji(input: "", kakutei: Romaji.Moji(firstRomaji: "a", kana: "あ")))
+        // nだけではまだ「ん」になるかは確定しない (な行などに派生する可能性がある)
+        XCTAssertEqual(kanaRule.convert("n"), Romaji.ConvertedMoji(input: "n", kakutei: nil))
+        XCTAssertEqual(kanaRule.convert("na"), Romaji.ConvertedMoji(input: "", kakutei: Romaji.Moji(firstRomaji: "n", kana: "な")))
+        XCTAssertEqual(kanaRule.convert("nn"), Romaji.ConvertedMoji(input: "", kakutei: Romaji.Moji(firstRomaji: "n", kana: "ん")))
+        XCTAssertEqual(kanaRule.convert("nk"), Romaji.ConvertedMoji(input: "k", kakutei: Romaji.Moji(firstRomaji: "n", kana: "ん")))
+        XCTAssertEqual(kanaRule.convert("n!"), Romaji.ConvertedMoji(input: "!", kakutei: Romaji.Moji(firstRomaji: "n", kana: "ん")))
+        XCTAssertEqual(kanaRule.convert("kn"), Romaji.ConvertedMoji(input: "n", kakutei: nil))
+        XCTAssertEqual(kanaRule.convert("ny"), Romaji.ConvertedMoji(input: "ny", kakutei: nil))
+        XCTAssertEqual(kanaRule.convert("nya"), Romaji.ConvertedMoji(input: "", kakutei: Romaji.Moji(firstRomaji: "n", kana: "にゃ")))
+        XCTAssertEqual(kanaRule.convert("nyk"), Romaji.ConvertedMoji(input: "k", kakutei: nil), "続けられない子音が連続した場合は最後の子音だけ残る")
     }
 }
