@@ -14,7 +14,10 @@ class UserNotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
                 if !NSWorkspace.shared.open(url) {
                     logger.warning("新しいバージョンの通知をタップしたがリリースページを開くことができませんでした。")
                 }
+            } else {
+                logger.error("通知メッセージにリリースページの情報が含まれていません。バグの可能性が高いです")
             }
         }
+        completionHandler()
     }
 }
