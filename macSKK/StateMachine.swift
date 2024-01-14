@@ -635,8 +635,8 @@ class StateMachine {
             // StickyShiftでokuriが[]になっている、またはShift押しながら入力した
             if let moji = converted.kakutei {
                 if converted.input.isEmpty {
-                    if text.isEmpty || (okuri == nil && !action.shiftIsPressed()) || composing.cursor == 0 {
-                        if isShift || action.shiftIsPressed() {
+                    if text.isEmpty || (okuri == nil && !(action.shiftIsPressed() && input.isAlphabet)) || composing.cursor == 0 {
+                        if isShift || (action.shiftIsPressed() && input.isAlphabet) {
                             state.inputMethod = .composing(composing.appendText(moji).resetRomaji().with(isShift: true))
                         } else {
                             state.inputMethod = .normal
@@ -688,7 +688,7 @@ class StateMachine {
                     }
                 } else {  // !result.input.isEmpty
                     // n + 子音入力したときなど
-                    if isShift || action.shiftIsPressed() {
+                    if (isShift || action.shiftIsPressed()) && input.isAlphabet {
                         if let okuri {
                             state.inputMethod = .composing(
                                 ComposingState(
