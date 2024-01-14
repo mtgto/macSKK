@@ -17,6 +17,7 @@
 		CE3E44A72B52AFB400105798 /* kana-rule.conf in Resources */ = {isa = PBXBuildFile; fileRef = CE3E44A62B52AFB400105798 /* kana-rule.conf */; };
 		CE3E44A92B52C89800105798 /* kana-rule-for-test.conf in Resources */ = {isa = PBXBuildFile; fileRef = CE3E44A82B52C89800105798 /* kana-rule-for-test.conf */; };
 		CE3E44AB2B536F8300105798 /* kana-rule.conf in Resources */ = {isa = PBXBuildFile; fileRef = CE3E44A62B52AFB400105798 /* kana-rule.conf */; };
+		CE3E44AD2B5391DB00105798 /* KanaRuleWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE3E44AC2B5391DB00105798 /* KanaRuleWatcher.swift */; };
 		CE40D9A12A6D0C2F00D44799 /* SystemDictView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE40D9A02A6D0C2F00D44799 /* SystemDictView.swift */; };
 		CE40D9A32A6D0C3900D44799 /* SystemDict.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE40D9A22A6D0C3900D44799 /* SystemDict.swift */; };
 		CE485A882A8FA195008271EF /* Release+UNNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE485A872A8FA195008271EF /* Release+UNNotification.swift */; };
@@ -132,6 +133,7 @@
 		CE3E44A42B4ED2D700105798 /* utf8-bom.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "utf8-bom.txt"; sourceTree = "<group>"; };
 		CE3E44A62B52AFB400105798 /* kana-rule.conf */ = {isa = PBXFileReference; lastKnownFileType = text; path = "kana-rule.conf"; sourceTree = "<group>"; };
 		CE3E44A82B52C89800105798 /* kana-rule-for-test.conf */ = {isa = PBXFileReference; lastKnownFileType = text; path = "kana-rule-for-test.conf"; sourceTree = "<group>"; };
+		CE3E44AC2B5391DB00105798 /* KanaRuleWatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KanaRuleWatcher.swift; sourceTree = "<group>"; };
 		CE40D9A02A6D0C2F00D44799 /* SystemDictView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemDictView.swift; sourceTree = "<group>"; };
 		CE40D9A22A6D0C3900D44799 /* SystemDict.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemDict.swift; sourceTree = "<group>"; };
 		CE485A872A8FA195008271EF /* Release+UNNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Release+UNNotification.swift"; sourceTree = "<group>"; };
@@ -292,6 +294,7 @@
 				CEA78FAF2964209B00B67E25 /* UserDict.swift */,
 				CEADA44A2B025A0F0026E2BD /* Entry.swift */,
 				CE84A3E6295DA4DA009394C4 /* Romaji.swift */,
+				CE3E44AC2B5391DB00105798 /* KanaRuleWatcher.swift */,
 				CE40D9A22A6D0C3900D44799 /* SystemDict.swift */,
 				CEB0888F2A7F73B400EFD1E3 /* Pasteboard.swift */,
 				CEADA4502B1358D40026E2BD /* InputSource.swift */,
@@ -594,6 +597,7 @@
 				CE2157662B2EA985006E4C41 /* UserDefaultsKeys.swift in Sources */,
 				CE84A3B929570C37009394C4 /* InputController.swift in Sources */,
 				CE6599DC2ADBF2630052F8C0 /* SettingsWindow.swift in Sources */,
+				CE3E44AD2B5391DB00105798 /* KanaRuleWatcher.swift in Sources */,
 				CE485A8A2A8FA5C6008271EF /* UserNotificationDelegate.swift in Sources */,
 				CE84A3EB295DA715009394C4 /* Dict.swift in Sources */,
 				CE40D9A12A6D0C2F00D44799 /* SystemDictView.swift in Sources */,

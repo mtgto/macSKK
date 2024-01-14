@@ -36,6 +36,7 @@ struct macSKKApp: App {
     /// "~/Library/Containers/net.mtgto.inputmethod.macSKK/Data/Documents/Dictionaries"
     private let dictionariesDirectoryUrl: URL
     private let userNotificationDelegate = UserNotificationDelegate()
+    private let kanaRuleWatcher: KanaRuleWatcher?
     @State private var fetchReleaseTask: Task<Void, Error>?
     #if DEBUG
     private let candidatesPanel: CandidatesPanel = CandidatesPanel(showAnnotationPopover: true)
@@ -60,6 +61,7 @@ struct macSKKApp: App {
             fatalError("辞書設定でエラーが発生しました: \(error)")
         }
         do {
+            kanaRuleWatcher = try KanaRuleWatcher(kanaRuleFileName: "kana-rule.conf")
             let kanaRuleFileURL = Bundle.main.url(forResource: "kana-rule", withExtension: "conf")!
             kanaRule = try Romaji(contentsOf: kanaRuleFileURL)
         } catch {
