@@ -49,6 +49,8 @@ class RomajiTests: XCTestCase {
         XCTAssertEqual(kanaRule.convert("kn"), Romaji.ConvertedMoji(input: "n", kakutei: nil))
         XCTAssertEqual(kanaRule.convert("ny"), Romaji.ConvertedMoji(input: "ny", kakutei: nil))
         XCTAssertEqual(kanaRule.convert("nya"), Romaji.ConvertedMoji(input: "", kakutei: Romaji.Moji(firstRomaji: "n", kana: "にゃ")))
+        XCTAssertEqual(kanaRule.convert("kk"), Romaji.ConvertedMoji(input: "k", kakutei: Romaji.Moji(firstRomaji: "k", kana: "っ", katakana: "ッ", hankaku: "ｯ", remain: "k")))
         XCTAssertEqual(kanaRule.convert("nyk"), Romaji.ConvertedMoji(input: "k", kakutei: nil), "続けられない子音が連続した場合は最後の子音だけ残る")
+        XCTAssertEqual(kanaRule.convert("@"), Romaji.ConvertedMoji(input: "@", kakutei: nil), "ルールにない文字は変換されない")
     }
 }

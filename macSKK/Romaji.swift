@@ -5,11 +5,12 @@ import Foundation
 
 struct Romaji: Equatable, Sendable {
     struct Moji: Equatable {
-        init(firstRomaji: String, kana: String, katakana: String? = nil, hankaku: String? = nil) {
+        init(firstRomaji: String, kana: String, katakana: String? = nil, hankaku: String? = nil, remain: String? = nil) {
             self.firstRomaji = firstRomaji
             self.kana = kana
             self.katakana = katakana
             self.hankaku = hankaku
+            self.remain = remain
         }
 
         /**
@@ -24,6 +25,12 @@ struct Romaji: Equatable, Sendable {
         let katakana: String?
         /// 半角カナモードでの表記
         let hankaku: String?
+        /**
+         * 未確定文字列に残すローマ字
+         *
+         * 例えば "kk" と入力したら "っ" を確定して "k" を未確定入力に残す
+         */
+        let remain: String?
 
         func string(for mode: InputMode) -> String {
             switch mode {
@@ -362,7 +369,12 @@ struct Romaji: Equatable, Sendable {
             let firstRomaji = elements.count == 5 ? elements[4] : String(elements[0].first!)
             let katakana = elements.count > 2 ? elements[2] : nil
             let hankaku = elements.count > 3 ? elements[3] : nil
-            table[elements[0]] = Moji(firstRomaji: firstRomaji, kana: elements[1], katakana: katakana, hankaku: hankaku)
+            let remain = elements.count > 4 ? elements[4] : nil
+            table[elements[0]] = Moji(firstRomaji: firstRomaji,
+                                      kana: elements[1],
+                                      katakana: katakana,
+                                      hankaku: hankaku,
+                                      remain: remain)
             if elements[0].count > 1 {
                 undecidedInputs.insert(String(elements[0].dropLast()))
             }
@@ -387,12 +399,12 @@ struct Romaji: Equatable, Sendable {
      */
     func convert(_ input: String) -> ConvertedMoji {
         if let moji = table[input] {
-            return ConvertedMoji(input: "", kakutei: moji)
+            return ConvertedMoji(input: moji.remain ?? "", kakutei: moji)
         } else if undecidedInputs.contains(input) {
             return ConvertedMoji(input: input, kakutei: nil)
         } else if input.hasPrefix("n") && input.count == 2 {
             return ConvertedMoji(input: String(input.dropFirst()), kakutei: Romaji.n)
-        } else if let c = input.last {
+        } else if input.count > 1, let c = input.last {
             return convert(String(c))
         }
         return ConvertedMoji(input: input, kakutei: nil)
