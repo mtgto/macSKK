@@ -1322,18 +1322,18 @@ final class StateMachineTests: XCTestCase {
     }
 
     func testHandleComposingAbbrevSpace() {
-        dictionary.setEntries(["b": [Word("美")]])
+        dictionary.setEntries(["n": [Word("美")]])
 
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
             XCTAssertEqual(events[0], .modeChanged(.direct, .zero))
             XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose])))
-            XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("b")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("n")])))
             XCTAssertEqual(events[3], .markedText(MarkedText([.markerSelect, .emphasized("美")])))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "/")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "b")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
         wait(for: [expectation], timeout: 1.0)
     }

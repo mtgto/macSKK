@@ -9,6 +9,8 @@ import os
 
 let logger: Logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "main")
 var dictionary: UserDict!
+/// ローマ字かな変換ルール
+var kanaRule: Romaji!
 let privateMode = CurrentValueSubject<Bool, Never>(false)
 // 直接入力するアプリケーションのBundleIdentifierの集合のコピー。
 // マスターはSettingsViewModelがもっているが、InputControllerからAppが参照できないのでグローバル変数にコピーしている。
@@ -56,6 +58,12 @@ struct macSKKApp: App {
             settingsWindowController.windowFrameAutosaveName = "Settings"
         } catch {
             fatalError("辞書設定でエラーが発生しました: \(error)")
+        }
+        do {
+            let kanaRuleFileURL = Bundle.main.url(forResource: "kana-rule", withExtension: "conf")!
+            kanaRule = try Romaji(contentsOf: kanaRuleFileURL)
+        } catch {
+            fatalError("ローマ字かな変換ルールの読み込みでエラーが発生しました: \(error)")
         }
         if !isTest() && Bundle.main.bundleURL.deletingLastPathComponent().lastPathComponent == "Input Methods" {
             guard let connectionName = Bundle.main.infoDictionary?["InputMethodConnectionName"] as? String
