@@ -412,32 +412,26 @@ class StateMachine {
             }
             return true
         case .stickyShift:
-            if case .direct = state.inputMode {
+            if state.inputMode == .direct {
                 return handleComposingPrintable(
                     input: ";",
                     converted: kanaRule.convert(";"),
                     action: action,
                     composing: composing,
                     specialState: specialState)
+            } else if let okuri {
+                // 送り仮名入力中は無視する
+                // AquaSKKは送り仮名の末尾に"；"をつけて変換処理もしくは単語登録に遷移
+                return true
             } else {
-                if let okuri {
-                    // AquaSKKは送り仮名の末尾に"；"をつけて変換処理もしくは単語登録に遷移
-                    state.inputMethod = .composing(
-                        ComposingState(isShift: isShift,
-                                       text: text,
-                                       okuri: okuri + [Romaji.Moji(firstRomaji: ";", kana: ";")],
-                                       romaji: ""))
-                    updateMarkedText()
+                // 空文字列のときは全角；を入力、それ以外のときは送り仮名モードへ
+                if text.isEmpty {
+                    state.inputMethod = .normal
+                    addFixedText("；")
                 } else {
-                    // 空文字列のときは全角；を入力、それ以外のときは送り仮名モードへ
-                    if text.isEmpty {
-                        state.inputMethod = .normal
-                        addFixedText("；")
-                    } else {
-                        state.inputMethod = .composing(
-                            ComposingState(isShift: true, text: text, okuri: [], romaji: romaji))
-                        updateMarkedText()
-                    }
+                    state.inputMethod = .composing(
+                        ComposingState(isShift: true, text: text, okuri: [], romaji: romaji))
+                    updateMarkedText()
                 }
                 return true
             }
