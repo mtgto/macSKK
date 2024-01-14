@@ -6,11 +6,6 @@ import XCTest
 @testable import macSKK
 
 class RomajiTests: XCTestCase {
-    func testInit() throws {
-        let fileURL = Bundle(for: Self.self).url(forResource: "kana-rule-for-test", withExtension: "conf")!
-        let romaji = try Romaji(contentsOf: fileURL)
-    }
-
     func testConvert() throws {
         let fileURL = Bundle(for: Self.self).url(forResource: "kana-rule-for-test", withExtension: "conf")!
         let kanaRule = try Romaji(contentsOf: fileURL)
@@ -26,6 +21,8 @@ class RomajiTests: XCTestCase {
         XCTAssertEqual(kanaRule.convert("nya"), Romaji.ConvertedMoji(input: "", kakutei: Romaji.Moji(firstRomaji: "n", kana: "にゃ")))
         XCTAssertEqual(kanaRule.convert("kk"), Romaji.ConvertedMoji(input: "k", kakutei: Romaji.Moji(firstRomaji: "k", kana: "っ", katakana: "ッ", hankaku: "ｯ", remain: "k")))
         XCTAssertEqual(kanaRule.convert("nyk"), Romaji.ConvertedMoji(input: "k", kakutei: nil), "続けられない子音が連続した場合は最後の子音だけ残る")
+        XCTAssertEqual(kanaRule.convert("z,"), Romaji.ConvertedMoji(input: "", kakutei: Romaji.Moji(firstRomaji: "z", kana: "‥")))
+        XCTAssertEqual(kanaRule.convert("x,,"), Romaji.ConvertedMoji(input: "", kakutei: Romaji.Moji(firstRomaji: "x", kana: "だぶるかんま")))
         XCTAssertEqual(kanaRule.convert("@"), Romaji.ConvertedMoji(input: "@", kakutei: nil), "ルールにない文字は変換されない")
     }
 }
