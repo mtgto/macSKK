@@ -1094,12 +1094,14 @@ final class StateMachineTests: XCTestCase {
 
     func testHandleComposingPrintableSymbolWithShift() {
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(2).sink { events in
+        stateMachine.inputMethodEvent.collect(3).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
-            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("あ（")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("あz")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("あ（")])))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "z")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "(", characterIgnoringModifier: "9", withShift: true)))
         wait(for: [expectation], timeout: 1.0)
     }
