@@ -1041,7 +1041,7 @@ final class StateMachineTests: XCTestCase {
         expectation.expectedFulfillmentCount = 2
         stateMachine.inputMethodEvent.collect(8).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("s")])))
-            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("ー")])), "Romaji.symbolTableに対応")
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("ー")])))
             XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("ーt")])))
             XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("ーty")])))
             XCTAssertEqual(events[4], .markedText(MarkedText([.markerCompose, .plain("ー、")])))
