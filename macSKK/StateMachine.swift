@@ -635,6 +635,10 @@ class StateMachine {
             // StickyShiftでokuriが[]になっている、またはShift押しながら入力した
             if let moji = converted.kakutei {
                 if converted.input.isEmpty {
+                    // いまの入力が送り仮名とならないことを判定
+                    // まだ読み部分が空ならば常に送り仮名ではない
+                    // シフトを押しながら入力した文字がアルファベットじゃないなら送り仮名ではない (記号なので)
+                    // 未確定文字列の先頭にカーソルがあるときはシフト押していてもいなくても送り仮名ではない
                     if text.isEmpty || (okuri == nil && !(action.shiftIsPressed() && input.isAlphabet)) || composing.cursor == 0 {
                         if isShift || (action.shiftIsPressed() && input.isAlphabet) {
                             state.inputMethod = .composing(composing.appendText(moji).resetRomaji().with(isShift: true))
@@ -686,8 +690,8 @@ class StateMachine {
                             state.inputMethod = .selecting(selectingState)
                         }
                     }
-                } else {  // !result.input.isEmpty
-                    // n + 子音入力したときなど
+                } else {  // !converted.input.isEmpty
+                    // n + 子音入力したときや同一の子音を連続入力して促音が確定したときなど
                     if (isShift || action.shiftIsPressed()) && input.isAlphabet {
                         if let okuri {
                             state.inputMethod = .composing(
@@ -712,7 +716,7 @@ class StateMachine {
                 }
                 updateMarkedText()
             } else if !input.isAlphabet {
-                // 非ローマ字で特殊な記号でない場合。特殊な辞書で数字が読みとして使われている場合を想定。
+                // 非ローマ字で特殊な記号でない場合。数字が読みとして使われている場合などを想定。
                 if okuri == nil {
                     // ローマ字が残っていた場合は消去してキー入力をそのままくっつける
                     if let characters = action.characters() {
@@ -723,8 +727,8 @@ class StateMachine {
                     updateMarkedText()
                 } else {
                     // 送り仮名入力モード時は入力しなかった扱いとする
+                    return true
                 }
-                return true
             } else {  // converted.kakutei == nil
                 if !text.isEmpty && okuri == nil && action.shiftIsPressed() {
                     state.inputMethod = .composing(

@@ -85,6 +85,7 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
     /// かな/カナならかなになっているひらがなの文字列、abbrevなら入力した文字列.
     var text: [String]
     /// (Sticky)Shiftが押されたあとに入力されてかなになっている文字列。送り仮名モードになってなければnil
+    /// StickyShiftが押されたり送り仮名をバックスペースで削除して送り仮名モードだけど送り仮名が空のときは空配列
     var okuri: [Romaji.Moji]?
     /// ローマ字モードで未確定部分。"k" や "ky" など最低あと1文字でかなに変換できる文字列。
     var romaji: String
