@@ -23,7 +23,7 @@
 		CE485A882A8FA195008271EF /* Release+UNNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE485A872A8FA195008271EF /* Release+UNNotification.swift */; };
 		CE485A8A2A8FA5C6008271EF /* UserNotificationDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE485A892A8FA5C6008271EF /* UserNotificationDelegate.swift */; };
 		CE496C8C2B43968A001C623C /* LogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE496C8B2B43968A001C623C /* LogView.swift */; };
-		CE496C912B440892001C623C /* URL+EucJis2004.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE496C902B440892001C623C /* URL+EucJis2004.swift */; };
+		CE496C912B440892001C623C /* URL+Additions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE496C902B440892001C623C /* URL+Additions.swift */; };
 		CE496C932B440B9B001C623C /* euc-jis-2004.txt in Resources */ = {isa = PBXBuildFile; fileRef = CE496C922B440B9B001C623C /* euc-jis-2004.txt */; };
 		CE496C952B440BBD001C623C /* URL+EucJis2004Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE496C942B440BBD001C623C /* URL+EucJis2004Tests.swift */; };
 		CE496C982B440CDA001C623C /* libiconv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = CE496C972B440CCA001C623C /* libiconv.tbd */; };
@@ -139,7 +139,7 @@
 		CE485A872A8FA195008271EF /* Release+UNNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Release+UNNotification.swift"; sourceTree = "<group>"; };
 		CE485A892A8FA5C6008271EF /* UserNotificationDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserNotificationDelegate.swift; sourceTree = "<group>"; };
 		CE496C8B2B43968A001C623C /* LogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogView.swift; sourceTree = "<group>"; };
-		CE496C902B440892001C623C /* URL+EucJis2004.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URL+EucJis2004.swift"; sourceTree = "<group>"; };
+		CE496C902B440892001C623C /* URL+Additions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URL+Additions.swift"; sourceTree = "<group>"; };
 		CE496C922B440B9B001C623C /* euc-jis-2004.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "euc-jis-2004.txt"; sourceTree = "<group>"; };
 		CE496C942B440BBD001C623C /* URL+EucJis2004Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URL+EucJis2004Tests.swift"; sourceTree = "<group>"; };
 		CE496C972B440CCA001C623C /* libiconv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libiconv.tbd; path = usr/lib/libiconv.tbd; sourceTree = SDKROOT; };
@@ -305,7 +305,7 @@
 				CED7CA3B2A839603004EF988 /* UpdateChecker.swift */,
 				CEA78FAB2960401F00B67E25 /* String+Transform.swift */,
 				CED7F51E2AB5F4A7007FC6BD /* Character+Additions.swift */,
-				CE496C902B440892001C623C /* URL+EucJis2004.swift */,
+				CE496C902B440892001C623C /* URL+Additions.swift */,
 				CE485A892A8FA5C6008271EF /* UserNotificationDelegate.swift */,
 				CE7F9ADA2AB53E31001B1877 /* View */,
 				CEC376E929651DE000D9C432 /* Settings */,
@@ -624,7 +624,7 @@
 				CE84A3DC2957174D009394C4 /* State.swift in Sources */,
 				CE496C8C2B43968A001C623C /* LogView.swift in Sources */,
 				CEE3717529653112000DB2C3 /* SoftwareUpdateView.swift in Sources */,
-				CE496C912B440892001C623C /* URL+EucJis2004.swift in Sources */,
+				CE496C912B440892001C623C /* URL+Additions.swift in Sources */,
 				CE39DB212A8DFD8F00BC619F /* MarkedText.swift in Sources */,
 				CE40D9A32A6D0C3900D44799 /* SystemDict.swift in Sources */,
 				CE5EB6AD2AAC0DE000389B98 /* FileDict.swift in Sources */,

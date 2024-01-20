@@ -334,18 +334,6 @@ extension UserDict: NSFilePresenter {
         if fileURL.lastPathComponent == Self.userDictFilename {
             return false
         }
-        let resourceValues = try fileURL.resourceValues(forKeys: [.isReadableKey, .isRegularFileKey, .isHiddenKey])
-        if let isHidden = resourceValues.isHidden, let isReadable = resourceValues.isReadable, let isRegularFile = resourceValues.isRegularFile {
-            if isHidden {
-                return false
-            }
-            if !isRegularFile {
-                return false
-            }
-            if !isReadable {
-                return false
-            }
-        }
-        return true
+        return try fileURL.isReadable()
     }
 }
