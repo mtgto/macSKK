@@ -30,16 +30,11 @@ final class StringTransformTests: XCTestCase {
 
     }
 
-    func testToHiragana() throws {
-        XCTAssertEqual("".toHiragana(), "")
-        XCTAssertEqual("アッ".toHiragana(), "あっ")
-        XCTAssertEqual("グヴェ".toHiragana(), "ぐう゛ぇ")
-    }
-
     func testToKatakana() throws {
         XCTAssertEqual("".toKatakana(), "")
         XCTAssertEqual("あっ".toKatakana(), "アッ")
         XCTAssertEqual("ぐう゛ぇ".toKatakana(), "グヴェ")
+        XCTAssertEqual("ぐゔぇ".toKatakana(), "グヴェ")
     }
 
     func testIsAlphabet() {

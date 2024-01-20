@@ -3,6 +3,9 @@
 
 import Foundation
 
+/**
+ * ローマ字かな（記号も可）変換ルール
+ */
 struct Romaji: Equatable, Sendable {
     struct Moji: Equatable {
         init(firstRomaji: String, kana: String, katakana: String? = nil, hankaku: String? = nil, remain: String? = nil) {
@@ -71,7 +74,7 @@ struct Romaji: Equatable, Sendable {
         case invalid
     }
 
-    /// ローマ字変換テーブル
+    /// ローマ字かな変換テーブル
     let table: [String: Moji]
 
     /**
@@ -84,11 +87,15 @@ struct Romaji: Equatable, Sendable {
     let undecidedInputs: Set<String>
 
     init(contentsOf url: URL) throws {
+        try self.init(source: try String(contentsOf: url, encoding: .utf8))
+    }
+
+    init(source: String) throws {
         var table: [String: Moji] = [:]
         var undecidedInputs: Set<String> = []
         var error: RomajiError? = nil
         var lineNumber = 0
-        try String(contentsOf: url, encoding: .utf8).enumerateLines { line, stop in
+        source.enumerateLines { line, stop in
             lineNumber += 1
             // #で始まる行はコメント行
             if line.starts(with: "#") || line.isEmpty {
@@ -105,11 +112,12 @@ struct Romaji: Equatable, Sendable {
                 return
             }
             let firstRomaji = elements.count == 5 ? elements[4] : String(elements[0].first!)
+            let hiragana = elements[1]
             let katakana = elements.count > 2 ? elements[2] : nil
             let hankaku = elements.count > 3 ? elements[3] : nil
             let remain = elements.count > 4 ? elements[4] : nil
             table[elements[0]] = Moji(firstRomaji: firstRomaji,
-                                      kana: elements[1],
+                                      kana: hiragana,
                                       katakana: katakana,
                                       hankaku: hankaku,
                                       remain: remain)

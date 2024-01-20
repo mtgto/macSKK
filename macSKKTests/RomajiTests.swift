@@ -25,4 +25,11 @@ class RomajiTests: XCTestCase {
         XCTAssertEqual(kanaRule.convert("x,,"), Romaji.ConvertedMoji(input: "", kakutei: Romaji.Moji(firstRomaji: "x", kana: "だぶるかんま")))
         XCTAssertEqual(kanaRule.convert("@"), Romaji.ConvertedMoji(input: "@", kakutei: nil), "ルールにない文字は変換されない")
     }
+
+    func testUseTwoCharactersForVu() throws {
+        var kanaRule = try Romaji(source: "vu,う゛")
+        XCTAssertEqual(kanaRule.convert("vu").kakutei?.kana, "う゛")
+        kanaRule = try Romaji(source: "vu,ゔ")
+        XCTAssertEqual(kanaRule.convert("vu").kakutei?.kana, "ゔ")
+    }
 }
