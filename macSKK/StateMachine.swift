@@ -303,7 +303,7 @@ class StateMachine {
         switch state.inputMode {
         case .hiragana, .katakana, .hankaku:
             if input.isAlphabet && !action.optionIsPressed() {
-                let result = Romaji.convert(input)
+                let result = kanaRule.convert(input)
                 if let moji = result.kakutei {
                     if action.shiftIsPressed() {
                         state.inputMethod = .composing(
@@ -320,7 +320,7 @@ class StateMachine {
             } else {
                 // Option-Shift-2のような入力のときには€が入力されるようにする
                 if let characters = action.characters() {
-                    let result = Romaji.convert(characters)
+                    let result = kanaRule.convert(characters)
                     if let moji = result.kakutei {
                         addFixedText(moji.string(for: state.inputMode))
                     } else {
@@ -370,9 +370,10 @@ class StateMachine {
             updateMarkedText()
             return true
         case .space:
-            if state.inputMode != .direct {
-                let converted = Romaji.convert(romaji + " ")
-                if converted.kakutei != nil {
+            if state.inputMode != .direct && !romaji.isEmpty {
+                // "z " のようなスペースを使ったローマ字変換ルールがある場合は漢字変換よりも優先する
+                let converted = kanaRule.convert(romaji + " ")
+                if converted.kakutei != nil && converted.input == "" {
                     return handleComposingPrintable(
                         input: " ",
                         converted: converted,
@@ -391,7 +392,11 @@ class StateMachine {
                 updateMarkedText()
                 return true
             } else {
-                return handleComposingStartConvert(action, composing: composing, specialState: specialState)
+                if state.inputMode != .direct {
+                    return handleComposingStartConvert(action, composing: composing.trim(), specialState: specialState)
+                } else {
+                    return handleComposingStartConvert(action, composing: composing, specialState: specialState)
+                }
             }
         case .tab:
             if let completion {
@@ -407,39 +412,35 @@ class StateMachine {
             }
             return true
         case .stickyShift:
-            if case .direct = state.inputMode {
+            if state.inputMode == .direct {
                 return handleComposingPrintable(
                     input: ";",
-                    converted: Romaji.convert(";"),
+                    converted: kanaRule.convert(";"),
                     action: action,
                     composing: composing,
                     specialState: specialState)
+            } else if let okuri {
+                // 送り仮名入力中は無視する
+                // AquaSKKは送り仮名の末尾に"；"をつけて変換処理もしくは単語登録に遷移
+                return true
             } else {
-                if let okuri {
-                    // AquaSKKは送り仮名の末尾に"；"をつけて変換処理もしくは単語登録に遷移
-                    state.inputMethod = .composing(
-                        ComposingState(
-                            isShift: isShift, text: text, okuri: okuri + [Romaji.symbolTable[";"]!], romaji: ""))
-                    updateMarkedText()
+                // 空文字列のときは全角；を入力、それ以外のときは送り仮名モードへ
+                if text.isEmpty {
+                    state.inputMethod = .normal
+                    addFixedText("；")
                 } else {
-                    // 空文字列のときは全角；を入力、それ以外のときは送り仮名モードへ
-                    if text.isEmpty {
-                        state.inputMethod = .normal
-                        addFixedText("；")
-                    } else {
-                        state.inputMethod = .composing(
-                            ComposingState(isShift: true, text: text, okuri: [], romaji: romaji))
-                        updateMarkedText()
-                    }
+                    state.inputMethod = .composing(
+                        ComposingState(isShift: true, text: text, okuri: [], romaji: romaji))
+                    updateMarkedText()
                 }
                 return true
             }
         case .printable(let input):
             let converted: Romaji.ConvertedMoji
             if !input.isAlphabet, let characters = action.characters() {
-                converted = Romaji.convert(romaji + characters)
+                converted = kanaRule.convert(romaji + characters)
             } else {
-                converted = Romaji.convert(romaji + input)
+                converted = kanaRule.convert(romaji + input)
             }
             return handleComposingPrintable(
                 input: input,
@@ -553,7 +554,7 @@ class StateMachine {
         let text = composing.text
         let okuri = composing.okuri
 
-        if input == "q" && converted.kakutei == nil {
+        if input == "q" {
             if okuri == nil {
                 // AquaSKKの挙動に合わせてShift-Qのときは送り無視で確定、次の入力へ進む
                 if action.shiftIsPressed() {
@@ -581,14 +582,13 @@ class StateMachine {
                 } else {
                     // ひらがな入力中ならカタカナ、カタカナ入力中ならひらがな、半角カタカナ入力中なら全角カタカナで確定する。
                     // 未確定ローマ字はn以外は入力されずに削除される. nだけは"ん"が入力されているとする
-                    let newText: [String] = composing.romaji == "n" ? composing.subText() + ["ん"] : composing.subText()
                     state.inputMethod = .normal
                     switch state.inputMode {
                     case .hiragana, .hankaku:
-                        addFixedText(newText.joined().toKatakana())
+                        addFixedText(composing.string(for: .katakana, convertHatsuon: true))
                         return true
                     case .katakana:
-                        addFixedText(newText.joined())
+                        addFixedText(composing.string(for: .hiragana, convertHatsuon: true))
                         return true
                     case .direct:
                         // 普通にqを入力させる
@@ -635,8 +635,12 @@ class StateMachine {
             // StickyShiftでokuriが[]になっている、またはShift押しながら入力した
             if let moji = converted.kakutei {
                 if converted.input.isEmpty {
-                    if text.isEmpty || (okuri == nil && !action.shiftIsPressed()) || composing.cursor == 0 {
-                        if isShift || action.shiftIsPressed() {
+                    // いまの入力が送り仮名とならないことを判定
+                    // まだ読み部分が空ならば常に送り仮名ではない
+                    // シフトを押しながら入力した文字がアルファベットじゃないなら送り仮名ではない (記号なので)
+                    // 未確定文字列の先頭にカーソルがあるときはシフト押していてもいなくても送り仮名ではない
+                    if text.isEmpty || (okuri == nil && !(action.shiftIsPressed() && input.isAlphabet)) || composing.cursor == 0 {
+                        if isShift || (action.shiftIsPressed() && input.isAlphabet) {
                             state.inputMethod = .composing(composing.appendText(moji).resetRomaji().with(isShift: true))
                         } else {
                             state.inputMethod = .normal
@@ -686,9 +690,9 @@ class StateMachine {
                             state.inputMethod = .selecting(selectingState)
                         }
                     }
-                } else {  // !result.input.isEmpty
-                    // n + 子音入力したときなど
-                    if isShift || action.shiftIsPressed() {
+                } else {  // !converted.input.isEmpty
+                    // n + 子音入力したときや同一の子音を連続入力して促音が確定したときなど
+                    if (isShift || action.shiftIsPressed()) && input.isAlphabet {
                         if let okuri {
                             state.inputMethod = .composing(
                                 ComposingState(
@@ -712,7 +716,7 @@ class StateMachine {
                 }
                 updateMarkedText()
             } else if !input.isAlphabet {
-                // 非ローマ字で特殊な記号でない場合。特殊な辞書で数字が読みとして使われている場合を想定。
+                // 非ローマ字で特殊な記号でない場合。数字が読みとして使われている場合などを想定。
                 if okuri == nil {
                     // ローマ字が残っていた場合は消去してキー入力をそのままくっつける
                     if let characters = action.characters() {
@@ -723,8 +727,8 @@ class StateMachine {
                     updateMarkedText()
                 } else {
                     // 送り仮名入力モード時は入力しなかった扱いとする
+                    return true
                 }
-                return true
             } else {  // converted.kakutei == nil
                 if !text.isEmpty && okuri == nil && action.shiftIsPressed() {
                     state.inputMethod = .composing(

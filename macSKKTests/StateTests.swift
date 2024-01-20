@@ -9,11 +9,11 @@ final class StateTests: XCTestCase {
     func testComposingStateAppendText() throws {
         var state = ComposingState(
             isShift: true, text: ["あ", "い"], okuri: nil, romaji: "", cursor: nil)
-        state = state.appendText(Romaji.table["u"]!)
+        state = state.appendText(Romaji.Moji(firstRomaji: "u", kana: "う"))
         XCTAssertEqual(state.string(for: .hiragana, convertHatsuon: false), "あいう")
         state = state.moveCursorLeft()
         XCTAssertEqual(state.cursor, 2)
-        state = state.appendText(Romaji.table["e"]!)
+        state = state.appendText(Romaji.Moji(firstRomaji: "e", kana: "え"))
         XCTAssertEqual(state.string(for: .hiragana, convertHatsuon: false), "あいえう")
         XCTAssertEqual(state.cursor, 3)
         state = state.moveCursorRight()
@@ -100,7 +100,7 @@ final class StateTests: XCTestCase {
         XCTAssertEqual(state.yomi(for: .direct), "あい")
         state.cursor = 1
         XCTAssertEqual(state.yomi(for: .hiragana), "あ")
-        state.okuri = [Romaji.table["u"]!]
+        state.okuri = [Romaji.Moji(firstRomaji: "u", kana: "う")]
         state.cursor = nil
         XCTAssertEqual(state.yomi(for: .katakana), "あいu")
     }
@@ -181,7 +181,7 @@ final class StateTests: XCTestCase {
                 composing: ComposingState(
                     isShift: true,
                     text: ["あ"],
-                    okuri: [Romaji.table["ru"]!],
+                    okuri: [Romaji.Moji(firstRomaji: "r", kana: "る")],
                     romaji: ""
                 )
             ),
@@ -226,7 +226,7 @@ final class StateTests: XCTestCase {
                 composing: ComposingState(
                     isShift: true,
                     text: ["あ"],
-                    okuri: [Romaji.table["ru"]!],
+                    okuri: [Romaji.Moji(firstRomaji: "r", kana: "る")],
                     romaji: ""
                 )
             ),
@@ -274,7 +274,7 @@ final class StateTests: XCTestCase {
                 composing: ComposingState(
                     isShift: true,
                     text: ["あ"],
-                    okuri: [Romaji.table["ru"]!],
+                    okuri: [Romaji.Moji(firstRomaji: "r", kana: "る")],
                     romaji: ""
                 )
             ),
@@ -372,7 +372,7 @@ final class StateTests: XCTestCase {
                 composing: ComposingState(
                     isShift: true,
                     text: ["あ"],
-                    okuri: [Romaji.table["ru"]!],
+                    okuri: [Romaji.Moji(firstRomaji: "r", kana: "る")],
                     romaji: ""
                 )
             ),
