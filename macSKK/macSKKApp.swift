@@ -9,8 +9,10 @@ import os
 
 let logger: Logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "main")
 var dictionary: UserDict!
-/// ローマ字かな変換ルール
+/// 現在のローマ字かな変換ルール
 var kanaRule: Romaji!
+/// デフォルトでもってるローマ字かな変換ルール
+var defaultKanaRule: Romaji!
 let privateMode = CurrentValueSubject<Bool, Never>(false)
 // 直接入力するアプリケーションのBundleIdentifierの集合のコピー。
 // マスターはSettingsViewModelがもっているが、InputControllerからAppが参照できないのでグローバル変数にコピーしている。
@@ -36,6 +38,7 @@ struct macSKKApp: App {
     /// "~/Library/Containers/net.mtgto.inputmethod.macSKK/Data/Documents/Dictionaries"
     private let dictionariesDirectoryUrl: URL
     private let userNotificationDelegate = UserNotificationDelegate()
+    private let settingsWatcher: SettingsWatcher?
     @State private var fetchReleaseTask: Task<Void, Error>?
     #if DEBUG
     private let candidatesPanel: CandidatesPanel = CandidatesPanel(showAnnotationPopover: true)
@@ -60,8 +63,10 @@ struct macSKKApp: App {
             fatalError("辞書設定でエラーが発生しました: \(error)")
         }
         do {
+            settingsWatcher = try SettingsWatcher(kanaRuleFileName: "kana-rule.conf")
             let kanaRuleFileURL = Bundle.main.url(forResource: "kana-rule", withExtension: "conf")!
-            kanaRule = try Romaji(contentsOf: kanaRuleFileURL)
+            defaultKanaRule = try Romaji(contentsOf: kanaRuleFileURL)
+            kanaRule = defaultKanaRule
         } catch {
             fatalError("ローマ字かな変換ルールの読み込みでエラーが発生しました: \(error)")
         }

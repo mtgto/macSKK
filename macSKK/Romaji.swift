@@ -106,7 +106,7 @@ struct Romaji: Equatable, Sendable {
                 $0.replacingOccurrences(of: "&comma;", with: ",")
             }
             if elements.count < 2 || elements.contains(where: { $0.isEmpty }) {
-                logger.error("ローマ字変換定義ファイルの \(lineNumber) 行目の記述が壊れています")
+                logger.error("ローマ字変換定義ファイルの \(lineNumber) 行目の記述が壊れているため読み込みできません")
                 error = RomajiError.invalid
                 stop = true
                 return
