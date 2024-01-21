@@ -41,7 +41,7 @@ class SettingsWatcher: NSObject {
         do {
             if try url.isReadable() {
                 kanaRule = try Romaji(contentsOf: url)
-                logger.log("ローマ字かな変換ルールを更新しました")
+                logger.log("独自のローマ字かな変換ルールを適用しました")
             } else {
                 logger.log("ローマ字かなルールファイルとして不適合なファイルであるため読み込みできませんでした")
             }
