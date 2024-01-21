@@ -6,6 +6,13 @@ import XCTest
 @testable import macSKK
 
 class RomajiTests: XCTestCase {
+    func testInit() {
+        XCTAssertNoThrow(try Romaji(source: "# hoge"), "#で始まる行はコメント")
+        XCTAssertThrowsError(try Romaji(source: ",あ"), "1要素目が空")
+        XCTAssertThrowsError(try Romaji(source: "a,"), "2要素目が空")
+        XCTAssertNoThrow(try Romaji(source: "&comma;,あ"), "カンマを使いたい場合は &comma; と書く")
+    }
+
     func testConvert() throws {
         let fileURL = Bundle(for: Self.self).url(forResource: "kana-rule-for-test", withExtension: "conf")!
         let kanaRule = try Romaji(contentsOf: fileURL)
@@ -26,7 +33,7 @@ class RomajiTests: XCTestCase {
         XCTAssertEqual(kanaRule.convert("@"), Romaji.ConvertedMoji(input: "@", kakutei: nil), "ルールにない文字は変換されない")
     }
 
-    func testUseTwoCharactersForVu() throws {
+    func testVu() throws {
         var kanaRule = try Romaji(source: "vu,う゛")
         XCTAssertEqual(kanaRule.convert("vu").kakutei?.kana, "う゛")
         kanaRule = try Romaji(source: "vu,ゔ")
