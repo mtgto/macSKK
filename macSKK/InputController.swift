@@ -158,6 +158,10 @@ class InputController: IMKInputController {
 
     override func handle(_ event: NSEvent!, client sender: Any!) -> Bool {
         if directMode {
+            if let keyEvent = convert(event: event), keyEvent == .kana || keyEvent == .eisu {
+                // 英数・かなキーは握り潰さないとエディタによって空白が入ってしまう
+                return true
+            }
             return false
         }
         // 左下座標基準でwidth=1, height=(通常だとフォントサイズ)のNSRect
