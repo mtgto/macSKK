@@ -815,7 +815,7 @@ class StateMachine {
             state.inputMethod = .normal
             addFixedText(selecting.fixedText)
             return true
-        case .backspace, .up:
+        case .backspace, .up, .printable("x"):
             let diff: Int
             if selecting.candidateIndex >= inlineCandidateCount && action.keyEvent == .backspace {
                 // 前ページの先頭
