@@ -815,7 +815,7 @@ class StateMachine {
             state.inputMethod = .normal
             addFixedText(selecting.fixedText)
             return true
-        case .backspace, .up, .printable("x"):
+        case .backspace, .up:
             let diff: Int
             if selecting.candidateIndex >= inlineCandidateCount && action.keyEvent == .backspace {
                 // 前ページの先頭
@@ -824,17 +824,7 @@ class StateMachine {
             } else {
                 diff = -1
             }
-            if selecting.candidateIndex + diff >= 0 {
-                let newSelectingState = selecting.addCandidateIndex(diff: diff)
-                updateCandidates(selecting: newSelectingState)
-                state.inputMethod = .selecting(newSelectingState)
-            } else {
-                updateCandidates(selecting: nil)
-                state.inputMethod = .composing(selecting.prev.composing)
-                state.inputMode = selecting.prev.mode
-            }
-            updateMarkedText()
-            return true
+            return handleSelectingPrevious(diff: diff, selecting: selecting)
         case .space, .down:
             let diff: Int
             if selecting.candidateIndex >= inlineCandidateCount && action.keyEvent == .space {
@@ -876,14 +866,18 @@ class StateMachine {
             state.inputMethod = .normal
             return handleNormal(action, specialState: nil)
         case .printable(let input):
-            if input == "x" && action.shiftIsPressed() {
-                state.specialState = .unregister(
-                    UnregisterState(prev: UnregisterState.PrevState(mode: state.inputMode, selecting: selecting)))
-                state.inputMethod = .normal
-                state.inputMode = .direct
-                updateCandidates(selecting: nil)
-                updateMarkedText()
-                return true
+            if input == "x" {
+                if action.shiftIsPressed() {
+                    state.specialState = .unregister(
+                        UnregisterState(prev: UnregisterState.PrevState(mode: state.inputMode, selecting: selecting)))
+                    state.inputMethod = .normal
+                    state.inputMode = .direct
+                    updateCandidates(selecting: nil)
+                    updateMarkedText()
+                    return true
+                } else {
+                    return handleSelectingPrevious(diff: -1, selecting: selecting)
+                }
             } else if input == "." && action.shiftIsPressed() {
                 // 選択中候補で確定し、接尾辞入力に移行
                 addWordToUserDict(yomi: selecting.yomi, okuri: selecting.okuri, candidate: selecting.candidates[selecting.candidateIndex])
@@ -945,6 +939,20 @@ class StateMachine {
         case .ctrlY, .eisu, .kana:
             return true
         }
+    }
+
+    private func handleSelectingPrevious(diff: Int, selecting: SelectingState) -> Bool {
+        if selecting.candidateIndex + diff >= 0 {
+            let newSelectingState = selecting.addCandidateIndex(diff: diff)
+            updateCandidates(selecting: newSelectingState)
+            state.inputMethod = .selecting(newSelectingState)
+        } else {
+            updateCandidates(selecting: nil)
+            state.inputMethod = .composing(selecting.prev.composing)
+            state.inputMode = selecting.prev.mode
+        }
+        updateMarkedText()
+        return true
     }
 
     func setMode(_ mode: InputMode) {
