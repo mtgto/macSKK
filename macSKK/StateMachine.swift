@@ -815,9 +815,9 @@ class StateMachine {
             state.inputMethod = .normal
             addFixedText(selecting.fixedText)
             return true
-        case .backspace, .up:
+        case .backspace:
             let diff: Int
-            if selecting.candidateIndex >= inlineCandidateCount && action.keyEvent == .backspace {
+            if selecting.candidateIndex >= inlineCandidateCount {
                 // 前ページの先頭
                 diff =
                     -((selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount) - displayCandidateCount
@@ -825,6 +825,8 @@ class StateMachine {
                 diff = -1
             }
             return handleSelectingPrevious(diff: diff, selecting: selecting)
+        case .up:
+            return handleSelectingPrevious(diff: -1, selecting: selecting)
         case .space, .down:
             let diff: Int
             if selecting.candidateIndex >= inlineCandidateCount && action.keyEvent == .space {
