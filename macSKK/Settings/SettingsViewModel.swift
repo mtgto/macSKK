@@ -120,7 +120,7 @@ final class SettingsViewModel: ObservableObject {
         } else {
             selectedInputSourceId = InputSource.defaultInputSourceId
         }
-        self.showAnnotation = UserDefaults.standard.bool(forKey: UserDefaultsKeys.showAnnotation)
+        showAnnotation = UserDefaults.standard.bool(forKey: UserDefaultsKeys.showAnnotation)
         inlineCandidateCount = UserDefaults.standard.integer(forKey: UserDefaultsKeys.inlineCandidateCount)
 
         // SKK-JISYO.Lのようなファイルの読み込みが遅いのでバックグラウンドで処理
@@ -164,7 +164,7 @@ final class SettingsViewModel: ObservableObject {
             self.dictLoadingStatuses[id] = status
         }.store(in: &cancellables)
 
-        $directModeApplications.sink { applications in
+        $directModeApplications.dropFirst().sink { applications in
             let bundleIdentifiers = applications.map { $0.bundleIdentifier }
             UserDefaults.standard.set(bundleIdentifiers, forKey: "directModeBundleIdentifiers")
             directModeBundleIdentifiers.send(bundleIdentifiers)
@@ -206,11 +206,12 @@ final class SettingsViewModel: ObservableObject {
             }
         }.store(in: &cancellables)
 
-        $showAnnotation.sink { showAnnotation in
+        $showAnnotation.dropFirst().sink { showAnnotation in
             UserDefaults.standard.set(showAnnotation, forKey: UserDefaultsKeys.showAnnotation)
+            logger.log("注釈表示を\(showAnnotation ? "表示" : "非表示", privacy: .public)に変更しました")
         }.store(in: &cancellables)
 
-        $inlineCandidateCount.sink { inlineCandidateCount in
+        $inlineCandidateCount.dropFirst().sink { inlineCandidateCount in
             UserDefaults.standard.set(inlineCandidateCount, forKey: UserDefaultsKeys.inlineCandidateCount)
             NotificationCenter.default.post(name: notificationNameInlineCandidateCount, object: inlineCandidateCount)
             logger.log("インラインで表示する変換候補の数を\(inlineCandidateCount)個に変更しました")
