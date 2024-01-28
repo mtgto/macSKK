@@ -177,6 +177,7 @@ struct macSKKApp: App {
             UserDefaultsKeys.directModeBundleIdentifiers: [String](),
             UserDefaultsKeys.selectedInputSource: InputSource.defaultInputSourceId,
             UserDefaultsKeys.showAnnotation: true,
+            UserDefaultsKeys.inlineCandidateCount: 3,
         ])
     }
 

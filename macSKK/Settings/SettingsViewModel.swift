@@ -102,6 +102,8 @@ final class SettingsViewModel: ObservableObject {
     @Published var selectedInputSourceId: InputSource.ID
     /// 注釈を表示するかどうか
     @Published var showAnnotation: Bool
+    /// インラインで表示する変換候補の数。
+    @Published var inlineCandidateCount: Int
     // 辞書ディレクトリ
     let dictionariesDirectoryUrl: URL
     // バックグラウンドでの辞書を読み込みで読み込み状態が変わったときに通知される
@@ -119,6 +121,7 @@ final class SettingsViewModel: ObservableObject {
             selectedInputSourceId = InputSource.defaultInputSourceId
         }
         self.showAnnotation = UserDefaults.standard.bool(forKey: UserDefaultsKeys.showAnnotation)
+        inlineCandidateCount = UserDefaults.standard.integer(forKey: UserDefaultsKeys.inlineCandidateCount)
 
         // SKK-JISYO.Lのようなファイルの読み込みが遅いのでバックグラウンドで処理
         $dictSettings.filter({ !$0.isEmpty }).receive(on: DispatchQueue.global()).sink { dictSettings in
@@ -206,6 +209,10 @@ final class SettingsViewModel: ObservableObject {
         $showAnnotation.sink { showAnnotation in
             UserDefaults.standard.set(showAnnotation, forKey: UserDefaultsKeys.showAnnotation)
         }.store(in: &cancellables)
+
+        $inlineCandidateCount.sink { inlineCandidateCount in
+            UserDefaults.standard.set(inlineCandidateCount, forKey: UserDefaultsKeys.inlineCandidateCount)
+        }.store(in: &cancellables)
     }
 
     // PreviewProvider用
@@ -218,6 +225,7 @@ final class SettingsViewModel: ObservableObject {
         ).appendingPathComponent("Dictionaries")
         selectedInputSourceId = InputSource.defaultInputSourceId
         showAnnotation = true
+        inlineCandidateCount = 3
     }
 
     // DictionaryViewのPreviewProvider用
