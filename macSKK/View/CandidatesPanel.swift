@@ -28,8 +28,8 @@ final class CandidatesPanel: NSPanel {
     }
 
     func setCandidates(_ candidates: CurrentCandidates, selected: Candidate?) {
-        viewModel.candidates = candidates
         viewModel.selected = selected
+        viewModel.candidates = candidates
     }
 
     func setSystemAnnotation(_ systemAnnotation: String, for word: Word.Word) {
