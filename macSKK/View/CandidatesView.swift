@@ -59,21 +59,9 @@ struct CandidatesView: View {
                         systemAnnotation: $candidates.selectedSystemAnnotation
                     )
                     .frame(width: 300, alignment: .topLeading)
-                    .padding()
-                    .background(.regularMaterial)
-
-                    // 吹き出し風。Shapeで作るほうが適切そうなのでコメントアウト
-//                    .padding(EdgeInsets(top: 10, leading: 24, bottom: 10, trailing: 18))
-//                    .background {
-//                        Path { path in
-//                            let y = CGFloat((candidates.selectedIndex ?? 0)) * Self.lineHeight + Self.lineHeight / 2
-//                            path.move(to: CGPoint(x: 0, y: y))
-//                            path.addLine(to: CGPoint(x: Self.annotationMargin, y: y - 5))
-//                            path.addLine(to: CGPoint(x: Self.annotationMargin, y: y + 5))
-//                            path.addRoundedRect(in: CGRect(x: Self.annotationMargin, y: 0, width: 300, height: 200), cornerSize: CGSize(width: 5, height: 5))
-//                        }
-//                        .fill(.thickMaterial)
-//                    }
+                    .padding(EdgeInsets(top: 16, leading: 24, bottom: 16, trailing: 4))
+                    //.background(.ultraThickMaterial, in: RoundedRectangle(cornerSize: CGSize(width: 16, height: 10)))
+                    .background(.regularMaterial, in: AnnotationBalloon(y: CGFloat((candidates.selectedIndex ?? 0) * 2 + 1) * Self.lineHeight / 2, tail: Self.annotationMargin))
                 }
             }
             .background(Color.clear)
@@ -96,6 +84,23 @@ struct CandidatesView: View {
         } else {
             return 300
         }
+    }
+}
+
+// 吹き出しの形
+struct AnnotationBalloon: Shape {
+    let y: CGFloat
+    let tail: CGFloat
+
+    func path(in rect: CGRect) -> Path {
+        let path = Path { path in
+            // 吹き出しの位置は固定で、角丸矩形のサイズは親サイズに合わせる
+            path.move(to: CGPoint(x: 0, y: y))
+            path.addLine(to: CGPoint(x: tail + 3, y: y - 5))
+            path.addLine(to: CGPoint(x: tail + 3, y: y + 5))
+            path.addRoundedRect(in: CGRect(x: tail, y: 0, width: rect.width, height: rect.height), cornerSize: CGSize(width: 10, height: 10))
+        }
+        return path
     }
 }
 
