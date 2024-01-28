@@ -212,6 +212,8 @@ final class SettingsViewModel: ObservableObject {
 
         $inlineCandidateCount.sink { inlineCandidateCount in
             UserDefaults.standard.set(inlineCandidateCount, forKey: UserDefaultsKeys.inlineCandidateCount)
+            NotificationCenter.default.post(name: notificationNameInlineCandidateCount, object: inlineCandidateCount)
+            logger.log("インラインで表示する変換候補の数を\(inlineCandidateCount)個に変更しました")
         }.store(in: &cancellables)
     }
 
