@@ -62,15 +62,21 @@ struct macSKKApp: App {
         } catch {
             fatalError("辞書設定でエラーが発生しました: \(error)")
         }
-        do {
-            settingsWatcher = try SettingsWatcher(kanaRuleFileName: "kana-rule.conf")
+        if isTest() {
+            settingsWatcher = nil
             let kanaRuleFileURL = Bundle.main.url(forResource: "kana-rule", withExtension: "conf")!
-            defaultKanaRule = try Romaji(contentsOf: kanaRuleFileURL)
-            if kanaRule == nil {
-                kanaRule = defaultKanaRule
+            kanaRule = try! Romaji(contentsOf: kanaRuleFileURL)
+        } else {
+            do {
+                settingsWatcher = try SettingsWatcher(kanaRuleFileName: "kana-rule.conf")
+                let kanaRuleFileURL = Bundle.main.url(forResource: "kana-rule", withExtension: "conf")!
+                defaultKanaRule = try Romaji(contentsOf: kanaRuleFileURL)
+                if kanaRule == nil {
+                    kanaRule = defaultKanaRule
+                }
+            } catch {
+                fatalError("ローマ字かな変換ルールの読み込みでエラーが発生しました: \(error)")
             }
-        } catch {
-            fatalError("ローマ字かな変換ルールの読み込みでエラーが発生しました: \(error)")
         }
         if !isTest() && Bundle.main.bundleURL.deletingLastPathComponent().lastPathComponent == "Input Methods" {
             guard let connectionName = Bundle.main.infoDictionary?["InputMethodConnectionName"] as? String
