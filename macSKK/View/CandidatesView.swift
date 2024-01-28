@@ -60,10 +60,12 @@ struct CandidatesView: View {
                     )
                     .frame(width: 300, alignment: .topLeading)
                     .padding(EdgeInsets(top: 16, leading: 24, bottom: 16, trailing: 4))
-                    //.background(.ultraThickMaterial, in: RoundedRectangle(cornerSize: CGSize(width: 16, height: 10)))
+                    .fixedSize(horizontal: false, vertical: true)
                     .background(.regularMaterial, in: AnnotationBalloon(y: CGFloat((candidates.selectedIndex ?? 0) * 2 + 1) * Self.lineHeight / 2, tail: Self.annotationMargin))
+                    .opacity(0.9)
                 }
             }
+            .frame(maxHeight: 300, alignment: .topLeading)
             .background(Color.clear)
         }
     }
@@ -98,7 +100,7 @@ struct AnnotationBalloon: Shape {
             path.move(to: CGPoint(x: 0, y: y))
             path.addLine(to: CGPoint(x: tail + 3, y: y - 5))
             path.addLine(to: CGPoint(x: tail + 3, y: y + 5))
-            path.addRoundedRect(in: CGRect(x: tail, y: 0, width: rect.width, height: rect.height), cornerSize: CGSize(width: 10, height: 10))
+            path.addRoundedRect(in: CGRect(x: tail, y: 0, width: rect.width - tail, height: rect.height), cornerSize: CGSize(width: 10, height: 10))
         }
         return path
     }
@@ -113,7 +115,7 @@ struct CandidatesView_Previews: PreviewProvider {
     private static func pageViewModel() -> CandidatesViewModel {
         let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, showAnnotationPopover: true)
         viewModel.selected = words.first
-        viewModel.systemAnnotations = [words.first!.word: String(repeating: "これはシステム辞書の注釈です。", count: 10)]
+        viewModel.systemAnnotations = [words.first!.word: String(repeating: "これはシステム辞書の注釈です。", count: 20)]
         return viewModel
     }
 
