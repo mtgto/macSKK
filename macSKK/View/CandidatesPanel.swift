@@ -23,6 +23,7 @@ final class CandidatesPanel: NSPanel {
         let viewController = NSHostingController(rootView: rootView)
         // borderlessにしないとdeactivateServerが呼ばれてしまう
         super.init(contentRect: .zero, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: true)
+        backgroundColor = .clear
         contentViewController = viewController
     }
 

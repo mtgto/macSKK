@@ -10,6 +10,8 @@ struct CandidatesView: View {
     /// 一行の高さ
     static let lineHeight: CGFloat = 20
     static let footerHeight: CGFloat = 20
+    /// 変換候補と注釈の間
+    static let annotationMargin: CGFloat = 14
     private let font: Font = .body
 
     var body: some View {
@@ -19,50 +21,62 @@ struct CandidatesView: View {
                 .padding(EdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4))
                 .frame(width: 300, height: 200)
         case let .panel(words, currentPage, totalPageCount):
-            VStack(spacing: 0) {
-                List(Array(words.enumerated()), id: \.element, selection: $candidates.selected) { index, candidate in
-                    HStack {
-                        Text("\(index + 1)")
-                            .font(font)
-                            .padding(EdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 0))
-                            .frame(width: 16)
-                        Text(candidate.word)
-                            .font(font)
-                            .fixedSize(horizontal: true, vertical: false)
-                            .padding(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 4))
-                        Spacer()  // popoverをListの右に表示するために余白を入れる
+            HStack(alignment: .top, spacing: 0) {
+                VStack(spacing: 0) {
+                    List(Array(words.enumerated()), id: \.element, selection: $candidates.selected) { index, candidate in
+                        HStack {
+                            Text("\(index + 1)")
+                                .font(font)
+                                .padding(EdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 0))
+                                .frame(width: 16)
+                            Text(candidate.word)
+                                .font(font)
+                                .fixedSize(horizontal: true, vertical: false)
+                                .padding(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 4))
+                            Spacer()  // popoverをListの右に表示するために余白を入れる
+                        }
+                        .listRowInsets(EdgeInsets())
+                        .frame(height: Self.lineHeight)
+                        // .border(Color.red) // Listの謎のInsetのデバッグ時に使用する
+                        .contentShape(Rectangle())
                     }
-                    .listRowInsets(EdgeInsets())
-                    .frame(height: Self.lineHeight)
-                    // .border(Color.red) // Listの謎のInsetのデバッグ時に使用する
-                    .contentShape(Rectangle())
-                }
-                .listStyle(.plain)
-                .environment(\.defaultMinListRowHeight, Self.lineHeight)  // Listの行の上下の余白を削除
-                .scrollDisabled(true)
-                .frame(width: minWidth(), height: CGFloat(words.count) * Self.lineHeight)
-                HStack(alignment: .center, spacing: 0) {
+                    .listStyle(.plain)
+                    .environment(\.defaultMinListRowHeight, Self.lineHeight)  // Listの行の上下の余白を削除
+                    .scrollDisabled(true)
+                    .frame(width: minWidth(), height: CGFloat(words.count) * Self.lineHeight)
+                    HStack(alignment: .center, spacing: 0) {
+                        Spacer()
+                        Text("\(currentPage + 1) / \(totalPageCount)")
+                            .padding(EdgeInsets(top: 2, leading: 0, bottom: 2, trailing: 4))
+                    }
+                    .frame(width: minWidth(), height: Self.footerHeight)
+                    .background()
                     Spacer()
-                    Text("\(currentPage + 1) / \(totalPageCount)")
-                        .padding(EdgeInsets(top: 2, leading: 0, bottom: 2, trailing: 4))
                 }
-                .frame(width: minWidth(), height: Self.footerHeight)
+                if candidates.popoverIsPresented {
+                    AnnotationView(
+                        annotations: $candidates.selectedAnnotations,
+                        systemAnnotation: $candidates.selectedSystemAnnotation
+                    )
+                    .frame(width: 300, alignment: .topLeading)
+                    .padding()
+                    .background(.regularMaterial)
+
+                    // 吹き出し風。Shapeで作るほうが適切そうなのでコメントアウト
+//                    .padding(EdgeInsets(top: 10, leading: 24, bottom: 10, trailing: 18))
+//                    .background {
+//                        Path { path in
+//                            let y = CGFloat((candidates.selectedIndex ?? 0)) * Self.lineHeight + Self.lineHeight / 2
+//                            path.move(to: CGPoint(x: 0, y: y))
+//                            path.addLine(to: CGPoint(x: Self.annotationMargin, y: y - 5))
+//                            path.addLine(to: CGPoint(x: Self.annotationMargin, y: y + 5))
+//                            path.addRoundedRect(in: CGRect(x: Self.annotationMargin, y: 0, width: 300, height: 200), cornerSize: CGSize(width: 5, height: 5))
+//                        }
+//                        .fill(.thickMaterial)
+//                    }
+                }
             }
-            .popover(
-                isPresented: $candidates.popoverIsPresented,
-                attachmentAnchor: .rect(.rect(CGRect(x: 0,
-                                                     y: CGFloat(candidates.selectedIndex ?? 0) * Self.lineHeight,
-                                                     width: minWidth(),
-                                                     height: Self.lineHeight))),
-                arrowEdge: .trailing
-            ) {
-                AnnotationView(
-                    annotations: $candidates.selectedAnnotations,
-                    systemAnnotation: $candidates.selectedSystemAnnotation
-                )
-                .frame(width: 300, alignment: .topLeading)
-                .padding()
-            }
+            .background(Color.clear)
         }
     }
 
@@ -115,6 +129,7 @@ struct CandidatesView_Previews: PreviewProvider {
 
     static var previews: some View {
         CandidatesView(candidates: pageViewModel())
+            .background(Color.cyan)
             .previewDisplayName("パネル表示")
         CandidatesView(candidates: pageWithoutPopoverViewModel())
             .previewDisplayName("パネル表示 (注釈なし)")
