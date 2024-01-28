@@ -21,7 +21,8 @@ final class CandidatesPanel: NSPanel {
                                         showAnnotationPopover: showAnnotationPopover)
         let rootView = CandidatesView(candidates: self.viewModel)
         let viewController = NSHostingController(rootView: rootView)
-        super.init(contentRect: .zero, styleMask: [.nonactivatingPanel], backing: .buffered, defer: true)
+        // borderlessにしないとdeactivateServerが呼ばれてしまう
+        super.init(contentRect: .zero, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: true)
         contentViewController = viewController
     }
 
