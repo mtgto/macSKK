@@ -24,16 +24,20 @@ struct CandidatesView: View {
                 .frame(width: 300, height: 200)
         case let .panel(words, currentPage, totalPageCount):
             HStack(alignment: .top, spacing: Self.annotationMargin) {
-                if candidates.popoverIsPresented && candidates.displayPopoverInLeft {
-                    AnnotationView(
-                        annotations: $candidates.selectedAnnotations,
-                        systemAnnotation: $candidates.selectedSystemAnnotation
-                    )
-                    .padding(EdgeInsets(top: 16, leading: 12, bottom: 16, trailing: 16))
-                    .frame(width: Self.annotationPopupWidth, alignment: .topLeading)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
-                    .opacity(0.9)
+                if candidates.displayPopoverInLeft {
+                    if candidates.popoverIsPresented {
+                        AnnotationView(
+                            annotations: $candidates.selectedAnnotations,
+                            systemAnnotation: $candidates.selectedSystemAnnotation
+                        )
+                        .padding(EdgeInsets(top: 16, leading: 12, bottom: 16, trailing: 16))
+                        .frame(width: Self.annotationPopupWidth, alignment: .topLeading)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
+                        .opacity(0.9)
+                    } else {
+                        Spacer(minLength: Self.annotationPopupWidth)
+                    }
                 }
                 VStack(spacing: 0) {
                     List(Array(words.enumerated()), id: \.element, selection: $candidates.selected) { index, candidate in
