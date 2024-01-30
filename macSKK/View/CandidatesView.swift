@@ -73,7 +73,7 @@ struct CandidatesView: View {
     // 最長のテキストを表示するために必要なビューのサイズを返す
     func minWidth() -> CGFloat {
         if case let .panel(words, _, _) = candidates.candidates {
-            let width = words.map { candidate -> CGFloat in
+            let listWidth = words.map { candidate -> CGFloat in
                 let size = candidate.word.boundingRect(
                     with: CGSize(width: .greatestFiniteMagnitude, height: Self.lineHeight),
                     options: .usesLineFragmentOrigin,
@@ -81,8 +81,8 @@ struct CandidatesView: View {
                 // 未解決の余白(8px) + 添字(16px) + 余白(4px) + テキスト + 余白(4px) + 未解決の余白(22px)
                 // @see https://forums.swift.org/t/swiftui-list-horizontal-insets-macos/52985/5
                 return 16 + 4 + size.width + 4 + 22
-            }.max()
-            return width ?? 0
+            }.max() ?? 0
+            return listWidth
         } else {
             return 300
         }
@@ -95,14 +95,14 @@ struct AnnotationBalloon: Shape {
     let tail: CGFloat
 
     func path(in rect: CGRect) -> Path {
-        let path = Path { path in
+        Path { path in
             // 吹き出しの位置は固定で、角丸矩形のサイズは親サイズに合わせる
             path.move(to: CGPoint(x: 0, y: y))
             path.addLine(to: CGPoint(x: tail + 3, y: y - 5))
             path.addLine(to: CGPoint(x: tail + 3, y: y + 5))
-            path.addRoundedRect(in: CGRect(x: tail, y: 0, width: rect.width - tail, height: rect.height), cornerSize: CGSize(width: 10, height: 10))
+            path.addRoundedRect(in: CGRect(x: tail, y: 0, width: rect.width - tail, height: rect.height),
+                                cornerSize: CGSize(width: 10, height: 10))
         }
-        return path
     }
 }
 
