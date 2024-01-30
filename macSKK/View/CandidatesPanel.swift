@@ -38,6 +38,9 @@ final class CandidatesPanel: NSPanel {
 
     func setCursorPosition(_ cursorPosition: NSRect) {
         self.cursorPosition = cursorPosition
+        if let mainScreen = NSScreen.main {
+            viewModel.maxWidth = mainScreen.visibleFrame.size.width - cursorPosition.origin.x
+        }
     }
 
     func setShowAnnotationPopover(_ showAnnotationPopover: Bool) {
@@ -61,7 +64,7 @@ final class CandidatesPanel: NSPanel {
         print("preferredContentSize = \(viewController.preferredContentSize)")
         print("sizeThatFits = \(viewController.sizeThatFits(in: CGSize(width: 10000, height: 10000)))")
         #endif
-        let width = viewController.rootView.minWidth()
+        let width = viewModel.showAnnotationPopover ? viewModel.minWidth + CandidatesView.annotationPopupWidth : viewModel.minWidth
         let height: CGFloat
         if case let .panel(words, _, _) = viewModel.candidates {
             height = CGFloat(words.count) * CandidatesView.lineHeight + CandidatesView.footerHeight
@@ -71,6 +74,9 @@ final class CandidatesPanel: NSPanel {
         }
         setContentSize(NSSize(width: width, height: height))
         var origin = cursorPosition.origin
+        if viewModel.displayPopoverInLeft {
+            origin.x = origin.x - CandidatesView.annotationPopupWidth - CandidatesView.annotationMargin
+        }
         if let mainScreen = NSScreen.main {
             if origin.x + width > mainScreen.visibleFrame.size.width {
                 origin.x = mainScreen.frame.size.width - width

@@ -11,7 +11,9 @@ struct CandidatesView: View {
     static let lineHeight: CGFloat = 20
     static let footerHeight: CGFloat = 20
     /// 変換候補と注釈の間
-    static let annotationMargin: CGFloat = 14
+    static let annotationMargin: CGFloat = 8
+    /// パネル型の注釈ビューの幅
+    static let annotationPopupWidth: CGFloat = 300
     private let font: Font = .body
 
     var body: some View {
@@ -21,7 +23,18 @@ struct CandidatesView: View {
                 .padding(EdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4))
                 .frame(width: 300, height: 200)
         case let .panel(words, currentPage, totalPageCount):
-            HStack(alignment: .top, spacing: 0) {
+            HStack(alignment: .top, spacing: Self.annotationMargin) {
+                if candidates.popoverIsPresented && candidates.displayPopoverInLeft {
+                    AnnotationView(
+                        annotations: $candidates.selectedAnnotations,
+                        systemAnnotation: $candidates.selectedSystemAnnotation
+                    )
+                    .padding(EdgeInsets(top: 16, leading: 12, bottom: 16, trailing: 16))
+                    .frame(width: Self.annotationPopupWidth, alignment: .topLeading)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
+                    .opacity(0.9)
+                }
                 VStack(spacing: 0) {
                     List(Array(words.enumerated()), id: \.element, selection: $candidates.selected) { index, candidate in
                         HStack {
@@ -43,65 +56,30 @@ struct CandidatesView: View {
                     .listStyle(.plain)
                     .environment(\.defaultMinListRowHeight, Self.lineHeight)  // Listの行の上下の余白を削除
                     .scrollDisabled(true)
-                    .frame(width: minWidth(), height: CGFloat(words.count) * Self.lineHeight)
+                    .frame(width: candidates.minWidth, height: CGFloat(words.count) * Self.lineHeight)
                     HStack(alignment: .center, spacing: 0) {
                         Spacer()
                         Text("\(currentPage + 1) / \(totalPageCount)")
                             .padding(EdgeInsets(top: 2, leading: 0, bottom: 2, trailing: 4))
                     }
-                    .frame(width: minWidth(), height: Self.footerHeight)
+                    .frame(width: candidates.minWidth, height: Self.footerHeight)
                     .background()
                     Spacer()
                 }
-                if candidates.popoverIsPresented {
+                if candidates.popoverIsPresented && !candidates.displayPopoverInLeft {
                     AnnotationView(
                         annotations: $candidates.selectedAnnotations,
                         systemAnnotation: $candidates.selectedSystemAnnotation
                     )
-                    .frame(width: 300, alignment: .topLeading)
-                    .padding(EdgeInsets(top: 16, leading: 24, bottom: 16, trailing: 4))
+                    .padding(EdgeInsets(top: 16, leading: 28, bottom: 16, trailing: 4))
+                    .frame(width: Self.annotationPopupWidth, alignment: .topLeading)
                     .fixedSize(horizontal: false, vertical: true)
-                    .background(.regularMaterial, in: AnnotationBalloon(y: CGFloat((candidates.selectedIndex ?? 0) * 2 + 1) * Self.lineHeight / 2, tail: Self.annotationMargin))
+                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
                     .opacity(0.9)
                 }
             }
             .frame(maxHeight: 300, alignment: .topLeading)
             .background(Color.clear)
-        }
-    }
-
-    // 最長のテキストを表示するために必要なビューのサイズを返す
-    func minWidth() -> CGFloat {
-        if case let .panel(words, _, _) = candidates.candidates {
-            let listWidth = words.map { candidate -> CGFloat in
-                let size = candidate.word.boundingRect(
-                    with: CGSize(width: .greatestFiniteMagnitude, height: Self.lineHeight),
-                    options: .usesLineFragmentOrigin,
-                    attributes: [.font: NSFont.preferredFont(forTextStyle: .body)])
-                // 未解決の余白(8px) + 添字(16px) + 余白(4px) + テキスト + 余白(4px) + 未解決の余白(22px)
-                // @see https://forums.swift.org/t/swiftui-list-horizontal-insets-macos/52985/5
-                return 16 + 4 + size.width + 4 + 22
-            }.max() ?? 0
-            return listWidth
-        } else {
-            return 300
-        }
-    }
-}
-
-// 吹き出しの形
-struct AnnotationBalloon: Shape {
-    let y: CGFloat
-    let tail: CGFloat
-
-    func path(in rect: CGRect) -> Path {
-        Path { path in
-            // 吹き出しの位置は固定で、角丸矩形のサイズは親サイズに合わせる
-            path.move(to: CGPoint(x: 0, y: y))
-            path.addLine(to: CGPoint(x: tail + 3, y: y - 5))
-            path.addLine(to: CGPoint(x: tail + 3, y: y + 5))
-            path.addRoundedRect(in: CGRect(x: tail, y: 0, width: rect.width - tail, height: rect.height),
-                                cornerSize: CGSize(width: 10, height: 10))
         }
     }
 }

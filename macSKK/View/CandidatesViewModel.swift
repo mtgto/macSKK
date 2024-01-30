@@ -3,6 +3,7 @@
 
 import Combine
 import Foundation
+import AppKit
 
 /// 現在表示されている変換候補の情報
 enum CurrentCandidates {
@@ -33,6 +34,13 @@ final class CandidatesViewModel: ObservableObject {
     @Published var selectedAnnotations: [Annotation] = []
     /// パネル表示時に注釈を表示するかどうか
     @Published var showAnnotationPopover: Bool
+    /// 表示座標から右方向に取れる最大の幅。負数のときは不明なとき
+    @Published var maxWidth: CGFloat = -1
+    /// 最長のテキストを表示するために必要なビューの横幅
+    @Published var minWidth: CGFloat = 0
+    /// パネル表示時の注釈を左側に表示するかどうか
+    @Published var displayPopoverInLeft: Bool = false
+
     private var cancellables: Set<AnyCancellable> = []
 
     init(candidates: [Candidate], currentPage: Int, totalPageCount: Int, showAnnotationPopover: Bool) {
@@ -57,5 +65,30 @@ final class CandidatesViewModel: ObservableObject {
             }
         }
         .store(in: &cancellables)
+
+        $candidates.map { candidates in
+            if case let .panel(words, _, _) = candidates {
+                let listWidth = words.map { candidate -> CGFloat in
+                    let size = candidate.word.boundingRect(
+                        with: CGSize(width: .greatestFiniteMagnitude, height: CandidatesView.lineHeight),
+                        options: .usesLineFragmentOrigin,
+                        attributes: [.font: NSFont.preferredFont(forTextStyle: .body)])
+                    // 未解決の余白(8px) + 添字(16px) + 余白(4px) + テキスト + 余白(4px) + 未解決の余白(22px)
+                    // @see https://forums.swift.org/t/swiftui-list-horizontal-insets-macos/52985/5
+                    return 16 + 4 + size.width + 4 + 22
+                }.max() ?? 0
+                return listWidth
+            } else {
+                return 300
+            }
+        }
+        .assign(to: &$minWidth)
+
+        $maxWidth.combineLatest($minWidth, $showAnnotationPopover)
+            .map { maxWidth, minWidth, showAnnotationPopover in
+                showAnnotationPopover &&
+                minWidth + CandidatesView.annotationPopupWidth + CandidatesView.annotationMargin >= maxWidth
+            }
+            .assign(to: &$displayPopoverInLeft)
     }
 }
