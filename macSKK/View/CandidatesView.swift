@@ -22,6 +22,7 @@ struct CandidatesView: View {
             AnnotationView(annotations: $candidates.selectedAnnotations, systemAnnotation: $candidates.selectedSystemAnnotation)
                 .padding(EdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4))
                 .frame(width: 300, height: 200)
+                .background()
         case let .panel(words, currentPage, totalPageCount):
             HStack(alignment: .top, spacing: Self.annotationMargin) {
                 if candidates.displayPopoverInLeft {
@@ -30,9 +31,10 @@ struct CandidatesView: View {
                             annotations: $candidates.selectedAnnotations,
                             systemAnnotation: $candidates.selectedSystemAnnotation
                         )
-                        .padding(EdgeInsets(top: 16, leading: 12, bottom: 16, trailing: 16))
+                        .padding(EdgeInsets(top: 16, leading: 12, bottom: 16, trailing: 8))
                         .frame(width: Self.annotationPopupWidth, alignment: .topLeading)
-                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(maxHeight: 200)
+                        .fixedSize(horizontal: false, vertical: /*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
                         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
                         .opacity(0.9)
                     } else {
@@ -77,7 +79,8 @@ struct CandidatesView: View {
                     )
                     .padding(EdgeInsets(top: 16, leading: 28, bottom: 16, trailing: 4))
                     .frame(width: Self.annotationPopupWidth, alignment: .topLeading)
-                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxHeight: 200)
+                    .fixedSize(horizontal: false, vertical: /*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
                     .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
                     .opacity(0.9)
                 }
@@ -98,6 +101,15 @@ struct CandidatesView_Previews: PreviewProvider {
         let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, showAnnotationPopover: true)
         viewModel.selected = words.first
         viewModel.systemAnnotations = [words.first!.word: String(repeating: "これはシステム辞書の注釈です。", count: 20)]
+        viewModel.maxWidth = 1000
+        return viewModel
+    }
+
+    private static func pageViewModelLeftPopover() -> CandidatesViewModel {
+        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, showAnnotationPopover: true)
+        viewModel.selected = words.first
+        viewModel.systemAnnotations = [words.first!.word: String(repeating: "これはシステム辞書の注釈です。", count: 20)]
+        viewModel.maxWidth = 1
         return viewModel
     }
 
@@ -120,6 +132,9 @@ struct CandidatesView_Previews: PreviewProvider {
         CandidatesView(candidates: pageViewModel())
             .background(Color.cyan)
             .previewDisplayName("パネル表示")
+        CandidatesView(candidates: pageViewModelLeftPopover())
+            .background(Color.cyan)
+            .previewDisplayName("パネル表示 (注釈左)")
         CandidatesView(candidates: pageWithoutPopoverViewModel())
             .previewDisplayName("パネル表示 (注釈なし)")
         CandidatesView(candidates: inlineViewModel())

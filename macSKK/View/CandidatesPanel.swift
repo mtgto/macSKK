@@ -64,20 +64,23 @@ final class CandidatesPanel: NSPanel {
         print("preferredContentSize = \(viewController.preferredContentSize)")
         print("sizeThatFits = \(viewController.sizeThatFits(in: CGSize(width: 10000, height: 10000)))")
         #endif
-        let width = viewModel.showAnnotationPopover ? viewModel.minWidth + CandidatesView.annotationPopupWidth : viewModel.minWidth
+        var origin = cursorPosition.origin
+        let width: CGFloat
         let height: CGFloat
         if case let .panel(words, _, _) = viewModel.candidates {
+            width = viewModel.showAnnotationPopover ? viewModel.minWidth + CandidatesView.annotationPopupWidth : viewModel.minWidth
             height = CGFloat(words.count) * CandidatesView.lineHeight + CandidatesView.footerHeight
+            if viewModel.displayPopoverInLeft {
+                origin.x = origin.x - CandidatesView.annotationPopupWidth - CandidatesView.annotationMargin
+            }
         } else {
             // FIXME: 短い文のときにはそれに合わせて高さを縮める
+            width = viewModel.minWidth
             height = 200
         }
         setContentSize(NSSize(width: width, height: height))
-        var origin = cursorPosition.origin
-        if viewModel.displayPopoverInLeft {
-            origin.x = origin.x - CandidatesView.annotationPopupWidth - CandidatesView.annotationMargin
-        }
         if let mainScreen = NSScreen.main {
+            // スクリーン右にはみ出す場合はスクリーン右端に接するように表示する
             if origin.x + width > mainScreen.visibleFrame.size.width {
                 origin.x = mainScreen.frame.size.width - width
             }

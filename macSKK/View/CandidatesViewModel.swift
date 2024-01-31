@@ -36,7 +36,7 @@ final class CandidatesViewModel: ObservableObject {
     @Published var showAnnotationPopover: Bool
     /// 表示座標から右方向に取れる最大の幅。負数のときは不明なとき
     @Published var maxWidth: CGFloat = -1
-    /// 最長のテキストを表示するために必要なビューの横幅
+    /// 最長のテキストを表示するために必要なビューの横幅。パネル表示のときは注釈部分は除いたリスト部分の幅。
     @Published var minWidth: CGFloat = 0
     /// パネル表示時の注釈を左側に表示するかどうか
     @Published var displayPopoverInLeft: Bool = false
@@ -85,6 +85,10 @@ final class CandidatesViewModel: ObservableObject {
         .assign(to: &$minWidth)
 
         $maxWidth.combineLatest($minWidth, $showAnnotationPopover)
+            .filter { maxWidth, _, _ in
+                // maxWidthが0未満のときはまだスクリーンサイズがわかっていない
+                maxWidth >= 0
+            }
             .map { maxWidth, minWidth, showAnnotationPopover in
                 showAnnotationPopover &&
                 minWidth + CandidatesView.annotationPopupWidth + CandidatesView.annotationMargin >= maxWidth
