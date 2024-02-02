@@ -48,6 +48,8 @@ struct macSKKApp: App {
     #endif
 
     init() {
+        // 環境設定の初期値をSettingsViewModelより先に行う
+        Self.setupUserDefaults()
         do {
             dictionary = try UserDict(dicts: [], privateMode: privateMode)
             dictionariesDirectoryUrl = try FileManager.default.url(
@@ -89,7 +91,6 @@ struct macSKKApp: App {
         } else {
             server = nil
         }
-        setupUserDefaults()
         if !isTest() {
             do {
                 try setupDictionaries()
@@ -171,7 +172,7 @@ struct macSKKApp: App {
         }
     }
 
-    private func setupUserDefaults() {
+    private static func setupUserDefaults() {
         UserDefaults.standard.register(defaults: [
             UserDefaultsKeys.dictionaries: [
                 DictSetting(filename: "SKK-JISYO.L", enabled: true, encoding: .japaneseEUC).encode()
