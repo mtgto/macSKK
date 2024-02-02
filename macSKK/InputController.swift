@@ -154,6 +154,14 @@ class InputController: IMKInputController {
                 }
             }
         }.store(in: &cancellables)
+
+        stateMachine.inlineCandidateCount = UserDefaults.standard.integer(forKey: UserDefaultsKeys.inlineCandidateCount)
+        NotificationCenter.default.publisher(for: notificationNameInlineCandidateCount)
+            .sink { [weak self] notification in
+                if let inlineCandidateCount = notification.object as? Int, inlineCandidateCount >= 0 {
+                    self?.stateMachine.inlineCandidateCount = inlineCandidateCount
+                }
+            }.store(in: &cancellables)
     }
 
     override func handle(_ event: NSEvent!, client sender: Any!) -> Bool {

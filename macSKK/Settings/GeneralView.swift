@@ -17,6 +17,13 @@ struct GeneralView: View {
                 Toggle(isOn: $settingsViewModel.showAnnotation, label: {
                     Text("Show Annotation")
                 })
+                Section {
+                    Picker("Number of inline candidates", selection: $settingsViewModel.inlineCandidateCount) {
+                        ForEach(0..<10) { count in
+                            Text("\(count)")
+                        }
+                    }
+                }
             }
             .formStyle(.grouped)
         }.onAppear {

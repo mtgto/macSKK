@@ -22,6 +22,8 @@ let directModeBundleIdentifiers = CurrentValueSubject<[String], Never>([])
 let notificationNameToggleDirectMode = Notification.Name("toggleDirectMode")
 // 設定画面を開きたいときに通知される通知の名前
 let notificationNameOpenSettings = Notification.Name("openSettings")
+// インラインで表示する変換候補の数を変更したときに通知される通知の名前
+let notificationNameInlineCandidateCount = Notification.Name("inlineCandidateCount")
 
 func isTest() -> Bool {
     return ProcessInfo.processInfo.environment["MACSKK_IS_TEST"] == "1"
@@ -177,6 +179,7 @@ struct macSKKApp: App {
             UserDefaultsKeys.directModeBundleIdentifiers: [String](),
             UserDefaultsKeys.selectedInputSource: InputSource.defaultInputSourceId,
             UserDefaultsKeys.showAnnotation: true,
+            UserDefaultsKeys.inlineCandidateCount: 3,
         ])
     }
 

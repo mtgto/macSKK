@@ -10,6 +10,10 @@ struct CandidatesView: View {
     /// 一行の高さ
     static let lineHeight: CGFloat = 20
     static let footerHeight: CGFloat = 20
+    /// 変換候補と注釈の間
+    static let annotationMargin: CGFloat = 8
+    /// パネル型の注釈ビューの幅
+    static let annotationPopupWidth: CGFloat = 300
     private let font: Font = .body
 
     var body: some View {
@@ -18,69 +22,71 @@ struct CandidatesView: View {
             AnnotationView(annotations: $candidates.selectedAnnotations, systemAnnotation: $candidates.selectedSystemAnnotation)
                 .padding(EdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4))
                 .frame(width: 300, height: 200)
+                .background()
         case let .panel(words, currentPage, totalPageCount):
-            VStack(spacing: 0) {
-                List(Array(words.enumerated()), id: \.element, selection: $candidates.selected) { index, candidate in
-                    HStack {
-                        Text("\(index + 1)")
-                            .font(font)
-                            .padding(EdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 0))
-                            .frame(width: 16)
-                        Text(candidate.word)
-                            .font(font)
-                            .fixedSize(horizontal: true, vertical: false)
-                            .padding(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 4))
-                        Spacer()  // popoverをListの右に表示するために余白を入れる
+            HStack(alignment: .top, spacing: Self.annotationMargin) {
+                if candidates.displayPopoverInLeft {
+                    if candidates.popoverIsPresented {
+                        AnnotationView(
+                            annotations: $candidates.selectedAnnotations,
+                            systemAnnotation: $candidates.selectedSystemAnnotation
+                        )
+                        .padding(EdgeInsets(top: 16, leading: 12, bottom: 16, trailing: 8))
+                        .frame(width: Self.annotationPopupWidth, alignment: .topLeading)
+                        .frame(maxHeight: 200)
+                        .fixedSize(horizontal: false, vertical: /*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
+                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
+                        .opacity(0.9)
+                    } else {
+                        Spacer(minLength: Self.annotationPopupWidth)
                     }
-                    .listRowInsets(EdgeInsets())
-                    .frame(height: Self.lineHeight)
-                    // .border(Color.red) // Listの謎のInsetのデバッグ時に使用する
-                    .contentShape(Rectangle())
                 }
-                .listStyle(.plain)
-                .environment(\.defaultMinListRowHeight, Self.lineHeight)  // Listの行の上下の余白を削除
-                .scrollDisabled(true)
-                .frame(width: minWidth(), height: CGFloat(words.count) * Self.lineHeight)
-                HStack(alignment: .center, spacing: 0) {
+                VStack(spacing: 0) {
+                    List(Array(words.enumerated()), id: \.element, selection: $candidates.selected) { index, candidate in
+                        HStack {
+                            Text("\(index + 1)")
+                                .font(font)
+                                .padding(EdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 0))
+                                .frame(width: 16)
+                            Text(candidate.word)
+                                .font(font)
+                                .fixedSize(horizontal: true, vertical: false)
+                                .padding(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 4))
+                            Spacer()  // popoverをListの右に表示するために余白を入れる
+                        }
+                        .listRowInsets(EdgeInsets())
+                        .frame(height: Self.lineHeight)
+                        // .border(Color.red) // Listの謎のInsetのデバッグ時に使用する
+                        .contentShape(Rectangle())
+                    }
+                    .listStyle(.plain)
+                    .environment(\.defaultMinListRowHeight, Self.lineHeight)  // Listの行の上下の余白を削除
+                    .scrollDisabled(true)
+                    .frame(width: candidates.minWidth, height: CGFloat(words.count) * Self.lineHeight)
+                    HStack(alignment: .center, spacing: 0) {
+                        Spacer()
+                        Text("\(currentPage + 1) / \(totalPageCount)")
+                            .padding(EdgeInsets(top: 2, leading: 0, bottom: 2, trailing: 4))
+                    }
+                    .frame(width: candidates.minWidth, height: Self.footerHeight)
+                    .background()
                     Spacer()
-                    Text("\(currentPage + 1) / \(totalPageCount)")
-                        .padding(EdgeInsets(top: 2, leading: 0, bottom: 2, trailing: 4))
                 }
-                .frame(width: minWidth(), height: Self.footerHeight)
+                if candidates.popoverIsPresented && !candidates.displayPopoverInLeft {
+                    AnnotationView(
+                        annotations: $candidates.selectedAnnotations,
+                        systemAnnotation: $candidates.selectedSystemAnnotation
+                    )
+                    .padding(EdgeInsets(top: 16, leading: 28, bottom: 16, trailing: 4))
+                    .frame(width: Self.annotationPopupWidth, alignment: .topLeading)
+                    .frame(maxHeight: 200)
+                    .fixedSize(horizontal: false, vertical: /*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
+                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
+                    .opacity(0.9)
+                }
             }
-            .popover(
-                isPresented: $candidates.popoverIsPresented,
-                attachmentAnchor: .rect(.rect(CGRect(x: 0,
-                                                     y: CGFloat(candidates.selectedIndex ?? 0) * Self.lineHeight,
-                                                     width: minWidth(),
-                                                     height: Self.lineHeight))),
-                arrowEdge: .trailing
-            ) {
-                AnnotationView(
-                    annotations: $candidates.selectedAnnotations,
-                    systemAnnotation: $candidates.selectedSystemAnnotation
-                )
-                .frame(width: 300, alignment: .topLeading)
-                .padding()
-            }
-        }
-    }
-
-    // 最長のテキストを表示するために必要なビューのサイズを返す
-    func minWidth() -> CGFloat {
-        if case let .panel(words, _, _) = candidates.candidates {
-            let width = words.map { candidate -> CGFloat in
-                let size = candidate.word.boundingRect(
-                    with: CGSize(width: .greatestFiniteMagnitude, height: Self.lineHeight),
-                    options: .usesLineFragmentOrigin,
-                    attributes: [.font: NSFont.preferredFont(forTextStyle: .body)])
-                // 未解決の余白(8px) + 添字(16px) + 余白(4px) + テキスト + 余白(4px) + 未解決の余白(22px)
-                // @see https://forums.swift.org/t/swiftui-list-horizontal-insets-macos/52985/5
-                return 16 + 4 + size.width + 4 + 22
-            }.max()
-            return width ?? 0
-        } else {
-            return 300
+            .frame(maxHeight: 300, alignment: .topLeading)
+            .background(Color.clear)
         }
     }
 }
@@ -94,7 +100,16 @@ struct CandidatesView_Previews: PreviewProvider {
     private static func pageViewModel() -> CandidatesViewModel {
         let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, showAnnotationPopover: true)
         viewModel.selected = words.first
-        viewModel.systemAnnotations = [words.first!.word: String(repeating: "これはシステム辞書の注釈です。", count: 10)]
+        viewModel.systemAnnotations = [words.first!.word: String(repeating: "これはシステム辞書の注釈です。", count: 20)]
+        viewModel.maxWidth = 1000
+        return viewModel
+    }
+
+    private static func pageViewModelLeftPopover() -> CandidatesViewModel {
+        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, showAnnotationPopover: true)
+        viewModel.selected = words.first
+        viewModel.systemAnnotations = [words.first!.word: String(repeating: "これはシステム辞書の注釈です。", count: 20)]
+        viewModel.maxWidth = 1
         return viewModel
     }
 
@@ -115,7 +130,11 @@ struct CandidatesView_Previews: PreviewProvider {
 
     static var previews: some View {
         CandidatesView(candidates: pageViewModel())
+            .background(Color.cyan)
             .previewDisplayName("パネル表示")
+        CandidatesView(candidates: pageViewModelLeftPopover())
+            .background(Color.cyan)
+            .previewDisplayName("パネル表示 (注釈左)")
         CandidatesView(candidates: pageWithoutPopoverViewModel())
             .previewDisplayName("パネル表示 (注釈なし)")
         CandidatesView(candidates: inlineViewModel())

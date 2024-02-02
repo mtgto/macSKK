@@ -34,17 +34,18 @@ class StateMachine {
     /// 読みの一部と補完結果(読み)のペア
     var completion: (String, String)? = nil
 
-    // TODO: inlineCandidateCount, displayCandidateCountを環境設定にするかも
+    // TODO: displayCandidateCountを環境設定にするかも
     /// 変換候補パネルを表示するまで表示する変換候補の数
-    let inlineCandidateCount = 3
+    var inlineCandidateCount: Int
     /// 変換候補パネルに一度に表示する変換候補の数
     let displayCandidateCount = 9
 
-    init(initialState: IMEState = IMEState()) {
+    init(initialState: IMEState = IMEState(), inlineCandidateCount: Int = 3) {
         state = initialState
         inputMethodEvent = inputMethodEventSubject.eraseToAnyPublisher()
         candidateEvent = candidateEventSubject.removeDuplicates().eraseToAnyPublisher()
         yomiEvent = yomiEventSubject.removeDuplicates().eraseToAnyPublisher()
+        self.inlineCandidateCount = inlineCandidateCount
     }
 
     func handle(_ action: Action) -> Bool {
