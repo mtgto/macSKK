@@ -22,7 +22,7 @@ Universal Binaryでビルドしていますが、動作確認はApple Silicon環
 - [x] [マイ辞書に保存しないプライベートモード](#プライベートモード)
 - [x] [アプリごとに直接入力させるかどうかを設定できるようにする](#直接入力)
   - ddskkを使っているときのGUI版Emacs.appなど
-- [x] 過去の入力を使った入力補完
+- [x] [過去の入力を使った入力補完](#読みの補完)
 - [x] [数値変換](#数値変換)
 - [x] 送りありエントリのブロック形式
 - [x] [キー配列の設定 (Dvorakなど)](#キー配列の変更)
@@ -31,7 +31,7 @@ Universal Binaryでビルドしていますが、動作確認はApple Silicon環
 
 ### 実装予定の独自機能
 
-- [x] 自動更新確認
+- [x] [自動更新確認](#バージョンの自動チェック)
   - Network Outgoingが可能なXPCプロセスを作成し、GitHub Releasesから情報を定期的に取得して新しいバージョンが見つかったらNotification Centerに表示する
 - [ ] iCloudにマイ辞書を保存して他環境と共有できるようにする
 - [ ] マイ辞書の暗号化
@@ -45,7 +45,7 @@ macSKKのインストール後に、システム設定→キーボード→入�
 もしインストール直後に表示されなかったり、バージョンアップしても反映されない場合はログアウト & ログインを試してみてください。
 
 SKK辞書は `~/Library/Containers/net.mtgto.inputmethod.macSKK/Data/Documents/Dictionaries` に配置してください。
-その後、入力メニュー→環境設定を開き、辞書設定で使用する辞書を有効に切り替えてください。EUC-JPでないエンコーディングの場合はiボタンからエンコーディングを切り替えてください。現在はEUC-JP (EUC-JIS-2004を含む) とUTF-8に対応しています。
+その後、入力メニュー→環境設定を開き、辞書設定で使用する辞書を有効に切り替えてください。EUC-JPでないエンコーディングの場合はiボタンからエンコーディングを切り替えてください。現在はEUC-JP (EUC-JIS-2004を含む) とUTF-8に対応しています。辞書ファイルの形式はYAML形式、JSON形式なども提案されていますが現在は未対応です。
 
 辞書の削除は上記フォルダから辞書ファイルをゴミ箱に移動するかファイルを削除してください。macSKKが自動で無効化します。
 
@@ -61,9 +61,10 @@ macSKKが入力メソッドとして選択されているときに入力メニ�
 | キー                        | 値の型  | 設定の意味                              |
 | :-------------------------: | :-----: | :-------------------------------------: |
 | dictionaries                | Array   | 辞書設定                                |
-| directModeBundleIdentifiers | Array   | 直接入力モードにしているアプリケーションのBundle Identifier |
+| directModeBundleIdentifiers | Array   | 直接入力モードにしているアプリケーションのBundle Identifierの配列 |
 | selectedInputSource         | String  | キー配列 (KeyLayout) のID               |
 | showAnnotation              | Boolean | 注釈を変換候補のそばに表示するか        |
+| inlineCandidateCount        | Number  | インラインで表示する変換候補の数        |
 
 ## 機能
 
@@ -71,7 +72,7 @@ macSKKが入力メソッドとして選択されているときに入力メニ�
 
 有効な辞書で有効な読みが見つからない場合、単語登録モードに移行します。
 
-例として "あああ" で変換しようとしたが辞書になかった場合 `[登録：あああ]` のようなテキストが表示されます。
+例として "あああ" で変換しようとしても辞書になかった場合 `[登録：あああ]` のようなテキストが表示されます。
 
 この状態でテキストを入力しEnterすることでユーザー辞書にその読みで登録されます。漢字変換も可能ですが単語登録モードで変換候補がない変換が行われた場合は入力されなかったと扱い、入れ子で単語登録モードには入れなくなっています。
 
@@ -187,7 +188,7 @@ A. `C-j` がVisual Studio Codeのキーボードショートカット設定の `
 
 ### Q. Wezterm で `C-j` を押すと改行されてしまいます
 
-A. [macos_forward_to_ime_modifier_mask](https://wezfurlong.org/wezterm/config/lua/config/macos_forward_to_ime_modifier_mask.html) に `CTRL` を追加することでIMEに `C-j` が渡されてひらがなモードに切り替えできるようになります。 `SHIFT` も入れておかないと漢字変換開始できなくなります。
+A. [macos_forward_to_ime_modifier_mask](https://wezfurlong.org/wezterm/config/lua/config/macos_forward_to_ime_modifier_mask.html) に `CTRL` を追加することでIMEに `C-j` が渡されてひらがなモードに切り替えできるようになります。 `SHIFT` も入れておかないと漢字変換開始できなくなるので、 `SHIFT|CTRL` を設定するのがよいと思います。
 
 ## 開発
 
