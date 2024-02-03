@@ -70,7 +70,6 @@ struct CandidatesView: View {
                     }
                     .frame(width: candidates.minWidth, height: Self.footerHeight)
                     .background()
-                    Spacer()
                 }
                 if candidates.popoverIsPresented && !candidates.displayPopoverInLeft {
                     AnnotationView(
