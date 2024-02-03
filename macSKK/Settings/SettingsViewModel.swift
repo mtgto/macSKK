@@ -190,10 +190,9 @@ final class SettingsViewModel: ObservableObject {
             self?.setupNotification()
         }.store(in: &cancellables)
 
-        dictionary.loadStatus.sink { [weak self] loadStatus in
-            self?.userDictLoadingStatus = loadStatus
+        if let userDict = dictionary.userDict as? FileDict {
+            userDict.loadStatus.assign(to: &$userDictLoadingStatus)
         }
-        .store(in: &cancellables)
 
         $selectedInputSourceId.removeDuplicates().sink { [weak self] selectedInputSourceId in
             if let selectedInputSource = self?.inputSources.first(where: { $0.id == selectedInputSourceId }) {

@@ -29,14 +29,14 @@ class UserDict: NSObject, DictProtocol {
     private(set) var privateUserDict = MemoryDict(entries: [:], readonly: true)
     private let savePublisher = PassthroughSubject<Void, Never>()
     private let privateMode: CurrentValueSubject<Bool, Never>
-    // 最新の値が読めるようにしておかないとsink時にすでにユーザー辞書読み込みが終わっていると次のイベントが流れない。
-    private let loadStatusSubject = CurrentValueSubject<DictLoadStatus, Never>(.loading)
-    let loadStatus: AnyPublisher<DictLoadStatus, Never>
     private var cancellables: Set<AnyCancellable> = []
 
     // MARK: NSFilePresenter
     let presentedItemURL: URL?
     let presentedItemOperationQueue: OperationQueue = OperationQueue()
+
+    // MARK: - 読み込みエラーの通知センター用通知のID
+    static let userNotificationReadErrorIdentifier = "net.mtgto.inputmethod.macSKK.userNotification.userDictReadError"
 
     init(dicts: [DictProtocol], userDictEntries: [String: [Word]]? = nil, privateMode: CurrentValueSubject<Bool, Never>) throws {
         self.dicts = dicts
@@ -50,7 +50,6 @@ class UserDict: NSObject, DictProtocol {
             try FileManager.default.createDirectory(at: dictionariesDirectoryURL, withIntermediateDirectories: true)
         }
         userDictFileURL = dictionariesDirectoryURL.appending(path: Self.userDictFilename)
-        loadStatus = loadStatusSubject.eraseToAnyPublisher()
         if let userDictEntries {
             self.userDict = MemoryDict(entries: userDictEntries, readonly: true)
         } else {
@@ -61,10 +60,8 @@ class UserDict: NSObject, DictProtocol {
             do {
                 let userDict = try FileDict(contentsOf: userDictFileURL, encoding: .utf8, readonly: false)
                 self.userDict = userDict
-                loadStatusSubject.send(.loaded(success: userDict.entryCount, failure: userDict.failedEntryCount))
             } catch {
                 self.userDict = nil
-                loadStatusSubject.send(.fail(error))
             }
         }
         super.init()
@@ -90,6 +87,14 @@ class UserDict: NSObject, DictProtocol {
             }
         }
         .store(in: &cancellables)
+
+        if let userDict = userDict as? FileDict {
+            userDict.loadStatus.sink { [weak self] loadStatus in
+                if case .fail(let error) = loadStatus {
+                    self?.sendUserNotification(readError: error)
+                }
+            }.store(in: &cancellables)
+        }
     }
 
     deinit {
@@ -136,6 +141,10 @@ class UserDict: NSObject, DictProtocol {
         return result
     }
 
+    private func sendUserNotification(readError: Error) {
+
+    }
+
     // MARK: DictProtocol
     func refer(_ yomi: String, option: DictReferringOption? = nil) -> [Word] {
         if let userDict = userDict {
@@ -176,7 +185,6 @@ class UserDict: NSObject, DictProtocol {
         } else if let dict = userDict as? FileDict {
             dict.add(yomi: yomi, word: word)
             savePublisher.send(())
-            loadStatusSubject.send(.loaded(success: dict.entryCount, failure: dict.failedEntryCount))
         }
     }
 
@@ -207,7 +215,6 @@ class UserDict: NSObject, DictProtocol {
         } else if let dict = userDict as? FileDict {
             if dict.delete(yomi: yomi, word: word) {
                 savePublisher.send(())
-                loadStatusSubject.send(.loaded(success: dict.entryCount, failure: dict.failedEntryCount))
                 return true
             }
         }

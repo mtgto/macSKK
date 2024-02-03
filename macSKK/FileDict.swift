@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2023 mtgto <hogerappa@gmail.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import Combine
 import Foundation
 
 // 辞書ディレクトリに新規ファイルが作成されたときに通知する通知の名前。objectはURL
@@ -17,6 +18,8 @@ class FileDict: NSObject, DictProtocol, Identifiable {
     let fileURL: URL
     let encoding: String.Encoding
     var version: NSFileVersion?
+    private let loadStatusSubject = CurrentValueSubject<DictLoadStatus, Never>(.loading)
+    let loadStatus: AnyPublisher<DictLoadStatus, Never>
     /// 保存してない変更があるかどうか (UIDocumentのパクり)
     private(set) var hasUnsavedChanges: Bool = false
     private(set) var dict: MemoryDict
@@ -46,8 +49,15 @@ class FileDict: NSObject, DictProtocol, Identifiable {
         self.dict = MemoryDict(entries: [:], readonly: readonly)
         self.version = NSFileVersion.currentVersionOfItem(at: fileURL)
         self.readonly = readonly
+        loadStatus = loadStatusSubject.eraseToAnyPublisher()
         super.init()
-        try load()
+        do {
+            try load()
+            loadStatusSubject.send(.loaded(success: dict.entryCount, failure: dict.failedEntryCount))
+        } catch {
+            loadStatusSubject.send(.fail(error))
+            throw error
+        }
         NSFileCoordinator.addFilePresenter(self)
     }
 
@@ -180,12 +190,14 @@ class FileDict: NSObject, DictProtocol, Identifiable {
 
     func add(yomi: String, word: Word) {
         dict.add(yomi: yomi, word: word)
+        loadStatusSubject.send(.loaded(success: dict.entryCount, failure: dict.failedEntryCount))
         hasUnsavedChanges = true
     }
 
     func delete(yomi: String, word: Word.Word) -> Bool {
         if dict.delete(yomi: yomi, word: word) {
             hasUnsavedChanges = true
+            loadStatusSubject.send(.loaded(success: dict.entryCount, failure: dict.failedEntryCount))
             return true
         }
         return false
