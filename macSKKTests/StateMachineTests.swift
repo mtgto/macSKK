@@ -932,6 +932,26 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    func testHandleComposingStickyShiftN() {
+        dictionary.setEntries(["あn": [Word("編")]])
+
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(5).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("あ")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("あn")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("あん*")])))
+            XCTAssertEqual(events[4], .markedText(MarkedText([.markerCompose, .plain("あん*d")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n")))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "d")))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     func testHandleComposingOkuriQ() {
         dictionary.setEntries(["おu": [Word("追")]])
 
