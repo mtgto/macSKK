@@ -3,6 +3,7 @@
 
 import Combine
 import Foundation
+import UserNotifications
 
 /// ユーザー辞書。マイ辞書 (単語登録対象。ファイル名固定) とファイル辞書 をまとめて参照することができる。
 ///
@@ -92,6 +93,8 @@ class UserDict: NSObject, DictProtocol {
             userDict.loadStatus.sink { [weak self] loadStatus in
                 if case .fail(let error) = loadStatus {
                     self?.sendUserNotification(readError: error)
+                } else if case .loaded(_, let failureCount) = loadStatus, failureCount > 0 {
+                    self?.sendUserNotification(failureEntryCount: failureCount)
                 }
             }.store(in: &cancellables)
         }
@@ -142,7 +145,40 @@ class UserDict: NSObject, DictProtocol {
     }
 
     private func sendUserNotification(readError: Error) {
+        let content = UNMutableNotificationContent()
+        content.title = NSLocalizedString("UNUserDictReadErrorTitle", comment: "エラー")
+        content.body = NSLocalizedString("UNUserDictReadErrorBody", comment: "ユーザー辞書の読み込みに失敗しました")
 
+        let request = UNNotificationRequest(identifier: Self.userNotificationReadErrorIdentifier, content: content, trigger: nil)
+        sendUserNotification(request: request)
+    }
+
+    private func sendUserNotification(failureEntryCount: Int) {
+        let content = UNMutableNotificationContent()
+        content.title = NSLocalizedString("UNUserDictReadFailureEntryTitle", comment: "エラー")
+        content.body = String(format: NSLocalizedString("UNUserDictReadFailureEntryBody", comment: ""), failureEntryCount)
+
+        let request = UNNotificationRequest(identifier: Self.userNotificationReadErrorIdentifier, content: content, trigger: nil)
+        sendUserNotification(request: request)
+    }
+
+    private func sendUserNotification(request: UNNotificationRequest) {
+        let center = UNUserNotificationCenter.current()
+        center.requestAuthorization { granted, error in
+            if let error {
+                logger.log("通知センターへの通知ができない状態です:\(error)")
+                return
+            }
+            if !granted {
+                logger.log("通知センターへの通知がユーザーに拒否されています")
+                return
+            }
+            center.add(request) { error in
+                if let error {
+                    logger.error("通知センターへの通知に失敗しました: \(error)")
+                }
+            }
+        }
     }
 
     // MARK: DictProtocol
