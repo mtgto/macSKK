@@ -420,7 +420,7 @@ class StateMachine {
                     action: action,
                     composing: composing,
                     specialState: specialState)
-            } else if let okuri {
+            } else if okuri != nil {
                 // 送り仮名入力中は無視する
                 // AquaSKKは送り仮名の末尾に"；"をつけて変換処理もしくは単語登録に遷移
                 return true
@@ -430,8 +430,20 @@ class StateMachine {
                     state.inputMethod = .normal
                     addFixedText("；")
                 } else {
-                    state.inputMethod = .composing(
-                        ComposingState(isShift: true, text: text, okuri: [], romaji: romaji))
+                    // ローマ字がnのときは「ん」と確定する
+                    if romaji == "n" {
+                        state.inputMethod = .composing(
+                            ComposingState(isShift: true,
+                                           text: text + [Romaji.n.kana],
+                                           okuri: [],
+                                           romaji: ""))
+                    } else {
+                        state.inputMethod = .composing(
+                            ComposingState(isShift: true,
+                                           text: text,
+                                           okuri: [],
+                                           romaji: romaji))
+                    }
                     updateMarkedText()
                 }
                 return true
