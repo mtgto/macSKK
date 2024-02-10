@@ -31,6 +31,8 @@
 "UNUserDictReadErrorBody" = "ユーザー辞書の読み込みに失敗しました";
 "UNUserDictReadFailureEntryTitle" = "エラー";
 "UNUserDictReadFailureEntryBody" = "ユーザー辞書の読み込みで %dエントリの読み込みに失敗しました";
+"UNUserDictWriteErrorTitle" = "エラー";
+"UNUserDictWriteErrorBody" = "ユーザー辞書の永続化に失敗しました";
 "User Dictionary" = "ユーザー辞書";
 "Delete" = "削除";
 "Unregistered" = "未登録です";

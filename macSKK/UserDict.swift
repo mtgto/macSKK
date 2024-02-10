@@ -74,7 +74,12 @@ class UserDict: NSObject, DictProtocol {
             .sink { [weak self] _ in
                 if let fileDict = self?.userDict as? FileDict {
                     logger.log("ユーザー辞書を永続化します")
-                    try? fileDict.save()
+                    do {
+                        try fileDict.save()
+                    } catch {
+                        logger.error("ユーザー辞書の永続化でエラーが発生しました")
+                        self?.sendUserNotification(writeError: error)
+                    }
                 }
             }
             .store(in: &cancellables)
@@ -157,6 +162,15 @@ class UserDict: NSObject, DictProtocol {
         let content = UNMutableNotificationContent()
         content.title = NSLocalizedString("UNUserDictReadFailureEntryTitle", comment: "エラー")
         content.body = String(format: NSLocalizedString("UNUserDictReadFailureEntryBody", comment: ""), failureEntryCount)
+
+        let request = UNNotificationRequest(identifier: Self.userNotificationReadErrorIdentifier, content: content, trigger: nil)
+        sendUserNotification(request: request)
+    }
+
+    private func sendUserNotification(writeError: Error) {
+        let content = UNMutableNotificationContent()
+        content.title = NSLocalizedString("UNUserDictWriteErrorTitle", comment: "エラー")
+        content.body = NSLocalizedString("UNUserDictWriteErrorBody", comment: "ユーザー辞書の永続化に失敗しました")
 
         let request = UNNotificationRequest(identifier: Self.userNotificationReadErrorIdentifier, content: content, trigger: nil)
         sendUserNotification(request: request)
