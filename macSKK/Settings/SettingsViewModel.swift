@@ -156,17 +156,17 @@ final class SettingsViewModel: ObservableObject {
                 }
             }
             dictionary.dicts = enabledDicts
-            UserDefaults.standard.set(self.dictSettings.map { $0.encode() }, forKey: "dictionaries")
+            UserDefaults.standard.set(self.dictSettings.map { $0.encode() }, forKey: UserDefaultsKeys.dictionaries)
         }
         .store(in: &cancellables)
 
-        loadStatusPublisher.receive(on: RunLoop.main).sink { (id, status) in
-            self.dictLoadingStatuses[id] = status
+        loadStatusPublisher.receive(on: RunLoop.main).sink { [weak self] (id, status) in
+            self?.dictLoadingStatuses[id] = status
         }.store(in: &cancellables)
 
         $directModeApplications.dropFirst().sink { applications in
             let bundleIdentifiers = applications.map { $0.bundleIdentifier }
-            UserDefaults.standard.set(bundleIdentifiers, forKey: "directModeBundleIdentifiers")
+            UserDefaults.standard.set(bundleIdentifiers, forKey: UserDefaultsKeys.directModeBundleIdentifiers)
             directModeBundleIdentifiers.send(bundleIdentifiers)
         }
         .store(in: &cancellables)
