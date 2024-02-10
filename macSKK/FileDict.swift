@@ -51,13 +51,7 @@ class FileDict: NSObject, DictProtocol, Identifiable {
         self.readonly = readonly
         loadStatus = loadStatusSubject.eraseToAnyPublisher()
         super.init()
-        do {
-            try load()
-            loadStatusSubject.send(.loaded(success: dict.entryCount, failure: dict.failedEntryCount))
-        } catch {
-            loadStatusSubject.send(.fail(error))
-            throw error
-        }
+        try load()
         NSFileCoordinator.addFilePresenter(self)
     }
 
@@ -73,8 +67,10 @@ class FileDict: NSObject, DictProtocol, Identifiable {
                     self.dict = memoryDict
                     self.version = NSFileVersion.currentVersionOfItem(at: url)
                     logger.log("辞書 \(self.id, privacy: .public) から \(self.dict.entries.count) エントリ読み込みました")
+                    self.loadStatusSubject.send(.loaded(success: dict.entryCount, failure: dict.failedEntryCount))
                 } catch {
                     logger.error("辞書 \(self.id, privacy: .public) の読み込みでエラーが発生しました: \(error)")
+                    self.loadStatusSubject.send(.fail(error))
                     readingError = error as NSError
                 }
             }
@@ -84,7 +80,7 @@ class FileDict: NSObject, DictProtocol, Identifiable {
         }
     }
 
-    func loadString(_ url: URL) throws -> String {
+    private func loadString(_ url: URL) throws -> String {
         if encoding == .japaneseEUC {
             // JIS X 2013 を使ったEUC-JIS-2004の場合があるため失敗したらiconvでUTF-8に変換する
             do {
