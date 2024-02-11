@@ -202,7 +202,7 @@ final class SettingsViewModel: ObservableObject {
             logger.log("インラインで表示する変換候補の数を\(inlineCandidateCount)個に変更しました")
         }.store(in: &cancellables)
 
-        NotificationCenter.default.publisher(for: notificationNameDictLoad).sink { [weak self] notification in
+        NotificationCenter.default.publisher(for: notificationNameDictLoad).receive(on: RunLoop.main).sink { [weak self] notification in
             if let loadEvent = notification.object as? DictLoadEvent, let self {
                 if let userDict = dictionary.userDict as? FileDict, userDict.id == loadEvent.id {
                     self.userDictLoadingStatus = loadEvent.status

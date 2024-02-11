@@ -3,7 +3,6 @@
 
 import Combine
 import Foundation
-import UserNotifications
 
 /// ユーザー辞書。マイ辞書 (単語登録対象。ファイル名固定) とファイル辞書 をまとめて参照することができる。
 ///
