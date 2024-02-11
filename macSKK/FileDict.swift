@@ -8,6 +8,8 @@ import Foundation
 let notificationNameDictFileDidAppear = Notification.Name("dictFileDidAppear")
 // 辞書ディレクトリからファイルが移動されたときに通知する通知の名前。objectは移動前のURL
 let notificationNameDictFileDidMove = Notification.Name("dictFileDidMove")
+// 辞書を読み込んだ結果を通知する通知の名前。objectはDictLoadEvent
+let notificationNameDictLoad = Notification.Name("dictLoad")
 
 /// 実ファイルをもつSKK辞書
 class FileDict: NSObject, DictProtocol, Identifiable {
@@ -18,8 +20,6 @@ class FileDict: NSObject, DictProtocol, Identifiable {
     let fileURL: URL
     let encoding: String.Encoding
     var version: NSFileVersion?
-    private let loadStatusSubject = CurrentValueSubject<DictLoadStatus, Never>(.loading)
-    let loadStatus: AnyPublisher<DictLoadStatus, Never>
     /// 保存してない変更があるかどうか (UIDocumentのパクり)
     private(set) var hasUnsavedChanges: Bool = false
     private(set) var dict: MemoryDict
@@ -49,7 +49,6 @@ class FileDict: NSObject, DictProtocol, Identifiable {
         self.dict = MemoryDict(entries: [:], readonly: readonly)
         self.version = NSFileVersion.currentVersionOfItem(at: fileURL)
         self.readonly = readonly
-        loadStatus = loadStatusSubject.eraseToAnyPublisher()
         super.init()
         try load()
         NSFileCoordinator.addFilePresenter(self)
@@ -59,6 +58,9 @@ class FileDict: NSObject, DictProtocol, Identifiable {
         var coordinationError: NSError?
         var readingError: NSError?
         let fileCoordinator = NSFileCoordinator(filePresenter: self)
+        NotificationCenter.default.post(name: notificationNameDictLoad,
+                                        object: DictLoadEvent(id: self.id,
+                                                              status: .loading))
         fileCoordinator.coordinate(readingItemAt: fileURL, error: &coordinationError) { [weak self] url in
             if let self {
                 do {
@@ -67,10 +69,14 @@ class FileDict: NSObject, DictProtocol, Identifiable {
                     self.dict = memoryDict
                     self.version = NSFileVersion.currentVersionOfItem(at: url)
                     logger.log("辞書 \(self.id, privacy: .public) から \(self.dict.entries.count) エントリ読み込みました")
-                    self.loadStatusSubject.send(.loaded(success: dict.entryCount, failure: dict.failedEntryCount))
+                    NotificationCenter.default.post(name: notificationNameDictLoad,
+                                                    object: DictLoadEvent(id: self.id,
+                                                                          status: .loaded(success: dict.entryCount, failure: dict.failedEntryCount)))
                 } catch {
                     logger.error("辞書 \(self.id, privacy: .public) の読み込みでエラーが発生しました: \(error)")
-                    self.loadStatusSubject.send(.fail(error))
+                    NotificationCenter.default.post(name: notificationNameDictLoad,
+                                                    object: DictLoadEvent(id: self.id,
+                                                                          status: .fail(error)))
                     readingError = error as NSError
                 }
             }
@@ -186,14 +192,18 @@ class FileDict: NSObject, DictProtocol, Identifiable {
 
     func add(yomi: String, word: Word) {
         dict.add(yomi: yomi, word: word)
-        loadStatusSubject.send(.loaded(success: dict.entryCount, failure: dict.failedEntryCount))
+        NotificationCenter.default.post(name: notificationNameDictLoad,
+                                        object: DictLoadEvent(id: self.id,
+                                                              status: .loaded(success: dict.entryCount, failure: dict.failedEntryCount)))
         hasUnsavedChanges = true
     }
 
     func delete(yomi: String, word: Word.Word) -> Bool {
         if dict.delete(yomi: yomi, word: word) {
             hasUnsavedChanges = true
-            loadStatusSubject.send(.loaded(success: dict.entryCount, failure: dict.failedEntryCount))
+            NotificationCenter.default.post(name: notificationNameDictLoad,
+                                            object: DictLoadEvent(id: self.id,
+                                                                  status: .loaded(success: dict.entryCount, failure: dict.failedEntryCount)))
             return true
         }
         return false

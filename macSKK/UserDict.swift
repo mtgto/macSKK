@@ -36,9 +36,6 @@ class UserDict: NSObject, DictProtocol {
     let presentedItemURL: URL?
     let presentedItemOperationQueue: OperationQueue = OperationQueue()
 
-    // MARK: - 読み込みエラーの通知センター用通知のID
-    static let userNotificationReadErrorIdentifier = "net.mtgto.inputmethod.macSKK.userNotification.userDictReadError"
-
     init(dicts: [DictProtocol], userDictEntries: [String: [Word]]? = nil, privateMode: CurrentValueSubject<Bool, Never>) throws {
         self.dicts = dicts
         self.privateMode = privateMode
@@ -78,7 +75,7 @@ class UserDict: NSObject, DictProtocol {
                         try fileDict.save()
                     } catch {
                         logger.error("ユーザー辞書の永続化でエラーが発生しました")
-                        self?.sendUserNotification(writeError: error)
+                        UNNotifier.sendNotificationForUserDict(writeError: error)
                     }
                 }
             }
@@ -93,16 +90,6 @@ class UserDict: NSObject, DictProtocol {
             }
         }
         .store(in: &cancellables)
-
-        if let userDict = userDict as? FileDict {
-            userDict.loadStatus.sink { [weak self] loadStatus in
-                if case .fail(let error) = loadStatus {
-                    self?.sendUserNotification(readError: error)
-                } else if case .loaded(_, let failureCount) = loadStatus, failureCount > 0 {
-                    self?.sendUserNotification(failureEntryCount: failureCount)
-                }
-            }.store(in: &cancellables)
-        }
     }
 
     deinit {
@@ -147,52 +134,6 @@ class UserDict: NSObject, DictProtocol {
             }
         }
         return result
-    }
-
-    private func sendUserNotification(readError: Error) {
-        let content = UNMutableNotificationContent()
-        content.title = NSLocalizedString("UNUserDictReadErrorTitle", comment: "エラー")
-        content.body = NSLocalizedString("UNUserDictReadErrorBody", comment: "ユーザー辞書の読み込みに失敗しました")
-
-        let request = UNNotificationRequest(identifier: Self.userNotificationReadErrorIdentifier, content: content, trigger: nil)
-        sendUserNotification(request: request)
-    }
-
-    private func sendUserNotification(failureEntryCount: Int) {
-        let content = UNMutableNotificationContent()
-        content.title = NSLocalizedString("UNUserDictReadFailureEntryTitle", comment: "エラー")
-        content.body = String(format: NSLocalizedString("UNUserDictReadFailureEntryBody", comment: ""), failureEntryCount)
-
-        let request = UNNotificationRequest(identifier: Self.userNotificationReadErrorIdentifier, content: content, trigger: nil)
-        sendUserNotification(request: request)
-    }
-
-    private func sendUserNotification(writeError: Error) {
-        let content = UNMutableNotificationContent()
-        content.title = NSLocalizedString("UNUserDictWriteErrorTitle", comment: "エラー")
-        content.body = NSLocalizedString("UNUserDictWriteErrorBody", comment: "ユーザー辞書の永続化に失敗しました")
-
-        let request = UNNotificationRequest(identifier: Self.userNotificationReadErrorIdentifier, content: content, trigger: nil)
-        sendUserNotification(request: request)
-    }
-
-    private func sendUserNotification(request: UNNotificationRequest) {
-        let center = UNUserNotificationCenter.current()
-        center.requestAuthorization { granted, error in
-            if let error {
-                logger.log("通知センターへの通知ができない状態です:\(error)")
-                return
-            }
-            if !granted {
-                logger.log("通知センターへの通知がユーザーに拒否されています")
-                return
-            }
-            center.add(request) { error in
-                if let error {
-                    logger.error("通知センターへの通知に失敗しました: \(error)")
-                }
-            }
-        }
     }
 
     // MARK: DictProtocol
