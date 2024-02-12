@@ -204,15 +204,22 @@ final class StateTests: XCTestCase {
         XCTAssertEqual(selectingState.fixedText, "有る")
     }
 
-    func testSelectingStateDisplayText() {
+    func testSelectingStateMarkedTextElements() {
         let composingState = ComposingState(isShift: true, text: ["お"], romaji: "")
-        let selectingState = SelectingState(prev: SelectingState.PrevState(mode: .hiragana, composing: composingState),
+        var selectingState = SelectingState(prev: SelectingState.PrevState(mode: .hiragana, composing: composingState),
                                             yomi: "お",
                                             candidates: [Candidate("尾")],
                                             candidateIndex: 0,
                                             cursorPosition: .zero,
                                             remain: nil)
         XCTAssertEqual(selectingState.markedTextElements(inputMode: .hiragana), [.markerSelect, .emphasized("尾")])
+        selectingState = SelectingState(prev: SelectingState.PrevState(mode: .hiragana, composing: composingState),
+                                            yomi: "お",
+                                            candidates: [Candidate("尾")],
+                                            candidateIndex: 0,
+                                            cursorPosition: .zero,
+                                            remain: ["か", "き"])
+        XCTAssertEqual(selectingState.markedTextElements(inputMode: .hiragana), [.markerSelect, .emphasized("尾"), .cursor, .plain("かき")])
     }
 
     func testSelectingStateOkuri() {

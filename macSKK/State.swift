@@ -374,7 +374,11 @@ struct SelectingState: Equatable, MarkedTextProtocol {
         if let okuri = prev.composing.okuri {
             selectingText += okuri.map { $0.string(for: inputMode) }.joined()
         }
-        return [.markerSelect, .emphasized(selectingText)]
+        if let remain {
+            return [.markerSelect, .emphasized(selectingText), .cursor, .plain(remain.joined())]
+        } else {
+            return [.markerSelect, .emphasized(selectingText)]
+        }
     }
 }
 

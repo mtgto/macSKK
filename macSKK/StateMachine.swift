@@ -823,12 +823,24 @@ class StateMachine {
     }
 
     func handleSelecting(_ action: Action, selecting: SelectingState, specialState: SpecialState?) -> Bool {
+        // 選択中の変換候補で確定
+        func fixCurrentSelect(yomi: String = selecting.yomi, okuri: String? = selecting.okuri, selecting: SelectingState = selecting) {
+            addWordToUserDict(yomi: yomi, okuri: okuri, candidate: selecting.candidates[selecting.candidateIndex])
+            updateCandidates(selecting: nil)
+            if let remain = selecting.remain {
+                addFixedText(selecting.fixedText)
+                state.inputMethod = .composing(ComposingState(isShift: true, text: remain, romaji: ""))
+                updateMarkedText()
+            } else {
+                state.inputMethod = .normal
+                addFixedText(selecting.fixedText)
+            }
+        }
+
         switch action.keyEvent {
         case .enter:
-            addWordToUserDict(yomi: selecting.yomi, okuri: selecting.okuri, candidate: selecting.candidates[selecting.candidateIndex])
-            updateCandidates(selecting: nil)
-            state.inputMethod = .normal
-            addFixedText(selecting.fixedText)
+            // 選択中の変換候補で確定
+            fixCurrentSelect()
             return true
         case .backspace:
             let diff: Int
@@ -876,12 +888,8 @@ class StateMachine {
         case .tab:
             return true
         case .stickyShift, .ctrlJ, .ctrlQ:
-            // 選択中候補で確定
-            addWordToUserDict(yomi: selecting.yomi, okuri: selecting.okuri, candidate: selecting.candidates[selecting.candidateIndex])
-            updateCandidates(selecting: nil)
-            addFixedText(selecting.fixedText)
-            state.inputMethod = .normal
-            return handleNormal(action, specialState: nil)
+            fixCurrentSelect()
+            return handle(action)
         case .printable(let input):
             if input == "x" {
                 if action.shiftIsPressed() {
@@ -896,31 +904,31 @@ class StateMachine {
                     return handleSelectingPrevious(diff: -1, selecting: selecting)
                 }
             } else if input == "." && action.shiftIsPressed() {
-                // 選択中候補で確定し、接尾辞入力に移行
+                // 選択中候補で確定し、接尾辞入力に移行。
+                // カーソル位置より右に文字列がある場合は接頭辞入力として扱う (無視してもいいかも)
                 addWordToUserDict(yomi: selecting.yomi, okuri: selecting.okuri, candidate: selecting.candidates[selecting.candidateIndex])
                 updateCandidates(selecting: nil)
                 addFixedText(selecting.fixedText)
-                state.inputMethod = .composing(ComposingState(isShift: true, text: [], okuri: nil, romaji: ""))
+                if let remain = selecting.remain {
+                    state.inputMethod = .composing(ComposingState(isShift: true, text: remain, romaji: ""))
+                    updateMarkedText()
+                } else {
+                    state.inputMethod = .composing(ComposingState(isShift: true, text: [], okuri: nil, romaji: ""))
+                }
                 return handle(action)
             } else if selecting.candidateIndex >= inlineCandidateCount {
                 if let index = Int(input), 1 <= index && index <= 9 {
                     let diff = index - 1 - (selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount
                     if selecting.candidateIndex + diff < selecting.candidates.count {
                         let newSelecting = selecting.addCandidateIndex(diff: diff)
-                        addWordToUserDict(yomi: selecting.yomi, okuri: selecting.okuri, candidate: newSelecting.candidates[newSelecting.candidateIndex])
-                        updateCandidates(selecting: nil)
-                        state.inputMethod = .normal
-                        addFixedText(newSelecting.fixedText)
+                        fixCurrentSelect(selecting: newSelecting)
                         return true
                     }
                 }
             }
-            // 選択中候補で確定
-            addWordToUserDict(yomi: selecting.yomi, okuri: selecting.okuri, candidate: selecting.candidates[selecting.candidateIndex])
-            updateCandidates(selecting: nil)
-            addFixedText(selecting.fixedText)
-            state.inputMethod = .normal
-            return handleNormal(action, specialState: nil)
+            // 選択中候補で確定し、未処理のアクションを処理する
+            fixCurrentSelect()
+            return handle(action)
         case .cancel:
             state.inputMethod = .composing(selecting.prev.composing)
             state.inputMode = selecting.prev.mode
