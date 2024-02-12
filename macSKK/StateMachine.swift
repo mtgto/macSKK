@@ -762,13 +762,10 @@ class StateMachine {
             }
             return true
         case .direct:
-            state.inputMethod = .composing(
-                ComposingState(
-                    isShift: isShift,
-                    text: text + [action.characters() ?? ""],
-                    okuri: nil,
-                    romaji: ""))
-            updateMarkedText()
+            if let characters = action.characters() {
+                state.inputMethod = .composing(composing.appendText(Romaji.Moji(firstRomaji: "", kana: characters)))
+                updateMarkedText()
+            }
             return true
         default:
             fatalError("inputMode=\(state.inputMode), handleComposingで\(input)が入力された")

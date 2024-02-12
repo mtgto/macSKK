@@ -1006,6 +1006,25 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    func testHandleComposingAbbrevCursor() {
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(6).sink { events in
+            XCTAssertEqual(events[0], .modeChanged(.direct, .zero))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("a")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("ab")])))
+            XCTAssertEqual(events[4], .markedText(MarkedText([.markerCompose, .plain("a"), .cursor, .plain("b")])))
+            XCTAssertEqual(events[5], .markedText(MarkedText([.markerCompose, .plain("ac"), .cursor, .plain("b")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "/")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "b")))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .left, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "c")))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     func testHandleComposingCtrlJ() {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(9).sink { events in
