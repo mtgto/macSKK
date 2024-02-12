@@ -698,7 +698,8 @@ class StateMachine {
                                 yomi: yomiText,
                                 candidates: candidates,
                                 candidateIndex: 0,
-                                cursorPosition: action.cursorPosition)
+                                cursorPosition: action.cursorPosition,
+                                remain: composing.remain())
                             updateCandidates(selecting: selectingState)
                             state.inputMethod = .selecting(selectingState)
                         }
@@ -812,7 +813,8 @@ class StateMachine {
                 yomi: yomiText,
                 candidates: candidateWords,
                 candidateIndex: 0,
-                cursorPosition: action.cursorPosition)
+                cursorPosition: action.cursorPosition,
+                remain: composing.remain())
             updateCandidates(selecting: selectingState)
             state.inputMethod = .selecting(selectingState)
         }

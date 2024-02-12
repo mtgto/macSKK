@@ -199,6 +199,15 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
         }
     }
 
+    /// カーソルより左の部分を返す
+    func remain() -> Self? {
+        if let cursor {
+            return ComposingState(isShift: isShift, text: text, romaji: romaji, cursor: nil)
+        } else {
+            return nil
+        }
+    }
+
     /// 辞書を引く際の読みを返す。
     /// カーソルがある場合はカーソルより左側の文字列だけを対象にする。
     /// 末尾がnの場合は「ん」と入力したとして解釈する
@@ -326,6 +335,8 @@ struct SelectingState: Equatable, MarkedTextProtocol {
     var candidateIndex: Int = 0
     /// カーソル位置。この位置を基に変換候補パネルを表示する
     let cursorPosition: NSRect
+    /// カーソル位置より後のテキスト部分
+    let remain: ComposingState?
 
     func addCandidateIndex(diff: Int) -> Self {
         return SelectingState(
@@ -333,7 +344,8 @@ struct SelectingState: Equatable, MarkedTextProtocol {
             yomi: yomi,
             candidates: candidates,
             candidateIndex: candidateIndex + diff,
-            cursorPosition: cursorPosition)
+            cursorPosition: cursorPosition,
+            remain: remain)
     }
 
     /// 現在選択されている変換候補を文字列を返す
