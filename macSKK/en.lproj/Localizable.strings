@@ -27,6 +27,12 @@
 "Encoding" = "Encoding";
 "UNNewVersionTitle" = "A new version is available";
 "UNNewVersionBody" = "macSKK %@ is now available.";
+"UNUserDictReadErrorTitle" = "Error";
+"UNUserDictReadErrorBody" = "Failed to load the user dictionary";
+"UNUserDictReadFailureEntryTitle" = "Error";
+"UNUserDictReadFailureEntryBody" = "Failed to load %d entries of the user dictionary";
+"UNUserDictWriteErrorTitle" = "Error";
+"UNUserDictWriteErrorBody" = "Failed to save the user dictionary";
 "User Dictionary" = "User Dictionary";
 "Delete" = "Delete";
 "Unregistered" = "Unregistered";

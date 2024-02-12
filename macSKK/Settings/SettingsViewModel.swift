@@ -106,8 +106,6 @@ final class SettingsViewModel: ObservableObject {
     @Published var inlineCandidateCount: Int
     // 辞書ディレクトリ
     let dictionariesDirectoryUrl: URL
-    // バックグラウンドでの辞書を読み込みで読み込み状態が変わったときに通知される
-    private let loadStatusPublisher = PassthroughSubject<(DictSetting.ID, DictLoadStatus), Never>()
     private var cancellables = Set<AnyCancellable>()
 
     init(dictionariesDirectoryUrl: URL) throws {
@@ -133,13 +131,10 @@ final class SettingsViewModel: ObservableObject {
                         let fileURL = dictionariesDirectoryUrl.appendingPathComponent(dictSetting.filename)
                         do {
                             logger.log("SKK辞書 \(dictSetting.filename, privacy: .public) を読み込みます")
-                            self.loadStatusPublisher.send((dictSetting.id, .loading))
                             let fileDict = try FileDict(contentsOf: fileURL, encoding: dictSetting.encoding, readonly: true)
-                            self.loadStatusPublisher.send((dictSetting.id, .loaded(success: fileDict.entryCount, failure: fileDict.failedEntryCount)))
                             logger.log("SKK辞書 \(dictSetting.filename, privacy: .public) から \(fileDict.entryCount) エントリ読み込みました")
                             return fileDict
                         } catch {
-                            self.loadStatusPublisher.send((dictSetting.id, .fail(error)))
                             dictSetting.enabled = false
                             logger.log("SKK辞書 \(dictSetting.filename, privacy: .public) の読み込みに失敗しました!: \(error)")
                             return nil
@@ -150,23 +145,18 @@ final class SettingsViewModel: ObservableObject {
                 } else {
                     if dict != nil {
                         logger.log("SKK辞書 \(dictSetting.filename, privacy: .public) を無効化します")
-                        self.loadStatusPublisher.send((dictSetting.id, .disabled))
                     }
                     return nil
                 }
             }
             dictionary.dicts = enabledDicts
-            UserDefaults.standard.set(self.dictSettings.map { $0.encode() }, forKey: "dictionaries")
+            UserDefaults.standard.set(self.dictSettings.map { $0.encode() }, forKey: UserDefaultsKeys.dictionaries)
         }
         .store(in: &cancellables)
 
-        loadStatusPublisher.receive(on: RunLoop.main).sink { (id, status) in
-            self.dictLoadingStatuses[id] = status
-        }.store(in: &cancellables)
-
         $directModeApplications.dropFirst().sink { applications in
             let bundleIdentifiers = applications.map { $0.bundleIdentifier }
-            UserDefaults.standard.set(bundleIdentifiers, forKey: "directModeBundleIdentifiers")
+            UserDefaults.standard.set(bundleIdentifiers, forKey: UserDefaultsKeys.directModeBundleIdentifiers)
             directModeBundleIdentifiers.send(bundleIdentifiers)
         }
         .store(in: &cancellables)
@@ -190,11 +180,6 @@ final class SettingsViewModel: ObservableObject {
             self?.setupNotification()
         }.store(in: &cancellables)
 
-        dictionary.loadStatus.sink { [weak self] loadStatus in
-            self?.userDictLoadingStatus = loadStatus
-        }
-        .store(in: &cancellables)
-
         $selectedInputSourceId.removeDuplicates().sink { [weak self] selectedInputSourceId in
             if let selectedInputSource = self?.inputSources.first(where: { $0.id == selectedInputSourceId }) {
                 logger.info("キー配列を \(selectedInputSource.localizedName, privacy: .public) (\(selectedInputSourceId, privacy: .public)) に設定しました")
@@ -216,6 +201,22 @@ final class SettingsViewModel: ObservableObject {
             NotificationCenter.default.post(name: notificationNameInlineCandidateCount, object: inlineCandidateCount)
             logger.log("インラインで表示する変換候補の数を\(inlineCandidateCount)個に変更しました")
         }.store(in: &cancellables)
+
+        NotificationCenter.default.publisher(for: notificationNameDictLoad).receive(on: RunLoop.main).sink { [weak self] notification in
+            if let loadEvent = notification.object as? DictLoadEvent, let self {
+                if let userDict = dictionary.userDict as? FileDict, userDict.id == loadEvent.id {
+                    self.userDictLoadingStatus = loadEvent.status
+                    if case .fail(let error) = loadEvent.status {
+                        UNNotifier.sendNotificationForUserDict(readError: error)
+                    } else if case .loaded(_, let failureCount) = loadEvent.status, failureCount > 0 {
+                        UNNotifier.sendNotificationForUserDict(failureEntryCount: failureCount)
+                    }
+                } else {
+                    self.dictLoadingStatuses[loadEvent.id] = loadEvent.status
+                }
+            }
+        }
+        .store(in: &cancellables)
     }
 
     // PreviewProvider用

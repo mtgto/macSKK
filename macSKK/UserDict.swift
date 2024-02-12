@@ -29,9 +29,6 @@ class UserDict: NSObject, DictProtocol {
     private(set) var privateUserDict = MemoryDict(entries: [:], readonly: true)
     private let savePublisher = PassthroughSubject<Void, Never>()
     private let privateMode: CurrentValueSubject<Bool, Never>
-    // 最新の値が読めるようにしておかないとsink時にすでにユーザー辞書読み込みが終わっていると次のイベントが流れない。
-    private let loadStatusSubject = CurrentValueSubject<DictLoadStatus, Never>(.loading)
-    let loadStatus: AnyPublisher<DictLoadStatus, Never>
     private var cancellables: Set<AnyCancellable> = []
 
     // MARK: NSFilePresenter
@@ -50,7 +47,6 @@ class UserDict: NSObject, DictProtocol {
             try FileManager.default.createDirectory(at: dictionariesDirectoryURL, withIntermediateDirectories: true)
         }
         userDictFileURL = dictionariesDirectoryURL.appending(path: Self.userDictFilename)
-        loadStatus = loadStatusSubject.eraseToAnyPublisher()
         if let userDictEntries {
             self.userDict = MemoryDict(entries: userDictEntries, readonly: true)
         } else {
@@ -61,10 +57,8 @@ class UserDict: NSObject, DictProtocol {
             do {
                 let userDict = try FileDict(contentsOf: userDictFileURL, encoding: .utf8, readonly: false)
                 self.userDict = userDict
-                loadStatusSubject.send(.loaded(success: userDict.entryCount, failure: userDict.failedEntryCount))
             } catch {
                 self.userDict = nil
-                loadStatusSubject.send(.fail(error))
             }
         }
         super.init()
@@ -76,7 +70,12 @@ class UserDict: NSObject, DictProtocol {
             .sink { [weak self] _ in
                 if let fileDict = self?.userDict as? FileDict {
                     logger.log("ユーザー辞書を永続化します")
-                    try? fileDict.save()
+                    do {
+                        try fileDict.save()
+                    } catch {
+                        logger.error("ユーザー辞書の永続化でエラーが発生しました")
+                        UNNotifier.sendNotificationForUserDict(writeError: error)
+                    }
                 }
             }
             .store(in: &cancellables)
@@ -176,7 +175,6 @@ class UserDict: NSObject, DictProtocol {
         } else if let dict = userDict as? FileDict {
             dict.add(yomi: yomi, word: word)
             savePublisher.send(())
-            loadStatusSubject.send(.loaded(success: dict.entryCount, failure: dict.failedEntryCount))
         }
     }
 
@@ -207,7 +205,6 @@ class UserDict: NSObject, DictProtocol {
         } else if let dict = userDict as? FileDict {
             if dict.delete(yomi: yomi, word: word) {
                 savePublisher.send(())
-                loadStatusSubject.send(.loaded(success: dict.entryCount, failure: dict.failedEntryCount))
                 return true
             }
         }

@@ -23,6 +23,12 @@ enum DictLoadStatus {
     case fail(Error)
 }
 
+/// 辞書の読み込み状態の通知オブジェクト
+struct DictLoadEvent {
+    let id: FileDict.ID
+    let status: DictLoadStatus
+}
+
 protocol DictProtocol {
     /**
      * 辞書を引き変換候補順に返す
