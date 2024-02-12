@@ -199,10 +199,10 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
         }
     }
 
-    /// カーソルより左の部分を返す
-    func remain() -> Self? {
+    /// カーソルより右の部分の文字の配列を返す
+    func remain() -> [String]? {
         if let cursor {
-            return ComposingState(isShift: isShift, text: text, romaji: romaji, cursor: nil)
+            return Array(text.dropFirst(cursor))
         } else {
             return nil
         }
@@ -335,8 +335,8 @@ struct SelectingState: Equatable, MarkedTextProtocol {
     var candidateIndex: Int = 0
     /// カーソル位置。この位置を基に変換候補パネルを表示する
     let cursorPosition: NSRect
-    /// カーソル位置より後のテキスト部分
-    let remain: ComposingState?
+    /// カーソル位置より後のテキスト部分。ひらがな(Abbrevモード以外) or 英数(Abbrevモード)の配列
+    let remain: [String]?
 
     func addCandidateIndex(diff: Int) -> Self {
         return SelectingState(

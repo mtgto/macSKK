@@ -161,6 +161,15 @@ final class StateTests: XCTestCase {
         XCTAssertEqual(composingState.markedTextElements(inputMode: .hiragana), [.markerCompose, .plain("お*s"), .cursor, .plain("い")])
     }
 
+    func testComposingStateRemain() {
+        var composingState = ComposingState(isShift: true, text: ["あ", "い"], okuri: [], romaji: "", cursor: nil)
+        XCTAssertNil(composingState.remain()) // カーソルがnilのときはnil
+        composingState = ComposingState(isShift: true, text: ["あ", "い"], okuri: [], romaji: "", cursor: 0)
+        XCTAssertEqual(composingState.remain(), ["あ", "い"])
+        composingState = ComposingState(isShift: true, text: ["あ", "い"], okuri: [], romaji: "", cursor: 1)
+        XCTAssertEqual(composingState.remain(), ["い"])
+    }
+
     func testSelectingStateFixedText() throws {
         let selectingState = SelectingState(
             prev: SelectingState.PrevState(
