@@ -214,6 +214,12 @@ class StateMachine {
             } else {
                 return false
             }
+        case .ctrlD:
+            if state.specialState != nil {
+                return true
+            } else {
+                return false
+            }
         case .down, .up:
             if state.specialState != nil {
                 return true
@@ -553,6 +559,9 @@ class StateMachine {
                 }
                 updateMarkedText()
             }
+            return true
+        case .ctrlD:
+            // TODO
             return true
         case .up, .down, .ctrlY, .eisu, .kana:
             return true
@@ -958,7 +967,7 @@ class StateMachine {
                 updateMarkedText()
             }
             return true
-        case .ctrlY, .eisu, .kana:
+        case .ctrlY, .ctrlD, .eisu, .kana:
             return true
         }
     }

@@ -76,6 +76,7 @@ protocol CursorProtocol {
 protocol SpecialStateProtocol: CursorProtocol {
     func appendText(_ text: String) -> Self
     func dropLast() -> Self
+    func dropForward() -> Self
 }
 
 /// 入力中の未確定文字列の定義
@@ -180,6 +181,13 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
         } else {
             return ComposingState(isShift: isShift, text: text.dropLast(), okuri: okuri, romaji: romaji, cursor: cursor)
         }
+    }
+
+    /**
+     * 入力中の文字列をカーソル位置より右側を一文字削除する。
+     */
+    func dropForward() -> Self {
+        return self
     }
 
     func resetRomaji() -> Self {
@@ -425,6 +433,11 @@ struct RegisterState: SpecialStateProtocol {
         }
     }
 
+    func dropForward() -> Self {
+        // TODO: 実装
+        return self
+    }
+
     /// 送り仮名
     var okuri: String? {
         if let okuri = prev.composing.okuri {
@@ -493,6 +506,10 @@ struct UnregisterState: SpecialStateProtocol {
         return UnregisterState(prev: prev, text: String(text.dropLast(1)))
     }
 
+    func dropForward() -> Self {
+        return self
+    }
+
     // MARK: - CursorProtocol
     func moveCursorLeft() -> Self {
         return self
@@ -534,6 +551,11 @@ enum SpecialState: SpecialStateProtocol {
         case .unregister(let unregisterState):
             return .unregister(unregisterState.dropLast())
         }
+    }
+
+    func dropForward() -> Self {
+        // TODO: 実装
+        return self
     }
 
     // MARK: - CursorProtocol

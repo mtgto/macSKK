@@ -328,6 +328,8 @@ class InputController: IMKInputController {
                     return .ctrlA
                 case "e":
                     return .ctrlE
+                case "d":
+                    return .ctrlD
                 case "y":
                     return .ctrlY
                 default:
