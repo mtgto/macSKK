@@ -187,7 +187,13 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
      * 入力中の文字列をカーソル位置より右側を一文字削除する。
      */
     func dropForward() -> Self {
-        return self
+        if let cursor = cursor, cursor < text.count {
+            var newText = text
+            newText.remove(at: text.index(text.startIndex, offsetBy: cursor))
+            return ComposingState(isShift: isShift,  text: newText, okuri: okuri, romaji: romaji, cursor: cursor == text.count - 1 ? nil : cursor)
+        } else {
+            return self
+        }
     }
 
     func resetRomaji() -> Self {
@@ -405,7 +411,7 @@ struct RegisterState: SpecialStateProtocol {
     let yomi: String
     /// 入力中の登録単語。変換中のように未確定の文字列は含まず確定済文字列のみが入る
     var text: String = ""
-    /// カーソル位置。nilのときは末尾扱い (composing中の場合を含む) 0のときは "[登録：\(text)]" の直後
+    /// カーソル位置。nilのときは末尾扱い (composing中の場合を含む) 0のときは "[登録：\(yomi)]" の直後
     var cursor: Int?
 
     /// カーソル位置に文字列を追加する。
@@ -434,8 +440,13 @@ struct RegisterState: SpecialStateProtocol {
     }
 
     func dropForward() -> Self {
-        // TODO: 実装
-        return self
+        if let cursor = cursor, cursor < text.count {
+            var newText = text
+            newText.remove(at: text.index(text.startIndex, offsetBy: cursor))
+            return RegisterState(prev: prev, yomi: yomi, text: String(newText), cursor: cursor == text.count - 1 ? nil : cursor)
+        } else {
+            return self
+        }
     }
 
     /// 送り仮名
@@ -554,8 +565,13 @@ enum SpecialState: SpecialStateProtocol {
     }
 
     func dropForward() -> Self {
-        // TODO: 実装
-        return self
+        switch self {
+        case .register(let registerState):
+            return .register(registerState.dropForward())
+        case .unregister:
+            // unregister時はカーソル移動できないので無視
+            return self
+        }
     }
 
     // MARK: - CursorProtocol

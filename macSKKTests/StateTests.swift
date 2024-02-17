@@ -68,10 +68,12 @@ final class StateTests: XCTestCase {
     func testComposingStateDropForward() {
         var state = ComposingState(isShift: true, text: ["あ"], okuri: [], romaji: "", cursor: nil)
         XCTAssertEqual(state.dropForward(), state)
-        state = ComposingState(isShift: true, text: ["あ", "い"], okuri: [], romaji: "", cursor: 1)
-        XCTAssertEqual(state.dropForward().text, ["あ"])
-        state = ComposingState(isShift: true, text: ["あ", "い"], okuri: [], romaji: "", cursor: 0)
-        XCTAssertEqual(state.dropForward().text, ["い"])
+        state = ComposingState(isShift: true, text: ["あ", "い"], okuri: [], romaji: "", cursor: 1).dropForward()
+        XCTAssertEqual(state.text, ["あ"])
+        XCTAssertNil(state.cursor)
+        state = ComposingState(isShift: true, text: ["あ", "い"], okuri: [], romaji: "", cursor: 0).dropForward()
+        XCTAssertEqual(state.text, ["い"])
+        XCTAssertEqual(state.cursor, 0)
     }
 
     func testComposingStateSubText() {
@@ -293,6 +295,21 @@ final class StateTests: XCTestCase {
         state = state.dropLast()
         XCTAssertEqual(state.text, "あい")
         state = state.moveCursorLeft().dropLast()
+        XCTAssertEqual(state.text, "い")
+        XCTAssertEqual(state.cursor, 0)
+    }
+
+    func testRegisterStateDropForward() throws {
+        var state = RegisterState(
+            prev: RegisterState.PrevState(
+                mode: .hiragana, composing: ComposingState(isShift: true, text: ["あ"], okuri: nil, romaji: "")),
+            yomi: "あ", text: "あいう", cursor: nil)
+        state = state.dropForward()
+        XCTAssertEqual(state.text, "あいう")
+        state = state.moveCursorLeft().dropForward()
+        XCTAssertEqual(state.text, "あい")
+        XCTAssertNil(state.cursor)
+        state = state.moveCursorFirst().dropForward()
         XCTAssertEqual(state.text, "い")
         XCTAssertEqual(state.cursor, 0)
     }
