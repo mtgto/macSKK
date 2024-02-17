@@ -25,6 +25,8 @@ final class CandidatesPanel: NSPanel {
         super.init(contentRect: .zero, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: true)
         backgroundColor = .clear
         contentViewController = viewController
+        // フルキーボードアクセスが有効なときに変換パネルが表示されなくなるのを回避
+        setAccessibilityElement(false)
     }
 
     func setCandidates(_ candidates: CurrentCandidates, selected: Candidate?) {
