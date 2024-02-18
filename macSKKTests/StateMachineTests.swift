@@ -978,7 +978,7 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
             XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("あい")])))
             XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("あ"), .cursor, .plain("い")])))
-            XCTAssertEqual(events[3], .markedText(MarkedText([.markerSelect, .emphasized("会う")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerSelect, .emphasized("会う"), .cursor, .plain("い")])))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
@@ -996,7 +996,7 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("え")])))
             XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("えい")])))
             XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("え"), .cursor, .plain("い")])))
-            XCTAssertEqual(events[3], .markedText(MarkedText([.markerSelect, .emphasized("絵")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerSelect, .emphasized("絵"), .cursor, .plain("い")])))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e", withShift: true)))
@@ -1279,7 +1279,7 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("あい")])))
             XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("あ"), .cursor, .plain("い")])))
             XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("あ*s"), .cursor, .plain("い")])))
-            XCTAssertEqual(events[4], .markedText(MarkedText([.markerSelect, .emphasized("褪し")])))
+            XCTAssertEqual(events[4], .markedText(MarkedText([.markerSelect, .emphasized("褪し"), .cursor, .plain("い")])))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
@@ -1702,6 +1702,53 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    func testHandleSelectingEnterRemain() {
+        dictionary.setEntries(["あい": [Word("愛")]])
+
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(7).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("あい")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("あいう")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("あい"), .cursor, .plain("う")])))
+            XCTAssertEqual(events[4], .markedText(MarkedText([.markerSelect, .emphasized("愛"), .cursor, .plain("う")])))
+            XCTAssertEqual(events[5], .fixedText("愛"))
+            XCTAssertEqual(events[6], .markedText(MarkedText([.markerCompose, .plain("う")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u")))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .left, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil, cursorPosition: .zero)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    func testHandleSelectingPrintableRemain() {
+        dictionary.setEntries(["あい": [Word("愛")]])
+
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(8).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("あい")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("あいう")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("あい"), .cursor, .plain("う")])))
+            XCTAssertEqual(events[4], .markedText(MarkedText([.markerSelect, .emphasized("愛"), .cursor, .plain("う")])))
+            XCTAssertEqual(events[5], .fixedText("愛"))
+            XCTAssertEqual(events[6], .markedText(MarkedText([.markerCompose, .plain("う")])))
+            XCTAssertEqual(events[7], .markedText(MarkedText([.markerCompose, .plain("うえ")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u")))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .left, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e")))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     func testHandleSelectingBackspace() {
         dictionary.setEntries(["と": [Word("戸"), Word("都")]])
 
@@ -2001,10 +2048,10 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("う")])))
             XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .cursor, .plain("う")])))
             XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("え"), .cursor, .plain("う")])))
-            XCTAssertEqual(events[3], .markedText(MarkedText([.markerSelect, .emphasized("絵")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerSelect, .emphasized("絵"), .cursor, .plain("う")])))
             XCTAssertEqual(events[4], .markedText(MarkedText([.markerCompose, .plain("え"), .cursor, .plain("う")])))
             XCTAssertEqual(events[5], .markedText(MarkedText([.markerCompose, .plain("え*r"), .cursor, .plain("う")])))
-            XCTAssertEqual(events[6], .markedText(MarkedText([.markerSelect, .emphasized("得る")])))
+            XCTAssertEqual(events[6], .markedText(MarkedText([.markerSelect, .emphasized("得る"), .cursor, .plain("う")])))
             XCTAssertEqual(events[7], .markedText(MarkedText([.markerCompose, .plain("え*る"), .cursor, .plain("う")])))
             expectation.fulfill()
         }.store(in: &cancellables)

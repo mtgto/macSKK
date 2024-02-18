@@ -199,6 +199,15 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
         }
     }
 
+    /// カーソルより右の部分の文字の配列を返す
+    func remain() -> [String]? {
+        if let cursor {
+            return Array(text.dropFirst(cursor))
+        } else {
+            return nil
+        }
+    }
+
     /// 辞書を引く際の読みを返す。
     /// カーソルがある場合はカーソルより左側の文字列だけを対象にする。
     /// 末尾がnの場合は「ん」と入力したとして解釈する
@@ -326,6 +335,8 @@ struct SelectingState: Equatable, MarkedTextProtocol {
     var candidateIndex: Int = 0
     /// カーソル位置。この位置を基に変換候補パネルを表示する
     let cursorPosition: NSRect
+    /// カーソル位置より後のテキスト部分。ひらがな(Abbrevモード以外) or 英数(Abbrevモード)の配列
+    let remain: [String]?
 
     func addCandidateIndex(diff: Int) -> Self {
         return SelectingState(
@@ -333,7 +344,8 @@ struct SelectingState: Equatable, MarkedTextProtocol {
             yomi: yomi,
             candidates: candidates,
             candidateIndex: candidateIndex + diff,
-            cursorPosition: cursorPosition)
+            cursorPosition: cursorPosition,
+            remain: remain)
     }
 
     /// 現在選択されている変換候補を文字列を返す
@@ -362,7 +374,11 @@ struct SelectingState: Equatable, MarkedTextProtocol {
         if let okuri = prev.composing.okuri {
             selectingText += okuri.map { $0.string(for: inputMode) }.joined()
         }
-        return [.markerSelect, .emphasized(selectingText)]
+        if let remain {
+            return [.markerSelect, .emphasized(selectingText), .cursor, .plain(remain.joined())]
+        } else {
+            return [.markerSelect, .emphasized(selectingText)]
+        }
     }
 }
 
