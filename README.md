@@ -190,6 +190,51 @@ A. `C-j` がVisual Studio Codeのキーボードショートカット設定の `
 
 A. [macos_forward_to_ime_modifier_mask](https://wezfurlong.org/wezterm/config/lua/config/macos_forward_to_ime_modifier_mask.html) に `CTRL` を追加することでIMEに `C-j` が渡されてひらがなモードに切り替えできるようになります。 `SHIFT` も入れておかないと漢字変換開始できなくなるので、 `SHIFT|CTRL` を設定するのがよいと思います。
 
+### Q. 標準Terminal / iTerm2で `C-j` を押すと改行されてしまいます
+
+A. Karabiner-Elementsで `C-j` をかなキーに置換することで対応することができます。作者は以下のようなComplex Modificationsを `~/.config/karabiner/assets/complex_modifications/macskk.json` に配置しています。将来 https://github.com/pqrs-org/KE-complex_modifications に配置して簡単にインストールできるようにしようと思っています。
+
+```json
+{
+    "description": "macSKK for Terminal/iTerm2",
+    "manipulators": [
+        {
+            "conditions": [
+                {
+                    "bundle_identifiers": [
+                        "^com\\.googlecode\\.iterm2",
+                        "^com\\.apple\\.Terminal"
+                    ],
+                    "type": "frontmost_application_if"
+                },
+                {
+                    "input_sources": [
+                        {
+                            "input_source_id": "^net\\.mtgto\\.inputmethod\\.macSKK\\.(ascii|hiragana|katakana|hankaku|eisu)$"
+                        }
+                    ],
+                    "type": "input_source_if"
+                }
+            ],
+            "from": {
+                "key_code": "j",
+                "modifiers": {
+                    "mandatory": [
+                        "left_control"
+                    ]
+                }
+            },
+            "to": [
+                {
+                    "key_code": "japanese_kana"
+                }
+            ],
+            "type": "basic"
+        }
+    ]
+}
+```
+
 ## 開発
 
 Xcodeでビルドし、 `~/Library/Input Methods` に `macSKK.app` を配置してからシステム設定→キーボード→入力ソースで `ひらがな (macSKK)` などを追加してください。
