@@ -12,6 +12,7 @@ struct Action {
     enum KeyEvent: Equatable {
         case enter
         case backspace
+        case delete
         case space
         case tab
         case stickyShift
@@ -45,8 +46,6 @@ struct Action {
         case ctrlA
         /// Ctrl-E
         case ctrlE
-        /// Ctrl-D
-        case ctrlD
         /// Ctrl-Y. 登録モードでのみクリップボードからのペースト用
         case ctrlY
         /// 英数キー

@@ -214,7 +214,7 @@ class StateMachine {
             } else {
                 return false
             }
-        case .ctrlD:
+        case .delete:
             if let specialState = state.specialState {
                 state.specialState = specialState.dropForward()
                 updateMarkedText()
@@ -562,7 +562,7 @@ class StateMachine {
                 updateMarkedText()
             }
             return true
-        case .ctrlD:
+        case .delete:
             if composing.cursor != nil {
                 state.inputMethod = .composing(composing.dropForward())
                 updateMarkedText()
@@ -972,7 +972,7 @@ class StateMachine {
                 updateMarkedText()
             }
             return true
-        case .ctrlY, .ctrlD, .eisu, .kana:
+        case .ctrlY, .delete, .eisu, .kana:
             return true
         }
     }
