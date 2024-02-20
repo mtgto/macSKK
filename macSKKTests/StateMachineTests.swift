@@ -1063,6 +1063,32 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u", withShift: true)))
         wait(for: [expectation], timeout: 1.0)
     }
+    
+    func testHandleComposingSpaceAfterPrintable() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana), kanaRule: try! Romaji(source: "z ,スペース"))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(2).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.plain("z")])))
+            XCTAssertEqual(events[1], .fixedText("スペース"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "z", withShift: false)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+    
+    func testHandleComposingStickyShiftAfterPrintable() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana), kanaRule: try! Romaji(source: "a;,あせみころん"))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(2).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.plain("a")])))
+            XCTAssertEqual(events[1], .fixedText("あせみころん"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: false)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil, cursorPosition: .zero)))
+        wait(for: [expectation], timeout: 1.0)
+    }
 
     func testHandleComposingPrintableAndL() {
         let expectation = XCTestExpectation()
