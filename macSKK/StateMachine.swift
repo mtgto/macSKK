@@ -804,12 +804,12 @@ class StateMachine {
         if inputMode != .direct && !romaji.isEmpty {
             let converted = kanaRule.convert(romaji + input)
             if converted.kakutei != nil && converted.input == "" {
-                return .some(converted)
+                return converted
             } else {
-                return .none
+                return nil
             }
         } else {
-            return .none
+            return nil
         }
     }
 
