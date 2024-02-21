@@ -9,6 +9,8 @@ on:
 jobs:
   test:
     runs-on: macos-14
+    permissions:
+      checks: write
     steps:
     # https://github.com/actions/runner-images/blob/main/images/macos/macos-14-Readme.md#xcode
     - name: Select Xcode version
