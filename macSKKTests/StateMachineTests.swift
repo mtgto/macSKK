@@ -1090,6 +1090,21 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    func testHandleComposingQAfterPrintable() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana), kanaRule: try! Romaji(source: "tq,たん"))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(3).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("t")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("たん")])))
+            XCTAssertEqual(events[2], .fixedText("タン"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q", withShift: false)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q", withShift: false)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     func testHandleComposingPrintableAndL() {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in

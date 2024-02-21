@@ -54,6 +54,7 @@ class StateMachine {
         self.kanaRule = kanaRule
     }
 
+    /// `Action`をハンドルした場合には`true`、しなかった場合は`false`を返す
     func handle(_ action: Action) -> Bool {
         switch state.inputMethod {
         case .normal:
@@ -425,7 +426,7 @@ class StateMachine {
                     specialState: specialState)
             }
 
-            // "q;"のようなセミコロンを使ったルールがある場合はそれを優先させる
+            // "k;"のようなセミコロンを使ったルールがある場合はそれを優先させる
             if let converted = useKanaRuleIfPresent(inputMode: state.inputMode, romaji: romaji, input: ";") {
                 return handleComposingPrintable(
                     input: ";",
@@ -574,19 +575,6 @@ class StateMachine {
             return true
         }
     }
-    
-    private func useKanaRuleIfPresent(inputMode: InputMode, romaji: String, input: String) -> Romaji.ConvertedMoji? {
-        if inputMode != .direct && !romaji.isEmpty {
-            let converted = kanaRule.convert(romaji + input)
-            if converted.kakutei != nil && converted.input == "" {
-                return .some(converted)
-            } else {
-                return .none
-            }
-        } else {
-            return .none
-        }
-    }
 
     func handleComposingPrintable(
         input: String, converted: Romaji.ConvertedMoji, action: Action, composing: ComposingState,
@@ -597,6 +585,16 @@ class StateMachine {
         let okuri = composing.okuri
 
         if input == "q" {
+            // "tq"のような"q"を使ったルールがある場合はそれを優先させる
+            if let converted = useKanaRuleIfPresent(inputMode: state.inputMode, romaji: composing.romaji, input: "q") {
+                if let kakutei = converted.kakutei {
+                    state.inputMethod = .composing(
+                        ComposingState(isShift: isShift, text: text + [kakutei.string(for: state.inputMode)], okuri: okuri, romaji: converted.input))
+                    updateMarkedText()
+                    return true
+                }
+            }
+
             if okuri == nil {
                 // AquaSKKの挙動に合わせてShift-Qのときは送り無視で確定、次の入力へ進む
                 if action.shiftIsPressed() {
@@ -799,6 +797,19 @@ class StateMachine {
             return true
         default:
             fatalError("inputMode=\(state.inputMode), handleComposingで\(input)が入力された")
+        }
+    }
+
+    private func useKanaRuleIfPresent(inputMode: InputMode, romaji: String, input: String) -> Romaji.ConvertedMoji? {
+        if inputMode != .direct && !romaji.isEmpty {
+            let converted = kanaRule.convert(romaji + input)
+            if converted.kakutei != nil && converted.input == "" {
+                return .some(converted)
+            } else {
+                return .none
+            }
+        } else {
+            return .none
         }
     }
 
