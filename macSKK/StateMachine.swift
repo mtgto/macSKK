@@ -16,6 +16,9 @@ enum InputMethodEvent: Equatable {
     case modeChanged(InputMode, NSRect)
 }
 
+// `kanaRule`という名称を`StateMachine`でメンバー変数で使うためエイリアスをあたえる
+private let currentKanaRule = kanaRule
+
 class StateMachine {
     private(set) var state: IMEState
     let inputMethodEvent: AnyPublisher<InputMethodEvent, Never>
@@ -40,14 +43,18 @@ class StateMachine {
     /// 変換候補パネルに一度に表示する変換候補の数
     let displayCandidateCount = 9
 
-    init(initialState: IMEState = IMEState(), inlineCandidateCount: Int = 3) {
+    private let kanaRule: Romaji!
+
+    init(initialState: IMEState = IMEState(), inlineCandidateCount: Int = 3, kanaRule: Romaji! = currentKanaRule) {
         state = initialState
         inputMethodEvent = inputMethodEventSubject.eraseToAnyPublisher()
         candidateEvent = candidateEventSubject.removeDuplicates().eraseToAnyPublisher()
         yomiEvent = yomiEventSubject.removeDuplicates().eraseToAnyPublisher()
         self.inlineCandidateCount = inlineCandidateCount
+        self.kanaRule = kanaRule
     }
 
+    /// `Action`をハンドルした場合には`true`、しなかった場合は`false`を返す
     func handle(_ action: Action) -> Bool {
         switch state.inputMethod {
         case .normal:
@@ -371,18 +378,15 @@ class StateMachine {
             updateMarkedText()
             return true
         case .space:
-            if state.inputMode != .direct && !romaji.isEmpty {
-                // "z " のようなスペースを使ったローマ字変換ルールがある場合は漢字変換よりも優先する
-                let converted = kanaRule.convert(romaji + " ")
-                if converted.kakutei != nil && converted.input == "" {
-                    return handleComposingPrintable(
-                        input: " ",
-                        converted: converted,
-                        action: action,
-                        composing: composing,
-                        specialState: specialState
-                    )
-                }
+            // "z " のようなスペースを使ったローマ字変換ルールがある場合は漢字変換よりも優先する
+            if let converted = useKanaRuleIfPresent(inputMode: state.inputMode, romaji: romaji, input: " ") {
+                return handleComposingPrintable(
+                    input: " ",
+                    converted: converted,
+                    action: action,
+                    composing: composing,
+                    specialState: specialState
+                )
             }
             if text.isEmpty {
                 addFixedText(" ")
@@ -420,7 +424,20 @@ class StateMachine {
                     action: action,
                     composing: composing,
                     specialState: specialState)
-            } else if okuri != nil {
+            }
+
+            // "k;"のようなセミコロンを使ったルールがある場合はそれを優先させる
+            if let converted = useKanaRuleIfPresent(inputMode: state.inputMode, romaji: romaji, input: ";") {
+                return handleComposingPrintable(
+                    input: ";",
+                    converted: converted,
+                    action: action,
+                    composing: composing,
+                    specialState: specialState
+                )
+            }
+
+            if okuri != nil {
                 // 送り仮名入力中は無視する
                 // AquaSKKは送り仮名の末尾に"；"をつけて変換処理もしくは単語登録に遷移
                 return true
@@ -568,6 +585,16 @@ class StateMachine {
         let okuri = composing.okuri
 
         if input == "q" {
+            // "tq"のような"q"を使ったルールがある場合はそれを優先させる
+            if let converted = useKanaRuleIfPresent(inputMode: state.inputMode, romaji: composing.romaji, input: "q") {
+                if let kakutei = converted.kakutei {
+                    state.inputMethod = .composing(
+                        ComposingState(isShift: isShift, text: text + [kakutei.string(for: state.inputMode)], okuri: okuri, romaji: converted.input))
+                    updateMarkedText()
+                    return true
+                }
+            }
+
             if okuri == nil {
                 // AquaSKKの挙動に合わせてShift-Qのときは送り無視で確定、次の入力へ進む
                 if action.shiftIsPressed() {
@@ -770,6 +797,19 @@ class StateMachine {
             return true
         default:
             fatalError("inputMode=\(state.inputMode), handleComposingで\(input)が入力された")
+        }
+    }
+
+    private func useKanaRuleIfPresent(inputMode: InputMode, romaji: String, input: String) -> Romaji.ConvertedMoji? {
+        if inputMode != .direct && !romaji.isEmpty {
+            let converted = kanaRule.convert(romaji + input)
+            if converted.kakutei != nil && converted.input == "" {
+                return converted
+            } else {
+                return nil
+            }
+        } else {
+            return nil
         }
     }
 
