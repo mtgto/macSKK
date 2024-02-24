@@ -12,6 +12,7 @@ struct Action {
     enum KeyEvent: Equatable {
         case enter
         case backspace
+        case delete
         case space
         case tab
         case stickyShift

@@ -328,6 +328,8 @@ class InputController: IMKInputController {
                     return .ctrlA
                 case "e":
                     return .ctrlE
+                case "d":
+                    return .delete
                 case "y":
                     return .ctrlY
                 default:
@@ -364,6 +366,8 @@ class InputController: IMKInputController {
             return .down
         } else if keyCode == 51 {
             return .backspace
+        } else if keyCode == 117 {
+            return .delete
         } else if keyCode == 53 {  // ESC
             return .cancel
         } else if keyCode == 102 { // 英数キー

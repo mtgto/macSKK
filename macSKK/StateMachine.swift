@@ -221,6 +221,14 @@ class StateMachine {
             } else {
                 return false
             }
+        case .delete:
+            if let specialState = state.specialState {
+                state.specialState = specialState.dropForward()
+                updateMarkedText()
+                return true
+            } else {
+                return false
+            }
         case .down, .up:
             if state.specialState != nil {
                 return true
@@ -568,6 +576,12 @@ class StateMachine {
                 } else {
                     state.inputMethod = .composing(ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: ""))
                 }
+                updateMarkedText()
+            }
+            return true
+        case .delete:
+            if composing.cursor != nil {
+                state.inputMethod = .composing(composing.dropForward())
                 updateMarkedText()
             }
             return true
@@ -998,7 +1012,7 @@ class StateMachine {
                 updateMarkedText()
             }
             return true
-        case .ctrlY, .eisu, .kana:
+        case .ctrlY, .delete, .eisu, .kana:
             return true
         }
     }
