@@ -55,7 +55,7 @@ final class CandidatesPanel: NSPanel {
      * - 下にはみ出る場合: テキストの上側に表示する
      * - 右にはみ出す場合: スクリーン右端に接するように表示する
      */
-    func show() {
+    func show(windowLevel: NSWindow.Level) {
         guard let viewController = contentViewController as? NSHostingController<CandidatesView> else {
             fatalError("ビューコントローラの状態が壊れている")
         }
@@ -93,7 +93,7 @@ final class CandidatesPanel: NSPanel {
             // スクリーン下にはみ出す場合はテキスト入力位置の上に表示する
             setFrameOrigin(CGPoint(x: origin.x, y: origin.y + cursorPosition.size.height))
         }
-        level = .floating
+        level = windowLevel
         orderFrontRegardless()
     }
 }
