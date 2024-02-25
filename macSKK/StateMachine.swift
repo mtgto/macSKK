@@ -602,10 +602,13 @@ class StateMachine {
             // "tq"のような"q"を使ったルールがある場合はそれを優先させる
             if let converted = useKanaRuleIfPresent(inputMode: state.inputMode, romaji: composing.romaji, input: "q") {
                 if let kakutei = converted.kakutei {
-                    state.inputMethod = .composing(
-                        ComposingState(isShift: isShift, text: text + [kakutei.string(for: state.inputMode)], okuri: okuri, romaji: converted.input))
-                    updateMarkedText()
-                    return true
+                    return handleComposingPrintable(
+                        input: " ",
+                        converted: converted,
+                        action: action,
+                        composing: composing,
+                        specialState: specialState
+                    )
                 }
             }
 

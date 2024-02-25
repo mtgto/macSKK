@@ -56,6 +56,19 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    func testHandleNormalRomajiKanaRuleQ() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana), kanaRule: try! Romaji(source: "tq,たん"))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(2).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.plain("t")])))
+            XCTAssertEqual(events[1], .fixedText("たん"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     func testHandleNormalSpace() throws {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(2).sink { events in
