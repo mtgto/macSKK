@@ -343,7 +343,7 @@ class InputController: IMKInputController {
                     break
                 }
             }
-            // カーソルキーはFn + NumPadがmodifierFlagsに設定されている
+            // カーソルキーやDelキーはFn + NumPadがmodifierFlagsに設定されている
             if !modifiers.contains(.control) && !modifiers.contains(.command) && modifiers.contains(.function) {
                 if keyCode == 123 {
                     return .left
@@ -353,6 +353,8 @@ class InputController: IMKInputController {
                     return .down
                 } else if keyCode == 126 {
                     return .up
+                } else if keyCode == 117 {
+                    return .delete
                 }
             }
 
@@ -373,8 +375,6 @@ class InputController: IMKInputController {
             return .down
         } else if keyCode == 51 {
             return .backspace
-        } else if keyCode == 117 {
-            return .delete
         } else if keyCode == 53 {  // ESC
             return .cancel
         } else if keyCode == 102 { // 英数キー
