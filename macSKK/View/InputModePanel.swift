@@ -12,7 +12,7 @@ class InputModePanel: NSPanel {
     init() {
         imageSize = CGSize(width: 32, height: 32)
         imageView = NSImageView(frame: .zero)
-        super.init(contentRect: .zero, styleMask: [.nonactivatingPanel], backing: .buffered, defer: true)
+        super.init(contentRect: .zero, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: true)
         imageView.imageScaling = .scaleProportionallyUpOrDown
         backgroundColor = .clear
         isOpaque = false
@@ -22,12 +22,12 @@ class InputModePanel: NSPanel {
         setContentSize(imageSize)
     }
 
-    func show(at point: NSPoint, mode: InputMode, privateMode: Bool) {
+    func show(at point: NSPoint, mode: InputMode, privateMode: Bool, windowLevel: NSWindow.Level) {
         // 画像の高さ分だけ下にずらす
         let origin = NSPoint(x: point.x, y: point.y - imageSize.height)
         let rect = NSRect(origin: origin, size: imageSize)
         setFrame(rect, display: true)
-        level = .floating
+        level = windowLevel
         switch mode {
         case .hiragana:
             imageView.image = NSImage(named: privateMode ? "icon-hiragana-locked" : "icon-hiragana")

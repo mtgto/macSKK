@@ -134,7 +134,7 @@ struct macSKKApp: App {
                     let word = Candidate("インライン", annotations: [Annotation(dictId: "", text: String(repeating: "これはインラインのテスト用注釈です", count: 5))])
                     candidatesPanel.setCandidates(.inline, selected: word)
                     candidatesPanel.setCursorPosition(NSRect(origin: NSPoint(x: 100, y: 640), size: CGSize(width: 0, height: 30)))
-                    candidatesPanel.show()
+                    candidatesPanel.show(windowLevel: .floating)
                 }
                 Button("Hide AnnotataionsPanel") {
                     candidatesPanel.orderOut(nil)
@@ -148,7 +148,7 @@ struct macSKKApp: App {
                                  Candidate("おはようございます")]
                     candidatesPanel.setCandidates(.panel(words: words, currentPage: 0, totalPageCount: 1), selected: words.first)
                     candidatesPanel.setCursorPosition(NSRect(origin: NSPoint(x: 100, y: 20), size: CGSize(width: 0, height: 30)))
-                    candidatesPanel.show()
+                    candidatesPanel.show(windowLevel: .floating)
                 }
                 Button("Add Word") {
                     let words = [Candidate("こんにちは", annotations: [Annotation(dictId: "", text: "辞書の注釈")]),
@@ -159,7 +159,7 @@ struct macSKKApp: App {
                     candidatesPanel.viewModel.systemAnnotations = [words.last!.word: String(repeating: "これはシステム辞書の注釈です。", count: 5)]
                 }
                 Button("InputMode Panel") {
-                    inputModePanel.show(at: NSPoint(x: 200, y: 200), mode: .hiragana, privateMode: true)
+                    inputModePanel.show(at: NSPoint(x: 200, y: 200), mode: .hiragana, privateMode: true, windowLevel: .floating)
                 }
                 Button("User Notification") {
                     let release = Release(version: ReleaseVersion(major: 0, minor: 4, patch: 0),
