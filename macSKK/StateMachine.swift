@@ -16,9 +16,6 @@ enum InputMethodEvent: Equatable {
     case modeChanged(InputMode, NSRect)
 }
 
-// `kanaRule`という名称を`StateMachine`でメンバー変数で使うためエイリアスをあたえる
-private let currentKanaRule = kanaRule
-
 class StateMachine {
     private(set) var state: IMEState
     let inputMethodEvent: AnyPublisher<InputMethodEvent, Never>
@@ -43,15 +40,12 @@ class StateMachine {
     /// 変換候補パネルに一度に表示する変換候補の数
     let displayCandidateCount = 9
 
-    private let kanaRule: Romaji!
-
-    init(initialState: IMEState = IMEState(), inlineCandidateCount: Int = 3, kanaRule: Romaji! = currentKanaRule) {
+    init(initialState: IMEState = IMEState(), inlineCandidateCount: Int = 3) {
         state = initialState
         inputMethodEvent = inputMethodEventSubject.eraseToAnyPublisher()
         candidateEvent = candidateEventSubject.removeDuplicates().eraseToAnyPublisher()
         yomiEvent = yomiEventSubject.removeDuplicates().eraseToAnyPublisher()
         self.inlineCandidateCount = inlineCandidateCount
-        self.kanaRule = kanaRule
     }
 
     /// `Action`をハンドルした場合には`true`、しなかった場合は`false`を返す
