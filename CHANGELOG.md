@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v0.18.2 (2024-02-26)
+
+- `kanaRule`を`StateMachine`のコンストラクターに渡すのをやめる (#126)
+
 ## v0.18.1 (2024-02-26)
 
 - GitHub ActionsのCIのパーミッションでForkからのPull Requestでchecks: writeを追加 (#121)
