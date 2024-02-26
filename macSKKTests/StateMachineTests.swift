@@ -413,6 +413,34 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    func testHandleNormalAbbrevPrevMode() {
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(12).sink { events in
+            XCTAssertEqual(events[0], .modeChanged(.katakana, .zero))
+            XCTAssertEqual(events[1], .modeChanged(.direct, .zero))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("a")])))
+            XCTAssertEqual(events[4], .fixedText("a"))
+            XCTAssertEqual(events[5], .modeChanged(.katakana, .zero))
+            XCTAssertEqual(events[6], .modeChanged(.hankaku, .zero))
+            XCTAssertEqual(events[7], .modeChanged(.direct, .zero))
+            XCTAssertEqual(events[8], .markedText(MarkedText([.markerCompose])))
+            XCTAssertEqual(events[9], .markedText(MarkedText([.markerCompose, .plain("b")])))
+            XCTAssertEqual(events[10], .modeChanged(.hankaku, .zero))
+            XCTAssertEqual(events[11], .markedText(MarkedText([])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q"))) // カタカナモードにしておく
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "/")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .ctrlQ, originalEvent: nil, cursorPosition: .zero))) // 半角カナモード
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "/")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "b")))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .cancel, originalEvent: nil, cursorPosition: .zero)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     func testHandleNormalOptionModifier() {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(1).sink { events in
@@ -1472,16 +1500,19 @@ final class StateMachineTests: XCTestCase {
         dictionary.setEntries(["n": [Word("美")]])
 
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(4).sink { events in
+        stateMachine.inputMethodEvent.collect(6).sink { events in
             XCTAssertEqual(events[0], .modeChanged(.direct, .zero))
             XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose])))
             XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("n")])))
             XCTAssertEqual(events[3], .markedText(MarkedText([.markerSelect, .emphasized("美")])))
+            XCTAssertEqual(events[4], .fixedText("美"))
+            XCTAssertEqual(events[5], .modeChanged(.hiragana, .zero))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "/")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil, cursorPosition: .zero)))
         wait(for: [expectation], timeout: 1.0)
     }
     

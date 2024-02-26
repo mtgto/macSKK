@@ -92,6 +92,18 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
     var romaji: String
     /// カーソル位置。末尾のときはnil。先頭の▽分は含まないので非nilのときは[0, text.count)の範囲を取る。
     var cursor: Int?
+    /// 未確定文字列の入力開始前のモード。
+    /// スラッシュでAbbrevモードに入るときにその前のモードを設定しておき、Abbrevモードから抜けるときにそのモードに戻す
+    let prevMode: InputMode?
+
+    init(isShift: Bool, text: [String], okuri: [Romaji.Moji]? = nil, romaji: String, cursor: Int? = nil, prevMode: InputMode? = nil) {
+        self.isShift = isShift
+        self.text = text
+        self.okuri = okuri
+        self.romaji = romaji
+        self.cursor = cursor
+        self.prevMode = prevMode
+    }
 
     /**
      * 現在の状態で別の状態に移行するための処理を行った結果を返す
@@ -108,14 +120,16 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
                     text: text,
                     okuri: okuri + [Romaji.n],
                     romaji: "",
-                    cursor: cursor)
+                    cursor: cursor,
+                    prevMode: prevMode)
             } else {
                 return ComposingState(
                     isShift: isShift,
                     text: text + [Romaji.n.kana],
                     okuri: nil,
                     romaji: "",
-                    cursor: cursor)
+                    cursor: cursor,
+                    prevMode: prevMode)
             }
         } else {
             return self
@@ -150,7 +164,7 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
             newText = text + moji.kana.map({ String($0) })
             newCursor = nil
         }
-        return ComposingState(isShift: isShift, text: newText, okuri: okuri, romaji: romaji, cursor: newCursor)
+        return ComposingState(isShift: isShift, text: newText, okuri: okuri, romaji: romaji, cursor: newCursor, prevMode: prevMode)
     }
 
     /**
@@ -163,23 +177,23 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
             if newRomaji.isEmpty && text.isEmpty {
                 return nil
             }
-            return ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: String(newRomaji), cursor: cursor)
+            return ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: String(newRomaji), cursor: cursor, prevMode: prevMode)
         } else if let okuri {
             return ComposingState(
                 isShift: isShift, text: text, okuri: okuri.isEmpty ? nil : okuri.dropLast(), romaji: romaji,
-                cursor: cursor)
+                cursor: cursor, prevMode: prevMode)
         } else if text.isEmpty {
             return nil
         } else if let cursor = cursor {
             if cursor > 0 {
                 var newText = text
                 newText.remove(at: cursor - 1)
-                return ComposingState(isShift: isShift, text: newText, okuri: okuri, romaji: romaji, cursor: cursor - 1)
+                return ComposingState(isShift: isShift, text: newText, okuri: okuri, romaji: romaji, cursor: cursor - 1, prevMode: prevMode)
             } else {
                 return self
             }
         } else {
-            return ComposingState(isShift: isShift, text: text.dropLast(), okuri: okuri, romaji: romaji, cursor: cursor)
+            return ComposingState(isShift: isShift, text: text.dropLast(), okuri: okuri, romaji: romaji, cursor: cursor, prevMode: prevMode)
         }
     }
 
@@ -190,18 +204,18 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
         if let cursor = cursor, cursor < text.count {
             var newText = text
             newText.remove(at: text.index(text.startIndex, offsetBy: cursor))
-            return ComposingState(isShift: isShift,  text: newText, okuri: okuri, romaji: romaji, cursor: cursor == text.count - 1 ? nil : cursor)
+            return ComposingState(isShift: isShift,  text: newText, okuri: okuri, romaji: romaji, cursor: cursor == text.count - 1 ? nil : cursor, prevMode: prevMode)
         } else {
             return self
         }
     }
 
     func resetRomaji() -> Self {
-        return ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: "", cursor: cursor)
+        return ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: "", cursor: cursor, prevMode: prevMode)
     }
 
     func with(isShift: Bool) -> Self {
-        return ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: "", cursor: cursor)
+        return ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: "", cursor: cursor, prevMode: prevMode)
     }
 
     /// カーソルより左のtext部分を返す。
@@ -249,7 +263,7 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
             } else {
                 newCursor = max(text.count - 1, 0)
             }
-            return ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: romaji, cursor: newCursor)
+            return ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: romaji, cursor: newCursor, prevMode: prevMode)
         } else {
             return self
         }
@@ -261,10 +275,10 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
             return self
         } else if let cursor, isShift {
             if cursor + 1 == text.count {
-                return ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: romaji, cursor: nil)
+                return ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: romaji, cursor: nil, prevMode: prevMode)
             } else {
                 return ComposingState(
-                    isShift: isShift, text: text, okuri: okuri, romaji: romaji, cursor: min(cursor + 1, text.count))
+                    isShift: isShift, text: text, okuri: okuri, romaji: romaji, cursor: min(cursor + 1, text.count), prevMode: prevMode)
             }
         } else {
             return self
@@ -275,7 +289,7 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
         if text.isEmpty {
             return self
         } else if isShift {
-            return ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: romaji, cursor: 0)
+            return ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: romaji, cursor: 0, prevMode: prevMode)
         } else {
             return self
         }
@@ -285,7 +299,7 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
         if text.isEmpty {
             return self
         } else if isShift {
-            return ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: romaji, cursor: nil)
+            return ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: romaji, cursor: nil, prevMode: prevMode)
         } else {
             return self
         }
