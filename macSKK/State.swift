@@ -82,16 +82,16 @@ protocol SpecialStateProtocol: CursorProtocol {
 /// 入力中の未確定文字列の定義
 struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
     /// (Sticky)Shiftによる未確定入力中かどうか。先頭に▽ついてる状態。
-    var isShift: Bool
+    let isShift: Bool
     /// かな/カナならかなになっているひらがなの文字列、abbrevなら入力した文字列.
-    var text: [String]
+    let text: [String]
     /// (Sticky)Shiftが押されたあとに入力されてかなになっている文字列。送り仮名モードになってなければnil
     /// StickyShiftが押されたり送り仮名をバックスペースで削除して送り仮名モードだけど送り仮名が空のときは空配列
-    var okuri: [Romaji.Moji]?
+    let okuri: [Romaji.Moji]?
     /// ローマ字モードで未確定部分。"k" や "ky" など最低あと1文字でかなに変換できる文字列。
-    var romaji: String
+    let romaji: String
     /// カーソル位置。末尾のときはnil。先頭の▽分は含まないので非nilのときは[0, text.count)の範囲を取る。
-    var cursor: Int?
+    let cursor: Int?
     /// 未確定文字列の入力開始前のモード。
     /// スラッシュでAbbrevモードに入るときにその前のモードを設定しておき、Abbrevモードから抜けるときにそのモードに戻す
     let prevMode: InputMode?
