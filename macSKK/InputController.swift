@@ -81,10 +81,10 @@ class InputController: IMKInputController {
                     }
                     textInput.setMarkedText(NSAttributedString(attributedText), selectionRange: cursorRange, replacementRange: Self.notFoundRange)
                 case .modeChanged(let inputMode, let cursorPosition):
-                    // KittyやLINEでq/lによるモード切り替えでq/lが入力されたり、C-jで改行が入力されるのを回避するワークアラウンド
+                    // KittyやLINE, Alacrittyでq/lによるモード切り替えでq/lが入力されたり、C-jで改行が入力されるのを回避するワークアラウンド
                     // AquaSKKの空文字列挿入を参考にしています。
                     // https://github.com/codefirst/aquaskk/blob/4.7.5/platform/mac/src/server/SKKInputController.mm#L405-L412
-                    if ["net.kovidgoyal.kitty", "jp.naver.line.mac"].contains(textInput.bundleIdentifier()) {
+                    if ["net.kovidgoyal.kitty", "jp.naver.line.mac", "org.alacritty"].contains(textInput.bundleIdentifier()) {
                         textInput.setMarkedText(String(format: "%c", 0x0c), selectionRange: Self.notFoundRange, replacementRange: Self.notFoundRange)
                         textInput.setMarkedText("", selectionRange: Self.notFoundRange, replacementRange: Self.notFoundRange)
                     }
