@@ -80,7 +80,7 @@ final class StateTests: XCTestCase {
         var state = ComposingState(
             isShift: true, text: ["あ", "い"], okuri: nil, romaji: "", cursor: 1)
         XCTAssertEqual(state.subText(), ["あ"])
-        state.cursor = nil
+        state = state.with(cursor: nil)
         XCTAssertEqual(state.subText(), ["あ", "い"])
     }
 
@@ -109,10 +109,9 @@ final class StateTests: XCTestCase {
         XCTAssertEqual(state.yomi(for: .katakana), "あい")
         XCTAssertEqual(state.yomi(for: .hankaku), "あい")
         XCTAssertEqual(state.yomi(for: .direct), "あい")
-        state.cursor = 1
+        state = state.with(cursor: 1)
         XCTAssertEqual(state.yomi(for: .hiragana), "あ")
-        state.okuri = [Romaji.Moji(firstRomaji: "u", kana: "う")]
-        state.cursor = nil
+        state = state.with(okuri: [Romaji.Moji(firstRomaji: "u", kana: "う")]).with(cursor: nil)
         XCTAssertEqual(state.yomi(for: .katakana), "あいu")
     }
 
@@ -124,7 +123,7 @@ final class StateTests: XCTestCase {
             romaji: "",
             cursor: nil)
         XCTAssertEqual(state.yomi(for: .direct), "ab")
-        state.cursor = 1
+        state = state.with(cursor: 1)
         XCTAssertEqual(state.yomi(for: .direct), "a")
     }
 
@@ -466,5 +465,15 @@ final class StateTests: XCTestCase {
                              candidates: [])
         let displayText = state.displayText()
         XCTAssertEqual(displayText.elements, [.plain("だい# /第#/ を削除します(yes/no)"), .plain("yes")])
+    }
+}
+
+extension ComposingState {
+    func with(cursor : Int?) -> Self {
+        ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: romaji, cursor: cursor, prevMode: prevMode)
+    }
+
+    func with(okuri: [Romaji.Moji]) -> Self {
+        ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: romaji, cursor: cursor, prevMode: prevMode)
     }
 }

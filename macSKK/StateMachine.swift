@@ -300,8 +300,8 @@ class StateMachine {
         } else if input == "/" && !action.shiftIsPressed() {
             switch state.inputMode {
             case .hiragana, .katakana, .hankaku:
+                state.inputMethod = .composing(ComposingState(isShift: true, text: [], okuri: nil, romaji: "", prevMode: state.inputMode))
                 state.inputMode = .direct
-                state.inputMethod = .composing(ComposingState(isShift: true, text: [], okuri: nil, romaji: ""))
                 inputMethodEventSubject.send(.modeChanged(.direct, action.cursorPosition))
                 updateMarkedText()
                 return true
@@ -364,12 +364,20 @@ class StateMachine {
         let okuri = composing.okuri
         let romaji = composing.romaji
 
+        func updateModeIfPrevModeExists() {
+            if let prevMode = composing.prevMode {
+                state.inputMode = prevMode
+                inputMethodEventSubject.send(.modeChanged(prevMode, action.cursorPosition))
+            }
+        }
+
         switch action.keyEvent {
         case .enter:
             // 未確定ローマ字はn以外は入力されずに削除される. nだけは"ん"として変換する
             let fixedText = composing.string(for: state.inputMode, convertHatsuon: true)
             state.inputMethod = .normal
             addFixedText(fixedText)
+            updateModeIfPrevModeExists()
             return true
         case .backspace:
             if let newComposingState = composing.dropLast() {
@@ -393,6 +401,7 @@ class StateMachine {
             if text.isEmpty {
                 addFixedText(" ")
                 state.inputMethod = .normal
+                updateModeIfPrevModeExists()
                 return true
             } else if composing.cursor == 0 {
                 state.inputMethod = .normal
@@ -491,6 +500,7 @@ class StateMachine {
             if text.isEmpty || romaji.isEmpty {
                 // 下線テキストをリセットする
                 state.inputMethod = .normal
+                updateModeIfPrevModeExists()
             } else {
                 state.inputMethod = .composing(ComposingState(isShift: isShift, text: text, okuri: nil, romaji: ""))
             }
@@ -882,6 +892,10 @@ class StateMachine {
             } else {
                 state.inputMethod = .normal
                 addFixedText(selecting.fixedText)
+                if let prevMode = selecting.prev.composing.prevMode {
+                    state.inputMode = prevMode
+                    inputMethodEventSubject.send(.modeChanged(prevMode, action.cursorPosition))
+                }
             }
         }
 
