@@ -4,7 +4,7 @@ macSKKはmacOS用の[SKK](https://ja.wikipedia.org/wiki/SKK)方式の日本語�
 
 macOS用のSKK方式の日本語入力システムにはすでに[AquaSKK](https://github.com/codefirst/aquaskk/)がありますが、いくつか独自の機能を作りたいと思い新たに開発しています。
 
-macSKKを使用するには macOS 13.3 以降が必要です。
+macSKKを使用するには macOS 13.3 (Ventura) 以降が必要です。
 Universal Binary (Apple Silicon & Intel Mac) でビルドしていますが、動作確認はApple Silicon環境でのみ行っています。
 
 ## 特徴
@@ -234,6 +234,12 @@ A. Karabiner-Elementsで `C-j` をかなキーに置換することで対応す�
     ]
 }
 ```
+
+### Q. アプリによってq/lキーでモードを切り替えてもq/lが入力されてしまう / `C-j`で改行されてしまう
+
+https://github.com/mtgto/macSKK/issues/119 と同じ問題と思われます。
+v0.19.0ではKitty, LINE, AlacrittyはBundle Identifierを固定でワークアラウンドを設定しています。
+今後、利用者がアプリケーションごとに設定可能にする予定です。
 
 ## 開発
 
