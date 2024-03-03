@@ -20,6 +20,9 @@ class RomajiTests: XCTestCase {
         // nだけではまだ「ん」になるかは確定しない (な行などに派生する可能性がある)
         XCTAssertEqual(kanaRule.convert("n"), Romaji.ConvertedMoji(input: "n", kakutei: nil))
         XCTAssertEqual(kanaRule.convert("na"), Romaji.ConvertedMoji(input: "", kakutei: Romaji.Moji(firstRomaji: "n", kana: "な")))
+        XCTAssertEqual(kanaRule.convert("ga"), Romaji.ConvertedMoji(input: "", kakutei: Romaji.Moji(firstRomaji: "g", kana: "が")))
+        XCTAssertEqual(kanaRule.convert("ji"), Romaji.ConvertedMoji(input: "", kakutei: Romaji.Moji(firstRomaji: "j", kana: "じ")))
+        XCTAssertEqual(kanaRule.convert("zi"), Romaji.ConvertedMoji(input: "", kakutei: Romaji.Moji(firstRomaji: "j", kana: "じ")), "かなが「じ」のときはfirstRomajiはj固定")
         XCTAssertEqual(kanaRule.convert("nn"), Romaji.ConvertedMoji(input: "", kakutei: Romaji.Moji(firstRomaji: "n", kana: "ん")))
         XCTAssertEqual(kanaRule.convert("nk"), Romaji.ConvertedMoji(input: "k", kakutei: Romaji.Moji(firstRomaji: "n", kana: "ん")))
         XCTAssertEqual(kanaRule.convert("n!"), Romaji.ConvertedMoji(input: "!", kakutei: Romaji.Moji(firstRomaji: "n", kana: "ん")))
@@ -29,9 +32,10 @@ class RomajiTests: XCTestCase {
         XCTAssertEqual(kanaRule.convert("kk"), Romaji.ConvertedMoji(input: "k", kakutei: Romaji.Moji(firstRomaji: "k", kana: "っ", katakana: "ッ", hankaku: "ｯ", remain: "k")))
         XCTAssertEqual(kanaRule.convert("nyk"), Romaji.ConvertedMoji(input: "k", kakutei: nil), "続けられない子音が連続した場合は最後の子音だけ残る")
         XCTAssertEqual(kanaRule.convert("z,"), Romaji.ConvertedMoji(input: "", kakutei: Romaji.Moji(firstRomaji: "z", kana: "‥")))
-        XCTAssertEqual(kanaRule.convert("x,,"), Romaji.ConvertedMoji(input: "", kakutei: Romaji.Moji(firstRomaji: "x", kana: "だぶるかんま")))
+        XCTAssertEqual(kanaRule.convert("x,,"), Romaji.ConvertedMoji(input: "", kakutei: Romaji.Moji(firstRomaji: "d", kana: "だぶるかんま")), "firstRomajiはかなの一文字目から決定される")
         XCTAssertEqual(kanaRule.convert("@"), Romaji.ConvertedMoji(input: "@", kakutei: nil), "ルールにない文字は変換されない")
         XCTAssertEqual(kanaRule.convert("a;"), Romaji.ConvertedMoji(input: "", kakutei: Romaji.Moji(firstRomaji: "a", kana:"あせみころん")), "システム用の文字を含むことができる")
+        XCTAssertEqual(kanaRule.convert("ca"), Romaji.ConvertedMoji(input: "", kakutei: Romaji.Moji(firstRomaji: "k", kana:"か")), "実際に入力した一文字目(c)ではなく「か」からローマ字(k)に変換する")
     }
 
     func testVu() throws {
