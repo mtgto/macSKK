@@ -877,7 +877,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     func testHandleComposingOkuriariIncludeN() {
-        dictionary.setEntries(["かんz": [Word("感")]])
+        dictionary.setEntries(["かんj": [Word("感")]])
 
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(7).sink { events in
