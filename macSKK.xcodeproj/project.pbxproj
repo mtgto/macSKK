@@ -73,6 +73,7 @@
 		CEC376E82965199500D9C432 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEC376E72965199500D9C432 /* SettingsView.swift */; };
 		CEC376EB2965211200D9C432 /* KeyEventView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEC376EA2965211200D9C432 /* KeyEventView.swift */; };
 		CED0984D2B779E4700F2E844 /* UNNotifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED0984C2B779E4700F2E844 /* UNNotifier.swift */; };
+		CED098512B95F32600F2E844 /* WorkaroundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED098502B95F32600F2E844 /* WorkaroundView.swift */; };
 		CED7CA2C2A8394F7004EF988 /* FetchUpdateServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED7CA2B2A8394F7004EF988 /* FetchUpdateServiceProtocol.swift */; };
 		CED7CA2E2A8394F7004EF988 /* FetchUpdateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED7CA2D2A8394F7004EF988 /* FetchUpdateService.swift */; };
 		CED7CA302A8394F7004EF988 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED7CA2F2A8394F7004EF988 /* main.swift */; };
@@ -197,6 +198,7 @@
 		CEC376E72965199500D9C432 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		CEC376EA2965211200D9C432 /* KeyEventView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyEventView.swift; sourceTree = "<group>"; };
 		CED0984C2B779E4700F2E844 /* UNNotifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UNNotifier.swift; sourceTree = "<group>"; };
+		CED098502B95F32600F2E844 /* WorkaroundView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkaroundView.swift; sourceTree = "<group>"; };
 		CED7CA292A8394F7004EF988 /* FetchUpdateService.xpc */ = {isa = PBXFileReference; explicitFileType = "wrapper.xpc-service"; includeInIndex = 0; path = FetchUpdateService.xpc; sourceTree = BUILT_PRODUCTS_DIR; };
 		CED7CA2B2A8394F7004EF988 /* FetchUpdateServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchUpdateServiceProtocol.swift; sourceTree = "<group>"; };
 		CED7CA2D2A8394F7004EF988 /* FetchUpdateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchUpdateService.swift; sourceTree = "<group>"; };
@@ -382,6 +384,7 @@
 				CE6DBACC2A864A3B00F5A227 /* DictionariesView.swift */,
 				CEB141712A87D16C005E7252 /* DictionaryView.swift */,
 				CE97887A2A9B93EB00F9B196 /* DirectModeView.swift */,
+				CED098502B95F32600F2E844 /* WorkaroundView.swift */,
 				CEE3717429653112000DB2C3 /* SoftwareUpdateView.swift */,
 				CE496C8B2B43968A001C623C /* LogView.swift */,
 				CEC376EA2965211200D9C432 /* KeyEventView.swift */,
@@ -609,6 +612,7 @@
 				CED0984D2B779E4700F2E844 /* UNNotifier.swift in Sources */,
 				CE7F9AD92AADEBF9001B1877 /* AppDelegate.swift in Sources */,
 				CEF0825B296D8FF000646366 /* CandidatesView.swift in Sources */,
+				CED098512B95F32600F2E844 /* WorkaroundView.swift in Sources */,
 				CE84A3E0295717CB009394C4 /* StateMachine.swift in Sources */,
 				CED7CA3C2A839603004EF988 /* UpdateChecker.swift in Sources */,
 				CE5ECF362957034B00E7BE7D /* macSKKApp.swift in Sources */,

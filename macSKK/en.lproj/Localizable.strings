@@ -6,6 +6,7 @@
 "SettingsNameDictionaries" = "Dictionaries";
 "SettingsNameSoftwareUpdate" = "Software Update";
 "SettingsNameDirectMode" = "Direct Mode";
+"SettingsNameWorkaround" = "Workaround";
 "SettingsNameLog" = "Log";
 "SettingsNameKeyEvent" = "Key Event";
 "SettingsNameSystemDict" = "System Dict";
@@ -15,6 +16,7 @@
 "SettingsFileDictionariesTitle" = "Dictionary files";
 "SettingsFileDictionariesSubtitle" = "You can reorder the priorities of dictionary by drag & drop";
 "SettingsNoteDirectMode" = "Set Front-Most to target app and select \"Direct input from (AppName)\" in Input Menu.";
+"SettingsNoteWorkaround" = "Set Front-Most to target app and select \"Workaround\" in Input Menu.";
 "LoadingStatusLoaded %lld" = "%lld entries";
 "LoadingStatusLoaded %lld WithError %lld" = "%lld entries (%lld lines of parsing error)";
 "LoadingStatusLoading" = "Loading…";
@@ -46,3 +48,6 @@
 "Show Annotation" = "Show the annotation of the candidate in current";
 "Copy" = "Copy";
 "Number of inline candidates" = "Number of inline candidates";
+"Insert Blank String" = "Insert Blank String";
+"Enabled" = "Enabled";
+"Disabled" = "Disabled";
