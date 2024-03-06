@@ -2,6 +2,7 @@
 "MenuItemSaveDict" = "ユーザー辞書を今すぐ保存";
 "MenuItemPrivateMode" = "プライベートモード";
 "MenuItemDirectInput" = "\"%@\"では直接入力";
+"MenuItemInsertBlankString" = "空文字挿入 (互換性)";
 "SettingsNameGeneral" = "一般";
 "SettingsNameDictionaries" = "辞書";
 "SettingsNameSoftwareUpdate" = "ソフトウェアアップデート";

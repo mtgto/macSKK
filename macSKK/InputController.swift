@@ -227,6 +227,10 @@ class InputController: IMKInputController {
                                             keyEquivalent: "")
             directModeItem.state = directMode ? .on : .off
             preferenceMenu.addItem(directModeItem)
+            // NOTE: IMKInputControllerのmenuではsubmenuを指定してもOSに無視されるみたい
+            let insertBlankStringMenuItem = NSMenuItem(title: NSLocalizedString("MenuItemInsertBlankString", comment: "空文字挿入 (互換性)"), action: #selector(toggleInsertBlankString), keyEquivalent: "")
+            insertBlankStringMenuItem.state = insertBlankString ? .on : .off
+            preferenceMenu.addItem(insertBlankStringMenuItem)
         }
         #if DEBUG
         // デバッグ用
@@ -303,6 +307,13 @@ class InputController: IMKInputController {
     @objc func toggleDirectMode() {
         if let bundleIdentifier = targetApp.bundleIdentifier {
             NotificationCenter.default.post(name: notificationNameToggleDirectMode, object: bundleIdentifier)
+        }
+    }
+
+    /// 現在最前面にあるアプリで、ワークアラウンドの空文字挿入の有効無効を切り換える
+    @objc func toggleInsertBlankString() {
+        if let bundleIdentifier = targetApp.bundleIdentifier {
+            NotificationCenter.default.post(name: notificationNameToggleInsertBlankString, object: bundleIdentifier)
         }
     }
 

@@ -208,6 +208,21 @@ final class SettingsViewModel: ObservableObject {
             }
             .store(in: &cancellables)
 
+        NotificationCenter.default.publisher(for: notificationNameToggleInsertBlankString)
+            .sink { [weak self] notification in
+                // 現状はワークアラウンドの種類が空文字挿入しかないのでBundle Identifierでただ検索している
+                if let self, let bundleIdentifier = notification.object as? String {
+                    if let index = self.workaroundApplications.firstIndex(where: { $0.bundleIdentifier == bundleIdentifier }) {
+                        logger.log("Bundle Identifier \"\(bundleIdentifier, privacy: .public)\" の空文字挿入の互換性が解除されました。")
+                        self.workaroundApplications.remove(at: index)
+                    } else {
+                        logger.log("Bundle Identifier \"\(bundleIdentifier, privacy: .public)\" の空文字挿入の互換性が設定されました。")
+                        self.workaroundApplications.append(WorkaroundApplication(bundleIdentifier: bundleIdentifier, insertBlankString: true))
+                    }
+                }
+            }
+            .store(in: &cancellables)
+
         // 空以外のdictSettingsがセットされたときに一回だけ実行する
         $dictSettings.filter({ !$0.isEmpty }).first().sink { [weak self] _ in
             self?.setupNotification()
