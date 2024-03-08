@@ -93,10 +93,9 @@ final class StateMachineTests: XCTestCase {
         XCTAssertFalse(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil, cursorPosition: .zero)))
     }
 
-    func testHandleNormalEisuKana() throws {
-        // Normal時は英数キー、かなキーは無視する
+    func testHandleNormalEisu() throws {
+        // Normal時は英数キーは無視する
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .eisu, originalEvent: nil, cursorPosition: .zero)))
-        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .kana, originalEvent: nil, cursorPosition: .zero)))
     }
 
     func testHandleNormalSpecialSymbol() throws {
@@ -265,13 +264,46 @@ final class StateMachineTests: XCTestCase {
     func testHandleNormalCtrlJ() {
         stateMachine = StateMachine(initialState: IMEState(inputMode: .direct))
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(2).sink { events in
+        stateMachine.inputMethodEvent.collect(10).sink { events in
             XCTAssertEqual(events[0], .modeChanged(.hiragana, .zero))
             XCTAssertEqual(events[1], .modeChanged(.hiragana, .zero), "複数回CtrlJ打ったときにイベントは毎回発生する")
+            XCTAssertEqual(events[2], .modeChanged(.direct, .zero))
+            XCTAssertEqual(events[3], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[4], .modeChanged(.eisu, .zero))
+            XCTAssertEqual(events[5], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[6], .modeChanged(.katakana, .zero))
+            XCTAssertEqual(events[7], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[8], .modeChanged(.hankaku, .zero))
+            XCTAssertEqual(events[9], .modeChanged(.hiragana, .zero))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .ctrlJ, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .ctrlJ, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "l", withShift: false)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .ctrlJ, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "l", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .ctrlJ, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q", withShift: false)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .ctrlJ, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .ctrlQ, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .ctrlJ, originalEvent: nil, cursorPosition: .zero)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+    
+    func testHandleNormalKanaKeyAsSameAsCtrlJ() {
+        stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(4).sink { events in
+            XCTAssertEqual(events[0], .modeChanged(.hankaku, .zero))
+            XCTAssertEqual(events[1], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[2], .modeChanged(.hankaku, .zero))
+            XCTAssertEqual(events[3], .modeChanged(.hiragana, .zero))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .ctrlQ, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .ctrlJ, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .ctrlQ, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .kana, originalEvent: nil, cursorPosition: .zero)))
         wait(for: [expectation], timeout: 1.0)
     }
 

@@ -145,7 +145,7 @@ class StateMachine {
             return true
         case .printable(let input):
             return handleNormalPrintable(input: input, action: action, specialState: specialState)
-        case .ctrlJ:
+        case .ctrlJ, .kana:
             if case .unregister = specialState {
                 return true
             } else {
@@ -240,7 +240,7 @@ class StateMachine {
             } else {
                 return false
             }
-        case .eisu, .kana:
+        case .eisu:
             // 何もしない (OSがIMEの切り替えはしてくれる)
             return true
         }
