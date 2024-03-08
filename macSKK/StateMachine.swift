@@ -90,7 +90,11 @@ class StateMachine {
                         addWordToUserDict(yomi: registerState.yomi, okuri: registerState.okuri, candidate: Candidate(registerState.text))
                         state.specialState = nil
                         state.inputMode = registerState.prev.mode
-                        addFixedText(registerState.text)
+                        if let okuri = registerState.okuri {
+                            addFixedText(registerState.text + okuri)
+                        } else {
+                            addFixedText(registerState.text)
+                        }
                     }
                     return true
                 } else if case .unregister(let unregisterState) = specialState {
