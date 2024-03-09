@@ -11,7 +11,7 @@ struct UNNotifier {
     // ユーザー辞書の書き込みエラーの通知センター用通知のID
     static let userNotificationWriteErrorIdentifier = "net.mtgto.inputmethod.macSKK.userNotification.userDictWriteError"
 
-    static func sendNotificationForUserDict(readError: Error) {
+    static func sendNotificationForUserDict(readError: any Error) {
         let content = UNMutableNotificationContent()
         content.title = NSLocalizedString("UNUserDictReadErrorTitle", comment: "エラー")
         content.body = NSLocalizedString("UNUserDictReadErrorBody", comment: "ユーザー辞書の読み込みに失敗しました")
@@ -29,7 +29,7 @@ struct UNNotifier {
         sendUserNotification(request: request)
     }
 
-    static func sendNotificationForUserDict(writeError: Error) {
+    static func sendNotificationForUserDict(writeError: any Error) {
         let content = UNMutableNotificationContent()
         content.title = NSLocalizedString("UNUserDictWriteErrorTitle", comment: "エラー")
         content.body = NSLocalizedString("UNUserDictWriteErrorBody", comment: "ユーザー辞書の永続化に失敗しました")

@@ -8,14 +8,14 @@ struct UpdateChecker {
     // atomをパースして返すので新しい順で返す
     func fetch() async throws -> [Release] {
         let service = NSXPCConnection(serviceName: "net.mtgto.inputmethod.macSKK.FetchUpdateService")
-        service.remoteObjectInterface = NSXPCInterface(with: FetchUpdateServiceProtocol.self)
+        service.remoteObjectInterface = NSXPCInterface(with: (any FetchUpdateServiceProtocol).self)
         service.resume()
         
         defer {
             service.invalidate()
         }
 
-        guard let proxy = service.remoteObjectProxy as? FetchUpdateServiceProtocol else {
+        guard let proxy = service.remoteObjectProxy as? any FetchUpdateServiceProtocol else {
             throw FetchUpdateServiceError.invalidProxy
         }
         let response = try await proxy.fetch()

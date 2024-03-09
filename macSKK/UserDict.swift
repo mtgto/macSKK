@@ -17,9 +17,9 @@ class UserDict: NSObject, DictProtocol {
      * 通常起動時はFileDict形式で "skk-jisyo.utf8" というファイル名。
      * ユニットテスト用に差し替え可能なMemoryDict形式も取れるようにしている。
      */
-    var userDict: DictProtocol?
+    var userDict: (any DictProtocol)?
     /// 有効になっている辞書。優先度が高い順。
-    var dicts: [DictProtocol]
+    var dicts: [any DictProtocol]
     /**
      * プライベートモードのユーザー辞書。プライベートモードが有効な時に変換や単語登録するとユーザー辞書とは別に更新されます。
      *
@@ -35,7 +35,7 @@ class UserDict: NSObject, DictProtocol {
     let presentedItemURL: URL?
     let presentedItemOperationQueue: OperationQueue = OperationQueue()
 
-    init(dicts: [DictProtocol], userDictEntries: [String: [Word]]? = nil, privateMode: CurrentValueSubject<Bool, Never>) throws {
+    init(dicts: [any DictProtocol], userDictEntries: [String: [Word]]? = nil, privateMode: CurrentValueSubject<Bool, Never>) throws {
         self.dicts = dicts
         self.privateMode = privateMode
         dictionariesDirectoryURL = try FileManager.default.url(

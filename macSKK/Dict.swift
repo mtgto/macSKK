@@ -20,7 +20,7 @@ enum DictLoadStatus {
     case loading
     /// 無効に設定されている
     case disabled
-    case fail(Error)
+    case fail(any Error)
 }
 
 /// 辞書の読み込み状態の通知オブジェクト

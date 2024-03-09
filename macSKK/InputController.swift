@@ -40,7 +40,7 @@ class InputController: IMKInputController {
         completionPanel = CompletionPanel()
         super.init(server: server, delegate: delegate, client: inputClient)
 
-        guard let textInput = inputClient as? IMKTextInput else {
+        guard let textInput = inputClient as? any IMKTextInput else {
             return
         }
         windowLevel = NSWindow.Level(rawValue: Int(textInput.windowLevel() + 1))
@@ -184,7 +184,7 @@ class InputController: IMKInputController {
             return false
         }
         // 左下座標基準でwidth=1, height=(通常だとフォントサイズ)のNSRect
-        if let textInput = sender as? IMKTextInput {
+        if let textInput = sender as? any IMKTextInput {
             // カーソル位置あたりを取得する
             // TODO: 単語登録中など、現在のカーソル位置が0ではないときはそれに合わせて座標を取得したい
             // forCharacterIndexを0以外で取得しようとすると取得できないことがあるためひとまず断念
@@ -232,7 +232,7 @@ class InputController: IMKInputController {
 
     // MARK: - IMKStateSetting
     override func activateServer(_ sender: Any!) {
-        if let textInput = sender as? IMKTextInput {
+        if let textInput = sender as? any IMKTextInput {
             setCustomInputSource(textInput: textInput)
         } else {
             logger.warning("activateServerの引数clientがIMKTextInputではありません")
@@ -257,7 +257,7 @@ class InputController: IMKInputController {
         guard let inputMode = InputMode(rawValue: value) else { return }
         logger.debug("入力モードが変更されました \(inputMode.rawValue)")
         stateMachine.setMode(inputMode)
-        guard let textInput = sender as? IMKTextInput else {
+        guard let textInput = sender as? any IMKTextInput else {
             logger.warning("setValueの引数clientがIMKTextInputではありません")
             return
         }
@@ -401,7 +401,7 @@ class InputController: IMKInputController {
     }
 
     // キー配列を設定する
-    private func setCustomInputSource(textInput: IMKTextInput) {
+    private func setCustomInputSource(textInput: any IMKTextInput) {
         if let inputSourceID = UserDefaults.standard.string(forKey: UserDefaultsKeys.selectedInputSource) {
             logger.info("InputSourceIDを \(inputSourceID, privacy: .public) に設定します")
             textInput.overrideKeyboard(withKeyboardNamed: inputSourceID)
