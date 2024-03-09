@@ -5,6 +5,10 @@ import SwiftUI
 
 struct WorkaroundView: View {
     @StateObject var settingsViewModel: SettingsViewModel
+    @State var isShowingSheet: Bool = false
+    // 編集中のアプリケーション設定
+    @State var bundleIdentifier: String = ""
+    @State var insertBlankString: Bool = true
 
     var body: some View {
         let applications = settingsViewModel.workaroundApplications
@@ -34,6 +38,14 @@ struct WorkaroundView: View {
                                     }.font(.footnote)
                                 }
                                 Spacer()
+                                Button {
+                                    if let index = applications.firstIndex(of: application) {
+                                        logger.log("Bundle Identifier \"\(applications[index].bundleIdentifier, privacy: .public)\" の互換性設定が解除されました。")
+                                        settingsViewModel.workaroundApplications.remove(at: index)
+                                    }
+                                } label: {
+                                    Text("Delete")
+                                }
                             }
                             .padding(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
                             .onAppear {
@@ -46,6 +58,14 @@ struct WorkaroundView: View {
                                 }
                             }
                         }
+                    } footer: {
+                        Button {
+                            bundleIdentifier = ""
+                            insertBlankString = true
+                            isShowingSheet = true
+                        } label: {
+                            Text("Add…")
+                        }
                     }
                 }
             }
@@ -54,6 +74,11 @@ struct WorkaroundView: View {
                 .font(.subheadline)
                 .padding([.bottom, .leading, .trailing])
             Spacer()
+        }.sheet(isPresented: $isShowingSheet) {
+            WorkaroundApplicationView(settingsViewModel: settingsViewModel,
+                                      bundleIdentifier: $bundleIdentifier,
+                                      insertBlankString: $insertBlankString,
+                                      isShowingSheet: $isShowingSheet)
         }
     }
 }

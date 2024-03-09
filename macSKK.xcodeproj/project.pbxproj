@@ -92,6 +92,7 @@
 		CEF08257296D8CBD00646366 /* CandidatesPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF08256296D8CBD00646366 /* CandidatesPanel.swift */; };
 		CEF0825B296D8FF000646366 /* CandidatesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF0825A296D8FF000646366 /* CandidatesView.swift */; };
 		CEF0825D296DB58600646366 /* CandidatesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF0825C296DB58600646366 /* CandidatesViewModel.swift */; };
+		CEF3D86C2B9C022900BD1D3A /* WorkaroundApplicationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF3D86B2B9C022900BD1D3A /* WorkaroundApplicationView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -218,6 +219,7 @@
 		CEF08256296D8CBD00646366 /* CandidatesPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CandidatesPanel.swift; sourceTree = "<group>"; };
 		CEF0825A296D8FF000646366 /* CandidatesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CandidatesView.swift; sourceTree = "<group>"; };
 		CEF0825C296DB58600646366 /* CandidatesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CandidatesViewModel.swift; sourceTree = "<group>"; };
+		CEF3D86B2B9C022900BD1D3A /* WorkaroundApplicationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkaroundApplicationView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -385,6 +387,7 @@
 				CEB141712A87D16C005E7252 /* DictionaryView.swift */,
 				CE97887A2A9B93EB00F9B196 /* DirectModeView.swift */,
 				CED098502B95F32600F2E844 /* WorkaroundView.swift */,
+				CEF3D86B2B9C022900BD1D3A /* WorkaroundApplicationView.swift */,
 				CEE3717429653112000DB2C3 /* SoftwareUpdateView.swift */,
 				CE496C8B2B43968A001C623C /* LogView.swift */,
 				CEC376EA2965211200D9C432 /* KeyEventView.swift */,
@@ -618,6 +621,7 @@
 				CE5ECF362957034B00E7BE7D /* macSKKApp.swift in Sources */,
 				CEC061C82ABB0A0100A11614 /* CompletionPanel.swift in Sources */,
 				CE4CB5CC2AD557D90046FA34 /* NumberEntry.swift in Sources */,
+				CEF3D86C2B9C022900BD1D3A /* WorkaroundApplicationView.swift in Sources */,
 				CE84A3DE29571797009394C4 /* Action.swift in Sources */,
 				CE485A882A8FA195008271EF /* Release+UNNotification.swift in Sources */,
 				CED7CA3A2A839505004EF988 /* FetchUpdateServiceProtocol.swift in Sources */,

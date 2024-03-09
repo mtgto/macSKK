@@ -18,6 +18,7 @@
 "SettingsFileDictionariesSubtitle" = "You can reorder the priorities of dictionary by drag & drop";
 "SettingsNoteDirectMode" = "Set Front-Most to target app and select \"Direct input from (AppName)\" in Input Menu.";
 "SettingsNoteWorkaround" = "Set Front-Most to target app and select \"Workaround\" in Input Menu.";
+"SettingsHeaderWorkaroundApplication" = "Workaround settings for the application";
 "LoadingStatusLoaded %lld" = "%lld entries";
 "LoadingStatusLoaded %lld WithError %lld" = "%lld entries (%lld lines of parsing error)";
 "LoadingStatusLoading" = "Loading…";
@@ -52,3 +53,5 @@
 "Insert Blank String" = "Insert Blank String";
 "Enabled" = "Enabled";
 "Disabled" = "Disabled";
+"Add…" = "Add…";
+"Cancel" = "Cancel";
