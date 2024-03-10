@@ -8,7 +8,7 @@ import UserNotifications
 import os
 
 let logger: Logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "main")
-var dictionary: UserDict!
+nonisolated(unsafe) var dictionary: UserDict!
 /// 現在のローマ字かな変換ルール
 var kanaRule: Romaji!
 /// デフォルトでもってるローマ字かな変換ルール
@@ -45,7 +45,7 @@ struct macSKKApp: App {
     private let dictionariesDirectoryUrl: URL
     private let userNotificationDelegate = UserNotificationDelegate()
     private let settingsWatcher: SettingsWatcher?
-    @State private var fetchReleaseTask: Task<Void, Error>?
+    @State private var fetchReleaseTask: Task<Void, any Error>?
     #if DEBUG
     private let candidatesPanel: CandidatesPanel = CandidatesPanel(showAnnotationPopover: true)
     private let inputModePanel = InputModePanel()

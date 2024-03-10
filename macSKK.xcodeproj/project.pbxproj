@@ -848,6 +848,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 0.19.0;
+				OTHER_SWIFT_FLAGS = "-enable-upcoming-feature ExistentialAny";
 				PRODUCT_BUNDLE_IDENTIFIER = net.mtgto.inputmethod.macSKK;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -884,6 +885,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 0.19.0;
+				OTHER_SWIFT_FLAGS = "-enable-upcoming-feature ExistentialAny";
 				PRODUCT_BUNDLE_IDENTIFIER = net.mtgto.inputmethod.macSKK;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
