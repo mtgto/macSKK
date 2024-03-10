@@ -1788,7 +1788,7 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[2], .modeChanged(.hiragana, .zero))
             XCTAssertEqual(events[3], .markedText(MarkedText([.plain("[登録：あ*け]")])))
             XCTAssertEqual(events[4], .markedText(MarkedText([.plain("[登録：あ*け]"), .plain("い")])))
-            XCTAssertEqual(events[5], .fixedText("い"))
+            XCTAssertEqual(events[5], .fixedText("いけ"), "辞書登録後は単語登録時に使用した送り仮名つきで確定する")
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
