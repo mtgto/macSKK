@@ -18,8 +18,12 @@ let privateMode = CurrentValueSubject<Bool, Never>(false)
 // マスターはSettingsViewModelがもっているが、InputControllerからAppが参照できないのでグローバル変数にコピーしている。
 // FIXME: NotificationCenter経由で設定画面で変更したことを各InputControllerに通知するようにしてこの変数は消すかも。
 let directModeBundleIdentifiers = CurrentValueSubject<[String], Never>([])
+// モード変更時に空白文字を一瞬追加するワークアラウンドを適用するBundle Identifierの集合
+let insertBlankStringBundleIdentifiers = CurrentValueSubject<[String], Never>([])
 // 直接入力モードを切り替えたいときに通知される通知の名前。
 let notificationNameToggleDirectMode = Notification.Name("toggleDirectMode")
+// 空文字挿入のワークアラウンドの有効無効を切り替えたいときに通知される通知の名前。
+let notificationNameToggleInsertBlankString = Notification.Name("toggleInsertBlankString")
 // 設定画面を開きたいときに通知される通知の名前
 let notificationNameOpenSettings = Notification.Name("openSettings")
 // インラインで表示する変換候補の数を変更したときに通知される通知の名前
@@ -181,6 +185,11 @@ struct macSKKApp: App {
             UserDefaultsKeys.selectedInputSource: InputSource.defaultInputSourceId,
             UserDefaultsKeys.showAnnotation: true,
             UserDefaultsKeys.inlineCandidateCount: 3,
+            UserDefaultsKeys.workarounds: [
+                ["bundleIdentifier": "net.kovidgoyal.kitty", "insertBlankString": true],
+                ["bundleIdentifier": "jp.naver.line.mac", "insertBlankString": true],
+                ["bundleIdentifier": "org.alacritty", "insertBlankString": true],
+            ],
         ])
     }
 

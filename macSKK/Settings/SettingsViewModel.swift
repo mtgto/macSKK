@@ -82,6 +82,21 @@ struct DirectModeApplication: Identifiable, Equatable {
     }
 }
 
+// 回避策が設定されたアプリケーション
+struct WorkaroundApplication: Identifiable, Equatable {
+    typealias ID = String
+    let bundleIdentifier: String
+    let insertBlankString: Bool
+    var icon: NSImage?
+    var displayName: String?
+
+    var id: ID { bundleIdentifier }
+
+    static func ==(lhs: Self, rhs: Self) -> Bool {
+        return lhs.id == rhs.id
+    }
+}
+
 @MainActor
 final class SettingsViewModel: ObservableObject {
     /// CheckUpdaterで取得した最新のリリース。取得前はnil
@@ -104,6 +119,8 @@ final class SettingsViewModel: ObservableObject {
     @Published var showAnnotation: Bool
     /// インラインで表示する変換候補の数。
     @Published var inlineCandidateCount: Int
+    /// ワークアラウンドが設定されたアプリケーション
+    @Published var workaroundApplications: [WorkaroundApplication]
     // 辞書ディレクトリ
     let dictionariesDirectoryUrl: URL
     private var cancellables = Set<AnyCancellable>()
@@ -120,6 +137,13 @@ final class SettingsViewModel: ObservableObject {
         }
         showAnnotation = UserDefaults.standard.bool(forKey: UserDefaultsKeys.showAnnotation)
         inlineCandidateCount = UserDefaults.standard.integer(forKey: UserDefaultsKeys.inlineCandidateCount)
+        workaroundApplications = UserDefaults.standard.array(forKey: UserDefaultsKeys.workarounds)?.compactMap { workaround in
+            if let workaround = workaround as? Dictionary<String, Any>, let bundleIdentifier = workaround["bundleIdentifier"] as? String, let insertBlankString = workaround["insertBlankString"] as? Bool {
+                WorkaroundApplication(bundleIdentifier: bundleIdentifier, insertBlankString: insertBlankString)
+            } else {
+                nil
+            }
+        } ?? []
 
         // SKK-JISYO.Lのようなファイルの読み込みが遅いのでバックグラウンドで処理
         $dictSettings.filter({ !$0.isEmpty }).receive(on: DispatchQueue.global()).sink { dictSettings in
@@ -161,6 +185,15 @@ final class SettingsViewModel: ObservableObject {
         }
         .store(in: &cancellables)
 
+        $workaroundApplications.dropFirst().sink { applications in
+            let settings = applications.map { ["bundleIdentifier": $0.bundleIdentifier, "insertBlankString": $0.insertBlankString] }
+            UserDefaults.standard.set(settings, forKey: UserDefaultsKeys.workarounds)
+        }.store(in: &cancellables)
+
+        $workaroundApplications.sink { applications in
+            insertBlankStringBundleIdentifiers.send(applications.filter { $0.insertBlankString }.map { $0.bundleIdentifier })
+        }.store(in: &cancellables)
+
         NotificationCenter.default.publisher(for: notificationNameToggleDirectMode)
             .sink { [weak self] notification in
                 if let bundleIdentifier = notification.object as? String {
@@ -170,6 +203,21 @@ final class SettingsViewModel: ObservableObject {
                     } else {
                         logger.log("Bundle Identifier \"\(bundleIdentifier, privacy: .public)\" が直接入力に追加されました。")
                         self?.directModeApplications.append(DirectModeApplication(bundleIdentifier: bundleIdentifier))
+                    }
+                }
+            }
+            .store(in: &cancellables)
+
+        NotificationCenter.default.publisher(for: notificationNameToggleInsertBlankString)
+            .sink { [weak self] notification in
+                // 現状はワークアラウンドの種類が空文字挿入しかないのでBundle Identifierでただ検索している
+                if let self, let bundleIdentifier = notification.object as? String {
+                    if let index = self.workaroundApplications.firstIndex(where: { $0.bundleIdentifier == bundleIdentifier }) {
+                        logger.log("Bundle Identifier \"\(bundleIdentifier, privacy: .public)\" の空文字挿入の互換性が解除されました。")
+                        self.workaroundApplications.remove(at: index)
+                    } else {
+                        logger.log("Bundle Identifier \"\(bundleIdentifier, privacy: .public)\" の空文字挿入の互換性が設定されました。")
+                        self.workaroundApplications.append(WorkaroundApplication(bundleIdentifier: bundleIdentifier, insertBlankString: true))
                     }
                 }
             }
@@ -230,6 +278,7 @@ final class SettingsViewModel: ObservableObject {
         selectedInputSourceId = InputSource.defaultInputSourceId
         showAnnotation = true
         inlineCandidateCount = 3
+        workaroundApplications = []
     }
 
     // DictionaryViewのPreviewProvider用
@@ -248,6 +297,12 @@ final class SettingsViewModel: ObservableObject {
     internal convenience init(inputSources: [InputSource]) throws {
         try self.init()
         self.inputSources = inputSources
+    }
+
+    // WorkaroundViewのPreviewProvider用
+    internal convenience init(workaroundApplications: [WorkaroundApplication]) throws {
+        try self.init()
+        self.workaroundApplications = workaroundApplications
     }
 
     /**
@@ -303,6 +358,11 @@ final class SettingsViewModel: ObservableObject {
     func updateDirectModeApplication(index: Int, displayName: String, icon: NSImage) {
         directModeApplications[index].displayName = displayName
         directModeApplications[index].icon = icon
+    }
+
+    func updateWorkaroundApplication(index: Int, displayName: String, icon: NSImage) {
+        workaroundApplications[index].displayName = displayName
+        workaroundApplications[index].icon = icon
     }
 
     /// 利用可能なキー配列を読み込む

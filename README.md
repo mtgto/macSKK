@@ -65,6 +65,7 @@ macSKKが入力メソッドとして選択されているときに入力メニ�
 | selectedInputSource         | String  | キー配列 (KeyLayout) のID               |
 | showAnnotation              | Boolean | 注釈を変換候補のそばに表示するか        |
 | inlineCandidateCount        | Number  | インラインで表示する変換候補の数        |
+| workarounds                 | Array   | 互換性設定がされているアプリケーション  |
 
 ## 機能
 

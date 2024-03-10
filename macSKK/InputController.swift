@@ -29,6 +29,8 @@ class InputController: IMKInputController {
     private let selectedWord = PassthroughSubject<Word.Word?, Never>()
     /// 入力を処理しないで直接入力させるかどうか
     private var directMode: Bool = false
+    /// モード変更時に空白文字を一瞬追加するワークアラウンドを適用するかどうか
+    private var insertBlankString: Bool = false
     /// 最後にイベントを受け取ったときのカーソル位置
     private var cursorPosition: NSRect = .zero
     /// 最後にイベントを受け取ったときのウィンドウレベル + 1
@@ -81,10 +83,10 @@ class InputController: IMKInputController {
                     }
                     textInput.setMarkedText(NSAttributedString(attributedText), selectionRange: cursorRange, replacementRange: Self.notFoundRange)
                 case .modeChanged(let inputMode, let cursorPosition):
-                    // KittyやLINE, Alacrittyでq/lによるモード切り替えでq/lが入力されたり、C-jで改行が入力されるのを回避するワークアラウンド
+                    // KittyやAlacrittyなど、q/lによるモード切り替えでq/lが入力されたり、C-jで改行が入力されるのを回避するワークアラウンド
                     // AquaSKKの空文字列挿入を参考にしています。
                     // https://github.com/codefirst/aquaskk/blob/4.7.5/platform/mac/src/server/SKKInputController.mm#L405-L412
-                    if ["net.kovidgoyal.kitty", "jp.naver.line.mac", "org.alacritty"].contains(textInput.bundleIdentifier()) {
+                    if self.insertBlankString {
                         textInput.setMarkedText(String(format: "%c", 0x0c), selectionRange: Self.notFoundRange, replacementRange: Self.notFoundRange)
                         textInput.setMarkedText("", selectionRange: Self.notFoundRange, replacementRange: Self.notFoundRange)
                     }
@@ -149,6 +151,11 @@ class InputController: IMKInputController {
         directModeBundleIdentifiers.sink { [weak self] bundleIdentifiers in
             if let bundleIdentifier = self?.targetApp.bundleIdentifier {
                 self?.directMode = bundleIdentifiers.contains(bundleIdentifier)
+            }
+        }.store(in: &cancellables)
+        insertBlankStringBundleIdentifiers.sink { [weak self] bundleIdentifiers in
+            if let bundleIdentifier = self?.targetApp.bundleIdentifier {
+                self?.insertBlankString = bundleIdentifiers.contains(bundleIdentifier)
             }
         }.store(in: &cancellables)
         stateMachine.yomiEvent.sink { [weak self] yomi in
@@ -220,6 +227,10 @@ class InputController: IMKInputController {
                                             keyEquivalent: "")
             directModeItem.state = directMode ? .on : .off
             preferenceMenu.addItem(directModeItem)
+            // NOTE: IMKInputControllerのmenuではsubmenuを指定してもOSに無視されるみたい
+            let insertBlankStringMenuItem = NSMenuItem(title: NSLocalizedString("MenuItemInsertBlankString", comment: "空文字挿入 (互換性)"), action: #selector(toggleInsertBlankString), keyEquivalent: "")
+            insertBlankStringMenuItem.state = insertBlankString ? .on : .off
+            preferenceMenu.addItem(insertBlankStringMenuItem)
         }
         #if DEBUG
         // デバッグ用
@@ -296,6 +307,13 @@ class InputController: IMKInputController {
     @objc func toggleDirectMode() {
         if let bundleIdentifier = targetApp.bundleIdentifier {
             NotificationCenter.default.post(name: notificationNameToggleDirectMode, object: bundleIdentifier)
+        }
+    }
+
+    /// 現在最前面にあるアプリで、ワークアラウンドの空文字挿入の有効無効を切り換える
+    @objc func toggleInsertBlankString() {
+        if let bundleIdentifier = targetApp.bundleIdentifier {
+            NotificationCenter.default.post(name: notificationNameToggleInsertBlankString, object: bundleIdentifier)
         }
     }
 

@@ -10,4 +10,5 @@ struct UserDefaultsKeys {
     static let selectedInputSource = "selectedInputSource"
     static let showAnnotation = "showAnnotation"
     static let inlineCandidateCount = "inlineCandidateCount"
+    static let workarounds = "workarounds"
 }

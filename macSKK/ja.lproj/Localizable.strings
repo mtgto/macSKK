@@ -2,10 +2,12 @@
 "MenuItemSaveDict" = "ユーザー辞書を今すぐ保存";
 "MenuItemPrivateMode" = "プライベートモード";
 "MenuItemDirectInput" = "\"%@\"では直接入力";
+"MenuItemInsertBlankString" = "空文字挿入 (互換性)";
 "SettingsNameGeneral" = "一般";
 "SettingsNameDictionaries" = "辞書";
 "SettingsNameSoftwareUpdate" = "ソフトウェアアップデート";
 "SettingsNameDirectMode" = "直接入力";
+"SettingsNameWorkaround" = "互換性の設定";
 "SettingsNameLog" = "ログ";
 "SettingsNameKeyEvent" = "キーイベント";
 "SettingsNameSystemDict" = "システム辞書";
@@ -15,6 +17,8 @@
 "SettingsFileDictionariesTitle" = "ファイル辞書";
 "SettingsFileDictionariesSubtitle" = "項目をドラッグすることで優先順位を入れ替え可能です。";
 "SettingsNoteDirectMode" = "日本語変換を行いたくないアプリが最前面の状態で、入力メニューから \"(アプリ名)では直接入力\" を選択してください。";
+"SettingsNoteWorkaround" = "設定したいアプリが最前面の状態で、入力メニューからも互換性の設定の有効・無効を設定できます。";
+"SettingsHeaderWorkaroundApplication" = "アプリケーションの互換性の設定";
 "LoadingStatusLoaded %lld" = "%lld エントリ";
 "LoadingStatusLoaded %lld WithError %lld" = "%lld エントリ (%lld行の読み込みエラー)";
 "LoadingStatusLoading" = "読み込み中…";
@@ -46,3 +50,9 @@
 "Show Annotation" = "現在の変換候補の注釈を表示";
 "Copy" = "コピー";
 "Number of inline candidates" = "インラインで表示する変換候補の数";
+"Insert Blank String" = "空文字挿入";
+"Enabled" = "有効";
+"Disabled" = "無効";
+"Add…" = "追加…";
+"Cancel" = "キャンセル";
+"Add" = "追加";
