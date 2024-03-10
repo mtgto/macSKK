@@ -17,7 +17,7 @@
 "SettingsFileDictionariesTitle" = "ファイル辞書";
 "SettingsFileDictionariesSubtitle" = "項目をドラッグすることで優先順位を入れ替え可能です。";
 "SettingsNoteDirectMode" = "日本語変換を行いたくないアプリが最前面の状態で、入力メニューから \"(アプリ名)では直接入力\" を選択してください。";
-"SettingsNoteWorkaround" = "設定したいアプリが最前面の状態で、入力メニューから \"互換性の設定\" を選択してください。";
+"SettingsNoteWorkaround" = "設定したいアプリが最前面の状態で、入力メニューからも互換性の設定の有効・無効を設定できます。";
 "SettingsHeaderWorkaroundApplication" = "アプリケーションの互換性の設定";
 "LoadingStatusLoaded %lld" = "%lld エントリ";
 "LoadingStatusLoaded %lld WithError %lld" = "%lld エントリ (%lld行の読み込みエラー)";

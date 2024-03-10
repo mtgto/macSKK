@@ -17,7 +17,7 @@
 "SettingsFileDictionariesTitle" = "Dictionary files";
 "SettingsFileDictionariesSubtitle" = "You can reorder the priorities of dictionary by drag & drop";
 "SettingsNoteDirectMode" = "Set Front-Most to target app and select \"Direct input from (AppName)\" in Input Menu.";
-"SettingsNoteWorkaround" = "Set Front-Most to target app and select \"Workaround\" in Input Menu.";
+"SettingsNoteWorkaround" = "you can enable/disable workaround settings from the Input Menu when the target app is in Front-Most.";
 "SettingsHeaderWorkaroundApplication" = "Workaround settings for the application";
 "LoadingStatusLoaded %lld" = "%lld entries";
 "LoadingStatusLoaded %lld WithError %lld" = "%lld entries (%lld lines of parsing error)";
