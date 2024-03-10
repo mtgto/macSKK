@@ -299,6 +299,7 @@ final class SettingsViewModel: ObservableObject {
         self.inputSources = inputSources
     }
 
+    // WorkaroundViewのPreviewProvider用
     internal convenience init(workaroundApplications: [WorkaroundApplication]) throws {
         try self.init()
         self.workaroundApplications = workaroundApplications

@@ -31,7 +31,7 @@ struct WorkaroundApplicationView: View {
                             WorkaroundApplication(bundleIdentifier: bundleIdentifier, insertBlankString: insertBlankString))
                         isShowingSheet = false
                     } label: {
-                        Text("OK")
+                        Text("Add")
                     }
                     .keyboardShortcut(.defaultAction)
                     .disabled(bundleIdentifier.isEmpty)
