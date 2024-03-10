@@ -8,7 +8,7 @@ import UserNotifications
 import os
 
 let logger: Logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "main")
-nonisolated(unsafe) var dictionary: UserDict!
+var dictionary: UserDict!
 /// 現在のローマ字かな変換ルール
 var kanaRule: Romaji!
 /// デフォルトでもってるローマ字かな変換ルール
