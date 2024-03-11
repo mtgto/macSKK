@@ -94,6 +94,10 @@
 		CEF0825B296D8FF000646366 /* CandidatesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF0825A296D8FF000646366 /* CandidatesView.swift */; };
 		CEF0825D296DB58600646366 /* CandidatesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF0825C296DB58600646366 /* CandidatesViewModel.swift */; };
 		CEF3D86C2B9C022900BD1D3A /* WorkaroundApplicationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF3D86B2B9C022900BD1D3A /* WorkaroundApplicationView.swift */; };
+		CEF3D8742B9EF0C000BD1D3A /* SKKServClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF3D8732B9EF0C000BD1D3A /* SKKServClient.swift */; };
+		CEF3D8782B9EF0C000BD1D3A /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF3D8772B9EF0C000BD1D3A /* main.swift */; };
+		CEF3D87D2B9EF0C000BD1D3A /* SKKServClient.xpc in Embed XPC Services */ = {isa = PBXBuildFile; fileRef = CEF3D8712B9EF0C000BD1D3A /* SKKServClient.xpc */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		CEF3D8822B9EF19100BD1D3A /* SKKServClientProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF3D8752B9EF0C000BD1D3A /* SKKServClientProtocol.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -111,6 +115,13 @@
 			remoteGlobalIDString = CED7CA282A8394F7004EF988;
 			remoteInfo = FetchUpdateService;
 		};
+		CEF3D87B2B9EF0C000BD1D3A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CE5ECF2A2957034B00E7BE7D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = CEF3D8702B9EF0C000BD1D3A;
+			remoteInfo = SKKServClient;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -120,6 +131,7 @@
 			dstPath = "$(CONTENTS_FOLDER_PATH)/XPCServices";
 			dstSubfolderSpec = 16;
 			files = (
+				CEF3D87D2B9EF0C000BD1D3A /* SKKServClient.xpc in Embed XPC Services */,
 				CED7CA352A8394F7004EF988 /* FetchUpdateService.xpc in Embed XPC Services */,
 			);
 			name = "Embed XPC Services";
@@ -222,6 +234,12 @@
 		CEF0825A296D8FF000646366 /* CandidatesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CandidatesView.swift; sourceTree = "<group>"; };
 		CEF0825C296DB58600646366 /* CandidatesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CandidatesViewModel.swift; sourceTree = "<group>"; };
 		CEF3D86B2B9C022900BD1D3A /* WorkaroundApplicationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkaroundApplicationView.swift; sourceTree = "<group>"; };
+		CEF3D8712B9EF0C000BD1D3A /* SKKServClient.xpc */ = {isa = PBXFileReference; explicitFileType = "wrapper.xpc-service"; includeInIndex = 0; path = SKKServClient.xpc; sourceTree = BUILT_PRODUCTS_DIR; };
+		CEF3D8732B9EF0C000BD1D3A /* SKKServClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServClient.swift; sourceTree = "<group>"; };
+		CEF3D8752B9EF0C000BD1D3A /* SKKServClientProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServClientProtocol.swift; sourceTree = "<group>"; };
+		CEF3D8772B9EF0C000BD1D3A /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		CEF3D8792B9EF0C000BD1D3A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		CEF3D87A2B9EF0C000BD1D3A /* SKKServClient.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SKKServClient.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -247,6 +265,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		CEF3D86E2B9EF0C000BD1D3A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -263,6 +288,7 @@
 			children = (
 				CE5ECF342957034B00E7BE7D /* macSKK */,
 				CED7CA2A2A8394F7004EF988 /* FetchUpdateService */,
+				CEF3D8722B9EF0C000BD1D3A /* SKKServClient */,
 				CE5ECF462957034D00E7BE7D /* macSKKTests */,
 				CE5ECF332957034B00E7BE7D /* Products */,
 				CE496C962B440CCA001C623C /* Frameworks */,
@@ -279,6 +305,7 @@
 				CE5ECF322957034B00E7BE7D /* macSKK.app */,
 				CE5ECF432957034D00E7BE7D /* macSKKTests.xctest */,
 				CED7CA292A8394F7004EF988 /* FetchUpdateService.xpc */,
+				CEF3D8712B9EF0C000BD1D3A /* SKKServClient.xpc */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -425,6 +452,18 @@
 			path = fixture;
 			sourceTree = "<group>";
 		};
+		CEF3D8722B9EF0C000BD1D3A /* SKKServClient */ = {
+			isa = PBXGroup;
+			children = (
+				CEF3D8752B9EF0C000BD1D3A /* SKKServClientProtocol.swift */,
+				CEF3D8732B9EF0C000BD1D3A /* SKKServClient.swift */,
+				CEF3D8772B9EF0C000BD1D3A /* main.swift */,
+				CEF3D8792B9EF0C000BD1D3A /* Info.plist */,
+				CEF3D87A2B9EF0C000BD1D3A /* SKKServClient.entitlements */,
+			);
+			path = SKKServClient;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -442,6 +481,7 @@
 			);
 			dependencies = (
 				CED7CA342A8394F7004EF988 /* PBXTargetDependency */,
+				CEF3D87C2B9EF0C000BD1D3A /* PBXTargetDependency */,
 			);
 			name = macSKK;
 			packageProductDependencies = (
@@ -485,6 +525,23 @@
 			productReference = CED7CA292A8394F7004EF988 /* FetchUpdateService.xpc */;
 			productType = "com.apple.product-type.xpc-service";
 		};
+		CEF3D8702B9EF0C000BD1D3A /* SKKServClient */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CEF3D8802B9EF0C000BD1D3A /* Build configuration list for PBXNativeTarget "SKKServClient" */;
+			buildPhases = (
+				CEF3D86D2B9EF0C000BD1D3A /* Sources */,
+				CEF3D86E2B9EF0C000BD1D3A /* Frameworks */,
+				CEF3D86F2B9EF0C000BD1D3A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SKKServClient;
+			productName = SKKServClient;
+			productReference = CEF3D8712B9EF0C000BD1D3A /* SKKServClient.xpc */;
+			productType = "com.apple.product-type.xpc-service";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -492,7 +549,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1430;
+				LastSwiftUpdateCheck = 1530;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					CE5ECF312957034B00E7BE7D = {
@@ -505,6 +562,9 @@
 					};
 					CED7CA282A8394F7004EF988 = {
 						CreatedOnToolsVersion = 14.3.1;
+					};
+					CEF3D8702B9EF0C000BD1D3A = {
+						CreatedOnToolsVersion = 15.3;
 					};
 				};
 			};
@@ -527,6 +587,7 @@
 				CE5ECF312957034B00E7BE7D /* macSKK */,
 				CE5ECF422957034D00E7BE7D /* macSKKTests */,
 				CED7CA282A8394F7004EF988 /* FetchUpdateService */,
+				CEF3D8702B9EF0C000BD1D3A /* SKKServClient */,
 			);
 		};
 /* End PBXProject section */
@@ -561,6 +622,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		CED7CA272A8394F7004EF988 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CEF3D86F2B9EF0C000BD1D3A /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -684,6 +752,16 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		CEF3D86D2B9EF0C000BD1D3A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CEF3D8742B9EF0C000BD1D3A /* SKKServClient.swift in Sources */,
+				CEF3D8822B9EF19100BD1D3A /* SKKServClientProtocol.swift in Sources */,
+				CEF3D8782B9EF0C000BD1D3A /* main.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -696,6 +774,11 @@
 			isa = PBXTargetDependency;
 			target = CED7CA282A8394F7004EF988 /* FetchUpdateService */;
 			targetProxy = CED7CA332A8394F7004EF988 /* PBXContainerItemProxy */;
+		};
+		CEF3D87C2B9EF0C000BD1D3A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = CEF3D8702B9EF0C000BD1D3A /* SKKServClient */;
+			targetProxy = CEF3D87B2B9EF0C000BD1D3A /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -975,6 +1058,59 @@
 			};
 			name = Release;
 		};
+		CEF3D87E2B9EF0C000BD1D3A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CODE_SIGN_ENTITLEMENTS = SKKServClient/SKKServClient.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = W3A6B7FDC7;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SKKServClient/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = SKKServClient;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = net.mtgto.inputmethod.macSKK.SKKServClient;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		CEF3D87F2B9EF0C000BD1D3A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CODE_SIGN_ENTITLEMENTS = SKKServClient/SKKServClient.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = W3A6B7FDC7;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SKKServClient/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = SKKServClient;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = net.mtgto.inputmethod.macSKK.SKKServClient;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -1010,6 +1146,15 @@
 			buildConfigurations = (
 				CED7CA372A8394F7004EF988 /* Debug */,
 				CED7CA382A8394F7004EF988 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		CEF3D8802B9EF0C000BD1D3A /* Build configuration list for PBXNativeTarget "SKKServClient" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CEF3D87E2B9EF0C000BD1D3A /* Debug */,
+				CEF3D87F2B9EF0C000BD1D3A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
