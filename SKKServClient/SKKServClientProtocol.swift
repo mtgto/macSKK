@@ -4,6 +4,13 @@
 import Foundation
 import Network
 
+public enum SKKServClientError: Error {
+    /// skkservと接続失敗した
+    case invalidConnection
+    /// skkservが仕様外のレスポンスを返した
+    case invalidResponse
+}
+
 public final class SKKServDestination: NSObject, Sendable {
     let host: NWEndpoint.Host
     let port: NWEndpoint.Port
@@ -25,5 +32,6 @@ public final class SKKServDestination: NSObject, Sendable {
 }
 
 @objc protocol SKKServClientProtocol {
+    func serverVersion(destination: SKKServDestination) async throws -> String
     func refer(destination: SKKServDestination, yomi: String) async throws -> Data
 }
