@@ -15,6 +15,9 @@
 		CE1B00642BA4287C00C830FD /* SKKServRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE1B00632BA4287C00C830FD /* SKKServRequest.swift */; };
 		CE1B00662BA4288F00C830FD /* SKKServProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE1B00652BA4288F00C830FD /* SKKServProtocol.swift */; };
 		CE1B00682BA428AE00C830FD /* NWParameters+SKKServ.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE1B00672BA428AE00C830FD /* NWParameters+SKKServ.swift */; };
+		CE1B006A2BA5490E00C830FD /* SKKServDictView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE1B00692BA5490E00C830FD /* SKKServDictView.swift */; };
+		CE1B006C2BA54D9800C830FD /* SKKServService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE1B006B2BA54D9800C830FD /* SKKServService.swift */; };
+		CE1B006D2BA54DE400C830FD /* SKKServClientProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF3D8752B9EF0C000BD1D3A /* SKKServClientProtocol.swift */; };
 		CE2157662B2EA985006E4C41 /* UserDefaultsKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE2157652B2EA985006E4C41 /* UserDefaultsKeys.swift */; };
 		CE313A1F2AF5213700A49142 /* Candidate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE313A1E2AF5213700A49142 /* Candidate.swift */; };
 		CE39DB212A8DFD8F00BC619F /* MarkedText.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE39DB202A8DFD8F00BC619F /* MarkedText.swift */; };
@@ -153,6 +156,8 @@
 		CE1B00632BA4287C00C830FD /* SKKServRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServRequest.swift; sourceTree = "<group>"; };
 		CE1B00652BA4288F00C830FD /* SKKServProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServProtocol.swift; sourceTree = "<group>"; };
 		CE1B00672BA428AE00C830FD /* NWParameters+SKKServ.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NWParameters+SKKServ.swift"; sourceTree = "<group>"; };
+		CE1B00692BA5490E00C830FD /* SKKServDictView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServDictView.swift; sourceTree = "<group>"; };
+		CE1B006B2BA54D9800C830FD /* SKKServService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServService.swift; sourceTree = "<group>"; };
 		CE2157652B2EA985006E4C41 /* UserDefaultsKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsKeys.swift; sourceTree = "<group>"; };
 		CE313A1E2AF5213700A49142 /* Candidate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Candidate.swift; sourceTree = "<group>"; };
 		CE39DB202A8DFD8F00BC619F /* MarkedText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkedText.swift; sourceTree = "<group>"; };
@@ -360,6 +365,7 @@
 				CE485A872A8FA195008271EF /* Release+UNNotification.swift */,
 				CE6DBAAF2A85AA1200F5A227 /* LatestReleaseFetcher.swift */,
 				CED7CA3B2A839603004EF988 /* UpdateChecker.swift */,
+				CE1B006B2BA54D9800C830FD /* SKKServService.swift */,
 				CED0984C2B779E4700F2E844 /* UNNotifier.swift */,
 				CEA78FAB2960401F00B67E25 /* String+Transform.swift */,
 				CED7F51E2AB5F4A7007FC6BD /* Character+Additions.swift */,
@@ -437,6 +443,7 @@
 				CEADA44E2B1357090026E2BD /* GeneralView.swift */,
 				CE6DBACC2A864A3B00F5A227 /* DictionariesView.swift */,
 				CEB141712A87D16C005E7252 /* DictionaryView.swift */,
+				CE1B00692BA5490E00C830FD /* SKKServDictView.swift */,
 				CE97887A2A9B93EB00F9B196 /* DirectModeView.swift */,
 				CED098502B95F32600F2E844 /* WorkaroundView.swift */,
 				CEF3D86B2B9C022900BD1D3A /* WorkaroundApplicationView.swift */,
@@ -706,6 +713,8 @@
 				CE40D9A12A6D0C2F00D44799 /* SystemDictView.swift in Sources */,
 				CEADA4512B1358D40026E2BD /* InputSource.swift in Sources */,
 				CE84A3E7295DA4DA009394C4 /* Romaji.swift in Sources */,
+				CE1B006D2BA54DE400C830FD /* SKKServClientProtocol.swift in Sources */,
+				CE1B006A2BA5490E00C830FD /* SKKServDictView.swift in Sources */,
 				CED0984D2B779E4700F2E844 /* UNNotifier.swift in Sources */,
 				CE7F9AD92AADEBF9001B1877 /* AppDelegate.swift in Sources */,
 				CEF0825B296D8FF000646366 /* CandidatesView.swift in Sources */,
@@ -728,6 +737,7 @@
 				CE313A1F2AF5213700A49142 /* Candidate.swift in Sources */,
 				CE6DBA8F2A845E8B00F5A227 /* ReleaseVersion.swift in Sources */,
 				CEB088902A7F73B400EFD1E3 /* Pasteboard.swift in Sources */,
+				CE1B006C2BA54D9800C830FD /* SKKServService.swift in Sources */,
 				CEADA44F2B1357090026E2BD /* GeneralView.swift in Sources */,
 				CE84A3DC2957174D009394C4 /* State.swift in Sources */,
 				CE496C8C2B43968A001C623C /* LogView.swift in Sources */,
@@ -1095,7 +1105,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = W3A6B7FDC7;
-				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1122,7 +1132,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = W3A6B7FDC7;
-				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;

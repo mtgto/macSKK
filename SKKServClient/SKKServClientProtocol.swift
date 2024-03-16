@@ -5,6 +5,8 @@ import Foundation
 import Network
 
 public enum SKKServClientError: Error {
+    /// remoteObjectProxyが想定したプロトコルを満たしていない
+    case invalidProxy
     /// skkservと接続失敗した
     case invalidConnection
     /// skkservが仕様外のレスポンスを返した
