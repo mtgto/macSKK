@@ -60,5 +60,5 @@ public enum SKKServClientError: Error {
 
 @objc protocol SKKServClientProtocol {
     func serverVersion(destination: SKKServDestination) async throws -> String
-    func refer(destination: SKKServDestination, yomi: String) async throws -> Data
+    func refer(destination: SKKServDestination, yomi: String) async throws -> String
 }

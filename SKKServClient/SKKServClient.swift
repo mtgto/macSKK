@@ -16,7 +16,6 @@ class SKKServClient: NSObject, SKKServClientProtocol {
 
     @objc func serverVersion(destination: SKKServDestination) async throws -> String {
         if connection == nil {
-            logger.log("skkservへの接続を開始します")
             connection = try await connect(destination: destination)
         }
         guard let connection else {
@@ -33,11 +32,25 @@ class SKKServClient: NSObject, SKKServClientProtocol {
         }
     }
 
-    @objc func refer(destination: SKKServDestination, yomi: String) async throws -> Data {
+    @objc func refer(destination: SKKServDestination, yomi: String) async throws -> String {
         if connection == nil {
             connection = try await connect(destination: destination)
         }
-        return Data()
+        guard let connection else {
+            logger.error("skkservへの接続ができていません")
+            throw SKKServClientError.unexpected
+        }
+        guard let encoded = yomi.data(using: .japaneseEUC) else {
+            logger.error("見出しをDataに変換できませんでした")
+            throw SKKServClientError.unexpected
+        }
+        let message = NWProtocolFramer.Message(request: .request(encoded))
+        let data = try await connection.receive()
+        if let data, let response = String(data: data, encoding: destination.encoding) {
+            return response
+        } else {
+            throw SKKServClientError.invalidResponse
+        }
     }
 
     func connect(destination: SKKServDestination) async throws -> NWConnection? {
