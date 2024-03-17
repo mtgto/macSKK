@@ -34,6 +34,12 @@ final class DictSetting: ObservableObject, Identifiable {
     }
 }
 
+final class SKKServDictSetting: ObservableObject {
+    @Published var address: String = "127.0.0.1"
+    @Published var port: UInt16 = 1178
+    @Published var encoding: String.Encoding = .japaneseEUC
+}
+
 /// 辞書のエンコーディングとして利用可能なもの
 enum AllowedEncoding: CaseIterable, CustomStringConvertible {
     case utf8
@@ -125,6 +131,8 @@ final class SettingsViewModel: ObservableObject {
     @Published var annotationFontSize: Int
     /// ワークアラウンドが設定されたアプリケーション
     @Published var workaroundApplications: [WorkaroundApplication]
+    /// skkserv辞書設定
+    @Published var skkservDictSetting: SKKServDictSetting
     // 辞書ディレクトリ
     let dictionariesDirectoryUrl: URL
     private var cancellables = Set<AnyCancellable>()
@@ -150,6 +158,8 @@ final class SettingsViewModel: ObservableObject {
                 nil
             }
         } ?? []
+        // TODO: UserDefaultsから読み込む
+        skkservDictSetting = SKKServDictSetting()
 
         // SKK-JISYO.Lのようなファイルの読み込みが遅いのでバックグラウンドで処理
         $dictSettings.filter({ !$0.isEmpty }).receive(on: DispatchQueue.global()).sink { dictSettings in
@@ -299,6 +309,7 @@ final class SettingsViewModel: ObservableObject {
         workaroundApplications = []
         candidatesFontSize = 13
         annotationFontSize = 13
+        skkservDictSetting = SKKServDictSetting()
     }
 
     // DictionaryViewのPreviewProvider用
@@ -323,6 +334,12 @@ final class SettingsViewModel: ObservableObject {
     internal convenience init(workaroundApplications: [WorkaroundApplication]) throws {
         try self.init()
         self.workaroundApplications = workaroundApplications
+    }
+
+    // SKKServDictViewのPreviewProvider用
+    internal convenience init(skkservDictSetting: SKKServDictSetting) throws {
+        try self.init()
+        self.skkservDictSetting = skkservDictSetting
     }
 
     /**

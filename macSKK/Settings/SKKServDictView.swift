@@ -2,19 +2,19 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import SwiftUI
+import Network
 
 struct SKKServDictView: View {
-    @State var address: String
-    @State var port: Int?
-    @State var encoding: String.Encoding
+    @StateObject var settingsViewModel: SettingsViewModel
+    @Binding var isShowSheet: Bool
 
     var body: some View {
         VStack {
             Form {
                 Section("SKKServ Dictionary Setting") {
-                    TextField("Address", text: $address)
-                    TextField("Port", value: $port, format: .number, prompt: Text("1178"))
-                    Picker("Response Encoding", selection: $encoding) {
+                    TextField("Address", text: $settingsViewModel.skkservDictSetting.address)
+                    TextField("Port", value: $settingsViewModel.skkservDictSetting.port, format: .number, prompt: Text("1178"))
+                    Picker("Response Encoding", selection: $settingsViewModel.skkservDictSetting.encoding) {
                         ForEach(AllowedEncoding.allCases, id: \.encoding) { allowedEncoding in
                             Text(allowedEncoding.description).tag(allowedEncoding.encoding)
                         }
@@ -26,20 +26,32 @@ struct SKKServDictView: View {
             Divider()
             HStack {
                 Button {
-
+                    let skkservService = SKKServService()
+                    let setting = settingsViewModel.skkservDictSetting
+                    let destination = SKKServDestination(host: setting.address,
+                                                         port: setting.port,
+                                                         encoding: setting.encoding)
+                    Task {
+                        do {
+                            let version = try await skkservService.serverVersion(destination: destination)
+                            print("skkservのバージョン: \(version)")
+                        } catch {
+                            print("skkservの通信でエラーが発生しました: \(error)")
+                        }
+                    }
                 } label: {
                     Text("Test")
                         .padding([.leading, .trailing])
                 }
                 Spacer()
                 Button {
-
+                    isShowSheet = false
                 } label: {
                     Text("Cancel")
                 }
                 .keyboardShortcut(.cancelAction)
                 Button {
-
+                    isShowSheet = false
                 } label: {
                     Text("Done")
                         .padding([.leading, .trailing])
@@ -54,5 +66,6 @@ struct SKKServDictView: View {
 }
 
 #Preview {
-    SKKServDictView(address: "127.0.0.1", port: nil, encoding: .japaneseEUC)
+    SKKServDictView(settingsViewModel: try! SettingsViewModel(skkservDictSetting: SKKServDictSetting()),
+                    isShowSheet: .constant(true))
 }

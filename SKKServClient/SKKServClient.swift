@@ -3,6 +3,9 @@
 
 import Foundation
 import Network
+import os
+
+let logger: Logger = Logger(subsystem: "net.mtgto.inputmethod.macSKK", category: "skkserv")
 
 /**
  * skkservに接続するクライアント。現状は特定の1サーバーへの接続のみ可能
@@ -13,6 +16,7 @@ class SKKServClient: NSObject, SKKServClientProtocol {
 
     func serverVersion(destination: SKKServDestination) async throws -> String {
         if connection == nil {
+            logger.log("skkservへの接続を開始します")
             connection = try await connect(destination: destination)
         }
         guard let connection else {
@@ -37,7 +41,7 @@ class SKKServClient: NSObject, SKKServClientProtocol {
     }
 
     func connect(destination: SKKServDestination) async throws -> NWConnection? {
-        let connection = NWConnection(host: destination.host, port: destination.port, using: .skkserv)
+        let connection = NWConnection(to: destination.endpoint, using: .skkserv)
         defer {
             connection.stateUpdateHandler = nil
         }
