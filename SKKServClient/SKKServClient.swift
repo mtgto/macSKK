@@ -14,7 +14,7 @@ class SKKServClient: NSObject, SKKServClientProtocol {
     var connection: NWConnection? = nil
     static let queue = DispatchQueue(label: "net.mtgto.inputmethod.macSKK.SKKServClient", qos: .default)
 
-    func serverVersion(destination: SKKServDestination) async throws -> String {
+    @objc func serverVersion(destination: SKKServDestination) async throws -> String {
         if connection == nil {
             logger.log("skkservへの接続を開始します")
             connection = try await connect(destination: destination)
@@ -33,7 +33,7 @@ class SKKServClient: NSObject, SKKServClientProtocol {
         }
     }
 
-    func refer(destination: SKKServDestination, yomi: String) async throws -> Data {
+    @objc func refer(destination: SKKServDestination, yomi: String) async throws -> Data {
         if connection == nil {
             connection = try await connect(destination: destination)
         }

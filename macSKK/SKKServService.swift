@@ -5,7 +5,7 @@ import Foundation
 
 struct SKKServService {
     let service: NSXPCConnection
-    static let shared = SKKServService()
+    //static let shared = SKKServService()
 
     init() {
         service = NSXPCConnection(serviceName: "net.mtgto.inputmethod.macSKK.SKKServClient")

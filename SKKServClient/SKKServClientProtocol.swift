@@ -13,7 +13,7 @@ public enum SKKServClientError: Error {
     case invalidResponse
 }
 
-public final class SKKServDestination: NSObject, NSSecureCoding, Sendable {
+@objc(SKKServDestination) public final class SKKServDestination: NSObject, NSSecureCoding, Sendable {
     public static let supportsSecureCoding: Bool = true
 
     let host: String
@@ -26,13 +26,13 @@ public final class SKKServDestination: NSObject, NSSecureCoding, Sendable {
         self.encoding = encoding
     }
 
-    public init?(coder: NSCoder) {
-        guard let host = coder.decodeObject(forKey: "host") as? String else { return nil }
+    public required init?(coder: NSCoder) {
+        guard let host = coder.decodeObject(of: NSString.self, forKey: "host") as? String else { return nil }
         self.host = host
-        guard let port = coder.decodeObject(forKey: "port") as? UInt16 else { return nil }
-        self.port = port
-        guard let encoding = coder.decodeObject(forKey: "encoding") as? UInt else { return nil }
-        self.encoding = String.Encoding(rawValue: encoding)
+        guard let port = coder.decodeObject(of: NSNumber.self, forKey: "port") else { return nil }
+        self.port = port.uint16Value
+        guard let encoding = coder.decodeObject(of: NSNumber.self, forKey: "encoding") else { return nil }
+        self.encoding = String.Encoding(rawValue: encoding.uintValue)
     }
 
     var endpoint: NWEndpoint {
@@ -42,8 +42,8 @@ public final class SKKServDestination: NSObject, NSSecureCoding, Sendable {
     // MARK: NSSecureCoding
     public func encode(with coder: NSCoder) {
         coder.encode(host, forKey: "host")
-        coder.encode(port, forKey: "port")
-        coder.encode(encoding.rawValue, forKey: "encoding")
+        coder.encode(NSNumber(value: port), forKey: "port")
+        coder.encode(NSNumber(value: encoding.rawValue), forKey: "encoding")
     }
 
     // MARK: NSObject

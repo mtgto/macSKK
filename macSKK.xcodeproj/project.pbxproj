@@ -486,8 +486,8 @@
 			children = (
 				CEF3D8752B9EF0C000BD1D3A /* SKKServClientProtocol.swift */,
 				CEF3D8732B9EF0C000BD1D3A /* SKKServClient.swift */,
-				CE1B00602BA4285A00C830FD /* Network */,
 				CEF3D8772B9EF0C000BD1D3A /* main.swift */,
+				CE1B00602BA4285A00C830FD /* Network */,
 				CEF3D8792B9EF0C000BD1D3A /* Info.plist */,
 				CEF3D87A2B9EF0C000BD1D3A /* SKKServClient.entitlements */,
 			);
