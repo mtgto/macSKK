@@ -9,7 +9,7 @@ enum DictReferringOption {
     case prefix
     /// 接尾辞を返す
     case suffix
-    /// 送り仮名ブロック。引数は例えば「大き」なら「き」、「行った」なら「った」のように送り仮名部分
+    /// 送り仮名ブロック。引数は例えば「大き」なら「き」、「行った」なら「った」のような送り仮名部分
     case okuri(String)
 }
 
