@@ -5,12 +5,14 @@ import Foundation
 import Network
 
 public enum SKKServClientError: Error {
-    /// remoteObjectProxyが想定したプロトコルを満たしていない
-    case invalidProxy
+    /// remoteObjectProxyが想定したプロトコルを満たしていないなど想定外のエラー
+    case unexpected
     /// skkservと接続失敗した
-    case invalidConnection
+    case connectionRefused
     /// skkservが仕様外のレスポンスを返した
     case invalidResponse
+    /// 接続タイムアウト
+    case connectionTimeout
 }
 
 @objc(SKKServDestination) public final class SKKServDestination: NSObject, NSSecureCoding, Sendable {

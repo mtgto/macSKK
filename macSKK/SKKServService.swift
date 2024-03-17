@@ -18,7 +18,7 @@ struct SKKServService {
             service.invalidate()
         }
         guard let proxy = service.remoteObjectProxy as? any SKKServClientProtocol else {
-            throw SKKServClientError.invalidProxy
+            throw SKKServClientError.unexpected
         }
         return try await proxy.serverVersion(destination: destination)
     }

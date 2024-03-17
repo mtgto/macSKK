@@ -20,8 +20,8 @@ class SKKServClient: NSObject, SKKServClientProtocol {
             connection = try await connect(destination: destination)
         }
         guard let connection else {
-            // 接続がキャンセルされた
-            throw SKKServClientError.invalidConnection
+            logger.error("skkservへの接続ができていません")
+            throw SKKServClientError.unexpected
         }
         let message = NWProtocolFramer.Message(request: .version)
         try await connection.send(message: message)
@@ -55,6 +55,15 @@ class SKKServClient: NSObject, SKKServClientProtocol {
                     // 接続先がbind + listenされてない場合には "POSIXErrorCode(rawValue: 61): Connection refused" が発生する
                     // listenされているがacceptされない場合は "POSIXErrorCode(rawValue: 60): Operation timed out" が発生する
                     // (NWProtocolTCP.OptionsでTCPのconnectionTimeoutが設定されていた場合。設定されてない場合は永久に待つっぽい)
+                    if case .posix(let code) = error {
+                        if code == POSIXError.ECONNREFUSED {
+                            cont.resume(throwing: SKKServClientError.connectionRefused)
+                            break
+                        } else if code == POSIXError.ETIMEDOUT {
+                            cont.resume(throwing: SKKServClientError.connectionTimeout)
+                            break
+                        }
+                    }
                     cont.resume(throwing: error)
                 case .failed(let error):
                     cont.resume(throwing: error)

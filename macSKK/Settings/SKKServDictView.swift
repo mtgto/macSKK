@@ -7,19 +7,29 @@ import Network
 struct SKKServDictView: View {
     @StateObject var settingsViewModel: SettingsViewModel
     @Binding var isShowSheet: Bool
+    @State var information: String = ""
+    @State var testing: Bool = false
 
     var body: some View {
         VStack {
             Form {
-                Section("SKKServ Dictionary Setting") {
+                Section {
                     TextField("Address", text: $settingsViewModel.skkservDictSetting.address)
-                    TextField("Port", value: $settingsViewModel.skkservDictSetting.port, format: .number, prompt: Text("1178"))
+                    TextField("TCP Port", value: $settingsViewModel.skkservDictSetting.port,
+                              format: .number.grouping(.never), prompt: Text("1178"))
                     Picker("Response Encoding", selection: $settingsViewModel.skkservDictSetting.encoding) {
                         ForEach(AllowedEncoding.allCases, id: \.encoding) { allowedEncoding in
                             Text(allowedEncoding.description).tag(allowedEncoding.encoding)
                         }
                     }
                     .pickerStyle(.radioGroup)
+                } header: {
+                    Text("SKKServDictTitle")
+                } footer: {
+                    if testing {
+                        ProgressView().controlSize(.small)
+                    }
+                    Text(information)
                 }
             }
             .formStyle(.grouped)
@@ -31,18 +41,41 @@ struct SKKServDictView: View {
                     let destination = SKKServDestination(host: setting.address,
                                                          port: setting.port,
                                                          encoding: setting.encoding)
+                    testing = true
+                    information = String(localized: "SKKServDictTesting")
                     Task {
                         do {
                             let version = try await skkservService.serverVersion(destination: destination)
                             print("skkservのバージョン: \(version)")
+                            information = String(localized: "SKKServClientConnected")
                         } catch {
-                            print("skkservの通信でエラーが発生しました: \(error)")
+                            if let error = error as? SKKServClientError {
+                                switch error {
+                                case .unexpected:
+                                    logger.error("SKKServClientへのXPC呼び出しで不明なエラーが発生しました")
+                                    information = String(localized: "SKKServClientUnknownError")
+                                case .connectionRefused:
+                                    logger.info("skkservへの通信ができませんでした")
+                                    information = String(localized: "SKKServClientConnectionRefused")
+                                case .connectionTimeout:
+                                    logger.info("skkservへの通信がタイムアウトしました")
+                                    information = String(localized: "SKKServClientConnectionTimeout")
+                                default:
+                                    logger.error("SKKServClientへのXPC呼び出しで不明なエラーが発生しました")
+                                    information = String(localized: "SKKServClientUnknownError")
+                                }
+                            } else {
+                                logger.error("SKKServClientへのXPC呼び出しで不明なエラーが発生しました")
+                                information = String(localized: "SKKServClientUnknownError")
+                            }
                         }
+                        testing = false
                     }
                 } label: {
                     Text("Test")
                         .padding([.leading, .trailing])
                 }
+                .disabled(testing)
                 Spacer()
                 Button {
                     isShowSheet = false
@@ -67,5 +100,5 @@ struct SKKServDictView: View {
 
 #Preview {
     SKKServDictView(settingsViewModel: try! SettingsViewModel(skkservDictSetting: SKKServDictSetting()),
-                    isShowSheet: .constant(true))
+                    isShowSheet: .constant(true), information: "skkservが応答していません")
 }
