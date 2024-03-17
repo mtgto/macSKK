@@ -56,8 +56,10 @@ final class CandidatesPanel: NSPanel {
      * - 右にはみ出す場合: スクリーン右端に接するように表示する
      */
     func show(windowLevel: NSWindow.Level) {
+        // 原因は特定できてないが特殊な場合 (終了が要求されているときなど?) で下記の分岐がfalseになるケースがあったので対処
         guard let viewController = contentViewController as? NSHostingController<CandidatesView> else {
-            fatalError("ビューコントローラの状態が壊れている")
+            logger.error("ビューコントローラの状態が想定と異なるため変換候補パネルを表示できません")
+            return
         }
         #if DEBUG
         print("content size = \(viewController.sizeThatFits(in: CGSize(width: Int.max, height: Int.max)))")
