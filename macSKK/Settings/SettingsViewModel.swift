@@ -35,6 +35,7 @@ final class DictSetting: ObservableObject, Identifiable {
 }
 
 final class SKKServDictSetting: ObservableObject {
+    @Published var enabled: Bool = true
     @Published var address: String = "127.0.0.1"
     @Published var port: UInt16 = 1178
     @Published var encoding: String.Encoding = .japaneseEUC

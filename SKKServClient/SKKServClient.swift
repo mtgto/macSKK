@@ -45,6 +45,7 @@ class SKKServClient: NSObject, SKKServClientProtocol {
             throw SKKServClientError.unexpected
         }
         let message = NWProtocolFramer.Message(request: .request(encoded))
+        try await connection.send(message: message)
         let data = try await connection.receive()
         if let data, let response = String(data: data, encoding: destination.encoding) {
             return response

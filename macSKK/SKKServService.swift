@@ -5,7 +5,6 @@ import Foundation
 
 struct SKKServService {
     let service: NSXPCConnection
-    //static let shared = SKKServService()
 
     init() {
         service = NSXPCConnection(serviceName: "net.mtgto.inputmethod.macSKK.SKKServClient")
@@ -21,5 +20,20 @@ struct SKKServService {
             throw SKKServClientError.unexpected
         }
         return try await proxy.serverVersion(destination: destination)
+    }
+
+    /**
+     * SKK辞書の読みを受け取り、skkservの応答を返します。
+     * TODO: [Word]を返すようにする?
+     *
+     * @param yomi 送り仮名なしなら "へんかん" のような文字列、送り仮名ありなら "おくr" のような文字列
+     * @return 変換結果が見つかった場合は "1/変換/返還/" のような先頭に1がつく形式 (1はXPC側で消すかも)
+     */
+    func refer(yomi: String, destination: SKKServDestination) async throws -> String {
+        service.resume()
+        guard let proxy = service.remoteObjectProxy as? any SKKServClientProtocol else {
+            throw SKKServClientError.unexpected
+        }
+        return try await proxy.refer(destination: destination, yomi: yomi)
     }
 }

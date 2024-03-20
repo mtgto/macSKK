@@ -46,6 +46,7 @@ struct SKKServDictView: View {
                     Task {
                         do {
                             let version = try await skkservService.serverVersion(destination: destination)
+                            //let version = try await skkservService.refer(yomi: "ふぶき", destination: destination)
                             print("skkservのバージョン: \(version)")
                             information = String(localized: "SKKServClientConnected")
                         } catch {
