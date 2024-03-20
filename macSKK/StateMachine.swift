@@ -723,38 +723,7 @@ class StateMachine {
                                                           okuri: (okuri ?? []) + [moji],
                                                           romaji: "",
                                                           cursor: composing.cursor)
-                        let candidates: [Candidate] =
-                        if let okuri {
-                            candidates(for: yomiText, option: .okuri(okuri.map { $0.kana }.joined() + moji.kana))
-                        } else {
-                            candidates(for: yomiText)
-                        }
-                        if candidates.isEmpty {
-                            if specialState != nil {
-                                // 登録中に変換不能な変換をした場合は空文字列に変換する
-                                state.inputMethod = .normal
-                            } else {
-                                // 単語登録に遷移する
-                                state.specialState = .register(
-                                    RegisterState(
-                                        prev: RegisterState.PrevState(mode: state.inputMode, composing: newComposing),
-                                        yomi: yomiText
-                                    ))
-                                state.inputMethod = .normal
-                                state.inputMode = .hiragana
-                                inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
-                            }
-                        } else {
-                            let selectingState = SelectingState(
-                                prev: SelectingState.PrevState(mode: state.inputMode, composing: newComposing),
-                                yomi: yomiText,
-                                candidates: candidates,
-                                candidateIndex: 0,
-                                cursorPosition: action.cursorPosition,
-                                remain: composing.remain())
-                            updateCandidates(selecting: selectingState)
-                            state.inputMethod = .selecting(selectingState)
-                        }
+                        return handleComposingStartConvert(action, composing: newComposing, specialState: specialState)
                     }
                 } else {  // !converted.input.isEmpty
                     // n + 子音入力したときや同一の子音を連続入力して促音が確定したときなど
@@ -852,6 +821,8 @@ class StateMachine {
         } else if yomiText.hasPrefix(">") {
             yomiText = String(yomiText.dropFirst())
             candidateWords = candidates(for: yomiText, option: .suffix) + candidates(for: yomiText, option: nil)
+        } else if let okuri = composing.okuri {
+            candidateWords = candidates(for: yomiText, option: .okuri(okuri.map { $0.kana }.joined()))
         } else {
             candidateWords = candidates(for: yomiText, option: nil)
         }
