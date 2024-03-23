@@ -12,14 +12,31 @@ struct SKKServService {
     }
 
     func serverVersion(destination: SKKServDestination) async throws -> String {
-        service.resume()
+        service.activate()
         defer {
             service.invalidate()
         }
         guard let proxy = service.remoteObjectProxy as? any SKKServClientProtocol else {
             throw SKKServClientError.unexpected
         }
-        return try await proxy.serverVersion(destination: destination)
+        /**
+         * XPCコールでエラーが発生した場合、SKKServClientErrorを投げていても正しくデコードされない。
+         * (domain="SKKServClient.SKKServClientError", code=XX をもつNSErrorとなる)
+         * しかたないのでNSError#domainとNSError#codeからSKKServClientErrorに変換する
+         */
+        do {
+            return try await proxy.serverVersion(destination: destination)
+        } catch {
+            let nsError = error as NSError
+            if nsError.domain == "SKKServClient.SKKServClientError" {
+                try SKKServClientError.allCases.forEach { skkservClientError in
+                    if (skkservClientError as NSError).code == nsError.code {
+                        throw skkservClientError
+                    }
+                }
+            }
+            throw error
+         }
     }
 
     /**
@@ -30,7 +47,7 @@ struct SKKServService {
      * @return 変換結果が見つかった場合は "1/変換/返還/" のような先頭に1がつく形式 (1はXPC側で消すかも)
      */
     func refer(yomi: String, destination: SKKServDestination) async throws -> String {
-        service.resume()
+        service.activate()
         guard let proxy = service.remoteObjectProxy as? any SKKServClientProtocol else {
             throw SKKServClientError.unexpected
         }

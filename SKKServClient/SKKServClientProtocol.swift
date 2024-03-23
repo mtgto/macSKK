@@ -4,7 +4,7 @@
 import Foundation
 import Network
 
-public enum SKKServClientError: Error {
+public enum SKKServClientError: Error, CaseIterable {
     /// remoteObjectProxyが想定したプロトコルを満たしていないなど想定外のエラー
     case unexpected
     /// skkservと接続失敗した
