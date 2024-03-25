@@ -21,7 +21,6 @@ struct SKKServDict {
         guard result.hasPrefix("1") else {
             return []
         }
-        let line = yomi + " " + result.dropFirst()
         guard let candidates = Entry.parseWords(result.dropFirst(), dictId: "skkserv") else {
             logger.error("skkservの返した変換候補を正常にパースできませんでした")
             return []
