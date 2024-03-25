@@ -100,6 +100,7 @@ struct SKKServDictView: View {
 }
 
 #Preview {
-    SKKServDictView(settingsViewModel: try! SettingsViewModel(skkservDictSetting: SKKServDictSetting()),
+    let setting = SKKServDictSetting(enabled: true, address: "127.0.0.1", port: 1178, encoding: .japaneseEUC)
+    return SKKServDictView(settingsViewModel: try! SettingsViewModel(skkservDictSetting: setting),
                     isShowSheet: .constant(true), information: "skkservが応答していません")
 }

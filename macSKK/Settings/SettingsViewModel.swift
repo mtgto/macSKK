@@ -19,6 +19,7 @@ final class DictSetting: ObservableObject, Identifiable {
         self.encoding = encoding
     }
 
+    // UserDefaultsのDictionaryを受け取る
     init?(_ dictionary: [String: Any]) {
         guard let filename = dictionary["filename"] as? String else { return nil }
         self.filename = filename
@@ -35,10 +36,33 @@ final class DictSetting: ObservableObject, Identifiable {
 }
 
 final class SKKServDictSetting: ObservableObject {
-    @Published var enabled: Bool = true
-    @Published var address: String = "127.0.0.1"
-    @Published var port: UInt16 = 1178
-    @Published var encoding: String.Encoding = .japaneseEUC
+    @Published var enabled: Bool
+    @Published var address: String
+    @Published var port: UInt16
+    @Published var encoding: String.Encoding
+
+    init(enabled: Bool, address: String, port: UInt16, encoding: String.Encoding) {
+        self.enabled = enabled
+        self.address = address
+        self.port = port
+        self.encoding = encoding
+    }
+
+    init?(_ dictionary: [String: Any]) {
+        guard let enabled = dictionary["enabled"] as? Bool else { return nil }
+        self.enabled = enabled
+        guard let address = dictionary["address"] as? String else { return nil }
+        self.address = address
+        guard let port = dictionary["port"] as? UInt16 else { return nil }
+        self.port = port
+        guard let encoding = dictionary["encoding"] as? UInt else { return nil }
+        self.encoding = String.Encoding(rawValue: encoding)
+    }
+
+    // UserDefaults用にDictionaryにシリアライズ
+    func encode() -> [String: Any] {
+        ["enabled": enabled, "address": address, "port": port, "encoding": encoding.rawValue]
+    }
 }
 
 /// 辞書のエンコーディングとして利用可能なもの
@@ -160,7 +184,11 @@ final class SettingsViewModel: ObservableObject {
             }
         } ?? []
         // TODO: UserDefaultsから読み込む
-        skkservDictSetting = SKKServDictSetting()
+        guard let skkservDictSettingDict = UserDefaults.standard.dictionary(forKey: UserDefaultsKeys.skkservClient),
+        let skkservDictSetting = SKKServDictSetting(skkservDictSettingDict) else {
+            fatalError("skkservClientの設定がありません")
+        }
+        self.skkservDictSetting = skkservDictSetting
 
         // SKK-JISYO.Lのようなファイルの読み込みが遅いのでバックグラウンドで処理
         $dictSettings.filter({ !$0.isEmpty }).receive(on: DispatchQueue.global()).sink { dictSettings in
@@ -310,7 +338,7 @@ final class SettingsViewModel: ObservableObject {
         workaroundApplications = []
         candidatesFontSize = 13
         annotationFontSize = 13
-        skkservDictSetting = SKKServDictSetting()
+        skkservDictSetting = SKKServDictSetting(enabled: true, address: "127.0.0.1", port: 1178, encoding: .japaneseEUC)
     }
 
     // DictionaryViewのPreviewProvider用
