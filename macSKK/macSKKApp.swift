@@ -198,10 +198,10 @@ struct macSKKApp: App {
             UserDefaultsKeys.candidatesFontSize: 13,
             UserDefaultsKeys.annotationFontSize: 13,
             UserDefaultsKeys.skkservClient: SKKServDictSetting(
-                enabled: false,
+                enabled: true,
                 address: "127.0.0.1",
                 port: 1178,
-                encoding: .japaneseEUC).encode(),
+                encoding: .utf8).encode(),
         ])
     }
 

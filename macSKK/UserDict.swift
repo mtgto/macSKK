@@ -20,6 +20,8 @@ class UserDict: NSObject, DictProtocol {
     var userDict: (any DictProtocol)?
     /// 有効になっている辞書。優先度が高い順。
     var dicts: [any DictProtocol]
+    /// skkserv辞書
+    var skkservDict: SKKServDict? = nil
     /**
      * プライベートモードのユーザー辞書。プライベートモードが有効な時に変換や単語登録するとユーザー辞書とは別に更新されます。
      *
@@ -104,11 +106,19 @@ class UserDict: NSObject, DictProtocol {
      *   - yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
      *   - option: 辞書を引くときに接頭辞や接尾辞から検索するかどうか。nilなら通常のエントリから検索する
      */
-    func referDicts(_ yomi: String, option: DictReferringOption? = nil) -> [Candidate] {
+    func referDicts(_ yomi: String, option: DictReferringOption? = nil) async throws -> [Candidate] {
         var result: [Candidate] = []
         var candidates = refer(yomi, option: option).map { word in
             let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
             return Candidate(word.word, annotations: annotations)
+        }
+        // ひとまずskkservを辞書として使う場合はファイル辞書より後に追加する
+        if let skkservDict {
+            let skkservCandidates = try await skkservDict.refer(yomi, option: option).map { word in
+                let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
+                return Candidate(word.word, annotations: annotations)
+            }
+            candidates.append(contentsOf: skkservCandidates)
         }
         if candidates.isEmpty {
             // yomiが数値を含む場合は "#" に置換して辞書を引く

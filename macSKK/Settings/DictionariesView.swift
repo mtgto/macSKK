@@ -6,7 +6,6 @@ import SwiftUI
 struct DictionariesView: View {
     @ObservedObject var settingsViewModel: SettingsViewModel
     @State private var selectedDictSetting: DictSetting?
-    @State var skkservEnabled: Bool = false
     @State var isShowingSkkservSheet: Bool = false
 
     var body: some View {
@@ -24,7 +23,7 @@ struct DictionariesView: View {
                 }
                 Section {
                     HStack {
-                        Toggle("SKKServ", isOn: $skkservEnabled)
+                        Toggle("SKKServ", isOn: $settingsViewModel.skkservDictSetting.enabled)
                         Button {
                             isShowingSkkservSheet = true
                         } label: {

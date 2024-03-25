@@ -34,7 +34,7 @@ final class StateMachine {
     /// 読みの一部と補完結果(読み)のペア
     var completion: (String, String)? = nil
     /// 変換候補を検索するタスク。実行してないときはnil
-    var referringTask: Task<Void, Never>? = nil
+    var referringTask: Task<Void, any Error>? = nil
 
     // TODO: displayCandidateCountを環境設定にするかも
     /// 変換候補パネルを表示するまで表示する変換候補の数
@@ -821,14 +821,18 @@ final class StateMachine {
             // いまは ">"で終わる・始まる場合は、Abbrevモードであっても接頭辞・接尾辞を探しているものとして検索する
             if yomiText.hasSuffix(">") {
                 yomiText = String(yomiText.dropLast())
-                candidateWords = candidates(for: yomiText, option: .prefix) + candidates(for: yomiText, option: nil)
+                let prefixCandidates = try await candidates(for: yomiText, option: .prefix)
+                let candidates = try await candidates(for: yomiText, option: nil)
+                candidateWords = prefixCandidates + candidates
             } else if yomiText.hasPrefix(">") {
                 yomiText = String(yomiText.dropFirst())
-                candidateWords = candidates(for: yomiText, option: .suffix) + candidates(for: yomiText, option: nil)
+                let suffixCandidates = try await candidates(for: yomiText, option: .suffix)
+                let candidates = try await candidates(for: yomiText, option: nil)
+                candidateWords = suffixCandidates + candidates
             } else if let okuri = composing.okuri {
-                candidateWords = candidates(for: yomiText, option: .okuri(okuri.map { $0.kana }.joined()))
+                candidateWords = try await candidates(for: yomiText, option: .okuri(okuri.map { $0.kana }.joined()))
             } else {
-                candidateWords = candidates(for: yomiText, option: nil)
+                candidateWords = try await candidates(for: yomiText, option: nil)
             }
             if candidateWords.isEmpty {
                 if specialState != nil {
@@ -1118,8 +1122,8 @@ final class StateMachine {
     }
 
     /// 見出し語で辞書を引く。同じ文字列である変換候補が複数の辞書にある場合は最初の1つにまとめる。
-    func candidates(for yomi: String, option: DictReferringOption? = nil) -> [Candidate] {
-        return dictionary.referDicts(yomi, option: option)
+    func candidates(for yomi: String, option: DictReferringOption? = nil) async throws -> [Candidate] {
+        return try await dictionary.referDicts(yomi, option: option)
     }
 
     /**

@@ -223,6 +223,17 @@ final class SettingsViewModel: ObservableObject {
         }
         .store(in: &cancellables)
 
+        $skkservDictSetting.sink { setting in
+            if setting.enabled {
+                let destination = SKKServDestination(host: setting.address, port: setting.port, encoding: setting.encoding)
+                logger.log("skkserv辞書を設定します")
+                dictionary.skkservDict = SKKServDict(destination: destination)
+            } else {
+                logger.log("skkserv辞書を無効化します")
+                dictionary.skkservDict = nil
+            }
+        }.store(in: &cancellables)
+
         $directModeApplications.dropFirst().sink { applications in
             let bundleIdentifiers = applications.map { $0.bundleIdentifier }
             UserDefaults.standard.set(bundleIdentifiers, forKey: UserDefaultsKeys.directModeBundleIdentifiers)

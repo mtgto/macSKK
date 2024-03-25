@@ -14,17 +14,19 @@ struct SKKServDict {
     }
 
     func refer(_ yomi: String, option: DictReferringOption?) async throws -> [Word] {
+        logger.log("skkservに変換候補の検索を行います")
         let result = try await service.refer(yomi: yomi, destination: destination)
         // 変換候補が見つかった場合は "1/変換/返還/" のように 1が先頭でスラッシュで区切られた文字列
         // 見つからなかった場合は "4へんかん" のように4が先頭の文字列
-        print("result = \(result)")
-        guard result.hasPrefix("1") else {
+        guard result.hasPrefix("1/") else {
             return []
         }
-        guard let candidates = Entry.parseWords(result.dropFirst(), dictId: "skkserv") else {
+        // Entry.parseWordsは先頭のスラッシュがない形を受け取る
+        guard let candidates = Entry.parseWords(result.dropFirst(2), dictId: "skkserv") else {
             logger.error("skkservの返した変換候補を正常にパースできませんでした")
             return []
         }
+        logger.log("skkservから変換候補が返りました")
         return candidates
     }
 }
