@@ -114,7 +114,7 @@ class UserDict: NSObject, DictProtocol {
         }
         // ひとまずskkservを辞書として使う場合はファイル辞書より後に追加する
         if let skkservDict {
-            let skkservCandidates = try await skkservDict.refer(yomi, option: option).map { word in
+            let skkservCandidates = await skkservDict.refer(yomi, option: option).map { word in
                 let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
                 return Candidate(word.word, annotations: annotations)
             }
