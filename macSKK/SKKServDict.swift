@@ -6,6 +6,7 @@ import Foundation
 // skkservを辞書として使う辞書定義
 // 複数のskkservを想定してSKKServDict(サーバー数)とSKKServService(1つ)と分けているけど、
 // 当面はサーバー数を1に固定してSKKServDictにXPCとの通信処理をもってきたほうがシンプルかも?
+// actorとして定義できそう?
 struct SKKServDict {
     let destination: SKKServDestination
     let service: SKKServService
@@ -43,7 +44,6 @@ struct SKKServDict {
                 default:
                     logger.error("skkservから不明なエラーが返りました")
                 }
-                logger.error("")
             } else {
                 logger.error("skkserv辞書の検索でエラーが発生しました")
             }

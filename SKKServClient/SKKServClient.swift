@@ -47,11 +47,18 @@ class SKKServClient: NSObject, SKKServClientProtocol {
         let message = NWProtocolFramer.Message(request: .request(encoded))
         try await connection.send(message: message)
         let data = try await connection.receive()
-        if let data, let response = String(data: data, encoding: destination.encoding) {
-            return response
-        } else {
-            throw SKKServClientError.invalidResponse
+        if let data {
+            if let response = String(data: data, encoding: destination.encoding) {
+                return response
+            } else if destination.encoding != .japaneseEUC {
+                // yaskkserv2のように変換候補があったときはUTF-8で、そうじゃないときはEUC-JPで返すskkserv用
+                if let response = String(data: data, encoding: .japaneseEUC) {
+                    return response
+                }
+            }
         }
+        logger.error("skkservからの応答を文字列として解釈できませんでした")
+        throw SKKServClientError.invalidResponse
     }
 
     func connect(destination: SKKServDestination) async throws -> NWConnection? {
