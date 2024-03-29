@@ -35,6 +35,8 @@ final class StateMachine {
     var completion: (String, String)? = nil
     /// 変換候補を検索するタスク。実行してないときはnil
     var referringTask: Task<Void, any Error>? = nil
+    /// 変換候補を検索中かどうか
+    var referring: Bool = false
 
     // TODO: displayCandidateCountを環境設定にするかも
     /// 変換候補パネルを表示するまで表示する変換候補の数
@@ -811,6 +813,7 @@ final class StateMachine {
 
     func handleComposingStartConvert(_ action: Action, composing: ComposingState, specialState: SpecialState?) -> Bool {
         // skkservから引く場合もあるのでTaskで実行する
+        referring = true
         referringTask = Task {
             // 未確定ローマ字はn以外は入力されずに削除される. nだけは"ん"として変換する
             // 変換候補がないときは辞書登録へ
@@ -821,18 +824,18 @@ final class StateMachine {
             // いまは ">"で終わる・始まる場合は、Abbrevモードであっても接頭辞・接尾辞を探しているものとして検索する
             if yomiText.hasSuffix(">") {
                 yomiText = String(yomiText.dropLast())
-                let prefixCandidates = try await candidates(for: yomiText, option: .prefix)
-                let candidates = try await candidates(for: yomiText, option: nil)
+                let prefixCandidates = await candidates(for: yomiText, option: .prefix)
+                let candidates = await candidates(for: yomiText, option: nil)
                 candidateWords = prefixCandidates + candidates
             } else if yomiText.hasPrefix(">") {
                 yomiText = String(yomiText.dropFirst())
-                let suffixCandidates = try await candidates(for: yomiText, option: .suffix)
-                let candidates = try await candidates(for: yomiText, option: nil)
+                let suffixCandidates = await candidates(for: yomiText, option: .suffix)
+                let candidates = await candidates(for: yomiText, option: nil)
                 candidateWords = suffixCandidates + candidates
             } else if let okuri = composing.okuri {
-                candidateWords = try await candidates(for: yomiText, option: .okuri(okuri.map { $0.kana }.joined()))
+                candidateWords = await candidates(for: yomiText, option: .okuri(okuri.map { $0.kana }.joined()))
             } else {
-                candidateWords = try await candidates(for: yomiText, option: nil)
+                candidateWords = await candidates(for: yomiText, option: nil)
             }
             if candidateWords.isEmpty {
                 if specialState != nil {
@@ -860,6 +863,7 @@ final class StateMachine {
                 self.state.inputMethod = .selecting(selectingState)
             }
             updateMarkedText()
+            referring = false
         }
         return true
     }
@@ -1122,8 +1126,8 @@ final class StateMachine {
     }
 
     /// 見出し語で辞書を引く。同じ文字列である変換候補が複数の辞書にある場合は最初の1つにまとめる。
-    func candidates(for yomi: String, option: DictReferringOption? = nil) async throws -> [Candidate] {
-        return try await dictionary.referDicts(yomi, option: option)
+    func candidates(for yomi: String, option: DictReferringOption? = nil) async -> [Candidate] {
+        return await dictionary.referDicts(yomi, option: option)
     }
 
     /**
