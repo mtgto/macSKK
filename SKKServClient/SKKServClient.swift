@@ -44,21 +44,65 @@ class SKKServClient: NSObject, SKKServClientProtocol {
             logger.error("見出しをDataに変換できませんでした")
             throw SKKServClientError.unexpected
         }
-        let message = NWProtocolFramer.Message(request: .request(encoded))
-        try await connection.send(message: message)
-        let data = try await connection.receive()
-        if let data {
-            if let response = String(data: data, encoding: destination.encoding) {
-                return response
-            } else if destination.encoding != .japaneseEUC {
-                // yaskkserv2のように変換候補があったときはUTF-8で、そうじゃないときはEUC-JPで返すskkserv用
-                if let response = String(data: data, encoding: .japaneseEUC) {
-                    return response
+        let referTask = Task {
+            let message = NWProtocolFramer.Message(request: .request(encoded))
+            do {
+                try await connection.send(message: message)
+                let data = try await connection.receive()
+                if let data {
+                    if let response = String(data: data, encoding: destination.encoding) {
+                        return response
+                    } else if destination.encoding != .japaneseEUC {
+                        // yaskkserv2のように変換候補があったときはUTF-8で、そうじゃないときはEUC-JPで返すskkserv用
+                        if let response = String(data: data, encoding: .japaneseEUC) {
+                            return response
+                        }
+                    }
                 }
+                logger.error("skkservからの応答を文字列として解釈できませんでした")
+                throw SKKServClientError.invalidResponse
+            } catch {
+                self.connection = nil
+                if let error = error as? NWError {
+                    logger.log("skkservとの通信中にNWErrorエラーが発生しました")
+                    if case .posix(let code) = error {
+                        logger.log("skkservとの通信中にNWErrorエラー POSIX(\(code.rawValue))が発生しました")
+                        if code == POSIXError.ENOTCONN {
+                            throw SKKServClientError.connectionRefused
+                        } else if code == POSIXError.ECONNRESET {
+                            // 通信が切れた
+                            throw SKKServClientError.connectionRefused
+                        } else if code == POSIXError.ECANCELED {
+                            // (タイムアウト処理など) 通信がキャンセルされた
+                            throw SKKServClientError.timeout
+                        }
+                    }
+                } else {
+                    logger.log("skkservとの通信中に不明なエラーが発生しました")
+                }
+                throw error
             }
         }
-        logger.error("skkservからの応答を文字列として解釈できませんでした")
-        throw SKKServClientError.invalidResponse
+        let timeoutTask = Task {
+            try await Task.sleep(for: .seconds(1))
+            logger.log("skkservとの通信がタイムアウトしました")
+            referTask.cancel()
+            // 送受信待ちの接続を強制的に切断する
+            connection.forceCancel()
+        }
+        return try await withTaskCancellationHandler {
+            let result = try await referTask.value
+            timeoutTask.cancel()
+            return result
+        } onCancel: {
+            referTask.cancel()
+            timeoutTask.cancel()
+        }
+    }
+
+    @objc func disconnect() {
+        connection?.forceCancel()
+        connection = nil
     }
 
     func connect(destination: SKKServDestination) async throws -> NWConnection? {

@@ -13,6 +13,8 @@ public enum SKKServClientError: Error, CaseIterable {
     case invalidResponse
     /// 接続タイムアウト
     case connectionTimeout
+    /// タイムアウト (接続タイムアウトは発生しなかったが応答が一定時間なかった)
+    case timeout
 }
 
 @objc(SKKServDestination) public final class SKKServDestination: NSObject, NSSecureCoding, Sendable {
@@ -61,4 +63,5 @@ public enum SKKServClientError: Error, CaseIterable {
 @objc protocol SKKServClientProtocol {
     func serverVersion(destination: SKKServDestination) async throws -> String
     func refer(destination: SKKServDestination, yomi: String) async throws -> String
+    func disconnect()
 }

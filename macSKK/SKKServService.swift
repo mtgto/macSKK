@@ -9,6 +9,9 @@ struct SKKServService {
     init() {
         service = NSXPCConnection(serviceName: "net.mtgto.inputmethod.macSKK.SKKServClient")
         service.remoteObjectInterface = NSXPCInterface(with: (any SKKServClientProtocol).self)
+        service.invalidationHandler = {
+            logger.log("SKKServClientとのXPCはinvalidateされました")
+        }
     }
 
     func serverVersion(destination: SKKServDestination) async throws -> String {
@@ -29,14 +32,15 @@ struct SKKServService {
 
     /**
      * SKK辞書の読みを受け取り、skkservの応答を返します。
-     * TODO: [Word]を返すようにする?
-     * TODO: タイムアウト処理を入れる
      *
-     * @param yomi 送り仮名なしなら "へんかん" のような文字列、送り仮名ありなら "おくr" のような文字列
-     * @return 変換結果が見つかった場合は "1/変換/返還/" のような先頭に1がつく形式 (1はXPC側で消すかも)
-     *         見つからなかった場合は "4へんかん" のように先頭に4がつく形式
+     * - Parameters:
+     *   - yomi 送り仮名なしなら "へんかん" のような文字列、送り仮名ありなら "おくr" のような文字列
+     *   - destination skkserv情報
+     *   - timeout 通信タイムアウト (ナノ秒)。省略時は1秒。
+     * - Returns: 変換結果が見つかった場合は "1/変換/返還/" のような先頭に1がつく形式 (1はXPC側で消すかも)。
+     *            見つからなかった場合は "4へんかん" のように先頭に4がつく形式
      */
-    func refer(yomi: String, destination: SKKServDestination) async throws -> String {
+    func refer(yomi: String, destination: SKKServDestination, timeoutInterval: TimeInterval = 1.0) async throws -> String {
         service.activate()
         guard let proxy = service.remoteObjectProxy as? any SKKServClientProtocol else {
             throw SKKServClientError.unexpected
@@ -44,6 +48,8 @@ struct SKKServService {
         do {
             return try await proxy.refer(destination: destination, yomi: yomi)
         } catch {
+            logger.log("SKKServServiceでエラーが発生したためskkservとの接続を切断します")
+            proxy.disconnect()
             throw recastSKKServClientError(error)
         }
     }
@@ -57,6 +63,10 @@ struct SKKServService {
      * @see https://zenn.dev/mtgto/articles/swift-macos-odd-problems-using-xpc
      */
     private func recastSKKServClientError(_ error: any Error) -> any Error {
+        // Task.checkCancellationでエラーが発生 == XPCでタイムアウトした
+        if error is CancellationError {
+            return SKKServClientError.timeout
+        }
         let nsError = error as NSError
         if nsError.domain == "SKKServClient.SKKServClientError" {
             for skkservClientError in SKKServClientError.allCases {

@@ -23,6 +23,7 @@ struct SKKServDict {
             // 変換候補が見つかった場合は "1/変換/返還/" のように 1が先頭でスラッシュで区切られた文字列
             // 見つからなかった場合は "4へんかん" のように4が先頭の文字列
             guard result.hasPrefix("1/") else {
+                logger.error("skkservから変換候補が見つからなかったレスポンスが返りました")
                 return []
             }
             // Entry.parseWordsは先頭のスラッシュがない形を受け取る
@@ -41,11 +42,13 @@ struct SKKServDict {
                     logger.log("skkservとの接続がタイムアウトしました")
                 case .invalidResponse:
                     logger.warning("skkservから想定しない応答が返りました")
+                case .timeout:
+                    logger.log("skkservから応答が一定時間返りませんでした")
                 default:
                     logger.error("skkservから不明なエラーが返りました")
                 }
             } else {
-                logger.error("skkserv辞書の検索でエラーが発生しました")
+                logger.error("skkserv辞書の検索でエラーが発生しました: \(error, privacy: .public)")
             }
             return []
         }

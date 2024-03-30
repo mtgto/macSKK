@@ -6,7 +6,7 @@ import Network
 extension NWParameters {
     static var skkserv: NWParameters {
         let tcpOptions = NWProtocolTCP.Options()
-        tcpOptions.connectionTimeout = 5
+        tcpOptions.connectionTimeout = 1
         tcpOptions.enableKeepalive = true
         tcpOptions.keepaliveInterval = 30
         tcpOptions.keepaliveCount = 3
