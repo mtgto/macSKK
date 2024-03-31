@@ -88,12 +88,9 @@ class FileDict: NSObject, DictProtocol, Identifiable {
 
     private func loadString(_ url: URL) throws -> String {
         if encoding == .japaneseEUC {
+            let data = try Data(contentsOf: url)
+            return try data.eucJis2004String()
             // JIS X 2013 を使ったEUC-JIS-2004の場合があるため失敗したらiconvでUTF-8に変換する
-            do {
-                return try String(contentsOf: url, encoding: .japaneseEUC)
-            } catch {
-                return try url.eucJis2004String()
-            }
         } else if encoding == .utf8 {
             let data = try Data(contentsOf: url)
             // UTF-8 BOMがついているか検査
