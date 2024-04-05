@@ -379,6 +379,12 @@ final class StateMachine {
             }
         }
 
+        if referring {
+            // skkservを引いている最中なので無視する
+            // TODO: C-gなどは変換を中断する
+            return true
+        }
+
         switch action.keyEvent {
         case .enter:
             // 未確定ローマ字はn以外は入力されずに削除される. nだけは"ん"として変換する
