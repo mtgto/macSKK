@@ -34,6 +34,10 @@ final class CandidatesViewModel: ObservableObject {
     @Published var selectedAnnotations: [Annotation] = []
     /// パネル表示時に注釈を表示するかどうか
     @Published var showAnnotationPopover: Bool
+    /// 変換候補のフォントサイズ
+    @Published var candidatesFontSize: CGFloat
+    /// 注釈のフォントサイズ
+    @Published var annotationFontSize: CGFloat
     /// 表示座標から右方向に取れる最大の幅。負数のときは不明なとき
     @Published var maxWidth: CGFloat = -1
     /// 最長のテキストを表示するために必要なビューの横幅。パネル表示のときは注釈部分は除いたリスト部分の幅。
@@ -43,11 +47,20 @@ final class CandidatesViewModel: ObservableObject {
 
     private var cancellables: Set<AnyCancellable> = []
 
-    init(candidates: [Candidate], currentPage: Int, totalPageCount: Int, showAnnotationPopover: Bool) {
+    init(
+        candidates: [Candidate],
+        currentPage: Int,
+        totalPageCount: Int,
+        showAnnotationPopover: Bool,
+        candidatesFontSize: CGFloat = 13,
+        annotationFontSize: CGFloat = 13
+    ) {
         self.candidates = .panel(words: candidates,
                                  currentPage: currentPage,
                                  totalPageCount: totalPageCount)
         self.showAnnotationPopover = showAnnotationPopover
+        self.candidatesFontSize = candidatesFontSize
+        self.annotationFontSize = annotationFontSize
         if let first = candidates.first {
             self.selected = first
         }

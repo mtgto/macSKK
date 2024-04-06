@@ -50,6 +50,8 @@
 "Show Annotation" = "現在の変換候補の注釈を表示";
 "Copy" = "コピー";
 "Number of inline candidates" = "インラインで表示する変換候補の数";
+"Candidates font size" = "変換候補のフォントサイズ";
+"Annotation font size" = "注釈のフォントサイズ";
 "Insert Blank String" = "空文字挿入";
 "Enabled" = "有効";
 "Disabled" = "無効";

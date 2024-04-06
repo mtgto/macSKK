@@ -23,7 +23,7 @@ class InputController: IMKInputController {
     private var cancellables: Set<AnyCancellable> = []
     private static let notFoundRange = NSRange(location: NSNotFound, length: NSNotFound)
     private let inputModePanel: InputModePanel
-    private let candidatesPanel: CandidatesPanel
+    private var candidatesPanel: CandidatesPanel
     private let completionPanel: CompletionPanel
     /// 変換候補として選択されている単語を流すストリーム
     private let selectedWord = PassthroughSubject<Word.Word?, Never>()
@@ -38,7 +38,11 @@ class InputController: IMKInputController {
 
     override init!(server: IMKServer!, delegate: Any!, client inputClient: Any!) {
         inputModePanel = InputModePanel()
-        candidatesPanel = CandidatesPanel(showAnnotationPopover: UserDefaults.standard.bool(forKey: UserDefaultsKeys.showAnnotation))
+        candidatesPanel = CandidatesPanel(
+            showAnnotationPopover: UserDefaults.standard.bool(forKey: UserDefaultsKeys.showAnnotation),
+            candidatesFontSize: UserDefaults.standard.integer(forKey: UserDefaultsKeys.candidatesFontSize),
+            annotationFontSize: UserDefaults.standard.integer(forKey: UserDefaultsKeys.annotationFontSize)
+        )
         completionPanel = CompletionPanel()
         super.init(server: server, delegate: delegate, client: inputClient)
 
@@ -179,6 +183,23 @@ class InputController: IMKInputController {
                 if let inlineCandidateCount = notification.object as? Int, inlineCandidateCount >= 0 {
                     self?.stateMachine.inlineCandidateCount = inlineCandidateCount
                 }
+            }.store(in: &cancellables)
+
+        NotificationCenter.default.publisher(for: notificationNameCandidatesFontSize)
+            .sink { [weak self] notification in
+                self?.candidatesPanel = CandidatesPanel(
+                    showAnnotationPopover: UserDefaults.standard.bool(forKey: UserDefaultsKeys.showAnnotation),
+                    candidatesFontSize: UserDefaults.standard.integer(forKey: UserDefaultsKeys.candidatesFontSize),
+                    annotationFontSize: UserDefaults.standard.integer(forKey: UserDefaultsKeys.annotationFontSize)
+                )
+            }.store(in: &cancellables)
+        NotificationCenter.default.publisher(for: notificationNameAnnotationFontSize)
+            .sink { [weak self] notification in
+                self?.candidatesPanel = CandidatesPanel(
+                    showAnnotationPopover: UserDefaults.standard.bool(forKey: UserDefaultsKeys.showAnnotation),
+                    candidatesFontSize: UserDefaults.standard.integer(forKey: UserDefaultsKeys.candidatesFontSize),
+                    annotationFontSize: UserDefaults.standard.integer(forKey: UserDefaultsKeys.annotationFontSize)
+                )
             }.store(in: &cancellables)
     }
 

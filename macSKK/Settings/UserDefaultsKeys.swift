@@ -11,4 +11,6 @@ struct UserDefaultsKeys {
     static let showAnnotation = "showAnnotation"
     static let inlineCandidateCount = "inlineCandidateCount"
     static let workarounds = "workarounds"
+    static let candidatesFontSize = "candidatesFontSize"
+    static let annotationFontSize = "annotationFontSize"
 }

@@ -28,6 +28,10 @@ let notificationNameToggleInsertBlankString = Notification.Name("toggleInsertBla
 let notificationNameOpenSettings = Notification.Name("openSettings")
 // インラインで表示する変換候補の数を変更したときに通知される通知の名前
 let notificationNameInlineCandidateCount = Notification.Name("inlineCandidateCount")
+// 変換候補のフォントサイズが変更されたときに通知される通知の名前
+let notificationNameCandidatesFontSize = Notification.Name("candidatesFontSize")
+// 注釈のフォントサイズが変更されたときに通知される通知の名前
+let notificationNameAnnotationFontSize = Notification.Name("annotationFontSize")
 
 func isTest() -> Bool {
     return ProcessInfo.processInfo.environment["MACSKK_IS_TEST"] == "1"
@@ -47,7 +51,7 @@ struct macSKKApp: App {
     private let settingsWatcher: SettingsWatcher?
     @State private var fetchReleaseTask: Task<Void, any Error>?
     #if DEBUG
-    private let candidatesPanel: CandidatesPanel = CandidatesPanel(showAnnotationPopover: true)
+    private let candidatesPanel: CandidatesPanel = CandidatesPanel(showAnnotationPopover: true, candidatesFontSize: 13, annotationFontSize: 13)
     private let inputModePanel = InputModePanel()
     #endif
 

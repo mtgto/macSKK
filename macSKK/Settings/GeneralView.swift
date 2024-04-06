@@ -24,6 +24,18 @@ struct GeneralView: View {
                         }
                     }
                 }
+                Section {
+                    Picker("Candidates font size", selection: $settingsViewModel.candidatesFontSize) {
+                        ForEach(1..<30) { count in
+                            Text("\(count)")
+                        }
+                    }
+                    Picker("Annotation font size", selection: $settingsViewModel.annotationFontSize) {
+                        ForEach(1..<30) { count in
+                            Text("\(count)")
+                        }
+                    }
+                }
             }
             .formStyle(.grouped)
         }.onAppear {
