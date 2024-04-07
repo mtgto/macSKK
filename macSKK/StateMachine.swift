@@ -818,9 +818,9 @@ final class StateMachine {
     }
 
     func handleComposingStartConvert(_ action: Action, composing: ComposingState, specialState: SpecialState?) -> Bool {
+        let semaphore = DispatchSemaphore(value: 0)
         // skkservから引く場合もあるのでTaskで実行する
-        referring = true
-        referringTask = Task {
+        Task {
             // 未確定ローマ字はn以外は入力されずに削除される. nだけは"ん"として変換する
             // 変換候補がないときは辞書登録へ
             let trimmedComposing = composing.trim()
@@ -868,9 +868,15 @@ final class StateMachine {
                 updateCandidates(selecting: selectingState)
                 self.state.inputMethod = .selecting(selectingState)
             }
-            updateMarkedText()
-            referring = false
+            semaphore.signal()
         }
+        switch semaphore.wait(timeout: .now() + 1) {
+        case .success:
+            logger.log("辞書参照が成功しました")
+        case .timedOut:
+            logger.log("タイムアウトしました")
+        }
+        updateMarkedText()
         return true
     }
 

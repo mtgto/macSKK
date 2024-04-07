@@ -63,6 +63,8 @@ class InputController: IMKInputController {
             targetApp = TargetApplication(bundleIdentifier: nil, localizedName: nil)
         }
 
+        // NOTE: WezTermなどreturnする前じゃないとsetMarkedTextしても無視されるアプリがあるため
+        // ここはreceive(on: RunLoop.main)してはいけない
         stateMachine.inputMethodEvent.sink { [weak self] event in
             if let self {
                 switch event {
@@ -104,7 +106,7 @@ class InputController: IMKInputController {
                 }
             }
         }.store(in: &cancellables)
-        stateMachine.candidateEvent.sink { [weak self] candidates in
+        stateMachine.candidateEvent.receive(on: RunLoop.main).sink { [weak self] candidates in
             if let self {
                 let showAnnotation = UserDefaults.standard.bool(forKey: UserDefaultsKeys.showAnnotation)
                 self.candidatesPanel.setShowAnnotationPopover(showAnnotation)
@@ -162,7 +164,7 @@ class InputController: IMKInputController {
                 self?.insertBlankString = bundleIdentifiers.contains(bundleIdentifier)
             }
         }.store(in: &cancellables)
-        stateMachine.yomiEvent.sink { [weak self] yomi in
+        stateMachine.yomiEvent.receive(on: RunLoop.main).sink { [weak self] yomi in
             if let self {
                 if let completion = dictionary.findCompletion(prefix: yomi) {
                     self.stateMachine.completion = (yomi, completion)
