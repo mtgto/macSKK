@@ -52,6 +52,14 @@ final class CandidatesPanel: NSPanel {
         self.viewModel.showAnnotationPopover = showAnnotationPopover
     }
 
+    func setCandidatesFontSize(_ candidatesFontSize: Int) {
+        self.viewModel.candidatesFontSize = CGFloat(candidatesFontSize)
+    }
+
+    func setAnnotationFontSize(_ annotationFontSize: Int) {
+        self.viewModel.annotationFontSize = CGFloat(annotationFontSize)
+    }
+
     /**
      * 表示する。スクリーンからはみ出す位置が指定されている場合は自動で調整する。
      *
