@@ -120,9 +120,9 @@ final class SettingsViewModel: ObservableObject {
     /// インラインで表示する変換候補の数。
     @Published var inlineCandidateCount: Int
     /// 変換候補のフォントサイズ
-    @Published var candidatesFontSize: Int = 13
+    @Published var candidatesFontSize: Int
     /// 注釈のフォントサイズ
-    @Published var annotationFontSize: Int = 13
+    @Published var annotationFontSize: Int
     /// ワークアラウンドが設定されたアプリケーション
     @Published var workaroundApplications: [WorkaroundApplication]
     // 辞書ディレクトリ
@@ -297,6 +297,8 @@ final class SettingsViewModel: ObservableObject {
         showAnnotation = true
         inlineCandidateCount = 3
         workaroundApplications = []
+        candidatesFontSize = 13
+        annotationFontSize = 13
     }
 
     // DictionaryViewのPreviewProvider用

@@ -194,6 +194,9 @@ struct macSKKApp: App {
                 ["bundleIdentifier": "jp.naver.line.mac", "insertBlankString": true],
                 ["bundleIdentifier": "org.alacritty", "insertBlankString": true],
             ],
+            // NSFont.preferredFont(forTextStyle: .body).pointSize と同じサイズ
+            UserDefaultsKeys.candidatesFontSize: 13,
+            UserDefaultsKeys.annotationFontSize: 13,
         ])
     }
 
