@@ -31,7 +31,7 @@ struct CandidatesView: View {
                         )
                         .padding(EdgeInsets(top: 16, leading: 12, bottom: 16, trailing: 8))
                         .frame(width: Self.annotationPopupWidth, alignment: .topLeading)
-                        .frame(maxHeight: CGFloat(words.count) * candidates.candidatesLineHeight + Self.footerHeight)
+                        .frame(maxHeight: max(200, CGFloat(words.count) * candidates.candidatesLineHeight + Self.footerHeight))
                         .fixedSize(horizontal: false, vertical: /*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
                         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
                         .opacity(0.9)
@@ -79,7 +79,7 @@ struct CandidatesView: View {
                     )
                     .padding(EdgeInsets(top: 16, leading: 28, bottom: 16, trailing: 4))
                     .frame(width: Self.annotationPopupWidth, alignment: .topLeading)
-                    .frame(maxHeight: CGFloat(words.count) * candidates.candidatesLineHeight + Self.footerHeight)
+                    .frame(maxHeight: max(200, CGFloat(words.count) * candidates.candidatesLineHeight + Self.footerHeight))
                     .fixedSize(horizontal: false, vertical: /*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
                     .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
                     .opacity(0.9)
@@ -92,7 +92,7 @@ struct CandidatesView: View {
 }
 
 struct CandidatesView_Previews: PreviewProvider {
-    private static let words: [Candidate] = (1..<10).map {
+    private static let words: [Candidate] = (1...9).map {
         Candidate(String(repeating: "例文\($0)", count: $0),
                   annotations: [Annotation(dictId: "SKK-JISYO.L", text: "注釈\($0)")])
     }
