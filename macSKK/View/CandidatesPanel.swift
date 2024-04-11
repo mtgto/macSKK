@@ -84,7 +84,7 @@ final class CandidatesPanel: NSPanel {
         let height: CGFloat
         if case let .panel(words, _, _) = viewModel.candidates {
             width = viewModel.showAnnotationPopover ? viewModel.minWidth + CandidatesView.annotationPopupWidth : viewModel.minWidth
-            height = CGFloat(words.count) * CandidatesView.lineHeight + CandidatesView.footerHeight
+            height = CGFloat(words.count) * viewModel.candidatesLineHeight + CandidatesView.footerHeight
             if viewModel.displayPopoverInLeft {
                 origin.x = origin.x - CandidatesView.annotationPopupWidth - CandidatesView.annotationMargin
             }

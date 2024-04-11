@@ -44,6 +44,10 @@ final class CandidatesViewModel: ObservableObject {
     @Published var minWidth: CGFloat = 0
     /// パネル表示時の注釈を左側に表示するかどうか
     @Published var displayPopoverInLeft: Bool = false
+    /// 変換候補の一行の高さ
+    var candidatesLineHeight: CGFloat {
+        candidatesFontSize + 9
+    }
 
     private var cancellables: Set<AnyCancellable> = []
 
@@ -83,7 +87,7 @@ final class CandidatesViewModel: ObservableObject {
             if case let .panel(words, _, _) = candidates {
                 let listWidth = words.map { candidate -> CGFloat in
                     let size = candidate.word.boundingRect(
-                        with: CGSize(width: .greatestFiniteMagnitude, height: CandidatesView.lineHeight),
+                        with: CGSize(width: .greatestFiniteMagnitude, height: self.candidatesLineHeight),
                         options: .usesLineFragmentOrigin,
                         attributes: [.font: NSFont.preferredFont(forTextStyle: .body)])
                     // 未解決の余白(8px) + 添字(16px) + 余白(4px) + テキスト + 余白(4px) + 未解決の余白(22px)

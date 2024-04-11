@@ -7,8 +7,6 @@ import SwiftUI
 /// とりあえず10件ずつ縦に表示、スペースで次の10件が表示される
 struct CandidatesView: View {
     @ObservedObject var candidates: CandidatesViewModel
-    /// 一行の高さ
-    static let lineHeight: CGFloat = 20
     static let footerHeight: CGFloat = 20
     /// 変換候補と注釈の間
     static let annotationMargin: CGFloat = 8
@@ -56,15 +54,15 @@ struct CandidatesView: View {
                             Spacer()  // popoverをListの右に表示するために余白を入れる
                         }
                         .listRowInsets(EdgeInsets())
-                        // `.body`のフォントサイズが13.0なので、それを基準に計算
-                        .frame(height: Self.lineHeight + (candidates.candidatesFontSize - 13.0) * 0.5)
+                        .frame(height: candidates.candidatesLineHeight)
                         // .border(Color.red) // Listの謎のInsetのデバッグ時に使用する
                         .contentShape(Rectangle())
                     }
                     .listStyle(.plain)
-                    .environment(\.defaultMinListRowHeight, Self.lineHeight)  // Listの行の上下の余白を削除
+                    // Listの行の上下の余白を削除
+                    .environment(\.defaultMinListRowHeight, candidates.candidatesLineHeight)
                     .scrollDisabled(true)
-                    .frame(width: candidates.minWidth, height: CGFloat(words.count) * Self.lineHeight)
+                    .frame(width: candidates.minWidth, height: CGFloat(words.count) * candidates.candidatesLineHeight)
                     HStack(alignment: .center, spacing: 0) {
                         Spacer()
                         Text("\(currentPage + 1) / \(totalPageCount)")
@@ -94,7 +92,7 @@ struct CandidatesView: View {
 }
 
 struct CandidatesView_Previews: PreviewProvider {
-    private static let words: [Candidate] = (1..<9).map {
+    private static let words: [Candidate] = (1..<10).map {
         Candidate(String(repeating: "例文\($0)", count: $0),
                   annotations: [Annotation(dictId: "SKK-JISYO.L", text: "注釈\($0)")])
     }
