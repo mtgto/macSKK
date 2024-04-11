@@ -46,7 +46,7 @@ final class CandidatesViewModel: ObservableObject {
     @Published var displayPopoverInLeft: Bool = false
     /// 変換候補の一行の高さ
     var candidatesLineHeight: CGFloat {
-        candidatesFontSize + 9
+        candidatesFontSize + 11
     }
 
     private var cancellables: Set<AnyCancellable> = []
