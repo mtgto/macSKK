@@ -26,13 +26,13 @@ struct GeneralView: View {
                 }
                 Section {
                     Picker("Candidates font size", selection: $settingsViewModel.candidatesFontSize) {
-                        ForEach(6..<30) { count in
-                            Text("\(count)")
+                        ForEach(6..<31) { count in
+                            Text("\(count)").tag(count)
                         }
                     }
                     Picker("Annotation font size", selection: $settingsViewModel.annotationFontSize) {
-                        ForEach(6..<30) { count in
-                            Text("\(count)")
+                        ForEach(6..<31) { count in
+                            Text("\(count)").tag(count)
                         }
                     }
                 }
