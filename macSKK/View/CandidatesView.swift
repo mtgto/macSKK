@@ -7,19 +7,16 @@ import SwiftUI
 /// とりあえず10件ずつ縦に表示、スペースで次の10件が表示される
 struct CandidatesView: View {
     @ObservedObject var candidates: CandidatesViewModel
-    /// 一行の高さ
-    static let lineHeight: CGFloat = 20
     static let footerHeight: CGFloat = 20
     /// 変換候補と注釈の間
     static let annotationMargin: CGFloat = 8
     /// パネル型の注釈ビューの幅
     static let annotationPopupWidth: CGFloat = 300
-    private let font: Font = .body
 
     var body: some View {
         switch candidates.candidates {
         case .inline:
-            AnnotationView(annotations: $candidates.selectedAnnotations, systemAnnotation: $candidates.selectedSystemAnnotation)
+            AnnotationView(annotations: $candidates.selectedAnnotations, systemAnnotation: $candidates.selectedSystemAnnotation, annotationFontSize: candidates.annotationFontSize)
                 .padding(EdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4))
                 .frame(width: 300, height: 200)
                 .background()
@@ -29,11 +26,12 @@ struct CandidatesView: View {
                     if candidates.popoverIsPresented {
                         AnnotationView(
                             annotations: $candidates.selectedAnnotations,
-                            systemAnnotation: $candidates.selectedSystemAnnotation
+                            systemAnnotation: $candidates.selectedSystemAnnotation,
+                            annotationFontSize: candidates.annotationFontSize
                         )
                         .padding(EdgeInsets(top: 16, leading: 12, bottom: 16, trailing: 8))
                         .frame(width: Self.annotationPopupWidth, alignment: .topLeading)
-                        .frame(maxHeight: 200)
+                        .frame(maxHeight: max(200, CGFloat(words.count) * candidates.candidatesLineHeight + Self.footerHeight))
                         .fixedSize(horizontal: false, vertical: /*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
                         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
                         .opacity(0.9)
@@ -45,24 +43,26 @@ struct CandidatesView: View {
                     List(Array(words.enumerated()), id: \.element, selection: $candidates.selected) { index, candidate in
                         HStack {
                             Text("\(index + 1)")
-                                .font(font)
+                                // 変換候補の90%のフォントサイズ
+                                .font(.system(size: candidates.candidatesFontSize * 0.9))
                                 .padding(EdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 0))
                                 .frame(width: 16)
                             Text(candidate.word)
-                                .font(font)
+                                .font(.system(size: candidates.candidatesFontSize))
                                 .fixedSize(horizontal: true, vertical: false)
                                 .padding(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 4))
                             Spacer()  // popoverをListの右に表示するために余白を入れる
                         }
                         .listRowInsets(EdgeInsets())
-                        .frame(height: Self.lineHeight)
+                        .frame(height: candidates.candidatesLineHeight)
                         // .border(Color.red) // Listの謎のInsetのデバッグ時に使用する
                         .contentShape(Rectangle())
                     }
                     .listStyle(.plain)
-                    .environment(\.defaultMinListRowHeight, Self.lineHeight)  // Listの行の上下の余白を削除
+                    // Listの行の上下の余白を削除
+                    .environment(\.defaultMinListRowHeight, candidates.candidatesLineHeight)
                     .scrollDisabled(true)
-                    .frame(width: candidates.minWidth, height: CGFloat(words.count) * Self.lineHeight)
+                    .frame(width: candidates.minWidth, height: CGFloat(words.count) * candidates.candidatesLineHeight)
                     HStack(alignment: .center, spacing: 0) {
                         Spacer()
                         Text("\(currentPage + 1) / \(totalPageCount)")
@@ -74,11 +74,12 @@ struct CandidatesView: View {
                 if candidates.popoverIsPresented && !candidates.displayPopoverInLeft {
                     AnnotationView(
                         annotations: $candidates.selectedAnnotations,
-                        systemAnnotation: $candidates.selectedSystemAnnotation
+                        systemAnnotation: $candidates.selectedSystemAnnotation,
+                        annotationFontSize: candidates.annotationFontSize
                     )
                     .padding(EdgeInsets(top: 16, leading: 28, bottom: 16, trailing: 4))
                     .frame(width: Self.annotationPopupWidth, alignment: .topLeading)
-                    .frame(maxHeight: 200)
+                    .frame(maxHeight: max(200, CGFloat(words.count) * candidates.candidatesLineHeight + Self.footerHeight))
                     .fixedSize(horizontal: false, vertical: /*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
                     .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
                     .opacity(0.9)
@@ -91,7 +92,7 @@ struct CandidatesView: View {
 }
 
 struct CandidatesView_Previews: PreviewProvider {
-    private static let words: [Candidate] = (1..<9).map {
+    private static let words: [Candidate] = (1...9).map {
         Candidate(String(repeating: "例文\($0)", count: $0),
                   annotations: [Annotation(dictId: "SKK-JISYO.L", text: "注釈\($0)")])
     }
@@ -127,6 +128,14 @@ struct CandidatesView_Previews: PreviewProvider {
         return viewModel
     }
 
+    private static func fontSize19ViewModel() -> CandidatesViewModel {
+        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, showAnnotationPopover: true, candidatesFontSize: CGFloat(19), annotationFontSize: CGFloat(19))
+        viewModel.selected = words.first
+        viewModel.systemAnnotations = [words.first!.word: String(repeating: "これはシステム辞書の注釈です。", count: 20)]
+        viewModel.maxWidth = 1000
+        return viewModel
+    }
+
     static var previews: some View {
         CandidatesView(candidates: pageViewModel())
             .background(Color.cyan)
@@ -138,5 +147,8 @@ struct CandidatesView_Previews: PreviewProvider {
             .previewDisplayName("パネル表示 (注釈なし)")
         CandidatesView(candidates: inlineViewModel())
             .previewDisplayName("インライン表示")
+        CandidatesView(candidates: fontSize19ViewModel())
+            .background(Color.cyan)
+            .previewDisplayName("フォントサイズ19")
     }
 }

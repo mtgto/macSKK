@@ -50,6 +50,8 @@
 "Show Annotation" = "Show the annotation of the candidate in current";
 "Copy" = "Copy";
 "Number of inline candidates" = "Number of inline candidates";
+"Candidates font size" = "Candidates font size";
+"Annotation font size" = "Annotation font size";
 "Insert Blank String" = "Insert Blank String";
 "Enabled" = "Enabled";
 "Disabled" = "Disabled";

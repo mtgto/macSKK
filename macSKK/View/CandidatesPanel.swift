@@ -13,12 +13,15 @@ final class CandidatesPanel: NSPanel {
     /**
      * - Parameters:
      *   - showAnnotationPopover: パネル表示時に注釈を表示するかどうか
+     *   - candidatesFontSize: 変換候補のフォントサイズ
      */
-    init(showAnnotationPopover: Bool) {
+    init(showAnnotationPopover: Bool, candidatesFontSize: Int, annotationFontSize: Int) {
         viewModel = CandidatesViewModel(candidates: [],
                                         currentPage: 0,
                                         totalPageCount: 0,
-                                        showAnnotationPopover: showAnnotationPopover)
+                                        showAnnotationPopover: showAnnotationPopover,
+                                        candidatesFontSize: CGFloat(candidatesFontSize),
+                                        annotationFontSize: CGFloat(annotationFontSize))
         let rootView = CandidatesView(candidates: self.viewModel)
         let viewController = NSHostingController(rootView: rootView)
         // borderlessにしないとdeactivateServerが呼ばれてしまう
@@ -49,6 +52,14 @@ final class CandidatesPanel: NSPanel {
         self.viewModel.showAnnotationPopover = showAnnotationPopover
     }
 
+    func setCandidatesFontSize(_ candidatesFontSize: Int) {
+        self.viewModel.candidatesFontSize = CGFloat(candidatesFontSize)
+    }
+
+    func setAnnotationFontSize(_ annotationFontSize: Int) {
+        self.viewModel.annotationFontSize = CGFloat(annotationFontSize)
+    }
+
     /**
      * 表示する。スクリーンからはみ出す位置が指定されている場合は自動で調整する。
      *
@@ -73,7 +84,7 @@ final class CandidatesPanel: NSPanel {
         let height: CGFloat
         if case let .panel(words, _, _) = viewModel.candidates {
             width = viewModel.showAnnotationPopover ? viewModel.minWidth + CandidatesView.annotationPopupWidth : viewModel.minWidth
-            height = CGFloat(words.count) * CandidatesView.lineHeight + CandidatesView.footerHeight
+            height = CGFloat(words.count) * viewModel.candidatesLineHeight + CandidatesView.footerHeight
             if viewModel.displayPopoverInLeft {
                 origin.x = origin.x - CandidatesView.annotationPopupWidth - CandidatesView.annotationMargin
             }

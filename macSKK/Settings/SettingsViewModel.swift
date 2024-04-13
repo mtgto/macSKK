@@ -119,6 +119,10 @@ final class SettingsViewModel: ObservableObject {
     @Published var showAnnotation: Bool
     /// インラインで表示する変換候補の数。
     @Published var inlineCandidateCount: Int
+    /// 変換候補のフォントサイズ
+    @Published var candidatesFontSize: Int
+    /// 注釈のフォントサイズ
+    @Published var annotationFontSize: Int
     /// ワークアラウンドが設定されたアプリケーション
     @Published var workaroundApplications: [WorkaroundApplication]
     // 辞書ディレクトリ
@@ -137,6 +141,8 @@ final class SettingsViewModel: ObservableObject {
         }
         showAnnotation = UserDefaults.standard.bool(forKey: UserDefaultsKeys.showAnnotation)
         inlineCandidateCount = UserDefaults.standard.integer(forKey: UserDefaultsKeys.inlineCandidateCount)
+        candidatesFontSize = UserDefaults.standard.integer(forKey: UserDefaultsKeys.candidatesFontSize)
+        annotationFontSize = UserDefaults.standard.integer(forKey: UserDefaultsKeys.annotationFontSize)
         workaroundApplications = UserDefaults.standard.array(forKey: UserDefaultsKeys.workarounds)?.compactMap { workaround in
             if let workaround = workaround as? Dictionary<String, Any>, let bundleIdentifier = workaround["bundleIdentifier"] as? String, let insertBlankString = workaround["insertBlankString"] as? Bool {
                 WorkaroundApplication(bundleIdentifier: bundleIdentifier, insertBlankString: insertBlankString)
@@ -250,6 +256,18 @@ final class SettingsViewModel: ObservableObject {
             logger.log("インラインで表示する変換候補の数を\(inlineCandidateCount)個に変更しました")
         }.store(in: &cancellables)
 
+        $candidatesFontSize.dropFirst().sink { candidatesFontSize in
+            UserDefaults.standard.set(candidatesFontSize, forKey: UserDefaultsKeys.candidatesFontSize)
+            NotificationCenter.default.post(name: notificationNameCandidatesFontSize, object: candidatesFontSize)
+            logger.log("変換候補のフォントサイズを\(candidatesFontSize)に変更しました")
+        }.store(in: &cancellables)
+
+        $annotationFontSize.dropFirst().sink { annotationFontSize in
+            UserDefaults.standard.set(annotationFontSize, forKey: UserDefaultsKeys.annotationFontSize)
+            NotificationCenter.default.post(name: notificationNameAnnotationFontSize, object: annotationFontSize)
+            logger.log("注釈のフォントサイズを\(annotationFontSize)に変更しました")
+        }.store(in: &cancellables)
+
         NotificationCenter.default.publisher(for: notificationNameDictLoad).receive(on: RunLoop.main).sink { [weak self] notification in
             if let loadEvent = notification.object as? DictLoadEvent, let self {
                 if let userDict = dictionary.userDict as? FileDict, userDict.id == loadEvent.id {
@@ -279,6 +297,8 @@ final class SettingsViewModel: ObservableObject {
         showAnnotation = true
         inlineCandidateCount = 3
         workaroundApplications = []
+        candidatesFontSize = 13
+        annotationFontSize = 13
     }
 
     // DictionaryViewのPreviewProvider用

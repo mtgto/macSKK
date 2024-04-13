@@ -38,7 +38,11 @@ class InputController: IMKInputController {
 
     override init!(server: IMKServer!, delegate: Any!, client inputClient: Any!) {
         inputModePanel = InputModePanel()
-        candidatesPanel = CandidatesPanel(showAnnotationPopover: UserDefaults.standard.bool(forKey: UserDefaultsKeys.showAnnotation))
+        candidatesPanel = CandidatesPanel(
+            showAnnotationPopover: UserDefaults.standard.bool(forKey: UserDefaultsKeys.showAnnotation),
+            candidatesFontSize: UserDefaults.standard.integer(forKey: UserDefaultsKeys.candidatesFontSize),
+            annotationFontSize: UserDefaults.standard.integer(forKey: UserDefaultsKeys.annotationFontSize)
+        )
         completionPanel = CompletionPanel()
         super.init(server: server, delegate: delegate, client: inputClient)
 
@@ -178,6 +182,19 @@ class InputController: IMKInputController {
             .sink { [weak self] notification in
                 if let inlineCandidateCount = notification.object as? Int, inlineCandidateCount >= 0 {
                     self?.stateMachine.inlineCandidateCount = inlineCandidateCount
+                }
+            }.store(in: &cancellables)
+
+        NotificationCenter.default.publisher(for: notificationNameCandidatesFontSize)
+            .sink { [weak self] notification in
+                if let candidatesFontSize = notification.object as? Int {
+                    self?.candidatesPanel.setCandidatesFontSize(candidatesFontSize)
+                }
+            }.store(in: &cancellables)
+        NotificationCenter.default.publisher(for: notificationNameAnnotationFontSize)
+            .sink { [weak self] notification in
+                if let annotationFontSize = notification.object as? Int {
+                    self?.candidatesPanel.setAnnotationFontSize(annotationFontSize)
                 }
             }.store(in: &cancellables)
     }

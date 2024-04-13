@@ -34,20 +34,37 @@ final class CandidatesViewModel: ObservableObject {
     @Published var selectedAnnotations: [Annotation] = []
     /// パネル表示時に注釈を表示するかどうか
     @Published var showAnnotationPopover: Bool
+    /// 変換候補のフォントサイズ
+    @Published var candidatesFontSize: CGFloat
+    /// 注釈のフォントサイズ
+    @Published var annotationFontSize: CGFloat
     /// 表示座標から右方向に取れる最大の幅。負数のときは不明なとき
     @Published var maxWidth: CGFloat = -1
     /// 最長のテキストを表示するために必要なビューの横幅。パネル表示のときは注釈部分は除いたリスト部分の幅。
     @Published var minWidth: CGFloat = 0
     /// パネル表示時の注釈を左側に表示するかどうか
     @Published var displayPopoverInLeft: Bool = false
+    /// 変換候補の一行の高さ
+    var candidatesLineHeight: CGFloat {
+        candidatesFontSize + 11
+    }
 
     private var cancellables: Set<AnyCancellable> = []
 
-    init(candidates: [Candidate], currentPage: Int, totalPageCount: Int, showAnnotationPopover: Bool) {
+    init(
+        candidates: [Candidate],
+        currentPage: Int,
+        totalPageCount: Int,
+        showAnnotationPopover: Bool,
+        candidatesFontSize: CGFloat = 13,
+        annotationFontSize: CGFloat = 13
+    ) {
         self.candidates = .panel(words: candidates,
                                  currentPage: currentPage,
                                  totalPageCount: totalPageCount)
         self.showAnnotationPopover = showAnnotationPopover
+        self.candidatesFontSize = candidatesFontSize
+        self.annotationFontSize = annotationFontSize
         if let first = candidates.first {
             self.selected = first
         }
@@ -70,7 +87,7 @@ final class CandidatesViewModel: ObservableObject {
             if case let .panel(words, _, _) = candidates {
                 let listWidth = words.map { candidate -> CGFloat in
                     let size = candidate.word.boundingRect(
-                        with: CGSize(width: .greatestFiniteMagnitude, height: CandidatesView.lineHeight),
+                        with: CGSize(width: .greatestFiniteMagnitude, height: self.candidatesLineHeight),
                         options: .usesLineFragmentOrigin,
                         attributes: [.font: NSFont.preferredFont(forTextStyle: .body)])
                     // 未解決の余白(8px) + 添字(16px) + 余白(4px) + テキスト + 余白(4px) + 未解決の余白(22px)
