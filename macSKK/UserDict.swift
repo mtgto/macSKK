@@ -114,9 +114,20 @@ class UserDict: NSObject, DictProtocol {
         }
         // ひとまずskkservを辞書として使う場合はファイル辞書より後に追加する
         if let skkservDict {
-            let skkservCandidates = await skkservDict.refer(yomi, option: option).map { word in
-                let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
-                return Candidate(word.word, annotations: annotations)
+            let semaphore = DispatchSemaphore(value: 0)
+            var skkservCandidates: [Candidate] = []
+            skkservDict.refer(yomi, option: option) { words in
+                skkservCandidates = words.map { word in
+                    let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
+                    return Candidate(word.word, annotations: annotations)
+                }
+                semaphore.signal()
+            }
+            switch semaphore.wait(timeout: .now() + 1) {
+            case .success:
+                logger.log("辞書参照が成功しました")
+            case .timedOut:
+                logger.log("タイムアウトしました")
             }
             candidates.append(contentsOf: skkservCandidates)
         }

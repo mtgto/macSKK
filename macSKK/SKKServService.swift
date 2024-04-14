@@ -40,18 +40,31 @@ struct SKKServService {
      * - Returns: 変換結果が見つかった場合は "1/変換/返還/" のような先頭に1がつく形式 (1はXPC側で消すかも)。
      *            見つからなかった場合は "4へんかん" のように先頭に4がつく形式
      */
-    func refer(yomi: String, destination: SKKServDestination, timeoutInterval: TimeInterval = 1.0) async throws -> String {
+    func refer(yomi: String, destination: SKKServDestination, callback: @escaping (Result<String, any Error>) -> Void) {
         service.activate()
+        Task {
+            guard let proxy = service.remoteObjectProxy as? any SKKServClientProtocol else {
+                callback(.failure(SKKServClientError.unexpected))
+                return
+            }
+            do {
+                callback(.success(try await proxy.refer(destination: destination, yomi: yomi)))
+            } catch {
+                logger.log("SKKServServiceでエラーが発生したためskkservとの接続を切断します")
+                proxy.disconnect()
+                callback(.failure(recastSKKServClientError(error)))
+            }
+        }
+    }
+
+    /**
+     * skkservとの通信を切断します。
+     */
+    func disconnect() throws {
         guard let proxy = service.remoteObjectProxy as? any SKKServClientProtocol else {
             throw SKKServClientError.unexpected
         }
-        do {
-            return try await proxy.refer(destination: destination, yomi: yomi)
-        } catch {
-            logger.log("SKKServServiceでエラーが発生したためskkservとの接続を切断します")
-            proxy.disconnect()
-            throw recastSKKServClientError(error)
-        }
+        proxy.disconnect()
     }
 
     /**
