@@ -43,13 +43,12 @@ struct SKKServDictView: View {
                                                          encoding: setting.encoding)
                     testing = true
                     information = String(localized: "SKKServDictTesting")
-                    Task {
-                        do {
-                            let version = try await skkservService.serverVersion(destination: destination)
-                            //let version = try await skkservService.refer(yomi: "ふぶき", destination: destination)
+                    skkservService.serverVersion(destination: destination) { result in
+                        switch result {
+                        case .success(let version):
                             print("skkservのバージョン: \(version)")
                             information = String(localized: "SKKServClientConnected")
-                        } catch {
+                        case .failure(let error):
                             if let error = error as? SKKServClientError {
                                 switch error {
                                 case .unexpected:

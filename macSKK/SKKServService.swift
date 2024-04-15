@@ -12,21 +12,26 @@ struct SKKServService {
         service.invalidationHandler = {
             logger.log("SKKServClientとのXPCはinvalidateされました")
         }
+        service.interruptionHandler = {
+            logger.log("SKKServClientとのXPCがinterruptされました")
+        }
     }
 
-    func serverVersion(destination: SKKServDestination) async throws -> String {
+    func serverVersion(destination: SKKServDestination, callback: @escaping (Result<String, any Error>) -> Void) {
         service.activate()
-        defer {
-            service.invalidate()
-        }
         guard let proxy = service.remoteObjectProxy as? any SKKServClientProtocol else {
-            throw SKKServClientError.unexpected
+            callback(.failure(SKKServClientError.unexpected))
+            return
         }
 
-        do {
-            return try await proxy.serverVersion(destination: destination)
-        } catch {
-            throw recastSKKServClientError(error)
+        proxy.serverVersion(destination: destination) { version, error in
+            if let version {
+                callback(.success(version))
+            } else if let error {
+                callback(.failure(recastSKKServClientError(error)))
+            } else {
+                fatalError("SKKServClientから不正な応答が返りました")
+            }
         }
     }
 
@@ -42,17 +47,16 @@ struct SKKServService {
      */
     func refer(yomi: String, destination: SKKServDestination, callback: @escaping (Result<String, any Error>) -> Void) {
         service.activate()
-        Task {
-            guard let proxy = service.remoteObjectProxy as? any SKKServClientProtocol else {
-                callback(.failure(SKKServClientError.unexpected))
-                return
-            }
-            do {
-                callback(.success(try await proxy.refer(destination: destination, yomi: yomi)))
-            } catch {
-                logger.log("SKKServServiceでエラーが発生したためskkservとの接続を切断します")
-                proxy.disconnect()
+        guard let proxy = service.remoteObjectProxy as? any SKKServClientProtocol else {
+            return callback(.failure(SKKServClientError.unexpected))
+        }
+        proxy.refer(destination: destination, yomi: yomi) { result, error in
+            if let result {
+                callback(.success(result))
+            } else if let error {
                 callback(.failure(recastSKKServClientError(error)))
+            } else {
+                fatalError("SKKServClientから不正な応答が返りました")
             }
         }
     }

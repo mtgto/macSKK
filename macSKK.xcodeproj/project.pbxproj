@@ -45,6 +45,7 @@
 		CE5ECF642957077D00E7BE7D /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = CE5ECF632957077D00E7BE7D /* InfoPlist.strings */; };
 		CE6599DC2ADBF2630052F8C0 /* SettingsWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE6599DB2ADBF2630052F8C0 /* SettingsWindow.swift */; };
 		CE6BBCC02BCB6B57003BB47F /* Data+EucJis2004.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED987402BB953E7001B40F9 /* Data+EucJis2004.swift */; };
+		CE6BBCC12BCD6721003BB47F /* libiconv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = CE496C972B440CCA001C623C /* libiconv.tbd */; };
 		CE6DBA8D2A845CE400F5A227 /* Release.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE6DBA8C2A845CE400F5A227 /* Release.swift */; };
 		CE6DBA8F2A845E8B00F5A227 /* ReleaseVersion.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE6DBA8E2A845E8B00F5A227 /* ReleaseVersion.swift */; };
 		CE6DBA912A846C1700F5A227 /* ReleaseVersionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE6DBA902A846C1700F5A227 /* ReleaseVersionTests.swift */; };
@@ -287,6 +288,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CE6BBCC12BCD6721003BB47F /* libiconv.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
