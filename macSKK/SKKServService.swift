@@ -17,21 +17,34 @@ struct SKKServService {
         }
     }
 
-    func serverVersion(destination: SKKServDestination, callback: @escaping (Result<String, any Error>) -> Void) {
+    func serverVersion(destination: SKKServDestination, timeout: TimeInterval = 1.0) throws -> String {
         service.activate()
         guard let proxy = service.remoteObjectProxy as? any SKKServClientProtocol else {
-            callback(.failure(SKKServClientError.unexpected))
-            return
+            throw SKKServClientError.unexpected
         }
-
+        let semaphore = DispatchSemaphore(value: 0)
+        var result: Result<String, any Error> = .failure(SKKServClientError.unexpected)
         proxy.serverVersion(destination: destination) { version, error in
             if let version {
-                callback(.success(version))
+                result = .success(version)
             } else if let error {
-                callback(.failure(recastSKKServClientError(error)))
+                result = .failure(recastSKKServClientError(error))
             } else {
                 fatalError("SKKServClientから不正な応答が返りました")
             }
+        }
+        switch semaphore.wait(timeout: .now() + timeout) {
+        case .success:
+            switch result {
+            case .success(let line):
+                return line
+            case .failure(let error):
+                throw error
+            }
+        case .timedOut:
+            logger.warning("skkservからの応答がなかったためタイムアウト処理を行います")
+            proxy.disconnect()
+            throw SKKServClientError.timeout
         }
     }
 
@@ -47,30 +60,36 @@ struct SKKServService {
      * - Returns: 変換結果が見つかった場合は "1/変換/返還/" のような先頭に1がつく形式 (1はXPC側で消すかも)。
      *            見つからなかった場合は "4へんかん" のように先頭に4がつく形式
      */
-    func refer(yomi: String, destination: SKKServDestination, timeout: TimeInterval = 1.0, callback: @escaping (Result<String, any Error>) -> Void) {
+    func refer(yomi: String, destination: SKKServDestination, timeout: TimeInterval = 1.0) throws -> String {
         service.activate()
         guard let proxy = service.remoteObjectProxy as? any SKKServClientProtocol else {
-            return callback(.failure(SKKServClientError.unexpected))
+            throw SKKServClientError.unexpected
         }
         let semaphore = DispatchSemaphore(value: 0)
-        proxy.refer(destination: destination, yomi: yomi) { result, error in
+        var result: Result<String, any Error> = .failure(SKKServClientError.unexpected)
+        proxy.refer(destination: destination, yomi: yomi) { line, error in
             semaphore.signal()
             // メインスレッドとは別スレッド
-            if let result {
-                callback(.success(result))
+            if let line {
+                result = .success(line)
             } else if let error {
-                callback(.failure(recastSKKServClientError(error)))
+                result = .failure(recastSKKServClientError(error))
             } else {
                 fatalError("SKKServClientから不正な応答が返りました")
             }
         }
         switch semaphore.wait(timeout: .now() + timeout) {
         case .success:
-            break
+            switch result {
+            case .success(let line):
+                return line
+            case .failure(let error):
+                throw error
+            }
         case .timedOut:
             logger.warning("skkservからの応答がなかったためタイムアウト処理を行います")
             proxy.disconnect()
-            callback(.failure(SKKServClientError.timeout))
+            throw SKKServClientError.timeout
         }
     }
 

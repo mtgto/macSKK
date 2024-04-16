@@ -43,34 +43,39 @@ struct SKKServDictView: View {
                                                          encoding: setting.encoding)
                     testing = true
                     information = String(localized: "SKKServDictTesting")
-                    skkservService.serverVersion(destination: destination) { result in
-                        switch result {
-                        case .success(let version):
-                            print("skkservのバージョン: \(version)")
-                            information = String(localized: "SKKServClientConnected")
-                        case .failure(let error):
-                            if let error = error as? SKKServClientError {
-                                switch error {
-                                case .unexpected:
-                                    logger.error("SKKServClientへのXPC呼び出しで不明なエラーが発生しました")
-                                    information = String(localized: "SKKServClientUnknownError")
-                                case .connectionRefused:
-                                    logger.info("skkservへの通信ができませんでした")
-                                    information = String(localized: "SKKServClientConnectionRefused")
-                                case .connectionTimeout:
-                                    logger.info("skkservへの通信がタイムアウトしました")
-                                    information = String(localized: "SKKServClientConnectionTimeout")
-                                default:
-                                    logger.error("SKKServClientへのXPC呼び出しで不明なエラーが発生しました")
-                                    information = String(localized: "SKKServClientUnknownError")
-                                }
-                            } else {
+                    //skkservService.serverVersion(destination: destination) { result in
+                    let result = Result {
+                        try skkservService.refer(yomi: "ふぶき", destination: destination)
+                    }
+                    switch result {
+                    case .success(let version):
+                        print("skkservのバージョン: \(version)")
+                        information = String(localized: "SKKServClientConnected")
+                    case .failure(let error):
+                        if let error = error as? SKKServClientError {
+                            switch error {
+                            case .unexpected:
+                                logger.error("SKKServClientへのXPC呼び出しで不明なエラーが発生しました")
+                                information = String(localized: "SKKServClientUnknownError")
+                            case .connectionRefused:
+                                logger.info("skkservへの通信ができませんでした")
+                                information = String(localized: "SKKServClientConnectionRefused")
+                            case .connectionTimeout:
+                                logger.info("skkservへの接続がタイムアウトしました")
+                                information = String(localized: "SKKServClientConnectionTimeout")
+                            case .timeout:
+                                logger.info("skkservへの通信がタイムアウトしました")
+                                information = String(localized: "SKKServClientTimeout")
+                            default:
                                 logger.error("SKKServClientへのXPC呼び出しで不明なエラーが発生しました")
                                 information = String(localized: "SKKServClientUnknownError")
                             }
+                        } else {
+                            logger.error("SKKServClientへのXPC呼び出しで不明なエラーが発生しました")
+                            information = String(localized: "SKKServClientUnknownError")
                         }
-                        testing = false
                     }
+                    testing = false
                 } label: {
                     Text("Test")
                         .padding([.leading, .trailing])

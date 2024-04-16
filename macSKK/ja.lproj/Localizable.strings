@@ -31,6 +31,7 @@
 "SKKServClientUnknownError" = "skkservへの接続中に不明なエラーが発生しました";
 "SKKServClientConnectionRefused" = "skkservに接続できませんでした";
 "SKKServClientConnectionTimeout" = "skkservへの接続がタイムアウトしました";
+"SKKServClientTimeout" = "skkservへの通信がタイムアウトしました";
 "Done" = "完了";
 "Filename" = "ファイル名";
 "Dictionary Setting" = "辞書の設定";

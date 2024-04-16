@@ -31,6 +31,7 @@
 "SKKServClientUnknownError" = "Unknown error occurred while connecting to skkserv.";
 "SKKServClientConnectionRefused" = "Failed to connect to skkserv.";
 "SKKServClientConnectionTimeout" = "Timeout error to connect to skkserv.";
+"SKKServClientTimeout" = "Timeout error to skkserv.";
 "Done" = "Done";
 "Filename" = "Filename";
 "Dictionary Setting" = "Dictionary Setting";
