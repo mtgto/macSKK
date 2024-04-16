@@ -38,19 +38,24 @@ struct SKKServService {
     /**
      * SKK辞書の読みを受け取り、skkservの応答を返します。
      *
+     * 制限時間内に応答がなかった場合は SKKServClientError.timeout を返します
+     *
      * - Parameters:
      *   - yomi 送り仮名なしなら "へんかん" のような文字列、送り仮名ありなら "おくr" のような文字列
      *   - destination skkserv情報
-     *   - timeout 通信タイムアウト (ナノ秒)。省略時は1秒。
+     *   - timeout 通信タイムアウト。省略時は1秒。
      * - Returns: 変換結果が見つかった場合は "1/変換/返還/" のような先頭に1がつく形式 (1はXPC側で消すかも)。
      *            見つからなかった場合は "4へんかん" のように先頭に4がつく形式
      */
-    func refer(yomi: String, destination: SKKServDestination, callback: @escaping (Result<String, any Error>) -> Void) {
+    func refer(yomi: String, destination: SKKServDestination, timeout: TimeInterval = 1.0, callback: @escaping (Result<String, any Error>) -> Void) {
         service.activate()
         guard let proxy = service.remoteObjectProxy as? any SKKServClientProtocol else {
             return callback(.failure(SKKServClientError.unexpected))
         }
+        let semaphore = DispatchSemaphore(value: 0)
         proxy.refer(destination: destination, yomi: yomi) { result, error in
+            semaphore.signal()
+            // メインスレッドとは別スレッド
             if let result {
                 callback(.success(result))
             } else if let error {
@@ -58,6 +63,14 @@ struct SKKServService {
             } else {
                 fatalError("SKKServClientから不正な応答が返りました")
             }
+        }
+        switch semaphore.wait(timeout: .now() + timeout) {
+        case .success:
+            break
+        case .timedOut:
+            logger.warning("skkservからの応答がなかったためタイムアウト処理を行います")
+            proxy.disconnect()
+            callback(.failure(SKKServClientError.timeout))
         }
     }
 
