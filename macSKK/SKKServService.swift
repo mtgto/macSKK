@@ -3,20 +3,34 @@
 
 import Foundation
 
+/**
+ * skkservサーバーとの通信を取り扱うサービス。
+ *
+ * macSKKのプロセスはネットワーク (接続しにいく) 権限をSandboxで絞っており、
+ * 実際にskkservにTCP接続するのはSKKServClientターゲットで定義しているXPCです。
+ */
 struct SKKServService {
-    let service: NSXPCConnection
+    private let service: NSXPCConnection
 
     init() {
         service = NSXPCConnection(serviceName: "net.mtgto.inputmethod.macSKK.SKKServClient")
         service.remoteObjectInterface = NSXPCInterface(with: (any SKKServClientProtocol).self)
+        // TODO: invalidateされたりinterruptされたときに何かをするべき? (再接続とか?)
         service.invalidationHandler = {
-            logger.log("SKKServClientとのXPCはinvalidateされました")
+            logger.warning("SKKServClientとのXPCがinvalidateされました")
         }
         service.interruptionHandler = {
-            logger.log("SKKServClientとのXPCがinterruptされました")
+            logger.warning("SKKServClientとのXPCがinterruptされました")
         }
     }
 
+    /**
+     * skkservにバージョンを問い合わせる。
+     *
+     * - Parameters:
+     *   - destination: 接続先の情報。
+     *   - timeout: 書き込み・読み込みを合わせたタイムアウトまでの時間。省略時は1秒。
+     */
     func serverVersion(destination: SKKServDestination, timeout: TimeInterval = 1.0) throws -> String {
         service.activate()
         guard let proxy = service.remoteObjectProxy as? any SKKServClientProtocol else {
@@ -24,6 +38,7 @@ struct SKKServService {
         }
         let semaphore = DispatchSemaphore(value: 0)
         var result: Result<String, any Error> = .failure(SKKServClientError.unexpected)
+        // NOTE: XPCからのコールバックはメインスレッドとは別のスレッドから返ってくる
         proxy.serverVersion(destination: destination) { version, error in
             if let version {
                 result = .success(version)
@@ -32,6 +47,7 @@ struct SKKServService {
             } else {
                 fatalError("SKKServClientから不正な応答が返りました")
             }
+            semaphore.signal()
         }
         switch semaphore.wait(timeout: .now() + timeout) {
         case .success:
@@ -56,7 +72,7 @@ struct SKKServService {
      * - Parameters:
      *   - yomi 送り仮名なしなら "へんかん" のような文字列、送り仮名ありなら "おくr" のような文字列
      *   - destination skkserv情報
-     *   - timeout 通信タイムアウト。省略時は1秒。
+     *   - timeout 書き込み・読み込みを合わせたタイムアウトまでの時間。省略時は1秒。
      * - Returns: 変換結果が見つかった場合は "1/変換/返還/" のような先頭に1がつく形式 (1はXPC側で消すかも)。
      *            見つからなかった場合は "4へんかん" のように先頭に4がつく形式
      */
@@ -67,9 +83,8 @@ struct SKKServService {
         }
         let semaphore = DispatchSemaphore(value: 0)
         var result: Result<String, any Error> = .failure(SKKServClientError.unexpected)
+        // NOTE: XPCからのコールバックはメインスレッドとは別のスレッドから返ってくる
         proxy.refer(destination: destination, yomi: yomi) { line, error in
-            semaphore.signal()
-            // メインスレッドとは別スレッド
             if let line {
                 result = .success(line)
             } else if let error {
@@ -77,6 +92,7 @@ struct SKKServService {
             } else {
                 fatalError("SKKServClientから不正な応答が返りました")
             }
+            semaphore.signal()
         }
         switch semaphore.wait(timeout: .now() + timeout) {
         case .success:
