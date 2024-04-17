@@ -43,9 +43,8 @@ struct SKKServDictView: View {
                                                          encoding: setting.encoding)
                     testing = true
                     information = String(localized: "SKKServDictTesting")
-                    //skkservService.serverVersion(destination: destination) { result in
                     let result = Result {
-                        try skkservService.refer(yomi: "ふぶき", destination: destination)
+                        try skkservService.serverVersion(destination: destination)
                     }
                     switch result {
                     case .success(let version):

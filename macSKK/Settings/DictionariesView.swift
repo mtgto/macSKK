@@ -23,7 +23,10 @@ struct DictionariesView: View {
                 }
                 Section {
                     HStack {
-                        Toggle("SKKServ", isOn: $settingsViewModel.skkservDictSetting.enabled)
+                        Toggle(isOn: $settingsViewModel.skkservDictSetting.enabled) {
+                            Text("\(settingsViewModel.skkservDictSetting.address):\(String(settingsViewModel.skkservDictSetting.port))")
+                                .font(.body)
+                        }
                         Button {
                             isShowingSkkservSheet = true
                         } label: {

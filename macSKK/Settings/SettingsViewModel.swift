@@ -229,9 +229,10 @@ final class SettingsViewModel: ObservableObject {
                 logger.log("skkserv辞書を設定します")
                 dictionary.skkservDict = SKKServDict(destination: destination)
             } else {
-                logger.log("skkserv辞書を無効化します")
+                logger.log("skkserv辞書は無効化されています")
                 dictionary.skkservDict = nil
             }
+            UserDefaults.standard.set(setting.encode(), forKey: UserDefaultsKeys.skkservClient)
         }.store(in: &cancellables)
 
         $directModeApplications.dropFirst().sink { applications in

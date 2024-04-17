@@ -8,7 +8,7 @@ import os
 let logger: Logger = Logger(subsystem: "net.mtgto.inputmethod.macSKK", category: "skkserv")
 
 /**
- * skkservに接続するクライアント。現状は特定の1サーバーへの接続のみ可能
+ * skkservに接続するクライアント。同時に1サーバーへの接続のみ可能
  */
 class SKKServClient: NSObject, SKKServClientProtocol {
     var connection: NWConnection? = nil

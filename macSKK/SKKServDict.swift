@@ -3,21 +3,27 @@
 
 import Foundation
 
-// skkservを辞書として使う辞書定義
-// 複数のskkservを想定してSKKServDict(サーバー数)とSKKServService(1つ)と分けているけど、
-// 当面はサーバー数を1に固定してSKKServDictにXPCとの通信処理をもってきたほうがシンプルかも?
-// actorとして定義できそう?
+/**
+ * skkservを辞書として使う辞書定義
+ *
+ * 複数のskkservを想定してSKKServDict(サーバー数)とSKKServService(1つ)と分けているけど、
+ * 当面はサーバー数を1に固定してSKKServDictにXPCとの通信処理をもってきたほうがシンプルかも?
+ */
 struct SKKServDict {
-    let destination: SKKServDestination
-    let service: SKKServService
+    private let destination: SKKServDestination
+    private let service: SKKServService
 
     init(destination: SKKServDestination) {
         self.destination = destination
         service = SKKServService()
     }
 
+    /**
+     * skkservに変換候補の問い合わせを行い変換候補を返す。
+     *
+     * TCP接続が切れたり接続タイムアウトや応答のタイムアウトした場合はログだけ出力して空配列を返す。
+     */
     func refer(_ yomi: String, option: DictReferringOption?) -> [Word] {
-        logger.log("skkservに変換候補の検索を行います")
         do {
             let result = try service.refer(yomi: yomi, destination: destination)
             // 変換候補が見つかった場合は "1/変換/返還/" のように 1が先頭でスラッシュで区切られた文字列
