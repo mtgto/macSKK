@@ -18,7 +18,7 @@ final class StateMachineTests: XCTestCase {
         cancellables = []
     }
 
-    func testHandleNormalSimple() throws {
+    func testHandleNormalSimple() {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.sink { event in
             if case .fixedText("あ") = event {
@@ -31,7 +31,7 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleNormalRomaji() throws {
+    func testHandleNormalRomaji() {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(16).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.plain("n")])))
@@ -72,7 +72,7 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleNormalSpace() throws {
+    func testHandleNormalSpace() {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(2).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.plain("s")])))
@@ -84,22 +84,22 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleNormalTab() throws {
+    func testHandleNormalTab() {
         // Normal時はタブは処理しない (Composingでは補完に使用する)
         XCTAssertFalse(stateMachine.handle(Action(keyEvent: .tab, originalEvent: nil, cursorPosition: .zero)))
     }
 
-    func testHandleNormalEnter() throws {
+    func testHandleNormalEnter() {
         // 未入力状態ならfalse
         XCTAssertFalse(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil, cursorPosition: .zero)))
     }
 
-    func testHandleNormalEisu() throws {
+    func testHandleNormalEisu() {
         // Normal時は英数キーは無視する
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .eisu, originalEvent: nil, cursorPosition: .zero)))
     }
 
-    func testHandleNormalSpecialSymbol() throws {
+    func testHandleNormalSpecialSymbol() {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(20).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.plain("z")])))
@@ -133,7 +133,7 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleNormalNoAlphabet() throws {
+    func testHandleNormalNoAlphabet() {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(9).sink { events in
             XCTAssertEqual(events[0], .fixedText(";"))
@@ -159,7 +159,7 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleNormalNoAlphabetEisu() throws {
+    func testHandleNormalNoAlphabetEisu() {
         stateMachine = StateMachine(initialState: IMEState(inputMode: .eisu))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
@@ -176,12 +176,12 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleNormalUpDown() throws {
+    func testHandleNormalUpDown() {
         XCTAssertFalse(stateMachine.handle(Action(keyEvent: .up, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertFalse(stateMachine.handle(Action(keyEvent: .down, originalEvent: nil, cursorPosition: .zero)))
     }
 
-    func testHandleNormalPrintable() throws {
+    func testHandleNormalPrintable() {
         stateMachine = StateMachine(initialState: IMEState(inputMode: .direct))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(2).sink { events in
@@ -194,7 +194,7 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleNormalPrintableEisu() throws {
+    func testHandleNormalPrintableEisu() {
         stateMachine = StateMachine(initialState: IMEState(inputMode: .eisu))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
@@ -211,7 +211,7 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleNormalPrintableDirect() throws {
+    func testHandleNormalPrintableDirect() {
         stateMachine = StateMachine(initialState: IMEState(inputMode: .direct))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(2).sink { events in
@@ -224,7 +224,7 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleNormalRegistering() async throws {
+    func testHandleNormalRegistering() {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(5).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
@@ -236,10 +236,9 @@ final class StateMachineTests: XCTestCase {
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        try await stateMachine.referringTask?.value
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u", withShift: true)))
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
     func testHandleNormalStickyShift() {
@@ -373,7 +372,7 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleNormalCancel() async throws {
+    func testHandleNormalCancel() {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(5).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("え")])))
@@ -386,10 +385,9 @@ final class StateMachineTests: XCTestCase {
         XCTAssertFalse(stateMachine.handle(Action(keyEvent: .cancel, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e", withShift: true)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        try await stateMachine.referringTask?.value
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .cancel, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .cancel, originalEvent: nil, cursorPosition: .zero)))
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
     func testHandleNormalCancelRomajiOnly() {
@@ -601,7 +599,7 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleComposingContainNumber() throws {
+    func testHandleComposingContainNumber() {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(8).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
@@ -692,7 +690,7 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleComposingSpaceOkurinashi() async throws {
+    func testHandleComposingSpaceOkurinashi() {
         dictionary.setEntries(["と": [Word("戸"), Word("都")]])
 
         let expectation = XCTestExpectation()
@@ -710,13 +708,12 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        try await stateMachine.referringTask?.value
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleComposingPrefix() async throws {
+    func testHandleComposingPrefix() {
         dictionary.setEntries(["あ>": [Word("亜")], "あ": [Word("阿")]])
 
         let expectation = XCTestExpectation()
@@ -730,13 +727,12 @@ final class StateMachineTests: XCTestCase {
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ">", characterIgnoringModifier: ".", withShift: true)))
-        try await stateMachine.referringTask?.value
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleComposingPrefixAbbrev() async throws {
+    func testHandleComposingPrefixAbbrev() {
         dictionary.setEntries(["A": [Word("Å")]])
 
         let expectation = XCTestExpectation()
@@ -752,11 +748,10 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ">", characterIgnoringModifier: ".", withShift: true)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        try await stateMachine.referringTask?.value
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleComposingSuffix() async throws {
+    func testHandleComposingSuffix() {
         dictionary.setEntries([">あ": [Word("亜")], "あ": [Word("阿")]])
 
         let expectation = XCTestExpectation()
@@ -774,17 +769,15 @@ final class StateMachineTests: XCTestCase {
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        try await stateMachine.referringTask?.value
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ">", characterIgnoringModifier: ".", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        try await stateMachine.referringTask?.value
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleComposingNumber() async throws {
+    func testHandleComposingNumber() {
         let entries = ["だい#": [Word("第#1"), Word("第#0"), Word("第#2"), Word("第#3")], "だい2": [Word("第2")]]
         dictionary.dicts.append(MemoryDict(entries: entries, readonly: true))
 
@@ -818,7 +811,6 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "2")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "4")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        try await stateMachine.referringTask?.value
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
@@ -828,14 +820,13 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "2")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        try await stateMachine.referringTask?.value
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertEqual(dictionary.userDict?.refer("だい2", option: nil), [Word("第2")], "数値変換より通常のエントリを優先する")
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
     // 送り仮名入力でShiftキーを押すのを子音側でするパターン
-    func testHandleComposingOkuriari() async throws {
+    func testHandleComposingOkuriari() {
         dictionary.setEntries(["とr": [Word("取"), Word("撮")]])
 
         let expectation = XCTestExpectation()
@@ -855,14 +846,13 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "r", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u")))
-        try await stateMachine.referringTask?.value
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
     // 送り仮名入力でShiftキーを押すのを母音側にしたパターン
-    func testHandleComposingOkuriari2() async throws {
+    func testHandleComposingOkuriari2() {
         dictionary.setEntries(["とらw": [Word("捕"), Word("捉")]])
 
         let expectation = XCTestExpectation()
@@ -886,14 +876,13 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "w")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
-        try await stateMachine.referringTask?.value
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
     // 送り仮名入力でShiftキーを押すのを途中の子音でするパターン
-    func testHandleComposingOkuriari3() async throws {
+    func testHandleComposingOkuriari3() {
         dictionary.setEntries(["とr": [Word("取"), Word("撮")]])
 
         let expectation = XCTestExpectation()
@@ -915,13 +904,12 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "r")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "y", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
-        try await stateMachine.referringTask?.value
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleComposingOkuriariIncludeN() async throws {
+    func testHandleComposingOkuriariIncludeN() {
         dictionary.setEntries(["かんj": [Word("感")]])
 
         let expectation = XCTestExpectation()
@@ -940,12 +928,11 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "z", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
-        try await stateMachine.referringTask?.value
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleComposingOkuriSokuon() async throws {
+    func testHandleComposingOkuriSokuon() {
         dictionary.setEntries(["あt": [Word("会")]])
 
         let expectation = XCTestExpectation()
@@ -960,11 +947,10 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
-        try await stateMachine.referringTask?.value
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleComposingOkuriSokuon2() async throws {
+    func testHandleComposingOkuriSokuon2() {
         dictionary.setEntries(["あt": [Word("会")]])
 
         let expectation = XCTestExpectation()
@@ -981,11 +967,10 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
-        try await stateMachine.referringTask?.value
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleComposingOkuriSokuon3() async throws {
+    func testHandleComposingOkuriSokuon3() {
         dictionary.setEntries(["やっt": [Word("八")]])
 
         let expectation = XCTestExpectation()
@@ -1002,11 +987,10 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u", withShift: true)))
-        try await stateMachine.referringTask?.value
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleComposingOkuriN() async throws {
+    func testHandleComposingOkuriN() {
         dictionary.setEntries(["あn": [Word("編")]])
 
         let expectation = XCTestExpectation()
@@ -1021,8 +1005,7 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "d")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
-        try await stateMachine.referringTask?.value
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
     func testHandleComposingStickyShiftN() {
@@ -1045,7 +1028,7 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleComposingOkuriQ() async throws {
+    func testHandleComposingOkuriQ() {
         dictionary.setEntries(["おu": [Word("追")]])
 
         let expectation = XCTestExpectation()
@@ -1060,11 +1043,10 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "k", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u")))
-        try await stateMachine.referringTask?.value
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleComposingOkuriCursor() async throws {
+    func testHandleComposingOkuriCursor() {
         dictionary.setEntries(["あu": [Word("会")]])
 
         let expectation = XCTestExpectation()
@@ -1079,11 +1061,10 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .left, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u", withShift: true)))
-        try await stateMachine.referringTask?.value
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleComposingCursorSpace() async throws {
+    func testHandleComposingCursorSpace() {
         dictionary.setEntries(["え": [Word("絵")]])
 
         let expectation = XCTestExpectation()
@@ -1098,8 +1079,7 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .left, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        try await stateMachine.referringTask?.value
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
     func testHandleComposingAbbrevCursor() {
@@ -1145,7 +1125,7 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleComposingPrintableOkuri() async throws {
+    func testHandleComposingPrintableOkuri() {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("え")])))
@@ -1157,8 +1137,7 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "r")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u", withShift: true)))
-        try await stateMachine.referringTask?.value
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
     
     func testHandleComposingSpaceAfterPrintable() {
@@ -1408,7 +1387,7 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleComposingLeftOkuri() async throws {
+    func testHandleComposingLeftOkuri() {
         dictionary.setEntries(["あs": [Word("褪")]])
 
         let expectation = XCTestExpectation()
@@ -1425,8 +1404,7 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .left, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "s", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
-        try await stateMachine.referringTask?.value
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
     func testHandleComposingCursor() {
@@ -1551,7 +1529,7 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleComposingAbbrevSpace() async throws {
+    func testHandleComposingAbbrevSpace() {
         dictionary.setEntries(["n": [Word("美")]])
 
         let expectation = XCTestExpectation()
@@ -1567,9 +1545,8 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "/")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        try await stateMachine.referringTask?.value
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil, cursorPosition: .zero)))
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
     
     func testHandleComposingCtrlY() {
@@ -1583,7 +1560,7 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleRegisteringEnter() async throws {
+    func testHandleRegisteringEnter() {
         dictionary.setEntries(["お": [Word("尾")]])
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(9).sink { events in
@@ -1600,19 +1577,17 @@ final class StateMachineTests: XCTestCase {
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        try await stateMachine.referringTask?.value
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "s")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o", withShift: true)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        try await stateMachine.referringTask?.value
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertEqual(dictionary.refer("あ"), [Word("そ尾")])
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleRegisteringEnterEmpty() async throws {
+    func testHandleRegisteringEnterEmpty() {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
@@ -1623,13 +1598,12 @@ final class StateMachineTests: XCTestCase {
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        try await stateMachine.referringTask?.value
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertEqual(dictionary.refer("あ"), [])
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleRegisteringStickyShift() async throws {
+    func testHandleRegisteringStickyShift() {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(7).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
@@ -1643,14 +1617,13 @@ final class StateMachineTests: XCTestCase {
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        try await stateMachine.referringTask?.value
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "l")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil, cursorPosition: .zero)))
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleRegisteringLeftRight() async throws {
+    func testHandleRegisteringLeftRight() {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(15).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("い")])))
@@ -1672,7 +1645,6 @@ final class StateMachineTests: XCTestCase {
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u", withShift: true)))
-        try await stateMachine.referringTask?.value
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .left, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .right, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e")))
@@ -1685,10 +1657,10 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "s")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "k", withShift: true)))
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleRegisteringBackspace() async throws {
+    func testHandleRegisteringBackspace() {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(7).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("い")])))
@@ -1702,15 +1674,14 @@ final class StateMachineTests: XCTestCase {
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i", withShift: true)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        try await stateMachine.referringTask?.value
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .left, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .backspace, originalEvent: nil, cursorPosition: .zero)))
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleRegisteringDelete() async throws {
+    func testHandleRegisteringDelete() {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(7).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("い")])))
@@ -1724,15 +1695,14 @@ final class StateMachineTests: XCTestCase {
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i", withShift: true)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        try await stateMachine.referringTask?.value
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .left, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .delete, originalEvent: nil, cursorPosition: .zero)))
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleRegisteringCancel() async throws {
+    func testHandleRegisteringCancel() {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(7).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("い")])))
@@ -1746,15 +1716,14 @@ final class StateMachineTests: XCTestCase {
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i", withShift: true)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        try await stateMachine.referringTask?.value
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e", withShift: true)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .cancel, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .cancel, originalEvent: nil, cursorPosition: .zero)))
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleRegisterN() async throws {
+    func testHandleRegisterN() {
         dictionary.setEntries(["もん": [Word("門")]])
 
         let expectation = XCTestExpectation()
@@ -1774,13 +1743,12 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        try await stateMachine.referringTask?.value
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .cancel, originalEvent: nil, cursorPosition: .zero)))
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleRegisteringUpDown() async throws {
+    func testHandleRegisteringUpDown() {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(3).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("い")])))
@@ -1790,14 +1758,13 @@ final class StateMachineTests: XCTestCase {
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i", withShift: true)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        try await stateMachine.referringTask?.value
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .up, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .down, originalEvent: nil, cursorPosition: .zero)))
         Pasteboard.stringForTest = nil
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleRegisteringCtrlY() async throws {
+    func testHandleRegisteringCtrlY() {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("い")])))
@@ -1808,14 +1775,13 @@ final class StateMachineTests: XCTestCase {
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i", withShift: true)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        try await stateMachine.referringTask?.value
         Pasteboard.stringForTest = "クリップボード"
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .ctrlY, originalEvent: nil, cursorPosition: .zero)))
         Pasteboard.stringForTest = nil
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleRegisteringOkuri() async throws {
+    func testHandleRegisteringOkuri() {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(6).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
@@ -1829,14 +1795,13 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "k", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e")))
-        try await stateMachine.referringTask?.value
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertEqual(dictionary.refer("あk"), [Word("い", okuri: "け")], "単語登録時に使用した送り仮名が辞書にセットされる")
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleSelectingEnter() async throws {
+    func testHandleSelectingEnter() {
         dictionary.setEntries(["と": [Word("戸")]])
 
         let expectation = XCTestExpectation()
@@ -1850,12 +1815,11 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        try await stateMachine.referringTask?.value
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil, cursorPosition: .zero)))
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleSelectingEnterOkuriari() async throws {
+    func testHandleSelectingEnterOkuriari() {
         dictionary.setEntries(["とr": [Word("取")]])
 
         let expectation = XCTestExpectation()
@@ -1871,12 +1835,11 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "r", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
-        try await stateMachine.referringTask?.value
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil, cursorPosition: .zero)))
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleSelectingOkuriBlock() async throws {
+    func testHandleSelectingOkuriBlock() {
         dictionary.setEntries(["おおk": [Word("多"), Word("大", okuri: "き")]])
 
         let expectation = XCTestExpectation()
@@ -1893,12 +1856,11 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "k", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
-        try await stateMachine.referringTask?.value
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil, cursorPosition: .zero)))
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleSelectingEnterRemain() async throws {
+    func testHandleSelectingEnterRemain() {
         dictionary.setEntries(["あい": [Word("愛")]])
 
         let expectation = XCTestExpectation()
@@ -1917,12 +1879,11 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .left, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        try await stateMachine.referringTask?.value
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil, cursorPosition: .zero)))
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleSelectingPrintableRemain() async throws {
+    func testHandleSelectingPrintableRemain() {
         dictionary.setEntries(["あい": [Word("愛")]])
 
         let expectation = XCTestExpectation()
@@ -1942,12 +1903,11 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .left, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        try await stateMachine.referringTask?.value
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e")))
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleSelectingBackspace() async throws {
+    func testHandleSelectingBackspace() {
         dictionary.setEntries(["と": [Word("戸"), Word("都")]])
 
         let expectation = XCTestExpectation()
@@ -1963,15 +1923,14 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        try await stateMachine.referringTask?.value
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .backspace, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .backspace, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .backspace, originalEvent: nil, cursorPosition: .zero)))
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleSelectingTab() async throws {
+    func testHandleSelectingTab() {
         dictionary.setEntries(["お": [Word("尾")]])
 
         let expectation = XCTestExpectation()
@@ -1982,12 +1941,11 @@ final class StateMachineTests: XCTestCase {
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o", withShift: true)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        try await stateMachine.referringTask?.value
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .tab, originalEvent: nil, cursorPosition: .zero)))
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleSelectingStickyShift() async throws {
+    func testHandleSelectingStickyShift() {
         dictionary.setEntries(["と": [Word("戸")]])
 
         let expectation = XCTestExpectation()
@@ -2002,12 +1960,11 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        try await stateMachine.referringTask?.value
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil, cursorPosition: .zero)))
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleSelectingCancel() async throws {
+    func testHandleSelectingCancel() {
         dictionary.setEntries(["と": [Word("戸"), Word("都")]])
 
         let expectation = XCTestExpectation()
@@ -2022,13 +1979,12 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        try await stateMachine.referringTask?.value
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .cancel, originalEvent: nil, cursorPosition: .zero)))
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleSelectingSpaceBackspace() async throws {
+    func testHandleSelectingSpaceBackspace() {
         dictionary.setEntries(["あ": "123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".map { Word(String($0)) }])
 
         let expectation = XCTestExpectation()
@@ -2070,7 +2026,6 @@ final class StateMachineTests: XCTestCase {
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        try await stateMachine.referringTask?.value
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
@@ -2081,10 +2036,10 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .down, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .backspace, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .backspace, originalEvent: nil, cursorPosition: .zero)))
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleSelectingCtrlACtrlE() async throws {
+    func testHandleSelectingCtrlACtrlE() {
         dictionary.setEntries(["と": [Word("戸"), Word("都"), Word("徒"), Word("途"), Word("斗")]])
 
         let expectation = XCTestExpectation()
@@ -2104,7 +2059,6 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        try await stateMachine.referringTask?.value
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
@@ -2116,10 +2070,10 @@ final class StateMachineTests: XCTestCase {
             stateMachine.handle(Action(keyEvent: .ctrlE, originalEvent: nil, cursorPosition: .zero)),
             "すでに末尾にいるのでinputMethodEventは送信されない")
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .ctrlA, originalEvent: nil, cursorPosition: .zero)))
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleSelectingPrev() async throws {
+    func testHandleSelectingPrev() {
         dictionary.setEntries(["と": [Word("戸"), Word("都"), Word("徒"), Word("途"), Word("斗")]])
 
         let expectation = XCTestExpectation()
@@ -2136,16 +2090,15 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        try await stateMachine.referringTask?.value
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .up, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "x")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleSelectingCtrlY() async throws {
+    func testHandleSelectingCtrlY() {
         dictionary.setEntries(["と": [Word("戸")]])
 
         let expectation = XCTestExpectation()
@@ -2158,12 +2111,11 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        try await stateMachine.referringTask?.value
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .ctrlY, originalEvent: nil, cursorPosition: .zero)))
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleSelectingNum() async throws {
+    func testHandleSelectingNum() {
         dictionary.setEntries(["あ": "123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".map { Word(String($0)) }])
 
         let expectation = XCTestExpectation()
@@ -2190,17 +2142,16 @@ final class StateMachineTests: XCTestCase {
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        try await stateMachine.referringTask?.value
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .down, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .down, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "2")))
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleSelectingUnregister() async throws {
+    func testHandleSelectingUnregister() {
         dictionary.setEntries(["え": [Word("絵")]])
 
         let expectation = XCTestExpectation()
@@ -2216,7 +2167,6 @@ final class StateMachineTests: XCTestCase {
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e", withShift: true)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        try await stateMachine.referringTask?.value
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "x", withShift: true)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .up, originalEvent: nil, cursorPosition: .zero)), "上キーやC-pは無視")
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .down, originalEvent: nil, cursorPosition: .zero)), "下キーやC-nは無視")
@@ -2226,10 +2176,10 @@ final class StateMachineTests: XCTestCase {
         }
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertEqual(dictionary.refer("え"), [])
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleSelectingUnregisterCancel() async throws {
+    func testHandleSelectingUnregisterCancel() {
         dictionary.setEntries(["え": [Word("絵")]])
 
         let expectation = XCTestExpectation()
@@ -2242,14 +2192,13 @@ final class StateMachineTests: XCTestCase {
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e", withShift: true)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        try await stateMachine.referringTask?.value
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "x", withShift: true)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertEqual(dictionary.refer("え"), [Word("絵")])
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleSelectingRememberCursor() async throws {
+    func testHandleSelectingRememberCursor() {
         dictionary.setEntries(["え": [Word("絵")], "えr": [Word("得")]])
 
         let expectation = XCTestExpectation()
@@ -2268,17 +2217,15 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .left, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e", withShift: true)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        try await stateMachine.referringTask?.value
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .backspace, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "r", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u")))
-        try await stateMachine.referringTask?.value
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .backspace, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .left, originalEvent: nil, cursorPosition: .zero))) // 何もinputMethodEventには流れない
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleSelectingMergeAnnotations() async throws {
+    func testHandleSelectingMergeAnnotations() {
         let annotation0 = Annotation(dictId: Annotation.userDictId, text: "user")
         dictionary.setEntries(["う": [Word("雨", annotation: annotation0)]])
         let annotation1 = Annotation(dictId: "dict1", text: "dict1")
@@ -2303,11 +2250,10 @@ final class StateMachineTests: XCTestCase {
 
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u", withShift: true)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        try await stateMachine.referringTask?.value
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
-    func testPrivateMode() async throws {
+    func testPrivateMode() throws {
         let privateMode = CurrentValueSubject<Bool, Never>(false)
         // プライベートモードが有効ならユーザー辞書を参照はするが保存はしない
         let dict = MemoryDict(entries: ["と": [Word("都")]], readonly: true)
@@ -2327,11 +2273,10 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        try await stateMachine.referringTask?.value
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertNil(dictionary.entries())
         XCTAssertFalse(dictionary.privateUserDict.entries.isEmpty)
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
     func testCommitCompositionComposing() {
@@ -2357,7 +2302,7 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    func testCommitCompositionSelecting() async throws {
+    func testCommitCompositionSelecting() {
         dictionary.setEntries(["え": [Word("絵")]])
 
         let expectation = XCTestExpectation()
@@ -2369,13 +2314,12 @@ final class StateMachineTests: XCTestCase {
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e", withShift: true)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        try await stateMachine.referringTask?.value
         stateMachine.commitComposition()
         XCTAssertEqual(stateMachine.state.inputMethod, .normal)
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
-    func testCommitCompositionRegister() async throws {
+    func testCommitCompositionRegister() {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("お")])))
@@ -2386,15 +2330,14 @@ final class StateMachineTests: XCTestCase {
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o", withShift: true)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        try await stateMachine.referringTask?.value
         XCTAssertNotNil(stateMachine.state.specialState)
         stateMachine.commitComposition()
         XCTAssertNil(stateMachine.state.specialState)
         XCTAssertEqual(stateMachine.state.inputMethod, .normal)
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
-    func testCommitCompositionUnregister() async throws {
+    func testCommitCompositionUnregister() {
         dictionary.setEntries(["お": [Word("尾")]])
 
         let expectation = XCTestExpectation()
@@ -2407,13 +2350,12 @@ final class StateMachineTests: XCTestCase {
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o", withShift: true)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        try await stateMachine.referringTask?.value
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "x", withShift: true)))
         XCTAssertNotNil(stateMachine.state.specialState)
         stateMachine.commitComposition()
         XCTAssertNil(stateMachine.state.specialState)
         XCTAssertEqual(stateMachine.state.inputMethod, .normal)
-        await fulfillment(of: [expectation], timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 
     func testAddWordToUserDict() {

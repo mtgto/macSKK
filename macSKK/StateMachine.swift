@@ -33,10 +33,6 @@ final class StateMachine {
     private let yomiEventSubject = PassthroughSubject<String, Never>()
     /// 読みの一部と補完結果(読み)のペア
     var completion: (String, String)? = nil
-    /// 変換候補を検索するタスク。実行してないときはnil
-    var referringTask: Task<Void, any Error>? = nil
-    /// 変換候補を検索中かどうか
-    var referring: Bool = false
 
     // TODO: displayCandidateCountを環境設定にするかも
     /// 変換候補パネルを表示するまで表示する変換候補の数
@@ -377,12 +373,6 @@ final class StateMachine {
                 state.inputMode = prevMode
                 inputMethodEventSubject.send(.modeChanged(prevMode, action.cursorPosition))
             }
-        }
-
-        if referring {
-            // skkservを引いている最中なので無視する
-            // TODO: C-gなどは変換を中断する
-            return true
         }
 
         switch action.keyEvent {
@@ -828,14 +818,10 @@ final class StateMachine {
         // いまは ">"で終わる・始まる場合は、Abbrevモードであっても接頭辞・接尾辞を探しているものとして検索する
         if yomiText.hasSuffix(">") {
             yomiText = String(yomiText.dropLast())
-            let prefixCandidates = candidates(for: yomiText, option: .prefix)
-            let candidates = candidates(for: yomiText, option: nil)
-            candidateWords = prefixCandidates + candidates
+            candidateWords = candidates(for: yomiText, option: .prefix) + candidates(for: yomiText, option: nil)
         } else if yomiText.hasPrefix(">") {
             yomiText = String(yomiText.dropFirst())
-            let suffixCandidates = candidates(for: yomiText, option: .suffix)
-            let candidates = candidates(for: yomiText, option: nil)
-            candidateWords = suffixCandidates + candidates
+            candidateWords = candidates(for: yomiText, option: .suffix) + candidates(for: yomiText, option: nil)
         } else if let okuri = composing.okuri {
             candidateWords = candidates(for: yomiText, option: .okuri(okuri.map { $0.kana }.joined()))
         } else {
@@ -844,16 +830,16 @@ final class StateMachine {
         if candidateWords.isEmpty {
             if specialState != nil {
                 // 登録中に変換不能な変換をした場合は空文字列に変換する
-                self.state.inputMethod = .normal
+                state.inputMethod = .normal
             } else {
                 // 単語登録に遷移する
-                self.state.specialState = .register(
+                state.specialState = .register(
                     RegisterState(
                         prev: RegisterState.PrevState(mode: state.inputMode, composing: trimmedComposing),
                         yomi: yomiText))
-                self.state.inputMethod = .normal
-                self.state.inputMode = .hiragana
-                self.inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
+                state.inputMethod = .normal
+                state.inputMode = .hiragana
+                inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
             }
         } else {
             let selectingState = SelectingState(
@@ -864,7 +850,7 @@ final class StateMachine {
                 cursorPosition: action.cursorPosition,
                 remain: composing.remain())
             updateCandidates(selecting: selectingState)
-            self.state.inputMethod = .selecting(selectingState)
+            state.inputMethod = .selecting(selectingState)
         }
         updateMarkedText()
         return true
