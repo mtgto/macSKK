@@ -11,11 +11,11 @@ import Foundation
  */
 struct SKKServDict {
     private let destination: SKKServDestination
-    private let service: SKKServService
+    private let service: any SKKServServiceProtocol
 
-    init(destination: SKKServDestination) {
+    init(destination: SKKServDestination, service: any SKKServServiceProtocol = SKKServService()) {
         self.destination = destination
-        service = SKKServService()
+        self.service = service
     }
 
     /**
@@ -25,7 +25,7 @@ struct SKKServDict {
      */
     func refer(_ yomi: String, option: DictReferringOption?) -> [Word] {
         do {
-            let result = try service.refer(yomi: yomi, destination: destination)
+            let result = try service.refer(yomi: yomi, destination: destination, timeout: 1.0)
             // 変換候補が見つかった場合は "1/変換/返還/" のように 1が先頭でスラッシュで区切られた文字列
             // 見つからなかった場合は "4へんかん" のように4が先頭の文字列
             guard result.hasPrefix("1/") else {

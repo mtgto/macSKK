@@ -3,13 +3,18 @@
 
 import Foundation
 
+protocol SKKServServiceProtocol {
+    func refer(yomi: String, destination: SKKServDestination, timeout: TimeInterval) throws -> String
+    func disconnect() throws
+}
+
 /**
  * skkservサーバーとの通信を取り扱うサービス。
  *
  * macSKKのプロセスはネットワーク (接続しにいく) 権限をSandboxで絞っており、
  * 実際にskkservにTCP接続するのはSKKServClientターゲットで定義しているXPCです。
  */
-struct SKKServService {
+struct SKKServService: SKKServServiceProtocol {
     private let service: NSXPCConnection
 
     init() {
@@ -72,11 +77,11 @@ struct SKKServService {
      * - Parameters:
      *   - yomi 送り仮名なしなら "へんかん" のような文字列、送り仮名ありなら "おくr" のような文字列
      *   - destination skkserv情報
-     *   - timeout 書き込み・読み込みを合わせたタイムアウトまでの時間。省略時は1秒。
+     *   - timeout 書き込み・読み込みを合わせたタイムアウトまでの時間。
      * - Returns: 変換結果が見つかった場合は "1/変換/返還/" のような先頭に1がつく形式 (1はXPC側で消すかも)。
      *            見つからなかった場合は "4へんかん" のように先頭に4がつく形式
      */
-    func refer(yomi: String, destination: SKKServDestination, timeout: TimeInterval = 1.0) throws -> String {
+    func refer(yomi: String, destination: SKKServDestination, timeout: TimeInterval) throws -> String {
         service.activate()
         guard let proxy = service.remoteObjectProxy as? any SKKServClientProtocol else {
             throw SKKServClientError.unexpected

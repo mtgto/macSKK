@@ -37,8 +37,11 @@ final class DictSetting: ObservableObject, Identifiable {
 
 final class SKKServDictSetting: ObservableObject {
     @Published var enabled: Bool
+    // IPv4/v6アドレス ("127.0.0.1" や "::1" など) や ホスト名 ("localhost" など) どちらでも可能
     @Published var address: String
+    // 通常は1178になっていることが多い
     @Published var port: UInt16
+    // 正常応答時のエンコーディング。通常はEUC-JPのことが多い。yaskkserv2などUTF-8を返すことが可能な実装もある。
     @Published var encoding: String.Encoding
 
     init(enabled: Bool, address: String, port: UInt16, encoding: String.Encoding) {
@@ -48,6 +51,7 @@ final class SKKServDictSetting: ObservableObject {
         self.encoding = encoding
     }
 
+    // UserDefaultsのDictionaryを受け取る
     init?(_ dictionary: [String: Any]) {
         guard let enabled = dictionary["enabled"] as? Bool else { return nil }
         self.enabled = enabled

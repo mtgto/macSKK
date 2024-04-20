@@ -48,7 +48,7 @@ struct SKKServDictView: View {
                     }
                     switch result {
                     case .success(let version):
-                        print("skkservのバージョン: \(version)")
+                        logger.log("skkservのバージョン: \(version, privacy: .public)")
                         information = String(localized: "SKKServClientConnected")
                     case .failure(let error):
                         if let error = error as? SKKServClientError {
