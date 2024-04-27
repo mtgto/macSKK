@@ -20,6 +20,8 @@ class UserDict: NSObject, DictProtocol {
     var userDict: (any DictProtocol)?
     /// 有効になっている辞書。優先度が高い順。
     var dicts: [any DictProtocol]
+    /// skkserv辞書
+    var skkservDict: SKKServDict? = nil
     /**
      * プライベートモードのユーザー辞書。プライベートモードが有効な時に変換や単語登録するとユーザー辞書とは別に更新されます。
      *
@@ -98,7 +100,14 @@ class UserDict: NSObject, DictProtocol {
     /**
      * 保持する辞書を順に引き変換候補順に返す。
      *
-     * 複数の辞書に同じ変換がある場合、注釈を結合して返す
+     * 複数の辞書に同じ変換がある場合、注釈を結合して返す。
+     *
+     * ## skkservについて
+     * skkservを辞書とする場合はすべてのファイル辞書の変換候補の末尾に付けて返す。
+     * skkserv辞書の変換候補を末尾につけるのは仮の仕様で将来は利用者が選択可能にする可能性がある。
+     *
+     * skkservからの応答が一定時間なかった場合はTCP接続を切断する。
+     * 実装を簡単にするためskkserv辞書が有効なまま再度このメソッドが呼ばれたら再接続から試みる。
      *
      * - Parameters:
      *   - yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
@@ -109,6 +118,14 @@ class UserDict: NSObject, DictProtocol {
         var candidates = refer(yomi, option: option).map { word in
             let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
             return Candidate(word.word, annotations: annotations)
+        }
+        // ひとまずskkservを辞書として使う場合はファイル辞書より後に追加する
+        if let skkservDict {
+            let skkservCandidates: [Candidate] = skkservDict.refer(yomi, option: option).map { word in
+                let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
+                return Candidate(word.word, annotations: annotations)
+            }
+            candidates.append(contentsOf: skkservCandidates)
         }
         if candidates.isEmpty {
             // yomiが数値を含む場合は "#" に置換して辞書を引く

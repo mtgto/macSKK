@@ -13,4 +13,6 @@ struct UserDefaultsKeys {
     static let workarounds = "workarounds"
     static let candidatesFontSize = "candidatesFontSize"
     static let annotationFontSize = "annotationFontSize"
+    // SKK辞書サーバーへの接続設定
+    static let skkservClient = "skkserv"
 }

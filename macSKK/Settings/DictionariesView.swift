@@ -6,6 +6,7 @@ import SwiftUI
 struct DictionariesView: View {
     @ObservedObject var settingsViewModel: SettingsViewModel
     @State private var selectedDictSetting: DictSetting?
+    @State var isShowingSkkservSheet: Bool = false
 
     var body: some View {
         VStack {
@@ -19,6 +20,24 @@ struct DictionariesView: View {
                     }
                 } header: {
                     Text("SettingsNameUserDictTitle")
+                }
+                Section {
+                    HStack {
+                        Toggle(isOn: $settingsViewModel.skkservDictSetting.enabled) {
+                            Text("\(settingsViewModel.skkservDictSetting.address):\(String(settingsViewModel.skkservDictSetting.port))")
+                                .font(.body)
+                        }
+                        Button {
+                            isShowingSkkservSheet = true
+                        } label: {
+                            Image(systemName: "info.circle")
+                                .resizable()
+                                .frame(width: 16, height: 16)
+                        }
+                        .buttonStyle(.borderless)
+                    }
+                } header: {
+                    Text("SKKServ")
                 }
                 Section {
                     List {
@@ -68,6 +87,9 @@ struct DictionariesView: View {
                     filename: dictSetting.filename,
                     encoding: dictSetting.encoding
                 )
+            }
+            .sheet(isPresented: $isShowingSkkservSheet) {
+                SKKServDictView(settingsViewModel: settingsViewModel, isShowSheet: $isShowingSkkservSheet)
             }
             Text("SettingsNoteDictionaries")
                 .font(.subheadline)

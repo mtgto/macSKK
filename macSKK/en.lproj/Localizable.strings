@@ -25,6 +25,13 @@
 "LoadingStatusError %@" = "Error: %@";
 "LoadingStatusDisabled" = "Disabled";
 "LoadingStatusUnknown" = "Unknown";
+"SKKServDictTitle" = "SKKServ Dictionary Setting";
+"SKKServDictTesting" = "Testing to connect to skkserv…";
+"SKKServClientConnected" = "Succeeded to connect to skkserv.";
+"SKKServClientUnknownError" = "Unknown error occurred while connecting to skkserv.";
+"SKKServClientConnectionRefused" = "Failed to connect to skkserv.";
+"SKKServClientConnectionTimeout" = "Timeout error to connect to skkserv.";
+"SKKServClientTimeout" = "Timeout error to skkserv.";
 "Done" = "Done";
 "Filename" = "Filename";
 "Dictionary Setting" = "Dictionary Setting";
@@ -58,3 +65,7 @@
 "Add…" = "Add…";
 "Cancel" = "Cancel";
 "Add" = "Add";
+"Test" = "Test";
+"Address" = "Address";
+"TCP Port" = "TCP Port No.";
+"Response Encoding" = "Response Encoding";

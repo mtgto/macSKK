@@ -10,6 +10,14 @@
 		CE06CA2B2AAC171B00E80E5E /* FileDictTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE06CA292AAC171B00E80E5E /* FileDictTests.swift */; };
 		CE06CA2D2AAC172F00E80E5E /* empty.txt in Resources */ = {isa = PBXBuildFile; fileRef = CE06CA2C2AAC172F00E80E5E /* empty.txt */; };
 		CE06CA342AAC199500E80E5E /* UserDict+Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE06CA332AAC199500E80E5E /* UserDict+Utilities.swift */; };
+		CE1B00552BA3DDEB00C830FD /* SKKServDict.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE1B00542BA3DDEB00C830FD /* SKKServDict.swift */; };
+		CE1B00622BA4286800C830FD /* Message+SKKServ.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE1B00612BA4286800C830FD /* Message+SKKServ.swift */; };
+		CE1B00642BA4287C00C830FD /* SKKServRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE1B00632BA4287C00C830FD /* SKKServRequest.swift */; };
+		CE1B00662BA4288F00C830FD /* SKKServProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE1B00652BA4288F00C830FD /* SKKServProtocol.swift */; };
+		CE1B00682BA428AE00C830FD /* NWParameters+SKKServ.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE1B00672BA428AE00C830FD /* NWParameters+SKKServ.swift */; };
+		CE1B006A2BA5490E00C830FD /* SKKServDictView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE1B00692BA5490E00C830FD /* SKKServDictView.swift */; };
+		CE1B006C2BA54D9800C830FD /* SKKServService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE1B006B2BA54D9800C830FD /* SKKServService.swift */; };
+		CE1B006D2BA54DE400C830FD /* SKKServClientProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF3D8752B9EF0C000BD1D3A /* SKKServClientProtocol.swift */; };
 		CE2157662B2EA985006E4C41 /* UserDefaultsKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE2157652B2EA985006E4C41 /* UserDefaultsKeys.swift */; };
 		CE313A1F2AF5213700A49142 /* Candidate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE313A1E2AF5213700A49142 /* Candidate.swift */; };
 		CE39DB212A8DFD8F00BC619F /* MarkedText.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE39DB202A8DFD8F00BC619F /* MarkedText.swift */; };
@@ -36,6 +44,8 @@
 		CE5ECF3D2957034D00E7BE7D /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CE5ECF3C2957034D00E7BE7D /* Preview Assets.xcassets */; };
 		CE5ECF642957077D00E7BE7D /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = CE5ECF632957077D00E7BE7D /* InfoPlist.strings */; };
 		CE6599DC2ADBF2630052F8C0 /* SettingsWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE6599DB2ADBF2630052F8C0 /* SettingsWindow.swift */; };
+		CE6BBCC02BCB6B57003BB47F /* Data+EucJis2004.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED987402BB953E7001B40F9 /* Data+EucJis2004.swift */; };
+		CE6BBCC12BCD6721003BB47F /* libiconv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = CE496C972B440CCA001C623C /* libiconv.tbd */; };
 		CE6DBA8D2A845CE400F5A227 /* Release.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE6DBA8C2A845CE400F5A227 /* Release.swift */; };
 		CE6DBA8F2A845E8B00F5A227 /* ReleaseVersion.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE6DBA8E2A845E8B00F5A227 /* ReleaseVersion.swift */; };
 		CE6DBA912A846C1700F5A227 /* ReleaseVersionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE6DBA902A846C1700F5A227 /* ReleaseVersionTests.swift */; };
@@ -74,6 +84,7 @@
 		CEC376EB2965211200D9C432 /* KeyEventView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEC376EA2965211200D9C432 /* KeyEventView.swift */; };
 		CED0984D2B779E4700F2E844 /* UNNotifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED0984C2B779E4700F2E844 /* UNNotifier.swift */; };
 		CED098512B95F32600F2E844 /* WorkaroundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED098502B95F32600F2E844 /* WorkaroundView.swift */; };
+		CED1CA1E2BAFBE0600C32AE3 /* SKKServDictTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED1CA1D2BAFBE0600C32AE3 /* SKKServDictTests.swift */; };
 		CED7CA2C2A8394F7004EF988 /* FetchUpdateServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED7CA2B2A8394F7004EF988 /* FetchUpdateServiceProtocol.swift */; };
 		CED7CA2E2A8394F7004EF988 /* FetchUpdateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED7CA2D2A8394F7004EF988 /* FetchUpdateService.swift */; };
 		CED7CA302A8394F7004EF988 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED7CA2F2A8394F7004EF988 /* main.swift */; };
@@ -94,6 +105,10 @@
 		CEF0825B296D8FF000646366 /* CandidatesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF0825A296D8FF000646366 /* CandidatesView.swift */; };
 		CEF0825D296DB58600646366 /* CandidatesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF0825C296DB58600646366 /* CandidatesViewModel.swift */; };
 		CEF3D86C2B9C022900BD1D3A /* WorkaroundApplicationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF3D86B2B9C022900BD1D3A /* WorkaroundApplicationView.swift */; };
+		CEF3D8742B9EF0C000BD1D3A /* SKKServClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF3D8732B9EF0C000BD1D3A /* SKKServClient.swift */; };
+		CEF3D8782B9EF0C000BD1D3A /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF3D8772B9EF0C000BD1D3A /* main.swift */; };
+		CEF3D87D2B9EF0C000BD1D3A /* SKKServClient.xpc in Embed XPC Services */ = {isa = PBXBuildFile; fileRef = CEF3D8712B9EF0C000BD1D3A /* SKKServClient.xpc */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		CEF3D8822B9EF19100BD1D3A /* SKKServClientProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF3D8752B9EF0C000BD1D3A /* SKKServClientProtocol.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -111,6 +126,13 @@
 			remoteGlobalIDString = CED7CA282A8394F7004EF988;
 			remoteInfo = FetchUpdateService;
 		};
+		CEF3D87B2B9EF0C000BD1D3A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CE5ECF2A2957034B00E7BE7D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = CEF3D8702B9EF0C000BD1D3A;
+			remoteInfo = SKKServClient;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -120,6 +142,7 @@
 			dstPath = "$(CONTENTS_FOLDER_PATH)/XPCServices";
 			dstSubfolderSpec = 16;
 			files = (
+				CEF3D87D2B9EF0C000BD1D3A /* SKKServClient.xpc in Embed XPC Services */,
 				CED7CA352A8394F7004EF988 /* FetchUpdateService.xpc in Embed XPC Services */,
 			);
 			name = "Embed XPC Services";
@@ -131,6 +154,13 @@
 		CE06CA292AAC171B00E80E5E /* FileDictTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileDictTests.swift; sourceTree = "<group>"; };
 		CE06CA2C2AAC172F00E80E5E /* empty.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = empty.txt; sourceTree = "<group>"; };
 		CE06CA332AAC199500E80E5E /* UserDict+Utilities.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UserDict+Utilities.swift"; sourceTree = "<group>"; };
+		CE1B00542BA3DDEB00C830FD /* SKKServDict.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServDict.swift; sourceTree = "<group>"; };
+		CE1B00612BA4286800C830FD /* Message+SKKServ.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Message+SKKServ.swift"; sourceTree = "<group>"; };
+		CE1B00632BA4287C00C830FD /* SKKServRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServRequest.swift; sourceTree = "<group>"; };
+		CE1B00652BA4288F00C830FD /* SKKServProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServProtocol.swift; sourceTree = "<group>"; };
+		CE1B00672BA428AE00C830FD /* NWParameters+SKKServ.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NWParameters+SKKServ.swift"; sourceTree = "<group>"; };
+		CE1B00692BA5490E00C830FD /* SKKServDictView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServDictView.swift; sourceTree = "<group>"; };
+		CE1B006B2BA54D9800C830FD /* SKKServService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServService.swift; sourceTree = "<group>"; };
 		CE2157652B2EA985006E4C41 /* UserDefaultsKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsKeys.swift; sourceTree = "<group>"; };
 		CE313A1E2AF5213700A49142 /* Candidate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Candidate.swift; sourceTree = "<group>"; };
 		CE39DB202A8DFD8F00BC619F /* MarkedText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkedText.swift; sourceTree = "<group>"; };
@@ -201,6 +231,7 @@
 		CEC376EA2965211200D9C432 /* KeyEventView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyEventView.swift; sourceTree = "<group>"; };
 		CED0984C2B779E4700F2E844 /* UNNotifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UNNotifier.swift; sourceTree = "<group>"; };
 		CED098502B95F32600F2E844 /* WorkaroundView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkaroundView.swift; sourceTree = "<group>"; };
+		CED1CA1D2BAFBE0600C32AE3 /* SKKServDictTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServDictTests.swift; sourceTree = "<group>"; };
 		CED7CA292A8394F7004EF988 /* FetchUpdateService.xpc */ = {isa = PBXFileReference; explicitFileType = "wrapper.xpc-service"; includeInIndex = 0; path = FetchUpdateService.xpc; sourceTree = BUILT_PRODUCTS_DIR; };
 		CED7CA2B2A8394F7004EF988 /* FetchUpdateServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchUpdateServiceProtocol.swift; sourceTree = "<group>"; };
 		CED7CA2D2A8394F7004EF988 /* FetchUpdateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchUpdateService.swift; sourceTree = "<group>"; };
@@ -222,6 +253,12 @@
 		CEF0825A296D8FF000646366 /* CandidatesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CandidatesView.swift; sourceTree = "<group>"; };
 		CEF0825C296DB58600646366 /* CandidatesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CandidatesViewModel.swift; sourceTree = "<group>"; };
 		CEF3D86B2B9C022900BD1D3A /* WorkaroundApplicationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkaroundApplicationView.swift; sourceTree = "<group>"; };
+		CEF3D8712B9EF0C000BD1D3A /* SKKServClient.xpc */ = {isa = PBXFileReference; explicitFileType = "wrapper.xpc-service"; includeInIndex = 0; path = SKKServClient.xpc; sourceTree = BUILT_PRODUCTS_DIR; };
+		CEF3D8732B9EF0C000BD1D3A /* SKKServClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServClient.swift; sourceTree = "<group>"; };
+		CEF3D8752B9EF0C000BD1D3A /* SKKServClientProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServClientProtocol.swift; sourceTree = "<group>"; };
+		CEF3D8772B9EF0C000BD1D3A /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		CEF3D8792B9EF0C000BD1D3A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		CEF3D87A2B9EF0C000BD1D3A /* SKKServClient.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SKKServClient.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -247,9 +284,28 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		CEF3D86E2B9EF0C000BD1D3A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CE6BBCC12BCD6721003BB47F /* libiconv.tbd in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		CE1B00602BA4285A00C830FD /* Network */ = {
+			isa = PBXGroup;
+			children = (
+				CE1B00612BA4286800C830FD /* Message+SKKServ.swift */,
+				CE1B00672BA428AE00C830FD /* NWParameters+SKKServ.swift */,
+				CE1B00632BA4287C00C830FD /* SKKServRequest.swift */,
+				CE1B00652BA4288F00C830FD /* SKKServProtocol.swift */,
+			);
+			path = Network;
+			sourceTree = "<group>";
+		};
 		CE496C962B440CCA001C623C /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -263,6 +319,7 @@
 			children = (
 				CE5ECF342957034B00E7BE7D /* macSKK */,
 				CED7CA2A2A8394F7004EF988 /* FetchUpdateService */,
+				CEF3D8722B9EF0C000BD1D3A /* SKKServClient */,
 				CE5ECF462957034D00E7BE7D /* macSKKTests */,
 				CE5ECF332957034B00E7BE7D /* Products */,
 				CE496C962B440CCA001C623C /* Frameworks */,
@@ -279,6 +336,7 @@
 				CE5ECF322957034B00E7BE7D /* macSKK.app */,
 				CE5ECF432957034D00E7BE7D /* macSKKTests.xctest */,
 				CED7CA292A8394F7004EF988 /* FetchUpdateService.xpc */,
+				CEF3D8712B9EF0C000BD1D3A /* SKKServClient.xpc */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -299,6 +357,7 @@
 				CE84A3EA295DA715009394C4 /* Dict.swift */,
 				CE5EB6AC2AAC0DE000389B98 /* FileDict.swift */,
 				CE5EB6AE2AAC0DEB00389B98 /* MemoryDict.swift */,
+				CE1B00542BA3DDEB00C830FD /* SKKServDict.swift */,
 				CEA78FAF2964209B00B67E25 /* UserDict.swift */,
 				CEADA44A2B025A0F0026E2BD /* Entry.swift */,
 				CE84A3E6295DA4DA009394C4 /* Romaji.swift */,
@@ -311,6 +370,7 @@
 				CE485A872A8FA195008271EF /* Release+UNNotification.swift */,
 				CE6DBAAF2A85AA1200F5A227 /* LatestReleaseFetcher.swift */,
 				CED7CA3B2A839603004EF988 /* UpdateChecker.swift */,
+				CE1B006B2BA54D9800C830FD /* SKKServService.swift */,
 				CED0984C2B779E4700F2E844 /* UNNotifier.swift */,
 				CEA78FAB2960401F00B67E25 /* String+Transform.swift */,
 				CED7F51E2AB5F4A7007FC6BD /* Character+Additions.swift */,
@@ -351,6 +411,7 @@
 				CE84A3EC295DA818009394C4 /* MemoryDictTests.swift */,
 				CE06CA292AAC171B00E80E5E /* FileDictTests.swift */,
 				CEA78FB129646CA100B67E25 /* UserDictTests.swift */,
+				CED1CA1D2BAFBE0600C32AE3 /* SKKServDictTests.swift */,
 				CEF0823529685C0800646366 /* StateTests.swift */,
 				CEA78FA9295EBCAC00B67E25 /* StateMachineTests.swift */,
 				CEADA44C2B025A8A0026E2BD /* EntryTests.swift */,
@@ -388,6 +449,7 @@
 				CEADA44E2B1357090026E2BD /* GeneralView.swift */,
 				CE6DBACC2A864A3B00F5A227 /* DictionariesView.swift */,
 				CEB141712A87D16C005E7252 /* DictionaryView.swift */,
+				CE1B00692BA5490E00C830FD /* SKKServDictView.swift */,
 				CE97887A2A9B93EB00F9B196 /* DirectModeView.swift */,
 				CED098502B95F32600F2E844 /* WorkaroundView.swift */,
 				CEF3D86B2B9C022900BD1D3A /* WorkaroundApplicationView.swift */,
@@ -425,6 +487,19 @@
 			path = fixture;
 			sourceTree = "<group>";
 		};
+		CEF3D8722B9EF0C000BD1D3A /* SKKServClient */ = {
+			isa = PBXGroup;
+			children = (
+				CEF3D8752B9EF0C000BD1D3A /* SKKServClientProtocol.swift */,
+				CEF3D8732B9EF0C000BD1D3A /* SKKServClient.swift */,
+				CEF3D8772B9EF0C000BD1D3A /* main.swift */,
+				CE1B00602BA4285A00C830FD /* Network */,
+				CEF3D8792B9EF0C000BD1D3A /* Info.plist */,
+				CEF3D87A2B9EF0C000BD1D3A /* SKKServClient.entitlements */,
+			);
+			path = SKKServClient;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -442,6 +517,7 @@
 			);
 			dependencies = (
 				CED7CA342A8394F7004EF988 /* PBXTargetDependency */,
+				CEF3D87C2B9EF0C000BD1D3A /* PBXTargetDependency */,
 			);
 			name = macSKK;
 			packageProductDependencies = (
@@ -485,6 +561,23 @@
 			productReference = CED7CA292A8394F7004EF988 /* FetchUpdateService.xpc */;
 			productType = "com.apple.product-type.xpc-service";
 		};
+		CEF3D8702B9EF0C000BD1D3A /* SKKServClient */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CEF3D8802B9EF0C000BD1D3A /* Build configuration list for PBXNativeTarget "SKKServClient" */;
+			buildPhases = (
+				CEF3D86D2B9EF0C000BD1D3A /* Sources */,
+				CEF3D86E2B9EF0C000BD1D3A /* Frameworks */,
+				CEF3D86F2B9EF0C000BD1D3A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SKKServClient;
+			productName = SKKServClient;
+			productReference = CEF3D8712B9EF0C000BD1D3A /* SKKServClient.xpc */;
+			productType = "com.apple.product-type.xpc-service";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -492,7 +585,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1430;
+				LastSwiftUpdateCheck = 1530;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					CE5ECF312957034B00E7BE7D = {
@@ -505,6 +598,9 @@
 					};
 					CED7CA282A8394F7004EF988 = {
 						CreatedOnToolsVersion = 14.3.1;
+					};
+					CEF3D8702B9EF0C000BD1D3A = {
+						CreatedOnToolsVersion = 15.3;
 					};
 				};
 			};
@@ -527,6 +623,7 @@
 				CE5ECF312957034B00E7BE7D /* macSKK */,
 				CE5ECF422957034D00E7BE7D /* macSKKTests */,
 				CED7CA282A8394F7004EF988 /* FetchUpdateService */,
+				CEF3D8702B9EF0C000BD1D3A /* SKKServClient */,
 			);
 		};
 /* End PBXProject section */
@@ -561,6 +658,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		CED7CA272A8394F7004EF988 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CEF3D86F2B9EF0C000BD1D3A /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -615,6 +719,8 @@
 				CE40D9A12A6D0C2F00D44799 /* SystemDictView.swift in Sources */,
 				CEADA4512B1358D40026E2BD /* InputSource.swift in Sources */,
 				CE84A3E7295DA4DA009394C4 /* Romaji.swift in Sources */,
+				CE1B006D2BA54DE400C830FD /* SKKServClientProtocol.swift in Sources */,
+				CE1B006A2BA5490E00C830FD /* SKKServDictView.swift in Sources */,
 				CED0984D2B779E4700F2E844 /* UNNotifier.swift in Sources */,
 				CE7F9AD92AADEBF9001B1877 /* AppDelegate.swift in Sources */,
 				CEF0825B296D8FF000646366 /* CandidatesView.swift in Sources */,
@@ -632,10 +738,12 @@
 				CEA78FB02964209B00B67E25 /* UserDict.swift in Sources */,
 				CEF08257296D8CBD00646366 /* CandidatesPanel.swift in Sources */,
 				CEADA44B2B025A0F0026E2BD /* Entry.swift in Sources */,
+				CE1B00552BA3DDEB00C830FD /* SKKServDict.swift in Sources */,
 				CE97887B2A9B93EB00F9B196 /* DirectModeView.swift in Sources */,
 				CE313A1F2AF5213700A49142 /* Candidate.swift in Sources */,
 				CE6DBA8F2A845E8B00F5A227 /* ReleaseVersion.swift in Sources */,
 				CEB088902A7F73B400EFD1E3 /* Pasteboard.swift in Sources */,
+				CE1B006C2BA54D9800C830FD /* SKKServService.swift in Sources */,
 				CEADA44F2B1357090026E2BD /* GeneralView.swift in Sources */,
 				CE84A3DC2957174D009394C4 /* State.swift in Sources */,
 				CE496C8C2B43968A001C623C /* LogView.swift in Sources */,
@@ -669,6 +777,7 @@
 				CED7CA3E2A8397E4004EF988 /* UpdateCheckerTests.swift in Sources */,
 				CEA78FB229646CA100B67E25 /* UserDictTests.swift in Sources */,
 				CE06CA2B2AAC171B00E80E5E /* FileDictTests.swift in Sources */,
+				CED1CA1E2BAFBE0600C32AE3 /* SKKServDictTests.swift in Sources */,
 				CE6DBA912A846C1700F5A227 /* ReleaseVersionTests.swift in Sources */,
 				CEA78FAE2961BA1D00B67E25 /* String+TransformTests.swift in Sources */,
 			);
@@ -684,6 +793,21 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		CEF3D86D2B9EF0C000BD1D3A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CEF3D8742B9EF0C000BD1D3A /* SKKServClient.swift in Sources */,
+				CE1B00642BA4287C00C830FD /* SKKServRequest.swift in Sources */,
+				CE1B00622BA4286800C830FD /* Message+SKKServ.swift in Sources */,
+				CEF3D8822B9EF19100BD1D3A /* SKKServClientProtocol.swift in Sources */,
+				CE1B00682BA428AE00C830FD /* NWParameters+SKKServ.swift in Sources */,
+				CEF3D8782B9EF0C000BD1D3A /* main.swift in Sources */,
+				CE6BBCC02BCB6B57003BB47F /* Data+EucJis2004.swift in Sources */,
+				CE1B00662BA4288F00C830FD /* SKKServProtocol.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -696,6 +820,11 @@
 			isa = PBXTargetDependency;
 			target = CED7CA282A8394F7004EF988 /* FetchUpdateService */;
 			targetProxy = CED7CA332A8394F7004EF988 /* PBXContainerItemProxy */;
+		};
+		CEF3D87C2B9EF0C000BD1D3A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = CEF3D8702B9EF0C000BD1D3A /* SKKServClient */;
+			targetProxy = CEF3D87B2B9EF0C000BD1D3A /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -975,6 +1104,47 @@
 			};
 			name = Release;
 		};
+		CEF3D87E2B9EF0C000BD1D3A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = SKKServClient/SKKServClient.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = W3A6B7FDC7;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SKKServClient/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = SKKServClient;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = net.mtgto.inputmethod.macSKK.SKKServClient;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		CEF3D87F2B9EF0C000BD1D3A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = SKKServClient/SKKServClient.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SKKServClient/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = SKKServClient;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = net.mtgto.inputmethod.macSKK.SKKServClient;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -1010,6 +1180,15 @@
 			buildConfigurations = (
 				CED7CA372A8394F7004EF988 /* Debug */,
 				CED7CA382A8394F7004EF988 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		CEF3D8802B9EF0C000BD1D3A /* Build configuration list for PBXNativeTarget "SKKServClient" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CEF3D87E2B9EF0C000BD1D3A /* Debug */,
+				CEF3D87F2B9EF0C000BD1D3A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

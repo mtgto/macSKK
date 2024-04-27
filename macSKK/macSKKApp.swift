@@ -197,6 +197,11 @@ struct macSKKApp: App {
             // NSFont.preferredFont(forTextStyle: .body).pointSize と同じサイズ
             UserDefaultsKeys.candidatesFontSize: 13,
             UserDefaultsKeys.annotationFontSize: 13,
+            UserDefaultsKeys.skkservClient: SKKServDictSetting(
+                enabled: false,
+                address: "127.0.0.1",
+                port: 1178,
+                encoding: .japaneseEUC).encode(),
         ])
     }
 

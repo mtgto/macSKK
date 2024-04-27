@@ -6,7 +6,7 @@ import Foundation
 /**
  * SKK辞書の一行をパースする
  */
-struct Entry {
+struct Entry: Sendable {
     let yomi: String
     let candidates: [Word]
 

@@ -25,6 +25,13 @@
 "LoadingStatusError %@" = "エラー: %@";
 "LoadingStatusDisabled" = "無効";
 "LoadingStatusUnknown" = "不明";
+"SKKServDictTitle" = "SKKServ辞書の設定";
+"SKKServDictTesting" = "SKKServへの接続テスト中…";
+"SKKServClientConnected" = "skkservへの接続に成功しました";
+"SKKServClientUnknownError" = "skkservへの接続中に不明なエラーが発生しました";
+"SKKServClientConnectionRefused" = "skkservに接続できませんでした";
+"SKKServClientConnectionTimeout" = "skkservへの接続がタイムアウトしました";
+"SKKServClientTimeout" = "skkservへの通信がタイムアウトしました";
 "Done" = "完了";
 "Filename" = "ファイル名";
 "Dictionary Setting" = "辞書の設定";
@@ -58,3 +65,7 @@
 "Add…" = "追加…";
 "Cancel" = "キャンセル";
 "Add" = "追加";
+"Test" = "テスト";
+"Address" = "アドレス";
+"TCP Port" = "TCPポート番号";
+"Response Encoding" = "応答エンコーディング";

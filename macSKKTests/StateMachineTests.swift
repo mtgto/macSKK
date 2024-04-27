@@ -14,10 +14,11 @@ final class StateMachineTests: XCTestCase {
     override func setUpWithError() throws {
         kanaRule = globalKanaRule
         dictionary.setEntries([:])
+        dictionary.skkservDict = nil
         cancellables = []
     }
 
-    func testHandleNormalSimple() throws {
+    func testHandleNormalSimple() {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.sink { event in
             if case .fixedText("あ") = event {
@@ -30,7 +31,7 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleNormalRomaji() throws {
+    func testHandleNormalRomaji() {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(16).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.plain("n")])))
@@ -71,7 +72,7 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleNormalSpace() throws {
+    func testHandleNormalSpace() {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(2).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.plain("s")])))
@@ -83,22 +84,22 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleNormalTab() throws {
+    func testHandleNormalTab() {
         // Normal時はタブは処理しない (Composingでは補完に使用する)
         XCTAssertFalse(stateMachine.handle(Action(keyEvent: .tab, originalEvent: nil, cursorPosition: .zero)))
     }
 
-    func testHandleNormalEnter() throws {
+    func testHandleNormalEnter() {
         // 未入力状態ならfalse
         XCTAssertFalse(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil, cursorPosition: .zero)))
     }
 
-    func testHandleNormalEisu() throws {
+    func testHandleNormalEisu() {
         // Normal時は英数キーは無視する
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .eisu, originalEvent: nil, cursorPosition: .zero)))
     }
 
-    func testHandleNormalSpecialSymbol() throws {
+    func testHandleNormalSpecialSymbol() {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(20).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.plain("z")])))
@@ -132,7 +133,7 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleNormalNoAlphabet() throws {
+    func testHandleNormalNoAlphabet() {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(9).sink { events in
             XCTAssertEqual(events[0], .fixedText(";"))
@@ -158,7 +159,7 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleNormalNoAlphabetEisu() throws {
+    func testHandleNormalNoAlphabetEisu() {
         stateMachine = StateMachine(initialState: IMEState(inputMode: .eisu))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
@@ -175,12 +176,12 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleNormalUpDown() throws {
+    func testHandleNormalUpDown() {
         XCTAssertFalse(stateMachine.handle(Action(keyEvent: .up, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertFalse(stateMachine.handle(Action(keyEvent: .down, originalEvent: nil, cursorPosition: .zero)))
     }
 
-    func testHandleNormalPrintable() throws {
+    func testHandleNormalPrintable() {
         stateMachine = StateMachine(initialState: IMEState(inputMode: .direct))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(2).sink { events in
@@ -193,7 +194,7 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleNormalPrintableEisu() throws {
+    func testHandleNormalPrintableEisu() {
         stateMachine = StateMachine(initialState: IMEState(inputMode: .eisu))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
@@ -210,7 +211,7 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleNormalPrintableDirect() throws {
+    func testHandleNormalPrintableDirect() {
         stateMachine = StateMachine(initialState: IMEState(inputMode: .direct))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(2).sink { events in
@@ -223,7 +224,7 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleNormalRegistering() throws {
+    func testHandleNormalRegistering() {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(5).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
@@ -598,7 +599,7 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleComposingContainNumber() throws {
+    func testHandleComposingContainNumber() {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(8).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
@@ -2224,7 +2225,7 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    func testHandleSelectingMergeAnnotations() throws {
+    func testHandleSelectingMergeAnnotations() {
         let annotation0 = Annotation(dictId: Annotation.userDictId, text: "user")
         dictionary.setEntries(["う": [Word("雨", annotation: annotation0)]])
         let annotation1 = Annotation(dictId: "dict1", text: "dict1")
@@ -2249,6 +2250,7 @@ final class StateMachineTests: XCTestCase {
 
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u", withShift: true)))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
+        wait(for: [expectation], timeout: 1.0)
     }
 
     func testPrivateMode() throws {
