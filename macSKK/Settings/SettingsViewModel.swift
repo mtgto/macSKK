@@ -242,7 +242,7 @@ final class SettingsViewModel: ObservableObject {
         $directModeApplications.dropFirst().sink { applications in
             let bundleIdentifiers = applications.map { $0.bundleIdentifier }
             UserDefaults.standard.set(bundleIdentifiers, forKey: UserDefaultsKeys.directModeBundleIdentifiers)
-            directModeBundleIdentifiers.send(bundleIdentifiers)
+            Global.directModeBundleIdentifiers.send(bundleIdentifiers)
         }
         .store(in: &cancellables)
 
@@ -252,7 +252,7 @@ final class SettingsViewModel: ObservableObject {
         }.store(in: &cancellables)
 
         $workaroundApplications.sink { applications in
-            insertBlankStringBundleIdentifiers.send(applications.filter { $0.insertBlankString }.map { $0.bundleIdentifier })
+            Global.insertBlankStringBundleIdentifiers.send(applications.filter { $0.insertBlankString }.map { $0.bundleIdentifier })
         }.store(in: &cancellables)
 
         NotificationCenter.default.publisher(for: notificationNameToggleDirectMode)

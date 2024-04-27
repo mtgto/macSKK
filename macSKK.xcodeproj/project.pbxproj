@@ -10,6 +10,7 @@
 		CE06CA2B2AAC171B00E80E5E /* FileDictTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE06CA292AAC171B00E80E5E /* FileDictTests.swift */; };
 		CE06CA2D2AAC172F00E80E5E /* empty.txt in Resources */ = {isa = PBXBuildFile; fileRef = CE06CA2C2AAC172F00E80E5E /* empty.txt */; };
 		CE06CA342AAC199500E80E5E /* UserDict+Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE06CA332AAC199500E80E5E /* UserDict+Utilities.swift */; };
+		CE11C7B52BDD461C00A35F3D /* Global.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE11C7B42BDD461C00A35F3D /* Global.swift */; };
 		CE1B00552BA3DDEB00C830FD /* SKKServDict.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE1B00542BA3DDEB00C830FD /* SKKServDict.swift */; };
 		CE1B00622BA4286800C830FD /* Message+SKKServ.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE1B00612BA4286800C830FD /* Message+SKKServ.swift */; };
 		CE1B00642BA4287C00C830FD /* SKKServRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE1B00632BA4287C00C830FD /* SKKServRequest.swift */; };
@@ -154,6 +155,7 @@
 		CE06CA292AAC171B00E80E5E /* FileDictTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileDictTests.swift; sourceTree = "<group>"; };
 		CE06CA2C2AAC172F00E80E5E /* empty.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = empty.txt; sourceTree = "<group>"; };
 		CE06CA332AAC199500E80E5E /* UserDict+Utilities.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UserDict+Utilities.swift"; sourceTree = "<group>"; };
+		CE11C7B42BDD461C00A35F3D /* Global.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Global.swift; sourceTree = "<group>"; };
 		CE1B00542BA3DDEB00C830FD /* SKKServDict.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServDict.swift; sourceTree = "<group>"; };
 		CE1B00612BA4286800C830FD /* Message+SKKServ.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Message+SKKServ.swift"; sourceTree = "<group>"; };
 		CE1B00632BA4287C00C830FD /* SKKServRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServRequest.swift; sourceTree = "<group>"; };
@@ -346,6 +348,7 @@
 			children = (
 				CE5ECF352957034B00E7BE7D /* macSKKApp.swift */,
 				CE7F9AD82AADEBF9001B1877 /* AppDelegate.swift */,
+				CE11C7B42BDD461C00A35F3D /* Global.swift */,
 				CE84A3B829570C37009394C4 /* InputController.swift */,
 				CE84A3DD29571797009394C4 /* Action.swift */,
 				CE39DB202A8DFD8F00BC619F /* MarkedText.swift */,
@@ -731,6 +734,7 @@
 				CEC061C82ABB0A0100A11614 /* CompletionPanel.swift in Sources */,
 				CE4CB5CC2AD557D90046FA34 /* NumberEntry.swift in Sources */,
 				CEF3D86C2B9C022900BD1D3A /* WorkaroundApplicationView.swift in Sources */,
+				CE11C7B52BDD461C00A35F3D /* Global.swift in Sources */,
 				CE84A3DE29571797009394C4 /* Action.swift in Sources */,
 				CED987412BB953E7001B40F9 /* Data+EucJis2004.swift in Sources */,
 				CE485A882A8FA195008271EF /* Release+UNNotification.swift in Sources */,

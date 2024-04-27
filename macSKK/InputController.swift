@@ -98,7 +98,7 @@ class InputController: IMKInputController {
                         textInput.selectMode(inputMode.rawValue)
                         self.inputModePanel.show(at: cursorPosition.origin,
                                                   mode: inputMode,
-                                                  privateMode: privateMode.value,
+                                                  privateMode: Global.privateMode.value,
                                                   windowLevel: windowLevel)
                     }
                 }
@@ -152,12 +152,12 @@ class InputController: IMKInputController {
                 }
             }
         }.store(in: &cancellables)
-        directModeBundleIdentifiers.sink { [weak self] bundleIdentifiers in
+        Global.directModeBundleIdentifiers.sink { [weak self] bundleIdentifiers in
             if let bundleIdentifier = self?.targetApp.bundleIdentifier {
                 self?.directMode = bundleIdentifiers.contains(bundleIdentifier)
             }
         }.store(in: &cancellables)
-        insertBlankStringBundleIdentifiers.sink { [weak self] bundleIdentifiers in
+        Global.insertBlankStringBundleIdentifiers.sink { [weak self] bundleIdentifiers in
             if let bundleIdentifier = self?.targetApp.bundleIdentifier {
                 self?.insertBlankString = bundleIdentifiers.contains(bundleIdentifier)
             }
@@ -236,7 +236,7 @@ class InputController: IMKInputController {
         let privateModeItem = NSMenuItem(title: NSLocalizedString("MenuItemPrivateMode", comment: "Private mode"),
                                          action: #selector(togglePrivateMode),
                                          keyEquivalent: "")
-        privateModeItem.state = privateMode.value ? .on : .off
+        privateModeItem.state = Global.privateMode.value ? .on : .off
         preferenceMenu.addItem(privateModeItem)
         if targetApp.bundleIdentifier != nil {
             let directModeItem = NSMenuItem(title: String(format: NSLocalizedString("MenuItemDirectInput", comment: "\"%@\"では直接入力"), targetApp.localizedName ?? "?"),
@@ -293,7 +293,7 @@ class InputController: IMKInputController {
         _ = textInput.attributes(forCharacterIndex: 0, lineHeightRectangle: &cursorPosition)
         windowLevel = NSWindow.Level(rawValue: Int(textInput.windowLevel() + 1))
         if !directMode {
-            inputModePanel.show(at: cursorPosition.origin, mode: inputMode, privateMode: privateMode.value, windowLevel: windowLevel)
+            inputModePanel.show(at: cursorPosition.origin, mode: inputMode, privateMode: Global.privateMode.value, windowLevel: windowLevel)
         }
         // キー配列を設定する
         setCustomInputSource(textInput: textInput)
@@ -317,7 +317,7 @@ class InputController: IMKInputController {
     }
 
     @objc func togglePrivateMode() {
-        privateMode.send(!privateMode.value)
+        Global.privateMode.send(!Global.privateMode.value)
     }
 
     /// 現在最前面にあるアプリからの入力をハンドルしないかどうかを切り替える
@@ -337,7 +337,7 @@ class InputController: IMKInputController {
     #if DEBUG
     @objc func showPanel() {
         let point = NSPoint(x: 100, y: 500)
-        inputModePanel.show(at: point, mode: .hiragana, privateMode: privateMode.value, windowLevel: windowLevel)
+        inputModePanel.show(at: point, mode: .hiragana, privateMode: Global.privateMode.value, windowLevel: windowLevel)
     }
     #endif
 

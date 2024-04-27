@@ -7,19 +7,12 @@ import SwiftUI
 import UserNotifications
 import os
 
-let logger: Logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "main")
+nonisolated(unsafe) let logger: Logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "main")
 var dictionary: UserDict!
 /// 現在のローマ字かな変換ルール
 var kanaRule: Romaji!
 /// デフォルトでもってるローマ字かな変換ルール
 var defaultKanaRule: Romaji!
-let privateMode = CurrentValueSubject<Bool, Never>(false)
-// 直接入力するアプリケーションのBundleIdentifierの集合のコピー。
-// マスターはSettingsViewModelがもっているが、InputControllerからAppが参照できないのでグローバル変数にコピーしている。
-// FIXME: NotificationCenter経由で設定画面で変更したことを各InputControllerに通知するようにしてこの変数は消すかも。
-let directModeBundleIdentifiers = CurrentValueSubject<[String], Never>([])
-// モード変更時に空白文字を一瞬追加するワークアラウンドを適用するBundle Identifierの集合
-let insertBlankStringBundleIdentifiers = CurrentValueSubject<[String], Never>([])
 // 直接入力モードを切り替えたいときに通知される通知の名前。
 let notificationNameToggleDirectMode = Notification.Name("toggleDirectMode")
 // 空文字挿入のワークアラウンドの有効無効を切り替えたいときに通知される通知の名前。
@@ -59,7 +52,7 @@ struct macSKKApp: App {
         // 環境設定の初期値をSettingsViewModelより先に行う
         Self.setupUserDefaults()
         do {
-            dictionary = try UserDict(dicts: [], privateMode: privateMode)
+            dictionary = try UserDict(dicts: [], privateMode: Global.privateMode)
             dictionariesDirectoryUrl = try FileManager.default.url(
                 for: .documentDirectory,
                 in: .userDomainMask,
@@ -243,7 +236,7 @@ struct macSKKApp: App {
 
     private func setupDirectMode() {
         if let bundleIdentifiers = UserDefaults.standard.array(forKey: "directModeBundleIdentifiers") as? [String] {
-            directModeBundleIdentifiers.send(bundleIdentifiers)
+            Global.directModeBundleIdentifiers.send(bundleIdentifiers)
         }
     }
 
