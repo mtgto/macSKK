@@ -9,10 +9,6 @@ import os
 
 nonisolated(unsafe) let logger: Logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "main")
 var dictionary: UserDict!
-/// 現在のローマ字かな変換ルール
-var kanaRule: Romaji!
-/// デフォルトでもってるローマ字かな変換ルール
-var defaultKanaRule: Romaji!
 // 直接入力モードを切り替えたいときに通知される通知の名前。
 let notificationNameToggleDirectMode = Notification.Name("toggleDirectMode")
 // 空文字挿入のワークアラウンドの有効無効を切り替えたいときに通知される通知の名前。
@@ -70,14 +66,14 @@ struct macSKKApp: App {
         if isTest() {
             settingsWatcher = nil
             let kanaRuleFileURL = Bundle.main.url(forResource: "kana-rule", withExtension: "conf")!
-            kanaRule = try! Romaji(contentsOf: kanaRuleFileURL)
+            Global.kanaRule = try! Romaji(contentsOf: kanaRuleFileURL)
         } else {
             do {
                 settingsWatcher = try SettingsWatcher(kanaRuleFileName: "kana-rule.conf")
                 let kanaRuleFileURL = Bundle.main.url(forResource: "kana-rule", withExtension: "conf")!
-                defaultKanaRule = try Romaji(contentsOf: kanaRuleFileURL)
-                if kanaRule == nil {
-                    kanaRule = defaultKanaRule
+                Global.defaultKanaRule = try Romaji(contentsOf: kanaRuleFileURL)
+                if Global.kanaRule == nil {
+                    Global.kanaRule = Global.defaultKanaRule
                 }
             } catch {
                 fatalError("ローマ字かな変換ルールの読み込みでエラーが発生しました: \(error)")

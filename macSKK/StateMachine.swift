@@ -49,7 +49,7 @@ final class StateMachine {
     }
 
     /// `Action`をハンドルした場合には`true`、しなかった場合は`false`を返す
-    func handle(_ action: Action) -> Bool {
+    @MainActor func handle(_ action: Action) -> Bool {
         switch state.inputMethod {
         case .normal:
             return handleNormal(action, specialState: state.specialState)
@@ -61,7 +61,7 @@ final class StateMachine {
     }
 
     /// macSKKで取り扱わないキーイベントを処理するかどうかを返す
-    func handleUnhandledEvent(_ event: NSEvent) -> Bool {
+    @MainActor func handleUnhandledEvent(_ event: NSEvent) -> Bool {
         if state.specialState != nil {
             return true
         }
@@ -76,7 +76,7 @@ final class StateMachine {
     /**
      * 状態がnormalのときのhandle
      */
-    func handleNormal(_ action: Action, specialState: SpecialState?) -> Bool {
+    @MainActor func handleNormal(_ action: Action, specialState: SpecialState?) -> Bool {
         switch action.keyEvent {
         case .enter:
             if let specialState {
@@ -257,7 +257,7 @@ final class StateMachine {
      *   - input: ``Action/KeyEvent/printable(_:)`` の引数であるcharacterIgnoringModifiersな文字列
      *   - specialState: 単語登録モードや単語登録解除モード
      */
-    func handleNormalPrintable(input: String, action: Action, specialState: SpecialState?) -> Bool {
+    @MainActor func handleNormalPrintable(input: String, action: Action, specialState: SpecialState?) -> Bool {
         if input == "q" {
             if action.shiftIsPressed() {
                 // 見出し語入力へ遷移する
@@ -317,7 +317,7 @@ final class StateMachine {
         switch state.inputMode {
         case .hiragana, .katakana, .hankaku:
             if input.isAlphabet && !action.optionIsPressed() {
-                let result = kanaRule.convert(input)
+                let result = Global.kanaRule.convert(input)
                 if let moji = result.kakutei {
                     if action.shiftIsPressed() {
                         state.inputMethod = .composing(
@@ -334,7 +334,7 @@ final class StateMachine {
             } else {
                 // Option-Shift-2のような入力のときには€が入力されるようにする
                 if let characters = action.characters() {
-                    let result = kanaRule.convert(characters)
+                    let result = Global.kanaRule.convert(characters)
                     if let moji = result.kakutei {
                         addFixedText(moji.string(for: state.inputMode))
                     } else {
@@ -362,7 +362,7 @@ final class StateMachine {
         }
     }
 
-    func handleComposing(_ action: Action, composing: ComposingState, specialState: SpecialState?) -> Bool {
+    @MainActor func handleComposing(_ action: Action, composing: ComposingState, specialState: SpecialState?) -> Bool {
         let isShift = composing.isShift
         let text = composing.text
         let okuri = composing.okuri
@@ -435,7 +435,7 @@ final class StateMachine {
             if state.inputMode == .direct {
                 return handleComposingPrintable(
                     input: ";",
-                    converted: kanaRule.convert(";"),
+                    converted: Global.kanaRule.convert(";"),
                     action: action,
                     composing: composing,
                     specialState: specialState)
@@ -483,9 +483,9 @@ final class StateMachine {
         case .printable(let input):
             let converted: Romaji.ConvertedMoji
             if !input.isAlphabet, let characters = action.characters() {
-                converted = kanaRule.convert(romaji + characters)
+                converted = Global.kanaRule.convert(romaji + characters)
             } else {
-                converted = kanaRule.convert(romaji + input)
+                converted = Global.kanaRule.convert(romaji + input)
             }
             return handleComposingPrintable(
                 input: input,
@@ -598,7 +598,7 @@ final class StateMachine {
         }
     }
 
-    func handleComposingPrintable(
+    @MainActor func handleComposingPrintable(
         input: String, converted: Romaji.ConvertedMoji, action: Action, composing: ComposingState,
         specialState: SpecialState?
     ) -> Bool {
@@ -794,9 +794,9 @@ final class StateMachine {
         }
     }
 
-    private func useKanaRuleIfPresent(inputMode: InputMode, romaji: String, input: String) -> Romaji.ConvertedMoji? {
+    @MainActor private func useKanaRuleIfPresent(inputMode: InputMode, romaji: String, input: String) -> Romaji.ConvertedMoji? {
         if inputMode != .direct && !romaji.isEmpty {
-            let converted = kanaRule.convert(romaji + input)
+            let converted = Global.kanaRule.convert(romaji + input)
             if converted.kakutei != nil && converted.input == "" {
                 return converted
             } else {
@@ -807,7 +807,7 @@ final class StateMachine {
         }
     }
 
-    func handleComposingStartConvert(_ action: Action, composing: ComposingState, specialState: SpecialState?) -> Bool {
+    @MainActor func handleComposingStartConvert(_ action: Action, composing: ComposingState, specialState: SpecialState?) -> Bool {
         // skkservから引く場合もあるのでTaskで実行する
         // 未確定ローマ字はn以外は入力されずに削除される. nだけは"ん"として変換する
         // 変換候補がないときは辞書登録へ
@@ -856,7 +856,7 @@ final class StateMachine {
         return true
     }
 
-    func handleSelecting(_ action: Action, selecting: SelectingState, specialState: SpecialState?) -> Bool {
+    @MainActor func handleSelecting(_ action: Action, selecting: SelectingState, specialState: SpecialState?) -> Bool {
         // 選択中の変換候補で確定
         func fixCurrentSelect(yomi: String = selecting.yomi, okuri: String? = selecting.okuri, selecting: SelectingState = selecting) {
             addWordToUserDict(yomi: yomi, okuri: okuri, candidate: selecting.candidates[selecting.candidateIndex])
@@ -1004,7 +1004,7 @@ final class StateMachine {
         }
     }
 
-    private func handleSelectingPrevious(diff: Int, selecting: SelectingState) -> Bool {
+    @MainActor private func handleSelectingPrevious(diff: Int, selecting: SelectingState) -> Bool {
         if selecting.candidateIndex + diff >= 0 {
             let newSelectingState = selecting.addCandidateIndex(diff: diff)
             updateCandidates(selecting: newSelectingState)
