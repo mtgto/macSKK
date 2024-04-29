@@ -22,7 +22,6 @@ class InputController: IMKInputController {
     private var targetApp: TargetApplication! = nil
     private var cancellables: Set<AnyCancellable> = []
     private static let notFoundRange = NSRange(location: NSNotFound, length: NSNotFound)
-    private let inputModePanel: InputModePanel
     private let candidatesPanel: CandidatesPanel
     private let completionPanel: CompletionPanel
     /// 変換候補として選択されている単語を流すストリーム
@@ -37,7 +36,6 @@ class InputController: IMKInputController {
     private var windowLevel: NSWindow.Level = .floating
 
     override init!(server: IMKServer!, delegate: Any!, client inputClient: Any!) {
-        inputModePanel = InputModePanel()
         candidatesPanel = CandidatesPanel(
             showAnnotationPopover: UserDefaults.standard.bool(forKey: UserDefaultsKeys.showAnnotation),
             candidatesFontSize: UserDefaults.standard.integer(forKey: UserDefaultsKeys.candidatesFontSize),
@@ -96,10 +94,7 @@ class InputController: IMKInputController {
                     }
                     if !self.directMode {
                         textInput.selectMode(inputMode.rawValue)
-                        self.inputModePanel.show(at: cursorPosition.origin,
-                                                  mode: inputMode,
-                                                  privateMode: Global.privateMode.value,
-                                                  windowLevel: windowLevel)
+                        Global.showInputModePanel(at: cursorPosition.origin, inputMode: inputMode, windowLevel: windowLevel)
                     }
                 }
             }
@@ -293,7 +288,7 @@ class InputController: IMKInputController {
         _ = textInput.attributes(forCharacterIndex: 0, lineHeightRectangle: &cursorPosition)
         windowLevel = NSWindow.Level(rawValue: Int(textInput.windowLevel() + 1))
         if !directMode {
-            inputModePanel.show(at: cursorPosition.origin, mode: inputMode, privateMode: Global.privateMode.value, windowLevel: windowLevel)
+            Global.showInputModePanel(at: cursorPosition.origin, inputMode: inputMode, windowLevel: windowLevel)
         }
         // キー配列を設定する
         setCustomInputSource(textInput: textInput)
@@ -337,7 +332,7 @@ class InputController: IMKInputController {
     #if DEBUG
     @objc func showPanel() {
         let point = NSPoint(x: 100, y: 500)
-        inputModePanel.show(at: point, mode: .hiragana, privateMode: Global.privateMode.value, windowLevel: windowLevel)
+        Global.showInputModePanel(at: point, inputMode: .hiragana, windowLevel: windowLevel)
     }
     #endif
 
