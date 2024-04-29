@@ -18,6 +18,7 @@ import Combine
     static let insertBlankStringBundleIdentifiers = CurrentValueSubject<[String], Never>([])
     // 現在のモードを表示するパネル
     private let inputModePanel: InputModePanel
+    // 変換候補を表示するパネル
     private let candidatesPanel: CandidatesPanel
     // 補完候補を表示するパネル
     private let completionPanel: CompletionPanel
@@ -32,19 +33,15 @@ import Combine
         completionPanel = CompletionPanel()
     }
 
-    static func showInputModePanel(at point: CGPoint, inputMode: InputMode, windowLevel: NSWindow.Level) {
-        shared.inputModePanel.show(at: point,
-                                   mode: inputMode,
-                                   privateMode: Global.privateMode.value,
-                                   windowLevel: windowLevel)
+    static var inputModePanel: InputModePanel {
+        shared.inputModePanel
     }
 
-    static func showCompletionPanel(at point: CGPoint, completion: String) {
-        shared.completionPanel.viewModel.completion = completion
-        shared.completionPanel.show(at: point)
+    static var completionPanel: CompletionPanel {
+        shared.completionPanel
     }
 
-    static func hideCompletionPanel(_ sender: Any? = nil) {
-        shared.completionPanel.orderOut(sender)
+    static var candidatesPanel: CandidatesPanel {
+        shared.candidatesPanel
     }
 }

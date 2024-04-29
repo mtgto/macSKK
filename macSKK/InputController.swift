@@ -22,7 +22,6 @@ class InputController: IMKInputController {
     private var targetApp: TargetApplication! = nil
     private var cancellables: Set<AnyCancellable> = []
     private static let notFoundRange = NSRange(location: NSNotFound, length: NSNotFound)
-    private let candidatesPanel: CandidatesPanel
     /// 変換候補として選択されている単語を流すストリーム
     private let selectedWord = PassthroughSubject<Word.Word?, Never>()
     /// 入力を処理しないで直接入力させるかどうか
@@ -35,11 +34,6 @@ class InputController: IMKInputController {
     private var windowLevel: NSWindow.Level = .floating
 
     override init!(server: IMKServer!, delegate: Any!, client inputClient: Any!) {
-        candidatesPanel = CandidatesPanel(
-            showAnnotationPopover: UserDefaults.standard.bool(forKey: UserDefaultsKeys.showAnnotation),
-            candidatesFontSize: UserDefaults.standard.integer(forKey: UserDefaultsKeys.candidatesFontSize),
-            annotationFontSize: UserDefaults.standard.integer(forKey: UserDefaultsKeys.annotationFontSize)
-        )
         super.init(server: server, delegate: delegate, client: inputClient)
 
         guard let textInput = inputClient as? any IMKTextInput else {
@@ -92,7 +86,10 @@ class InputController: IMKInputController {
                     }
                     if !self.directMode {
                         textInput.selectMode(inputMode.rawValue)
-                        Global.showInputModePanel(at: cursorPosition.origin, inputMode: inputMode, windowLevel: windowLevel)
+                        Global.inputModePanel.show(at: cursorPosition.origin,
+                                                   mode: inputMode,
+                                                   privateMode: Global.privateMode.value,
+                                                   windowLevel: windowLevel)
                     }
                 }
             }
@@ -100,48 +97,48 @@ class InputController: IMKInputController {
         stateMachine.candidateEvent.sink { [weak self] candidates in
             if let self {
                 let showAnnotation = UserDefaults.standard.bool(forKey: UserDefaultsKeys.showAnnotation)
-                self.candidatesPanel.setShowAnnotationPopover(showAnnotation)
+                Global.candidatesPanel.setShowAnnotationPopover(showAnnotation)
                 if let candidates {
                     // 下線のスタイルがthickのときに被らないように1ピクセル下に余白を設ける
                     var cursorPosition = candidates.cursorPosition.offsetBy(dx: 0, dy: -1)
                     cursorPosition.size.height += 1
-                    self.candidatesPanel.setCursorPosition(cursorPosition)
+                    Global.candidatesPanel.setCursorPosition(cursorPosition)
 
                     if let page = candidates.page {
                         let currentCandidates: CurrentCandidates = .panel(words: page.words,
                                                                           currentPage: page.current,
                                                                           totalPageCount: page.total)
-                        self.candidatesPanel.setCandidates(currentCandidates, selected: candidates.selected)
-                        self.candidatesPanel.show(windowLevel: self.windowLevel)
+                        Global.candidatesPanel.setCandidates(currentCandidates, selected: candidates.selected)
+                        Global.candidatesPanel.show(windowLevel: self.windowLevel)
                     } else {
                         if candidates.selected.annotations.isEmpty || !showAnnotation {
-                            self.candidatesPanel.orderOut(nil)
+                            Global.candidatesPanel.orderOut(nil)
                         } else {
-                            self.candidatesPanel.show(windowLevel: windowLevel)
+                            Global.candidatesPanel.show(windowLevel: self.windowLevel)
                         }
-                        self.candidatesPanel.setCandidates(.inline, selected: candidates.selected)
+                        Global.candidatesPanel.setCandidates(.inline, selected: candidates.selected)
                     }
                 } else {
                     // 変換→キャンセル→再変換しても注釈が表示されなくならないように状態を変えておく
                     self.selectedWord.send(nil)
-                    self.candidatesPanel.orderOut(nil)
+                    Global.candidatesPanel.orderOut(nil)
                 }
             }
         }.store(in: &cancellables)
-        candidatesPanel.viewModel.$selected.compactMap { $0 }.sink { [weak self] selected in
+        Global.candidatesPanel.viewModel.$selected.compactMap { $0 }.sink { [weak self] selected in
             self?.stateMachine.didSelectCandidate(selected)
             // TODO: バックグラウンドで引いて表示のときだけフォアグラウンドで処理をさせたい
             // TODO: 一度引いた単語を二度引かないようにしたい
             self?.selectedWord.send(selected.word)
         }.store(in: &cancellables)
-        candidatesPanel.viewModel.$doubleSelected.compactMap { $0 }.sink { [weak self] doubleSelected in
+        Global.candidatesPanel.viewModel.$doubleSelected.compactMap { $0 }.sink { [weak self] doubleSelected in
             self?.stateMachine.didDoubleSelectCandidate(doubleSelected)
         }.store(in: &cancellables)
         selectedWord.removeDuplicates().compactMap({ $0 }).sink { [weak self] word in
             if UserDefaults.standard.bool(forKey: UserDefaultsKeys.showAnnotation) {
                 if let self, let systemAnnotation = SystemDict.lookup(word), !systemAnnotation.isEmpty {
-                    self.candidatesPanel.setSystemAnnotation(systemAnnotation, for: word)
-                    self.candidatesPanel.show(windowLevel: self.windowLevel)
+                    Global.candidatesPanel.setSystemAnnotation(systemAnnotation, for: word)
+                    Global.candidatesPanel.show(windowLevel: self.windowLevel)
                 }
             }
         }.store(in: &cancellables)
@@ -159,12 +156,13 @@ class InputController: IMKInputController {
             if let self {
                 if let completion = dictionary.findCompletion(prefix: yomi) {
                     self.stateMachine.completion = (yomi, completion)
+                    Global.completionPanel.viewModel.completion = completion
                     // 下線分1ピクセル下に余白を設ける
                     let cursorPosition = self.cursorPosition.offsetBy(dx: 0, dy: -1)
-                    Global.showCompletionPanel(at: cursorPosition.origin, completion: completion)
+                    Global.completionPanel.show(at: cursorPosition.origin)
                 } else {
                     self.stateMachine.completion = nil
-                    Global.hideCompletionPanel()
+                    Global.completionPanel.orderOut(nil)
                 }
             }
         }.store(in: &cancellables)
@@ -178,15 +176,15 @@ class InputController: IMKInputController {
             }.store(in: &cancellables)
 
         NotificationCenter.default.publisher(for: notificationNameCandidatesFontSize)
-            .sink { [weak self] notification in
+            .sink { notification in
                 if let candidatesFontSize = notification.object as? Int {
-                    self?.candidatesPanel.setCandidatesFontSize(candidatesFontSize)
+                    Global.candidatesPanel.setCandidatesFontSize(candidatesFontSize)
                 }
             }.store(in: &cancellables)
         NotificationCenter.default.publisher(for: notificationNameAnnotationFontSize)
-            .sink { [weak self] notification in
+            .sink { notification in
                 if let annotationFontSize = notification.object as? Int {
-                    self?.candidatesPanel.setAnnotationFontSize(annotationFontSize)
+                    Global.candidatesPanel.setAnnotationFontSize(annotationFontSize)
                 }
             }.store(in: &cancellables)
     }
@@ -261,8 +259,8 @@ class InputController: IMKInputController {
 
     override func deactivateServer(_ sender: Any!) {
         // 他の入力に切り替わるときには入力候補や補完候補は消す + 現在表示中の候補を確定させる
-        candidatesPanel.orderOut(sender)
-        Global.hideCompletionPanel(sender)
+        Global.candidatesPanel.orderOut(sender)
+        Global.completionPanel.orderOut(sender)
         super.deactivateServer(sender)
     }
 
@@ -285,7 +283,7 @@ class InputController: IMKInputController {
         _ = textInput.attributes(forCharacterIndex: 0, lineHeightRectangle: &cursorPosition)
         windowLevel = NSWindow.Level(rawValue: Int(textInput.windowLevel() + 1))
         if !directMode {
-            Global.showInputModePanel(at: cursorPosition.origin, inputMode: inputMode, windowLevel: windowLevel)
+            Global.inputModePanel.show(at: cursorPosition.origin, mode: inputMode, privateMode: Global.privateMode.value, windowLevel: windowLevel)
         }
         // キー配列を設定する
         setCustomInputSource(textInput: textInput)
@@ -329,7 +327,7 @@ class InputController: IMKInputController {
     #if DEBUG
     @objc func showPanel() {
         let point = NSPoint(x: 100, y: 500)
-        Global.showInputModePanel(at: point, inputMode: .hiragana, windowLevel: windowLevel)
+        Global.inputModePanel.show(at: point, mode: .hiragana, privateMode: Global.privateMode.value, windowLevel: windowLevel)
     }
     #endif
 
