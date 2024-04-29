@@ -26,8 +26,9 @@ class SKKServClient: NSObject, SKKServClientProtocol {
                 let message = NWProtocolFramer.Message(request: .version)
                 connection.send(message: message) { error in
                     if let error {
-                        reply(nil, error)
-                        return
+                        logger.log("skkservへの書き込みに失敗したため接続をリセットします")
+                        self.connection = nil
+                        return reply(nil, error)
                     }
                     connection.receive { result in
                         switch result {
@@ -38,6 +39,8 @@ class SKKServClient: NSObject, SKKServClientProtocol {
                                 reply(nil, SKKServClientError.invalidResponse)
                             }
                         case .failure(let error):
+                            logger.log("skkservからの読み込みに失敗したため接続をリセットします")
+                            self.connection = nil
                             reply(nil, error)
                         }
                     }
@@ -54,17 +57,17 @@ class SKKServClient: NSObject, SKKServClientProtocol {
             case .success(let connection):
                 guard let connection else {
                     logger.error("skkservへの接続ができていません")
-                    reply(nil, SKKServClientError.unexpected)
-                    return
+                    return reply(nil, SKKServClientError.unexpected)
                 }
                 guard let encoded = yomi.data(using: .japaneseEUC) else {
                     logger.error("見出しをDataに変換できませんでした")
-                    reply(nil, SKKServClientError.unexpected)
-                    return
+                    return reply(nil, SKKServClientError.unexpected)
                 }
                 let message = NWProtocolFramer.Message(request: .request(encoded))
                 connection.send(message: message) { error in
                     if let error {
+                        logger.log("skkservへの書き込みに失敗したため接続をリセットします")
+                        self.connection = nil
                         return reply(nil, self.convertNWError(error))
                     }
                     connection.receive { result in
@@ -86,6 +89,8 @@ class SKKServClient: NSObject, SKKServClientProtocol {
                             reply(nil, SKKServClientError.invalidResponse)
                         case .failure(let error):
                             reply(nil, self.convertNWError(error))
+                            logger.log("skkservからの読み込みに失敗したため接続をリセットします")
+                            self.connection = nil
                         }
                     }
                 }
@@ -116,6 +121,7 @@ class SKKServClient: NSObject, SKKServClientProtocol {
         connection.stateUpdateHandler = { state in
             switch state {
             case .ready:
+                logger.log("skkservとの接続に成功しました")
                 callback(.success(connection))
             case .waiting(let error):
                 // 接続先がbind + listenされてない場合には "POSIXErrorCode(rawValue: 61): Connection refused" が発生する
