@@ -23,7 +23,6 @@ class InputController: IMKInputController {
     private var cancellables: Set<AnyCancellable> = []
     private static let notFoundRange = NSRange(location: NSNotFound, length: NSNotFound)
     private let candidatesPanel: CandidatesPanel
-    private let completionPanel: CompletionPanel
     /// 変換候補として選択されている単語を流すストリーム
     private let selectedWord = PassthroughSubject<Word.Word?, Never>()
     /// 入力を処理しないで直接入力させるかどうか
@@ -41,7 +40,6 @@ class InputController: IMKInputController {
             candidatesFontSize: UserDefaults.standard.integer(forKey: UserDefaultsKeys.candidatesFontSize),
             annotationFontSize: UserDefaults.standard.integer(forKey: UserDefaultsKeys.annotationFontSize)
         )
-        completionPanel = CompletionPanel()
         super.init(server: server, delegate: delegate, client: inputClient)
 
         guard let textInput = inputClient as? any IMKTextInput else {
@@ -161,13 +159,12 @@ class InputController: IMKInputController {
             if let self {
                 if let completion = dictionary.findCompletion(prefix: yomi) {
                     self.stateMachine.completion = (yomi, completion)
-                    self.completionPanel.viewModel.completion = completion
                     // 下線分1ピクセル下に余白を設ける
                     let cursorPosition = self.cursorPosition.offsetBy(dx: 0, dy: -1)
-                    self.completionPanel.show(at: cursorPosition)
+                    Global.showCompletionPanel(at: cursorPosition.origin, completion: completion)
                 } else {
                     self.stateMachine.completion = nil
-                    self.completionPanel.orderOut(nil)
+                    Global.hideCompletionPanel()
                 }
             }
         }.store(in: &cancellables)
@@ -265,7 +262,7 @@ class InputController: IMKInputController {
     override func deactivateServer(_ sender: Any!) {
         // 他の入力に切り替わるときには入力候補や補完候補は消す + 現在表示中の候補を確定させる
         candidatesPanel.orderOut(sender)
-        completionPanel.orderOut(sender)
+        Global.hideCompletionPanel(sender)
         super.deactivateServer(sender)
     }
 

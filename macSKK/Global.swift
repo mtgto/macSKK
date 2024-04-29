@@ -19,6 +19,7 @@ import Combine
     // 現在のモードを表示するパネル
     private let inputModePanel: InputModePanel
     private let candidatesPanel: CandidatesPanel
+    // 補完候補を表示するパネル
     private let completionPanel: CompletionPanel
 
     init() {
@@ -36,5 +37,14 @@ import Combine
                                    mode: inputMode,
                                    privateMode: Global.privateMode.value,
                                    windowLevel: windowLevel)
+    }
+
+    static func showCompletionPanel(at point: CGPoint, completion: String) {
+        shared.completionPanel.viewModel.completion = completion
+        shared.completionPanel.show(at: point)
+    }
+
+    static func hideCompletionPanel(_ sender: Any? = nil) {
+        shared.completionPanel.orderOut(sender)
     }
 }

@@ -16,9 +16,8 @@ class CompletionPanel: NSPanel {
         level = .floating
     }
 
-    func show(at cursorPosition: NSRect) {
-        var origin = cursorPosition.origin
-        setFrameTopLeftPoint(origin)
+    func show(at point: NSPoint) {
+        setFrameTopLeftPoint(point)
         orderFrontRegardless()
     }
 }
