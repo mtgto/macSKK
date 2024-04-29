@@ -29,7 +29,7 @@ struct SKKServDict {
             // 変換候補が見つかった場合は "1/変換/返還/" のように 1が先頭でスラッシュで区切られた文字列
             // 見つからなかった場合は "4へんかん" のように4が先頭の文字列
             guard result.hasPrefix("1/") else {
-                logger.error("skkservから変換候補が見つからなかったレスポンスが返りました")
+                logger.debug("skkservから変換候補が見つからなかったレスポンスが返りました")
                 return []
             }
             // Entry.parseWordsは先頭のスラッシュがない形を受け取る
