@@ -270,6 +270,8 @@ v0.20.0ではKitty, LINE, Alacrittyについて「空文字挿入」というワ
 
 ## 開発
 
+コントリビュートのガイドを [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md) に用意しています。
+
 Xcodeでビルドし、 `~/Library/Input Methods` に `macSKK.app` を配置してからシステム設定→キーボード→入力ソースで `ひらがな (macSKK)` などを追加してください。
 
 macOS 14以降ではApp Sandboxの制限が強くなりました。すでにリリース版macSKKを使っている環境で開発版のmacSKKを使用すると起動時に `「"macSKK"がほかのアプリからのデータへのアクセスを求めています。」` というダイアログが表示されることがあります。これはリリース版で署名に使用しているTeam IDと異なるProvisioning Profileを使用している (もしくはAd hoc署名を使っている) 場合に同じユーザー辞書ファイルにアクセスすることで発生します。この状態で「許可」を選んでしまうとリリース版のmacSKKが逆に読み込めなくなるなどの想定しない問題が発生する可能性があります。お手数ですがBundle Identifierを変更するなどを検討してください。
