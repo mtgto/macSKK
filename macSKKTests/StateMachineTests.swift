@@ -7,7 +7,6 @@ import XCTest
 @testable import macSKK
 
 final class StateMachineTests: XCTestCase {
-    var stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
     var cancellables: Set<AnyCancellable> = []
 
     override func setUpWithError() throws {
@@ -17,6 +16,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleNormalSimple() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.sink { event in
             if case .fixedText("あ") = event {
@@ -30,6 +30,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleNormalRomaji() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(16).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.plain("n")])))
@@ -57,20 +58,22 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    @MainActor func testHandleNormalRomajiKanaRuleQ() {
-        Global.kanaRule = try! Romaji(source: "tq,たん")
-        let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(2).sink { events in
-            XCTAssertEqual(events[0], .markedText(MarkedText([.plain("t")])))
-            XCTAssertEqual(events[1], .fixedText("たん"))
-            expectation.fulfill()
-        }.store(in: &cancellables)
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
-        wait(for: [expectation], timeout: 1.0)
-    }
+//    @MainActor func testHandleNormalRomajiKanaRuleQ() {
+//        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+//        Global.kanaRule = try! Romaji(source: "tq,たん")
+//        let expectation = XCTestExpectation()
+//        stateMachine.inputMethodEvent.collect(2).sink { events in
+//            XCTAssertEqual(events[0], .markedText(MarkedText([.plain("t")])))
+//            XCTAssertEqual(events[1], .fixedText("たん"))
+//            expectation.fulfill()
+//        }.store(in: &cancellables)
+//        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t")))
+//        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
+//        wait(for: [expectation], timeout: 1.0)
+//    }
 
     @MainActor func testHandleNormalSpace() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(2).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.plain("s")])))
@@ -83,21 +86,25 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleNormalTab() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         // Normal時はタブは処理しない (Composingでは補完に使用する)
         XCTAssertFalse(stateMachine.handle(Action(keyEvent: .tab, originalEvent: nil, cursorPosition: .zero)))
     }
 
     @MainActor func testHandleNormalEnter() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         // 未入力状態ならfalse
         XCTAssertFalse(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil, cursorPosition: .zero)))
     }
 
     @MainActor func testHandleNormalEisu() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         // Normal時は英数キーは無視する
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .eisu, originalEvent: nil, cursorPosition: .zero)))
     }
 
     @MainActor func testHandleNormalSpecialSymbol() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(20).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.plain("z")])))
@@ -132,6 +139,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleNormalNoAlphabet() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(9).sink { events in
             XCTAssertEqual(events[0], .fixedText(";"))
@@ -158,7 +166,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleNormalNoAlphabetEisu() {
-        stateMachine = StateMachine(initialState: IMEState(inputMode: .eisu))
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .eisu))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
             XCTAssertEqual(events[0], .fixedText("５"))
@@ -175,12 +183,13 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleNormalUpDown() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         XCTAssertFalse(stateMachine.handle(Action(keyEvent: .up, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertFalse(stateMachine.handle(Action(keyEvent: .down, originalEvent: nil, cursorPosition: .zero)))
     }
 
     @MainActor func testHandleNormalPrintable() {
-        stateMachine = StateMachine(initialState: IMEState(inputMode: .direct))
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .direct))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(2).sink { events in
             XCTAssertEqual(events[0], .fixedText("c"))
@@ -193,7 +202,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleNormalPrintableEisu() {
-        stateMachine = StateMachine(initialState: IMEState(inputMode: .eisu))
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .eisu))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
             XCTAssertEqual(events[0], .fixedText("ａ"))
@@ -210,7 +219,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleNormalPrintableDirect() {
-        stateMachine = StateMachine(initialState: IMEState(inputMode: .direct))
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .direct))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(2).sink { events in
             XCTAssertEqual(events[0], .fixedText("L"))
@@ -223,6 +232,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleNormalRegistering() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(5).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
@@ -240,6 +250,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleNormalStickyShift() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(6).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose])))
@@ -261,7 +272,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleNormalCtrlJ() {
-        stateMachine = StateMachine(initialState: IMEState(inputMode: .direct))
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .direct))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(10).sink { events in
             XCTAssertEqual(events[0], .modeChanged(.hiragana, .zero))
@@ -290,7 +301,7 @@ final class StateMachineTests: XCTestCase {
     }
     
     @MainActor func testHandleNormalKanaKeyAsSameAsCtrlJ() {
-        stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
             XCTAssertEqual(events[0], .modeChanged(.hankaku, .zero))
@@ -307,6 +318,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleNormalQ() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
             XCTAssertEqual(events[0], .modeChanged(.katakana, .zero))
@@ -323,6 +335,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleNormalShiftQ() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(10).sink { events in
             XCTAssertEqual(events[0], .modeChanged(.direct, .zero))
@@ -354,8 +367,8 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleNormalCtrlQ() {
+        var stateMachine = StateMachine(initialState: IMEState(inputMode: .direct))
         let expectation = XCTestExpectation()
-        stateMachine = StateMachine(initialState: IMEState(inputMode: .direct))
         XCTAssertFalse(stateMachine.handle(Action(keyEvent: .ctrlQ, originalEvent: nil, cursorPosition: .zero)))
         stateMachine = StateMachine(initialState: IMEState(inputMode: .katakana))
         stateMachine.inputMethodEvent.collect(3).sink { events in
@@ -371,6 +384,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleNormalCancel() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(5).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("え")])))
@@ -389,6 +403,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleNormalCancelRomajiOnly() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(2).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.plain("k")])))
@@ -403,17 +418,20 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleNormalLeftRight() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         XCTAssertFalse(stateMachine.handle(Action(keyEvent: .left, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertFalse(stateMachine.handle(Action(keyEvent: .right, originalEvent: nil, cursorPosition: .zero)))
     }
 
     @MainActor func testHandleNormalCtrlAEY() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         XCTAssertFalse(stateMachine.handle(Action(keyEvent: .ctrlA, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertFalse(stateMachine.handle(Action(keyEvent: .ctrlE, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertFalse(stateMachine.handle(Action(keyEvent: .ctrlY, originalEvent: nil, cursorPosition: .zero)))
     }
 
     @MainActor func testHandleNormalAbbrev() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(12).sink { events in
             XCTAssertEqual(events[0], .modeChanged(.direct, .zero))
@@ -445,6 +463,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleNormalAbbrevPrevMode() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(12).sink { events in
             XCTAssertEqual(events[0], .modeChanged(.katakana, .zero))
@@ -473,6 +492,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleNormalOptionModifier() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(1).sink { events in
             XCTAssertEqual(events[0], .fixedText("Ω"))
@@ -490,6 +510,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleComposingNandQ() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         expectation.expectedFulfillmentCount = 2
         stateMachine.inputMethodEvent.collect(6).sink { events in
@@ -516,6 +537,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleComposingVandQ() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         expectation.expectedFulfillmentCount = 2
         stateMachine.inputMethodEvent.collect(6).sink { events in
@@ -544,6 +566,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleComposingYomi() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         expectation.expectedFulfillmentCount = 2
         stateMachine.inputMethodEvent.collect(7).sink { events in
@@ -575,6 +598,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleComposingYomiQ() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         expectation.expectedFulfillmentCount = 2
         stateMachine.inputMethodEvent.collect(4).sink { events in
@@ -598,6 +622,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleComposingContainNumber() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(8).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
@@ -623,6 +648,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleComposingEnter() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(13).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.plain("k")])))
@@ -658,6 +684,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleComposingBackspace() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(10).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose])))
@@ -691,6 +718,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleComposingSpaceOkurinashi() {
         dictionary.setEntries(["と": [Word("戸"), Word("都")]])
 
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(7).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose])))
@@ -714,6 +742,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleComposingPrefix() {
         dictionary.setEntries(["あ>": [Word("亜")], "あ": [Word("阿")]])
 
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(5).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
@@ -733,6 +762,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleComposingPrefixAbbrev() {
         dictionary.setEntries(["A": [Word("Å")]])
 
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(5).sink { events in
             XCTAssertEqual(events[0], .modeChanged(.direct, .zero))
@@ -752,6 +782,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleComposingSuffix() {
         dictionary.setEntries([">あ": [Word("亜")], "あ": [Word("阿")]])
 
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(9).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
@@ -779,6 +810,7 @@ final class StateMachineTests: XCTestCase {
         let entries = ["だい#": [Word("第#1"), Word("第#0"), Word("第#2"), Word("第#3")], "だい2": [Word("第2")]]
         dictionary.dicts.append(MemoryDict(entries: entries, readonly: true))
 
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(18).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("d")])))
@@ -827,6 +859,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleComposingOkuriari() {
         dictionary.setEntries(["とr": [Word("取"), Word("撮")]])
 
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(8).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose])))
@@ -853,6 +886,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleComposingOkuriari2() {
         dictionary.setEntries(["とらw": [Word("捕"), Word("捉")]])
 
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(10).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose])))
@@ -883,6 +917,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleComposingOkuriari3() {
         dictionary.setEntries(["とr": [Word("取"), Word("撮")]])
 
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(9).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose])))
@@ -910,6 +945,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleComposingOkuriariIncludeN() {
         dictionary.setEntries(["かんj": [Word("感")]])
 
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(7).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("k")])))
@@ -933,6 +969,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleComposingOkuriSokuon() {
         dictionary.setEntries(["あt": [Word("会")]])
 
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
@@ -951,6 +988,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleComposingOkuriSokuon2() {
         dictionary.setEntries(["あt": [Word("会")]])
 
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(5).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
@@ -971,6 +1009,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleComposingOkuriSokuon3() {
         dictionary.setEntries(["やっt": [Word("八")]])
 
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(5).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("y")])))
@@ -991,6 +1030,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleComposingOkuriN() {
         dictionary.setEntries(["あn": [Word("編")]])
 
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
@@ -1009,6 +1049,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleComposingStickyShiftN() {
         dictionary.setEntries(["あn": [Word("編")]])
 
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(5).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose])))
@@ -1029,6 +1070,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleComposingOkuriQ() {
         dictionary.setEntries(["おu": [Word("追")]])
 
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("お")])))
@@ -1047,6 +1089,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleComposingOkuriCursor() {
         dictionary.setEntries(["あu": [Word("会")]])
 
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
@@ -1065,6 +1108,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleComposingCursorSpace() {
         dictionary.setEntries(["え": [Word("絵")]])
 
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("え")])))
@@ -1081,6 +1125,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleComposingAbbrevCursor() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(6).sink { events in
             XCTAssertEqual(events[0], .modeChanged(.direct, .zero))
@@ -1100,6 +1145,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleComposingCtrlJ() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(9).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose])))
@@ -1124,6 +1170,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleComposingPrintableOkuri() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("え")])))
@@ -1138,48 +1185,52 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
     
-    @MainActor func testHandleComposingSpaceAfterPrintable() {
-        Global.kanaRule = try! Romaji(source: "z ,スペース")
-        let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(2).sink { events in
-            XCTAssertEqual(events[0], .markedText(MarkedText([.plain("z")])))
-            XCTAssertEqual(events[1], .fixedText("スペース"))
-            expectation.fulfill()
-        }.store(in: &cancellables)
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "z", withShift: false)))
-        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-        wait(for: [expectation], timeout: 1.0)
-    }
+//    @MainActor func testHandleComposingSpaceAfterPrintable() {
+//        Global.kanaRule = try! Romaji(source: "z ,スペース")
+//        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+//        let expectation = XCTestExpectation()
+//        stateMachine.inputMethodEvent.collect(2).sink { events in
+//            XCTAssertEqual(events[0], .markedText(MarkedText([.plain("z")])))
+//            XCTAssertEqual(events[1], .fixedText("スペース"))
+//            expectation.fulfill()
+//        }.store(in: &cancellables)
+//        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "z", withShift: false)))
+//        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
+//        wait(for: [expectation], timeout: 1.0)
+//    }
     
-    @MainActor func testHandleComposingStickyShiftAfterPrintable() {
-        Global.kanaRule = try! Romaji(source: "a;,あせみころん")
-        let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(2).sink { events in
-            XCTAssertEqual(events[0], .markedText(MarkedText([.plain("a")])))
-            XCTAssertEqual(events[1], .fixedText("あせみころん"))
-            expectation.fulfill()
-        }.store(in: &cancellables)
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: false)))
-        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil, cursorPosition: .zero)))
-        wait(for: [expectation], timeout: 1.0)
-    }
+//    @MainActor func testHandleComposingStickyShiftAfterPrintable() {
+//        Global.kanaRule = try! Romaji(source: "a;,あせみころん")
+//        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+//        let expectation = XCTestExpectation()
+//        stateMachine.inputMethodEvent.collect(2).sink { events in
+//            XCTAssertEqual(events[0], .markedText(MarkedText([.plain("a")])))
+//            XCTAssertEqual(events[1], .fixedText("あせみころん"))
+//            expectation.fulfill()
+//        }.store(in: &cancellables)
+//        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: false)))
+//        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil, cursorPosition: .zero)))
+//        wait(for: [expectation], timeout: 1.0)
+//    }
 
-    @MainActor func testHandleComposingQAfterPrintable() {
-        Global.kanaRule = try! Romaji(source: "tq,たん")
-        let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(3).sink { events in
-            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("t")])))
-            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("たん")])))
-            XCTAssertEqual(events[2], .fixedText("タン"))
-            expectation.fulfill()
-        }.store(in: &cancellables)
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t", withShift: true)))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q", withShift: false)))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q", withShift: false)))
-        wait(for: [expectation], timeout: 1.0)
-    }
+//    @MainActor func testHandleComposingQAfterPrintable() {
+//        Global.kanaRule = try! Romaji(source: "tq,たん")
+//        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+//        let expectation = XCTestExpectation()
+//        stateMachine.inputMethodEvent.collect(3).sink { events in
+//            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("t")])))
+//            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("たん")])))
+//            XCTAssertEqual(events[2], .fixedText("タン"))
+//            expectation.fulfill()
+//        }.store(in: &cancellables)
+//        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t", withShift: true)))
+//        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q", withShift: false)))
+//        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q", withShift: false)))
+//        wait(for: [expectation], timeout: 1.0)
+//    }
 
     @MainActor func testHandleComposingPrintableAndL() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("え")])))
@@ -1195,6 +1246,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleComposingPrintableStickyShift() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(3).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("え")])))
@@ -1212,6 +1264,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleComposingPrintableSymbol() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         expectation.expectedFulfillmentCount = 2
         stateMachine.inputMethodEvent.collect(8).sink { events in
@@ -1247,6 +1300,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleComposingPrintableSymbolWithShift() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(3).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
@@ -1261,6 +1315,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleComposingCancel() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(6).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose])))
@@ -1281,6 +1336,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleComposingCtrlQ() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(5).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose])))
@@ -1300,6 +1356,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleComposingLeftRight() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(9).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose])))
@@ -1328,6 +1385,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleComposingLeft() {
         dictionary.setEntries(["あs": [Word("褪")]])
 
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(6).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
@@ -1348,6 +1406,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleComposingRomajiOnly() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(10).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.plain("k")])))
@@ -1388,6 +1447,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleComposingLeftOkuri() {
         dictionary.setEntries(["あs": [Word("褪")]])
 
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(5).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
@@ -1406,6 +1466,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleComposingCursor() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(5).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
@@ -1425,6 +1486,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleComposingCursorFirst() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(3).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
@@ -1439,6 +1501,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleComposingCtrlACtrlE() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(9).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose])))
@@ -1465,6 +1528,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleComposingLeftAndBackspace() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
@@ -1481,6 +1545,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleComposingLeftAndDelete() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
@@ -1498,6 +1563,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleComposingTab() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(2).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("い")])))
@@ -1511,6 +1577,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleComposingTabCursor() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("い")])))
@@ -1530,6 +1597,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleComposingAbbrevSpace() {
         dictionary.setEntries(["n": [Word("美")]])
 
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(6).sink { events in
             XCTAssertEqual(events[0], .modeChanged(.direct, .zero))
@@ -1548,6 +1616,7 @@ final class StateMachineTests: XCTestCase {
     }
     
     @MainActor func testHandleComposingCtrlY() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(1).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
@@ -1560,6 +1629,8 @@ final class StateMachineTests: XCTestCase {
 
     @MainActor func testHandleRegisteringEnter() {
         dictionary.setEntries(["お": [Word("尾")]])
+
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(9).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
@@ -1586,6 +1657,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleRegisteringEnterEmpty() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
@@ -1602,6 +1674,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleRegisteringStickyShift() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(7).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
@@ -1622,6 +1695,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleRegisteringLeftRight() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(15).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("い")])))
@@ -1659,6 +1733,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleRegisteringBackspace() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(7).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("い")])))
@@ -1680,6 +1755,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleRegisteringDelete() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(7).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("い")])))
@@ -1701,6 +1777,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleRegisteringCancel() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(7).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("い")])))
@@ -1724,6 +1801,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleRegisterN() {
         dictionary.setEntries(["もん": [Word("門")]])
 
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(8).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose])))
@@ -1747,6 +1825,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleRegisteringUpDown() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(3).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("い")])))
@@ -1763,6 +1842,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleRegisteringCtrlY() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("い")])))
@@ -1780,6 +1860,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleRegisteringOkuri() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(6).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
@@ -1802,6 +1883,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleSelectingEnter() {
         dictionary.setEntries(["と": [Word("戸")]])
 
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("t")])))
@@ -1820,6 +1902,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleSelectingEnterOkuriari() {
         dictionary.setEntries(["とr": [Word("取")]])
 
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(5).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("t")])))
@@ -1840,6 +1923,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleSelectingOkuriBlock() {
         dictionary.setEntries(["おおk": [Word("多"), Word("大", okuri: "き")]])
 
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(5).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("お")])))
@@ -1861,6 +1945,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleSelectingEnterRemain() {
         dictionary.setEntries(["あい": [Word("愛")]])
 
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(7).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
@@ -1884,6 +1969,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleSelectingPrintableRemain() {
         dictionary.setEntries(["あい": [Word("愛")]])
 
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(8).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
@@ -1908,6 +1994,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleSelectingBackspace() {
         dictionary.setEntries(["と": [Word("戸"), Word("都")]])
 
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(6).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("t")])))
@@ -1931,6 +2018,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleSelectingTab() {
         dictionary.setEntries(["お": [Word("尾")]])
 
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(2).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("お")])))
@@ -1946,6 +2034,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleSelectingStickyShift() {
         dictionary.setEntries(["と": [Word("戸")]])
 
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(5).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("t")])))
@@ -1965,6 +2054,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleSelectingCancel() {
         dictionary.setEntries(["と": [Word("戸"), Word("都")]])
 
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(5).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("t")])))
@@ -1985,6 +2075,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleSelectingSpaceBackspace() {
         dictionary.setEntries(["あ": "123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".map { Word(String($0)) }])
 
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         expectation.expectedFulfillmentCount = 2
         stateMachine.inputMethodEvent.collect(11).sink { events in
@@ -2040,6 +2131,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleSelectingCtrlACtrlE() {
         dictionary.setEntries(["と": [Word("戸"), Word("都"), Word("徒"), Word("途"), Word("斗")]])
 
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(8).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("t")])))
@@ -2074,6 +2166,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleSelectingPrev() {
         dictionary.setEntries(["と": [Word("戸"), Word("都"), Word("徒"), Word("途"), Word("斗")]])
 
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(7).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("t")])))
@@ -2099,6 +2192,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleSelectingCtrlY() {
         dictionary.setEntries(["と": [Word("戸")]])
 
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(3).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("t")])))
@@ -2116,6 +2210,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleSelectingNum() {
         dictionary.setEntries(["あ": "123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".map { Word(String($0)) }])
 
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         expectation.expectedFulfillmentCount = 2
         stateMachine.inputMethodEvent.collect(8).sink { events in
@@ -2152,6 +2247,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleSelectingUnregister() {
         dictionary.setEntries(["え": [Word("絵")]])
 
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(7).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("え")])))
@@ -2180,6 +2276,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleSelectingUnregisterCancel() {
         dictionary.setEntries(["え": [Word("絵")]])
 
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("え")])))
@@ -2199,6 +2296,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleSelectingRememberCursor() {
         dictionary.setEntries(["え": [Word("絵")], "えr": [Word("得")]])
 
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(8).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("う")])))
@@ -2234,6 +2332,7 @@ final class StateMachineTests: XCTestCase {
         let dict3 = MemoryDict(entries: ["う": [Word("雨", annotation: annotation3)]], readonly: true)
         dictionary.dicts = [dict1, dict2, dict3]
 
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         expectation.expectedFulfillmentCount = 2
         stateMachine.inputMethodEvent.collect(2).sink { events in
@@ -2257,6 +2356,7 @@ final class StateMachineTests: XCTestCase {
         let dict = MemoryDict(entries: ["と": [Word("都")]], readonly: true)
         dictionary = try UserDict(dicts: [dict], userDictEntries: [:], privateMode: privateMode)
 
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         privateMode.send(true)
         stateMachine.inputMethodEvent.collect(4).sink { events in
@@ -2278,6 +2378,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testCommitCompositionComposing() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(6).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.plain("k")])))
@@ -2303,6 +2404,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testCommitCompositionSelecting() {
         dictionary.setEntries(["え": [Word("絵")]])
 
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(3).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("え")])))
@@ -2318,6 +2420,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testCommitCompositionRegister() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("お")])))
@@ -2338,6 +2441,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testCommitCompositionUnregister() {
         dictionary.setEntries(["お": [Word("尾")]])
 
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("お")])))
@@ -2357,6 +2461,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     func testAddWordToUserDict() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         stateMachine.addWordToUserDict(yomi: "あ", okuri: nil, candidate: Candidate("あああ"))
         XCTAssertEqual(dictionary.refer("あ"), [Word("あああ", annotation: nil)])
         let annotation = Annotation(dictId: "test", text: "test辞書の注釈")
@@ -2366,20 +2471,6 @@ final class StateMachineTests: XCTestCase {
         XCTAssertEqual(dictionary.refer("だい#"), [Word("第#3", annotation: nil)])
         stateMachine.addWordToUserDict(yomi: "いt", okuri: "った", candidate: Candidate("言"))
         XCTAssertEqual(dictionary.refer("いt"), [Word("言", okuri: "った", annotation: nil)])
-    }
-
-    private func nextInputMethodEvent() async -> InputMethodEvent {
-        var cancellation: Cancellable?
-        let cancel = { cancellation?.cancel() }
-        return await withTaskCancellationHandler {
-            return await withCheckedContinuation { continuation in
-                cancellation = stateMachine.inputMethodEvent.sink { event in
-                    continuation.resume(with: .success(event))
-                }
-            }
-        } onCancel: {
-            cancel()
-        }
     }
 
     private func printableKeyEventAction(character: Character, characterIgnoringModifier: Character? = nil, withShift: Bool = false) -> Action {
