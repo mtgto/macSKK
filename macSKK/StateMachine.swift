@@ -135,6 +135,11 @@ final class StateMachine {
             }
             return true
         case .tab:
+            if case .register(let registerState) = state.specialState {
+                state.inputMethod = .composing(registerState.prev.composing)
+                updateMarkedText()
+                return true
+            }
             return false
         case .stickyShift:
             switch state.inputMode {
