@@ -154,7 +154,7 @@ struct MemoryDict: DictProtocol {
     ///   - word: SKK辞書の変換候補。
     /// - Returns: エントリを削除できたかどうか
     mutating func delete(yomi: String, word: Word.Word) -> Bool {
-        if var words = entries[yomi] {
+        if let words = entries[yomi] {
             if yomi.isOkuriAri {
                 if let index = okuriAriYomis.firstIndex(of: yomi) {
                     okuriAriYomis.remove(at: index)

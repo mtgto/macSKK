@@ -609,7 +609,7 @@ final class StateMachine {
         if input == "q" {
             // "tq"のような"q"を使ったルールがある場合はそれを優先させる
             if let converted = useKanaRuleIfPresent(inputMode: state.inputMode, romaji: composing.romaji, input: "q") {
-                if let kakutei = converted.kakutei {
+                if converted.kakutei != nil {
                     return handleComposingPrintable(
                         input: " ",
                         converted: converted,
@@ -717,7 +717,6 @@ final class StateMachine {
                         // 変換候補がないときは辞書登録へ
                         // カーソル位置がnilじゃないときはその前までで変換を試みる
                         let subText: [String] = composing.subText()
-                        let yomiText = subText.joined() + (okuri?.first?.firstRomaji ?? moji.firstRomaji)
                         let newComposing = ComposingState(isShift: true,
                                                           text: composing.text,
                                                           okuri: (okuri ?? []) + [moji],
