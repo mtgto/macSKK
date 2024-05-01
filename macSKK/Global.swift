@@ -16,6 +16,10 @@ import Combine
     static let directModeBundleIdentifiers = CurrentValueSubject<[String], Never>([])
     // モード変更時に空白文字を一瞬追加するワークアラウンドを適用するBundle Identifierの集合
     static let insertBlankStringBundleIdentifiers = CurrentValueSubject<[String], Never>([])
+    /// 現在のローマ字かな変換ルール
+    static var kanaRule: Romaji!
+    /// デフォルトでもってるローマ字かな変換ルール
+    static var defaultKanaRule: Romaji!
     // 現在のモードを表示するパネル
     private let inputModePanel: InputModePanel
     // 変換候補を表示するパネル

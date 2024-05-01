@@ -8,14 +8,14 @@ import Cocoa
  *
  * 現状はローマ字かな変換ルールファイル (kana-rule.conf) のみを対象としています。
  */
-class SettingsWatcher: NSObject {
+final class SettingsWatcher: NSObject, Sendable {
     private let kanaRuleFileName: String
     private let settingsDirectoryURL: URL
     // MARK: NSFilePresenter
     let presentedItemURL: URL?
     let presentedItemOperationQueue: OperationQueue = OperationQueue()
 
-    init(kanaRuleFileName: String = "kana-rule.conf") throws {
+    @MainActor init(kanaRuleFileName: String = "kana-rule.conf") throws {
         self.kanaRuleFileName = kanaRuleFileName
         settingsDirectoryURL = try FileManager.default.url(
             for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false
@@ -37,10 +37,10 @@ class SettingsWatcher: NSObject {
         NSFileCoordinator.removeFilePresenter(self)
     }
 
-    func loadKanaRule(contentsOf url: URL) {
+    @MainActor func loadKanaRule(contentsOf url: URL) {
         do {
             if try url.isReadable() {
-                kanaRule = try Romaji(contentsOf: url)
+                Global.kanaRule = try Romaji(contentsOf: url)
                 logger.log("独自のローマ字かな変換ルールを適用しました")
             } else {
                 logger.log("ローマ字かなルールファイルとして不適合なファイルであるため読み込みできませんでした")
@@ -55,7 +55,9 @@ extension SettingsWatcher: NSFilePresenter {
     func presentedSubitemDidAppear(at url: URL) {
         if url.lastPathComponent == kanaRuleFileName {
             logger.log("ローマ字かな変換ルールファイルが作成されたため読み込みます")
-            loadKanaRule(contentsOf: url)
+            Task { @MainActor in
+                loadKanaRule(contentsOf: url)
+            }
         }
     }
 
@@ -65,7 +67,9 @@ extension SettingsWatcher: NSFilePresenter {
             // そのためこのメソッドで削除のとき同様の処理を行う。
             if !FileManager.default.fileExists(atPath: settingsDirectoryURL.appending(path: kanaRuleFileName).path) {
                 logger.log("ローマ字かな変換ルールファイルが存在しなくなったためデフォルトのルールに戻します")
-                kanaRule = defaultKanaRule
+                Task { @MainActor in
+                    Global.kanaRule = Global.defaultKanaRule
+                }
                 return
             }
 
@@ -74,7 +78,9 @@ extension SettingsWatcher: NSFilePresenter {
                 try FileManager.default.getRelationship(&relationship, ofDirectoryAt: settingsDirectoryURL, toItemAt: url)
                 if case .contains = relationship {
                     logger.log("ローマ字かな変換ルールファイルが変更されたため読み込みます")
-                    loadKanaRule(contentsOf: url)
+                    Task { @MainActor in
+                        loadKanaRule(contentsOf: url)
+                    }
                 }
             } catch {
                 logger.error("ローマ字かな変換ルールファイルが更新されましたが情報取得に失敗しました: \(error)")
