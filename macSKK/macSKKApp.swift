@@ -65,8 +65,6 @@ struct macSKKApp: App {
         }
         if isTest() {
             settingsWatcher = nil
-            let kanaRuleFileURL = Bundle.main.url(forResource: "kana-rule", withExtension: "conf")!
-            Global.kanaRule = try! Romaji(contentsOf: kanaRuleFileURL)
         } else {
             do {
                 settingsWatcher = try SettingsWatcher(kanaRuleFileName: "kana-rule.conf")

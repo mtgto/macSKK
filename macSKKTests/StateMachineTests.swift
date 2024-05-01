@@ -8,11 +8,19 @@ import XCTest
 
 final class StateMachineTests: XCTestCase {
     var cancellables: Set<AnyCancellable> = []
+    // アプリデフォルトのローマ字かな変換ルール
+    static var defaultKanaRule: Romaji {
+        let kanaRuleFileURL = Bundle.main.url(forResource: "kana-rule", withExtension: "conf")!
+        return try! Romaji(contentsOf: kanaRuleFileURL)
+    }
 
-    override func setUpWithError() throws {
+    @MainActor override func setUpWithError() throws {
         dictionary.setEntries([:])
         dictionary.skkservDict = nil
         cancellables = []
+        // テストごとにローマ字かな変換ルールをデフォルトに戻す
+        // こうしないとテストの中でGlobal.kanaRuleを書き換えるテストと一緒に走らせると違うかな変換ルールのままに実行されてしまう
+        Global.kanaRule = Self.defaultKanaRule
     }
 
     @MainActor func testHandleNormalSimple() {
@@ -58,19 +66,19 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-//    @MainActor func testHandleNormalRomajiKanaRuleQ() {
-//        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-//        Global.kanaRule = try! Romaji(source: "tq,たん")
-//        let expectation = XCTestExpectation()
-//        stateMachine.inputMethodEvent.collect(2).sink { events in
-//            XCTAssertEqual(events[0], .markedText(MarkedText([.plain("t")])))
-//            XCTAssertEqual(events[1], .fixedText("たん"))
-//            expectation.fulfill()
-//        }.store(in: &cancellables)
-//        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t")))
-//        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
-//        wait(for: [expectation], timeout: 1.0)
-//    }
+    @MainActor func testHandleNormalRomajiKanaRuleQ() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        Global.kanaRule = try! Romaji(source: "tq,たん")
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(2).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.plain("t")])))
+            XCTAssertEqual(events[1], .fixedText("たん"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
+        wait(for: [expectation], timeout: 1.0)
+    }
 
     @MainActor func testHandleNormalSpace() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
@@ -1185,49 +1193,49 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
     
-//    @MainActor func testHandleComposingSpaceAfterPrintable() {
-//        Global.kanaRule = try! Romaji(source: "z ,スペース")
-//        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-//        let expectation = XCTestExpectation()
-//        stateMachine.inputMethodEvent.collect(2).sink { events in
-//            XCTAssertEqual(events[0], .markedText(MarkedText([.plain("z")])))
-//            XCTAssertEqual(events[1], .fixedText("スペース"))
-//            expectation.fulfill()
-//        }.store(in: &cancellables)
-//        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "z", withShift: false)))
-//        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
-//        wait(for: [expectation], timeout: 1.0)
-//    }
+    @MainActor func testHandleComposingSpaceAfterPrintable() {
+        Global.kanaRule = try! Romaji(source: "z ,スペース")
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(2).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.plain("z")])))
+            XCTAssertEqual(events[1], .fixedText("スペース"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "z", withShift: false)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
+        wait(for: [expectation], timeout: 1.0)
+    }
     
-//    @MainActor func testHandleComposingStickyShiftAfterPrintable() {
-//        Global.kanaRule = try! Romaji(source: "a;,あせみころん")
-//        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-//        let expectation = XCTestExpectation()
-//        stateMachine.inputMethodEvent.collect(2).sink { events in
-//            XCTAssertEqual(events[0], .markedText(MarkedText([.plain("a")])))
-//            XCTAssertEqual(events[1], .fixedText("あせみころん"))
-//            expectation.fulfill()
-//        }.store(in: &cancellables)
-//        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: false)))
-//        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil, cursorPosition: .zero)))
-//        wait(for: [expectation], timeout: 1.0)
-//    }
+    @MainActor func testHandleComposingStickyShiftAfterPrintable() {
+        Global.kanaRule = try! Romaji(source: "a;,あせみころん")
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(2).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.plain("a")])))
+            XCTAssertEqual(events[1], .fixedText("あせみころん"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: false)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil, cursorPosition: .zero)))
+        wait(for: [expectation], timeout: 1.0)
+    }
 
-//    @MainActor func testHandleComposingQAfterPrintable() {
-//        Global.kanaRule = try! Romaji(source: "tq,たん")
-//        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-//        let expectation = XCTestExpectation()
-//        stateMachine.inputMethodEvent.collect(3).sink { events in
-//            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("t")])))
-//            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("たん")])))
-//            XCTAssertEqual(events[2], .fixedText("タン"))
-//            expectation.fulfill()
-//        }.store(in: &cancellables)
-//        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t", withShift: true)))
-//        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q", withShift: false)))
-//        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q", withShift: false)))
-//        wait(for: [expectation], timeout: 1.0)
-//    }
+    @MainActor func testHandleComposingQAfterPrintable() {
+        Global.kanaRule = try! Romaji(source: "tq,たん")
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(3).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("t")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("たん")])))
+            XCTAssertEqual(events[2], .fixedText("タン"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q", withShift: false)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q", withShift: false)))
+        wait(for: [expectation], timeout: 1.0)
+    }
 
     @MainActor func testHandleComposingPrintableAndL() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
