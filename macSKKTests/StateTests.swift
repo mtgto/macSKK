@@ -267,6 +267,25 @@ final class StateTests: XCTestCase {
             remain: nil
         )
         XCTAssertEqual(selectingState.okuri, "る")
+
+        selectingState = SelectingState(
+            prev: SelectingState.PrevState(
+                mode: .hiragana,
+                composing: ComposingState(
+                    isShift: true,
+                    text: ["あ"],
+                    okuri: [], // 送り仮名入力モードだけど送り仮名が入力されてない状態
+                    romaji: ""
+                )
+            ),
+            yomi: "あ",
+            candidates: [Candidate("有")],
+            candidateIndex: 0,
+            cursorPosition: .zero,
+            remain: nil
+        )
+        XCTAssertNil(selectingState.okuri)
+
     }
 
     func testRegisterStateAppendText() throws {
@@ -311,6 +330,15 @@ final class StateTests: XCTestCase {
         state = state.moveCursorFirst().dropForward()
         XCTAssertEqual(state.text, "い")
         XCTAssertEqual(state.cursor, 0)
+    }
+
+    func testRegisterStateEmptyOkuri() {
+        // StickyShiftなどで送り仮名の入力モードになっているけど送り仮名自体はまだ入力されてない状態
+        let prevComposingState = ComposingState(isShift: true, text: ["あ"], okuri: [], romaji: "")
+        let state = RegisterState(
+            prev: RegisterState.PrevState(mode: .hiragana, composing: prevComposingState),
+            yomi: "あ", text: "あいう", cursor: nil)
+        XCTAssertNil(state.okuri)
     }
 
     func testUnregisterState() throws {
