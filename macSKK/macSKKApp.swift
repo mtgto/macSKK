@@ -8,7 +8,6 @@ import UserNotifications
 import os
 
 nonisolated(unsafe) let logger: Logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "main")
-var dictionary: UserDict!
 // 直接入力モードを切り替えたいときに通知される通知の名前。
 let notificationNameToggleDirectMode = Notification.Name("toggleDirectMode")
 // 空文字挿入のワークアラウンドの有効無効を切り替えたいときに通知される通知の名前。
@@ -48,7 +47,7 @@ struct macSKKApp: App {
         // 環境設定の初期値をSettingsViewModelより先に行う
         Self.setupUserDefaults()
         do {
-            dictionary = try UserDict(dicts: [], privateMode: Global.privateMode)
+            Global.dictionary = try UserDict(dicts: [], privateMode: Global.privateMode)
             dictionariesDirectoryUrl = try FileManager.default.url(
                 for: .documentDirectory,
                 in: .userDomainMask,
@@ -119,7 +118,7 @@ struct macSKKApp: App {
                 }
                 Button("Save User Directory") {
                     do {
-                        try dictionary.save()
+                        try Global.dictionary.save()
                     } catch {
                         print(error)
                     }

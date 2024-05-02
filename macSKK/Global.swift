@@ -9,6 +9,8 @@ import Combine
  */
 @MainActor struct Global {
     static let shared = Global()
+    /// 利用可能な辞書の集合
+    static var dictionary: UserDict!
     static let privateMode = CurrentValueSubject<Bool, Never>(false)
     // 直接入力するアプリケーションのBundleIdentifierの集合のコピー。
     // マスターはSettingsViewModelがもっているが、InputControllerからAppが参照できないのでグローバル変数にコピーしている。

@@ -101,7 +101,7 @@ final class StateMachine {
                     if unregisterState.text == "yes" {
                         let word = unregisterState.prev.selecting.candidates[
                             unregisterState.prev.selecting.candidateIndex]
-                        _ = dictionary.delete(yomi: unregisterState.prev.selecting.yomi, word: word.word)
+                        _ = Global.dictionary.delete(yomi: unregisterState.prev.selecting.yomi, word: word.word)
                         state.inputMode = unregisterState.prev.mode
                         state.inputMethod = .normal
                         state.specialState = nil
@@ -716,7 +716,6 @@ final class StateMachine {
                         // 送り仮名が1文字以上確定した時点で変換を開始する
                         // 変換候補がないときは辞書登録へ
                         // カーソル位置がnilじゃないときはその前までで変換を試みる
-                        let subText: [String] = composing.subText()
                         let newComposing = ComposingState(isShift: true,
                                                           text: composing.text,
                                                           okuri: (okuri ?? []) + [moji],
@@ -1113,8 +1112,8 @@ final class StateMachine {
     }
 
     /// 見出し語で辞書を引く。同じ文字列である変換候補が複数の辞書にある場合は最初の1つにまとめる。
-    func candidates(for yomi: String, option: DictReferringOption? = nil) -> [Candidate] {
-        return dictionary.referDicts(yomi, option: option)
+    @MainActor func candidates(for yomi: String, option: DictReferringOption? = nil) -> [Candidate] {
+        return Global.dictionary.referDicts(yomi, option: option)
     }
 
     /**
@@ -1127,8 +1126,8 @@ final class StateMachine {
      *   - okuri: 送り仮名として確定したひらがな。"A Ru" のように入力した場合 "る" の部分。
      *   - candidate: 追加したい変換候補
      */
-    func addWordToUserDict(yomi: String, okuri: String?, candidate: Candidate, annotation: Annotation? = nil) {
-        dictionary.add(yomi: candidate.toMidashiString(yomi: yomi),
+    @MainActor func addWordToUserDict(yomi: String, okuri: String?, candidate: Candidate, annotation: Annotation? = nil) {
+        Global.dictionary.add(yomi: candidate.toMidashiString(yomi: yomi),
                        word: Word(candidate.candidateString, okuri: okuri, annotation: annotation))
     }
 
@@ -1144,7 +1143,7 @@ final class StateMachine {
     }
 
     /// StateMachine外で選択されている変換候補が二回選択されたときに通知される
-    func didDoubleSelectCandidate(_ candidate: Candidate) {
+    @MainActor func didDoubleSelectCandidate(_ candidate: Candidate) {
         if case .selecting(let selecting) = state.inputMethod {
             addWordToUserDict(yomi: selecting.yomi, okuri: selecting.okuri, candidate: candidate)
             updateCandidates(selecting: nil)

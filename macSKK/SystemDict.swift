@@ -4,7 +4,7 @@
 import Foundation
 
 /// Dictionary Serviceを使ってシステム辞書から検索する
-class SystemDict {
+@MainActor class SystemDict {
     private static let dictionary: DCSDictionary? = findSystemJapaneseDict()
 
     class func lookup(_ word: String) -> String? {

@@ -4,7 +4,7 @@
 import Foundation
 
 /// リリースされたバージョン番号。PackageDescription.Versionと同じようにセマンティックバージョニングを採用しています。
-struct ReleaseVersion: Comparable, CustomStringConvertible {
+struct ReleaseVersion: Comparable, CustomStringConvertible, Sendable {
     // 将来その下にベータとかアルファの情報を追加するかも
     let major: Int
     let minor: Int

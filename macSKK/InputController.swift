@@ -154,7 +154,7 @@ class InputController: IMKInputController {
         }.store(in: &cancellables)
         stateMachine.yomiEvent.sink { [weak self] yomi in
             if let self {
-                if let completion = dictionary.findCompletion(prefix: yomi) {
+                if let completion = Global.dictionary.findCompletion(prefix: yomi) {
                     self.stateMachine.completion = (yomi, completion)
                     Global.completionPanel.viewModel.completion = completion
                     // 下線分1ピクセル下に余白を設ける
@@ -299,7 +299,7 @@ class InputController: IMKInputController {
 
     @objc func saveDict() {
         do {
-            try dictionary.save()
+            try Global.dictionary.save()
         } catch {
             // TODO: NotificationCenterでユーザーに通知する
             logger.error("ユーザー辞書保存中にエラーが発生しました")
