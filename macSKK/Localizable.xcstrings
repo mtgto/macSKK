@@ -1,0 +1,1108 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "" : {
+
+    },
+    ": " : {
+
+    },
+    "%@:%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@:%2$@"
+          }
+        }
+      }
+    },
+    "%lld" : {
+
+    },
+    "%lld / %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld / %2$lld"
+          }
+        }
+      }
+    },
+    "1178" : {
+
+    },
+    "Add" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "追加"
+          }
+        }
+      }
+    },
+    "Add Word" : {
+
+    },
+    "Add…" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "追加…"
+          }
+        }
+      }
+    },
+    "Address" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アドレス"
+          }
+        }
+      }
+    },
+    "Annotation font size" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "注釈のフォントサイズ"
+          }
+        }
+      }
+    },
+    "AnnotationsPanel" : {
+
+    },
+    "Bundle Identifier" : {
+
+    },
+    "Cancel" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "キャンセル"
+          }
+        }
+      }
+    },
+    "Candidates font size" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "変換候補のフォントサイズ"
+          }
+        }
+      }
+    },
+    "Characters" : {
+
+    },
+    "CharactersIgnoringModifiers" : {
+
+    },
+    "Check For Update" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check For Update…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アップデートを確認…"
+          }
+        }
+      }
+    },
+    "Copy" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コピー"
+          }
+        }
+      }
+    },
+    "Current Version:" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Current Version"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "現在のバージョン:"
+          }
+        }
+      }
+    },
+    "Delete" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "削除"
+          }
+        }
+      }
+    },
+    "Dictionary Setting" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "辞書の設定"
+          }
+        }
+      }
+    },
+    "Disabled" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無効"
+          }
+        }
+      }
+    },
+    "Done" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "完了"
+          }
+        }
+      }
+    },
+    "Enabled" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "有効"
+          }
+        }
+      }
+    },
+    "Encoding" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "エンコーディング"
+          }
+        }
+      }
+    },
+    "Filename" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ファイル名"
+          }
+        }
+      }
+    },
+    "Hide AnnotataionsPanel" : {
+
+    },
+    "InputMode Panel" : {
+
+    },
+    "Insert Blank String" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "空文字挿入"
+          }
+        }
+      }
+    },
+    "Keyboard Layout" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keybaord Layout"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "キー配列"
+          }
+        }
+      }
+    },
+    "KeyCode" : {
+
+    },
+    "Latest Version: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(Latest Verssion: %@)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(最新バージョン: %@)"
+          }
+        }
+      }
+    },
+    "LoadingStatusDisabled" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disabled"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無効"
+          }
+        }
+      }
+    },
+    "LoadingStatusError %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Error: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "エラー: %@"
+          }
+        }
+      }
+    },
+    "LoadingStatusLoaded %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld entries"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld エントリ"
+          }
+        }
+      }
+    },
+    "LoadingStatusLoaded %lld WithError %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld entries (%lld lines of parsing error)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld エントリ (%lld行の読み込みエラー)"
+          }
+        }
+      }
+    },
+    "LoadingStatusLoading" : {
+      "comment" : "Loading…",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "読み込み中…"
+          }
+        }
+      }
+    },
+    "LoadingStatusUnknown" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unknown"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不明"
+          }
+        }
+      }
+    },
+    "MenuItemDirectInput" : {
+      "comment" : "\"%@\"では直接入力",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Direct input from \"%@\""
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "\"%@\"では直接入力"
+          }
+        }
+      }
+    },
+    "MenuItemInsertBlankString" : {
+      "comment" : "空文字挿入 (互換性)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Insert Blank String for Workaround"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "空文字挿入 (互換性)"
+          }
+        }
+      }
+    },
+    "MenuItemPreference" : {
+      "comment" : "Preferences…",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preferences…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定…"
+          }
+        }
+      }
+    },
+    "MenuItemPrivateMode" : {
+      "comment" : "Private mode",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Private mode"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "プライベートモード"
+          }
+        }
+      }
+    },
+    "MenuItemSaveDict" : {
+      "comment" : "Save User Dictionary",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save User Dictionary"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ユーザー辞書を今すぐ保存"
+          }
+        }
+      }
+    },
+    "Modifiers" : {
+
+    },
+    "Number of inline candidates" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "インラインで表示する変換候補の数"
+          }
+        }
+      }
+    },
+    "Open Release Page" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "リリースページを開く"
+          }
+        }
+      }
+    },
+    "Open Settings…" : {
+
+    },
+    "Response Encoding" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "応答エンコーディング"
+          }
+        }
+      }
+    },
+    "Save User Directory" : {
+
+    },
+    "SettingsFileDictionariesSubtitle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can reorder the priorities of dictionary by drag & drop"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "項目をドラッグすることで優先順位を入れ替え可能です。"
+          }
+        }
+      }
+    },
+    "SettingsFileDictionariesTitle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dictionary files"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ファイル辞書"
+          }
+        }
+      }
+    },
+    "SettingsHeaderWorkaroundApplication" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Workaround settings for the application"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリケーションの互換性の設定"
+          }
+        }
+      }
+    },
+    "SettingsNameDictionaries" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dictionaries"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "辞書"
+          }
+        }
+      }
+    },
+    "SettingsNameDirectMode" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Direct Mode"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "直接入力"
+          }
+        }
+      }
+    },
+    "SettingsNameGeneral" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "General"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一般"
+          }
+        }
+      }
+    },
+    "SettingsNameKeyEvent" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Key Event"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "キーイベント"
+          }
+        }
+      }
+    },
+    "SettingsNameLog" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Log"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ログ"
+          }
+        }
+      }
+    },
+    "SettingsNameSoftwareUpdate" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Software Update"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ソフトウェアアップデート"
+          }
+        }
+      }
+    },
+    "SettingsNameSystemDict" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "System Dict"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "システム辞書"
+          }
+        }
+      }
+    },
+    "SettingsNameUserDictTitle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "User Dictionary"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ユーザー辞書"
+          }
+        }
+      }
+    },
+    "SettingsNameWorkaround" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Workaround"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "互換性の設定"
+          }
+        }
+      }
+    },
+    "SettingsNoteDictionaries" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If you want to add a dictionary, place your dictionary file in the dictionary folder and activate it on this panel."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "辞書を追加したい場合は辞書フォルダに辞書ファイルを置き、この画面で有効化してください。"
+          }
+        }
+      }
+    },
+    "SettingsNoteDirectMode" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set Front-Most to target app and select \"Direct input from (AppName)\" in Input Menu."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "日本語変換を行いたくないアプリが最前面の状態で、入力メニューから \"(アプリ名)では直接入力\" を選択してください。"
+          }
+        }
+      }
+    },
+    "SettingsNoteWorkaround" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "you can enable/disable workaround settings from the Input Menu when the target app is in Front-Most."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定したいアプリが最前面の状態で、入力メニューからも互換性の設定の有効・無効を設定できます。"
+          }
+        }
+      }
+    },
+    "SettingsOpenDictionaryFolder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show Dictionaries in Finder"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "辞書フォルダをFinderで表示"
+          }
+        }
+      }
+    },
+    "Show Annotation" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show the annotation of the candidate in current"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "現在の変換候補の注釈を表示"
+          }
+        }
+      }
+    },
+    "Show CandidatesPanel" : {
+
+    },
+    "SKKServ" : {
+
+    },
+    "SKKServClientConnected" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Succeeded to connect to skkserv."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "skkservへの接続に成功しました"
+          }
+        }
+      }
+    },
+    "SKKServClientConnectionRefused" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to connect to skkserv."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "skkservに接続できませんでした"
+          }
+        }
+      }
+    },
+    "SKKServClientConnectionTimeout" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Timeout error to connect to skkserv."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "skkservへの接続がタイムアウトしました"
+          }
+        }
+      }
+    },
+    "SKKServClientTimeout" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Timeout error to skkserv."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "skkservへの通信がタイムアウトしました"
+          }
+        }
+      }
+    },
+    "SKKServClientUnknownError" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unknown error occurred while connecting to skkserv."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "skkservへの接続中に不明なエラーが発生しました"
+          }
+        }
+      }
+    },
+    "SKKServDictTesting" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Testing to connect to skkserv…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SKKServへの接続テスト中…"
+          }
+        }
+      }
+    },
+    "SKKServDictTitle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SKKServ Dictionary Setting"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SKKServ辞書の設定"
+          }
+        }
+      }
+    },
+    "System Dict" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "システム辞書"
+          }
+        }
+      }
+    },
+    "SystemAnnotation" : {
+
+    },
+    "Tab Completion" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tabで補完"
+          }
+        }
+      }
+    },
+    "TCP Port" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TCP Port No."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TCPポート番号"
+          }
+        }
+      }
+    },
+    "Test" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "テスト"
+          }
+        }
+      }
+    },
+    "UNNewVersionBody" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macSKK %@ is now available."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macSKKの新しいバージョン %@ がリリースされています。"
+          }
+        }
+      }
+    },
+    "UNNewVersionTitle" : {
+      "comment" : "新しいバージョンがあります",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A new version is available"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新しいバージョンがあります"
+          }
+        }
+      }
+    },
+    "Unregistered" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未登録です"
+          }
+        }
+      }
+    },
+    "UNUserDictReadErrorBody" : {
+      "comment" : "ユーザー辞書の読み込みに失敗しました",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to load the user dictionary"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ユーザー辞書の読み込みに失敗しました"
+          }
+        }
+      }
+    },
+    "UNUserDictReadErrorTitle" : {
+      "comment" : "エラー",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Error"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "エラー"
+          }
+        }
+      }
+    },
+    "UNUserDictReadFailureEntryBody" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to load %d entries of the user dictionary"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ユーザー辞書の読み込みで %dエントリの読み込みに失敗しました"
+          }
+        }
+      }
+    },
+    "UNUserDictReadFailureEntryTitle" : {
+      "comment" : "エラー",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Error"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "エラー"
+          }
+        }
+      }
+    },
+    "UNUserDictWriteErrorBody" : {
+      "comment" : "ユーザー辞書の永続化に失敗しました",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to save the user dictionary"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ユーザー辞書の永続化に失敗しました"
+          }
+        }
+      }
+    },
+    "UNUserDictWriteErrorTitle" : {
+      "comment" : "エラー",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Error"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "エラー"
+          }
+        }
+      }
+    },
+    "User Dictionary" : {
+      "comment" : "ユーザー辞書",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ユーザー辞書"
+          }
+        }
+      }
+    },
+    "User Notification" : {
+
+    },
+    "結果" : {
+
+    },
+    "見出し" : {
+
+    }
+  },
+  "version" : "1.0"
+}

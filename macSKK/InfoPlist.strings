@@ -1,6 +1,0 @@
-CFBundleName = "macSKK";
-net.mtgto.inputmethod.macSKK.ascii = "ABC (macSKK)";
-net.mtgto.inputmethod.macSKK.hiragana = "ひらがな (macSKK)";
-net.mtgto.inputmethod.macSKK.katakana = "カタカナ (macSKK)";
-net.mtgto.inputmethod.macSKK.hankaku = "半角カナ (macSKK)";
-net.mtgto.inputmethod.macSKK.eisu = "全角英数 (macSKK)";

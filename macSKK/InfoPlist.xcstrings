@@ -1,0 +1,85 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "CFBundleName" : {
+      "comment" : "Bundle name",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "macSKK"
+          }
+        }
+      }
+    },
+    "net.mtgto.inputmethod.macSKK.ascii" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ABC (macSKK)"
+          }
+        }
+      }
+    },
+    "net.mtgto.inputmethod.macSKK.eisu" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全角英数 (macSKK)"
+          }
+        }
+      }
+    },
+    "net.mtgto.inputmethod.macSKK.hankaku" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "半角カナ (macSKK)"
+          }
+        }
+      }
+    },
+    "net.mtgto.inputmethod.macSKK.hiragana" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ひらがな (macSKK)"
+          }
+        }
+      }
+    },
+    "net.mtgto.inputmethod.macSKK.katakana" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カタカナ (macSKK)"
+          }
+        }
+      }
+    },
+    "NSHumanReadableCopyright" : {
+      "comment" : "Copyright (human-readable)",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : ""
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

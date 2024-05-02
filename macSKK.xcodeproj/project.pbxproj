@@ -11,6 +11,8 @@
 		CE06CA2D2AAC172F00E80E5E /* empty.txt in Resources */ = {isa = PBXBuildFile; fileRef = CE06CA2C2AAC172F00E80E5E /* empty.txt */; };
 		CE06CA342AAC199500E80E5E /* UserDict+Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE06CA332AAC199500E80E5E /* UserDict+Utilities.swift */; };
 		CE11C7B52BDD461C00A35F3D /* Global.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE11C7B42BDD461C00A35F3D /* Global.swift */; };
+		CE11C7B72BE343A800A35F3D /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = CE11C7B62BE343A400A35F3D /* Localizable.xcstrings */; };
+		CE11C7B92BE343AB00A35F3D /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = CE11C7B82BE343A800A35F3D /* InfoPlist.xcstrings */; };
 		CE1B00552BA3DDEB00C830FD /* SKKServDict.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE1B00542BA3DDEB00C830FD /* SKKServDict.swift */; };
 		CE1B00622BA4286800C830FD /* Message+SKKServ.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE1B00612BA4286800C830FD /* Message+SKKServ.swift */; };
 		CE1B00642BA4287C00C830FD /* SKKServRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE1B00632BA4287C00C830FD /* SKKServRequest.swift */; };
@@ -43,7 +45,6 @@
 		CE5ECF362957034B00E7BE7D /* macSKKApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE5ECF352957034B00E7BE7D /* macSKKApp.swift */; };
 		CE5ECF3A2957034D00E7BE7D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CE5ECF392957034D00E7BE7D /* Assets.xcassets */; };
 		CE5ECF3D2957034D00E7BE7D /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CE5ECF3C2957034D00E7BE7D /* Preview Assets.xcassets */; };
-		CE5ECF642957077D00E7BE7D /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = CE5ECF632957077D00E7BE7D /* InfoPlist.strings */; };
 		CE6599DC2ADBF2630052F8C0 /* SettingsWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE6599DB2ADBF2630052F8C0 /* SettingsWindow.swift */; };
 		CE6BBCC02BCB6B57003BB47F /* Data+EucJis2004.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED987402BB953E7001B40F9 /* Data+EucJis2004.swift */; };
 		CE6BBCC12BCD6721003BB47F /* libiconv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = CE496C972B440CCA001C623C /* libiconv.tbd */; };
@@ -51,7 +52,6 @@
 		CE6DBA8F2A845E8B00F5A227 /* ReleaseVersion.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE6DBA8E2A845E8B00F5A227 /* ReleaseVersion.swift */; };
 		CE6DBA912A846C1700F5A227 /* ReleaseVersionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE6DBA902A846C1700F5A227 /* ReleaseVersionTests.swift */; };
 		CE6DBAB02A85AA1200F5A227 /* LatestReleaseFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE6DBAAF2A85AA1200F5A227 /* LatestReleaseFetcher.swift */; };
-		CE6DBAC42A85BF3E00F5A227 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = CE6DBAC62A85BF3E00F5A227 /* Localizable.strings */; };
 		CE6DBACD2A864A3B00F5A227 /* DictionariesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE6DBACC2A864A3B00F5A227 /* DictionariesView.swift */; };
 		CE6DBACF2A8663E600F5A227 /* SKK-JISYO.sample.utf-8 in Resources */ = {isa = PBXBuildFile; fileRef = CE6DBACE2A8663E600F5A227 /* SKK-JISYO.sample.utf-8 */; };
 		CE7F9AD92AADEBF9001B1877 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE7F9AD82AADEBF9001B1877 /* AppDelegate.swift */; };
@@ -156,6 +156,8 @@
 		CE06CA2C2AAC172F00E80E5E /* empty.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = empty.txt; sourceTree = "<group>"; };
 		CE06CA332AAC199500E80E5E /* UserDict+Utilities.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UserDict+Utilities.swift"; sourceTree = "<group>"; };
 		CE11C7B42BDD461C00A35F3D /* Global.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Global.swift; sourceTree = "<group>"; };
+		CE11C7B62BE343A400A35F3D /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		CE11C7B82BE343A800A35F3D /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
 		CE1B00542BA3DDEB00C830FD /* SKKServDict.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServDict.swift; sourceTree = "<group>"; };
 		CE1B00612BA4286800C830FD /* Message+SKKServ.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Message+SKKServ.swift"; sourceTree = "<group>"; };
 		CE1B00632BA4287C00C830FD /* SKKServRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServRequest.swift; sourceTree = "<group>"; };
@@ -190,14 +192,11 @@
 		CE5ECF3E2957034D00E7BE7D /* macSKK.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = macSKK.entitlements; sourceTree = "<group>"; };
 		CE5ECF432957034D00E7BE7D /* macSKKTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = macSKKTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		CE5ECF612957061A00E7BE7D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		CE5ECF632957077D00E7BE7D /* InfoPlist.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = InfoPlist.strings; sourceTree = "<group>"; };
 		CE6599DB2ADBF2630052F8C0 /* SettingsWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindow.swift; sourceTree = "<group>"; };
 		CE6DBA8C2A845CE400F5A227 /* Release.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Release.swift; sourceTree = "<group>"; };
 		CE6DBA8E2A845E8B00F5A227 /* ReleaseVersion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReleaseVersion.swift; sourceTree = "<group>"; };
 		CE6DBA902A846C1700F5A227 /* ReleaseVersionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReleaseVersionTests.swift; sourceTree = "<group>"; };
 		CE6DBAAF2A85AA1200F5A227 /* LatestReleaseFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LatestReleaseFetcher.swift; sourceTree = "<group>"; };
-		CE6DBAC52A85BF3E00F5A227 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
-		CE6DBAC72A85BF6B00F5A227 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Localizable.strings; sourceTree = "<group>"; };
 		CE6DBACC2A864A3B00F5A227 /* DictionariesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionariesView.swift; sourceTree = "<group>"; };
 		CE6DBACE2A8663E600F5A227 /* SKK-JISYO.sample.utf-8 */ = {isa = PBXFileReference; lastKnownFileType = text; path = "SKK-JISYO.sample.utf-8"; sourceTree = "<group>"; };
 		CE7F9AD82AADEBF9001B1877 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -387,8 +386,8 @@
 				CE5ECF392957034D00E7BE7D /* Assets.xcassets */,
 				CE5ECF612957061A00E7BE7D /* Info.plist */,
 				CE5ECF3E2957034D00E7BE7D /* macSKK.entitlements */,
-				CE5ECF632957077D00E7BE7D /* InfoPlist.strings */,
-				CE6DBAC62A85BF3E00F5A227 /* Localizable.strings */,
+				CE11C7B82BE343A800A35F3D /* InfoPlist.xcstrings */,
+				CE11C7B62BE343A400A35F3D /* Localizable.xcstrings */,
 				CEB0888B2A7F342000EFD1E3 /* Credits.rtf */,
 				CE3E44A62B52AFB400105798 /* kana-rule.conf */,
 				CE5ECF3B2957034D00E7BE7D /* Preview Content */,
@@ -638,9 +637,9 @@
 			files = (
 				CEB0888C2A7F342000EFD1E3 /* Credits.rtf in Resources */,
 				CE5ECF3D2957034D00E7BE7D /* Preview Assets.xcassets in Resources */,
+				CE11C7B72BE343A800A35F3D /* Localizable.xcstrings in Resources */,
+				CE11C7B92BE343AB00A35F3D /* InfoPlist.xcstrings in Resources */,
 				CE6DBACF2A8663E600F5A227 /* SKK-JISYO.sample.utf-8 in Resources */,
-				CE6DBAC42A85BF3E00F5A227 /* Localizable.strings in Resources */,
-				CE5ECF642957077D00E7BE7D /* InfoPlist.strings in Resources */,
 				CE3E44A72B52AFB400105798 /* kana-rule.conf in Resources */,
 				CE5ECF3A2957034D00E7BE7D /* Assets.xcassets in Resources */,
 			);
@@ -832,18 +831,6 @@
 		};
 /* End PBXTargetDependency section */
 
-/* Begin PBXVariantGroup section */
-		CE6DBAC62A85BF3E00F5A227 /* Localizable.strings */ = {
-			isa = PBXVariantGroup;
-			children = (
-				CE6DBAC52A85BF3E00F5A227 /* en */,
-				CE6DBAC72A85BF6B00F5A227 /* ja */,
-			);
-			name = Localizable.strings;
-			sourceTree = "<group>";
-		};
-/* End PBXVariantGroup section */
-
 /* Begin XCBuildConfiguration section */
 		CE5ECF552957034D00E7BE7D /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -896,6 +883,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.3;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -951,6 +939,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.3;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
