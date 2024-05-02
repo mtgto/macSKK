@@ -716,7 +716,6 @@ final class StateMachine {
                         // 送り仮名が1文字以上確定した時点で変換を開始する
                         // 変換候補がないときは辞書登録へ
                         // カーソル位置がnilじゃないときはその前までで変換を試みる
-                        let subText: [String] = composing.subText()
                         let newComposing = ComposingState(isShift: true,
                                                           text: composing.text,
                                                           okuri: (okuri ?? []) + [moji],
