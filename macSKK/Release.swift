@@ -3,7 +3,7 @@
 
 import Foundation
 
-struct Release {
+struct Release: Sendable {
     let version: ReleaseVersion
     let updated: Date
     let url: URL
