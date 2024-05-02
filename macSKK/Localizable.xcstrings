@@ -1,12 +1,6 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "" : {
-
-    },
-    ": " : {
-
-    },
     "%@:%@" : {
       "localizations" : {
         "en" : {
@@ -336,7 +330,6 @@
       }
     },
     "LoadingStatusLoading" : {
-      "comment" : "Loading…",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -369,7 +362,6 @@
       }
     },
     "MenuItemDirectInput" : {
-      "comment" : "\"%@\"では直接入力",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -386,7 +378,6 @@
       }
     },
     "MenuItemInsertBlankString" : {
-      "comment" : "空文字挿入 (互換性)",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -403,7 +394,6 @@
       }
     },
     "MenuItemPreference" : {
-      "comment" : "Preferences…",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -420,7 +410,6 @@
       }
     },
     "MenuItemPrivateMode" : {
-      "comment" : "Private mode",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -437,7 +426,6 @@
       }
     },
     "MenuItemSaveDict" : {
-      "comment" : "Save User Dictionary",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -956,7 +944,6 @@
       }
     },
     "UNNewVersionTitle" : {
-      "comment" : "新しいバージョンがあります",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -983,7 +970,6 @@
       }
     },
     "UNUserDictReadErrorBody" : {
-      "comment" : "ユーザー辞書の読み込みに失敗しました",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1000,7 +986,6 @@
       }
     },
     "UNUserDictReadErrorTitle" : {
-      "comment" : "エラー",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1033,7 +1018,6 @@
       }
     },
     "UNUserDictReadFailureEntryTitle" : {
-      "comment" : "エラー",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1050,7 +1034,6 @@
       }
     },
     "UNUserDictWriteErrorBody" : {
-      "comment" : "ユーザー辞書の永続化に失敗しました",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1067,7 +1050,6 @@
       }
     },
     "UNUserDictWriteErrorTitle" : {
-      "comment" : "エラー",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1084,7 +1066,6 @@
       }
     },
     "User Dictionary" : {
-      "comment" : "ユーザー辞書",
       "localizations" : {
         "ja" : {
           "stringUnit" : {
