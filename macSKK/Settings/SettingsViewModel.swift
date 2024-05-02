@@ -197,7 +197,7 @@ final class SettingsViewModel: ObservableObject {
         // SKK-JISYO.Lのようなファイルの読み込みが遅いのでバックグラウンドで処理
         $dictSettings.filter({ !$0.isEmpty }).receive(on: DispatchQueue.global()).sink { dictSettings in
             let enabledDicts = dictSettings.compactMap { dictSetting -> FileDict? in
-                let dict = dictionary.fileDict(id: dictSetting.id)
+                let dict = Global.dictionary.fileDict(id: dictSetting.id)
                 if dictSetting.enabled {
                     // 無効だった辞書が有効化された、もしくは辞書のエンコーディング設定が変わったら読み込む
                     if dictSetting.encoding != dict?.encoding {
@@ -222,7 +222,7 @@ final class SettingsViewModel: ObservableObject {
                     return nil
                 }
             }
-            dictionary.dicts = enabledDicts
+            Global.dictionary.dicts = enabledDicts
             UserDefaults.standard.set(self.dictSettings.map { $0.encode() }, forKey: UserDefaultsKeys.dictionaries)
         }
         .store(in: &cancellables)
@@ -231,10 +231,10 @@ final class SettingsViewModel: ObservableObject {
             if setting.enabled {
                 let destination = SKKServDestination(host: setting.address, port: setting.port, encoding: setting.encoding)
                 logger.log("skkserv辞書を設定します")
-                dictionary.skkservDict = SKKServDict(destination: destination)
+                Global.dictionary.skkservDict = SKKServDict(destination: destination)
             } else {
                 logger.log("skkserv辞書は無効化されています")
-                dictionary.skkservDict = nil
+                Global.dictionary.skkservDict = nil
             }
             UserDefaults.standard.set(setting.encode(), forKey: UserDefaultsKeys.skkservClient)
         }.store(in: &cancellables)
@@ -325,7 +325,7 @@ final class SettingsViewModel: ObservableObject {
 
         NotificationCenter.default.publisher(for: notificationNameDictLoad).receive(on: RunLoop.main).sink { [weak self] notification in
             if let loadEvent = notification.object as? DictLoadEvent, let self {
-                if let userDict = dictionary.userDict as? FileDict, userDict.id == loadEvent.id {
+                if let userDict = Global.dictionary.userDict as? FileDict, userDict.id == loadEvent.id {
                     self.userDictLoadingStatus = loadEvent.status
                     if case .fail(let error) = loadEvent.status {
                         UNNotifier.sendNotificationForUserDict(readError: error)
