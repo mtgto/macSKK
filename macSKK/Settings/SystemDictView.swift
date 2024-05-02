@@ -12,7 +12,7 @@ struct SystemDictView: View {
 
     var body: some View {
         Form {
-            Section(header: Text("見出し")) {
+            Section(header: Text("Entry")) {
                 TextField("", text: $word)
                     .onChange(of: word) { newValue in
                         if newValue.isEmpty {
@@ -20,11 +20,11 @@ struct SystemDictView: View {
                         } else if let found = SystemDict.lookup(newValue) {
                             displayText = found
                         } else {
-                            displayText = "見つかりませんでした"
+                            displayText = String(localized: "No Results Found")
                         }
                     }
             }
-            Section(header: Text("結果")) {
+            Section(header: Text("Result")) {
                 TextEditor(text: .constant(displayText))
             }
         }

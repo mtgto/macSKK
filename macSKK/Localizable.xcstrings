@@ -1,32 +1,6 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "%@:%@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@:%2$@"
-          }
-        }
-      }
-    },
-    "%lld" : {
-
-    },
-    "%lld / %lld" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$lld / %2$lld"
-          }
-        }
-      }
-    },
-    "1178" : {
-
-    },
     "Add" : {
       "localizations" : {
         "ja" : {
@@ -200,6 +174,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "エンコーディング"
+          }
+        }
+      }
+    },
+    "Entry" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "見出し"
           }
         }
       }
@@ -444,6 +429,17 @@
     "Modifiers" : {
 
     },
+    "No Results Found" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "見つかりませんでした"
+          }
+        }
+      }
+    },
     "Number of inline candidates" : {
       "localizations" : {
         "ja" : {
@@ -473,6 +469,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "応答エンコーディング"
+          }
+        }
+      }
+    },
+    "Result" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "結果"
           }
         }
       }
@@ -1076,12 +1083,6 @@
       }
     },
     "User Notification" : {
-
-    },
-    "結果" : {
-
-    },
-    "見出し" : {
 
     }
   },
