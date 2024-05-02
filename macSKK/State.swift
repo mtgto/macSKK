@@ -387,9 +387,9 @@ struct SelectingState: Equatable, MarkedTextProtocol {
         }
     }
 
-    /// 送り仮名
+    /// 送り仮名。ComposingStateのokuriは空配列の場合があるが、その場合はnilを返す
     var okuri: String? {
-        if let okuri = prev.composing.okuri {
+        if let okuri = prev.composing.okuri, !okuri.isEmpty {
             return okuri.map { $0.kana }.joined()
         } else {
             return nil
@@ -463,9 +463,9 @@ struct RegisterState: SpecialStateProtocol {
         }
     }
 
-    /// 送り仮名
+    /// 送り仮名。ComposingStateのokuriは空配列の場合があるが、その場合はnilを返す
     var okuri: String? {
-        if let okuri = prev.composing.okuri {
+        if let okuri = prev.composing.okuri, !okuri.isEmpty {
             return okuri.map { $0.kana }.joined()
         } else {
             return nil
@@ -659,7 +659,7 @@ struct IMEState {
                 let mode = registerState.prev.mode
                 let composing = registerState.prev.composing
                 var yomi = composing.subText().joined()
-                if let okuri = composing.okuri {
+                if let okuri = composing.okuri, !okuri.isEmpty {
                     yomi += "*" + okuri.map { $0.string(for: mode) }.joined()
                 }
                 elements.append(.plain("[登録：\(yomi)]"))

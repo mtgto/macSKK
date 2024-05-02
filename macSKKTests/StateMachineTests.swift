@@ -950,6 +950,27 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    // 送り仮名が空の状態で変換したとき
+    @MainActor func testHandleComposingEmptyOkuri() {
+        dictionary.setEntries(["え": [Word("絵")]])
+
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(4).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("え")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("え*")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerSelect, .emphasized("絵")])))
+            XCTAssertEqual(events[3], .fixedText("絵"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .enter, originalEvent: nil, cursorPosition: .zero)))
+        wait(for: [expectation], timeout: 1.0)
+        XCTAssertEqual(dictionary.refer("え"), [Word("絵", okuri: nil)], "送り仮名が空文字列で登録されない (エンバグ防止)")
+    }
+
     @MainActor func testHandleComposingOkuriariIncludeN() {
         dictionary.setEntries(["かんj": [Word("感")]])
 
@@ -1699,6 +1720,22 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil, cursorPosition: .zero)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "l")))
         XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil, cursorPosition: .zero)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    @MainActor func testHandleRegisteringEmptyOkuri() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(4).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("あ*")])))
+            XCTAssertEqual(events[2], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.plain("[登録：あ]")])), "送り仮名が未入力時は見出しに送り仮名を表示しない")
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .stickyShift, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyEvent: .space, originalEvent: nil, cursorPosition: .zero)))
         wait(for: [expectation], timeout: 1.0)
     }
 

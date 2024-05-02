@@ -821,7 +821,7 @@ final class StateMachine {
         } else if yomiText.hasPrefix(">") {
             yomiText = String(yomiText.dropFirst())
             candidateWords = candidates(for: yomiText, option: .suffix) + candidates(for: yomiText, option: nil)
-        } else if let okuri = composing.okuri {
+        } else if let okuri = composing.okuri, !okuri.isEmpty {
             candidateWords = candidates(for: yomiText, option: .okuri(okuri.map { $0.kana }.joined()))
         } else {
             candidateWords = candidates(for: yomiText, option: nil)
