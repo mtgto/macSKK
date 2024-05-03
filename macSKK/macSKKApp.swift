@@ -47,7 +47,6 @@ struct macSKKApp: App {
         // 環境設定の初期値をSettingsViewModelより先に行う
         Self.setupUserDefaults()
         do {
-            Global.dictionary = try UserDict(dicts: [], privateMode: Global.privateMode)
             dictionariesDirectoryUrl = try FileManager.default.url(
                 for: .documentDirectory,
                 in: .userDomainMask,
@@ -56,6 +55,9 @@ struct macSKKApp: App {
             ).appendingPathComponent("Dictionaries")
             let settingsViewModel = try SettingsViewModel(dictionariesDirectoryUrl: dictionariesDirectoryUrl)
             let settingsWindow = SettingsWindow(settingsViewModel: settingsViewModel)
+            
+            // SettingsViewModelの初期化が終わったあとにユーザー辞書を読み込まないと辞書のロード状態が設定されない
+            Global.dictionary = try UserDict(dicts: [], privateMode: Global.privateMode)
             settingsWindowController = NSWindowController(window: settingsWindow)
             self.settingsViewModel = settingsViewModel
             settingsWindowController.windowFrameAutosaveName = "Settings"
