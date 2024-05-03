@@ -11,6 +11,8 @@ import Combine
     static let shared = Global()
     /// 利用可能な辞書の集合
     static var dictionary: UserDict!
+    /// skkserv辞書
+    static var skkservDict: SKKServDict? = nil
     static let privateMode = CurrentValueSubject<Bool, Never>(false)
     // 直接入力するアプリケーションのBundleIdentifierの集合のコピー。
     // マスターはSettingsViewModelがもっているが、InputControllerからAppが参照できないのでグローバル変数にコピーしている。
