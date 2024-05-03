@@ -218,24 +218,24 @@ class InputController: IMKInputController {
     override func menu() -> NSMenu! {
         let preferenceMenu = NSMenu()
         preferenceMenu.addItem(
-            withTitle: NSLocalizedString("MenuItemPreference", comment: "Preferences…"),
+            withTitle: String(localized: "MenuItemPreference", comment: "Preferences…"),
             action: #selector(showSettings), keyEquivalent: "")
         preferenceMenu.addItem(
-            withTitle: NSLocalizedString("MenuItemSaveDict", comment: "Save User Dictionary"),
+            withTitle: String(localized: "MenuItemSaveDict", comment: "Save User Dictionary"),
             action: #selector(saveDict), keyEquivalent: "")
-        let privateModeItem = NSMenuItem(title: NSLocalizedString("MenuItemPrivateMode", comment: "Private mode"),
+        let privateModeItem = NSMenuItem(title: String(localized: "MenuItemPrivateMode", comment: "Private mode"),
                                          action: #selector(togglePrivateMode),
                                          keyEquivalent: "")
         privateModeItem.state = Global.privateMode.value ? .on : .off
         preferenceMenu.addItem(privateModeItem)
         if targetApp.bundleIdentifier != nil {
-            let directModeItem = NSMenuItem(title: String(format: NSLocalizedString("MenuItemDirectInput", comment: "\"%@\"では直接入力"), targetApp.localizedName ?? "?"),
+            let directModeItem = NSMenuItem(title: String(format: String(localized: "MenuItemDirectInput", comment: "\"%@\"では直接入力"), targetApp.localizedName ?? "?"),
                                             action: #selector(toggleDirectMode),
                                             keyEquivalent: "")
             directModeItem.state = directMode ? .on : .off
             preferenceMenu.addItem(directModeItem)
             // NOTE: IMKInputControllerのmenuではsubmenuを指定してもOSに無視されるみたい
-            let insertBlankStringMenuItem = NSMenuItem(title: NSLocalizedString("MenuItemInsertBlankString", comment: "空文字挿入 (互換性)"), action: #selector(toggleInsertBlankString), keyEquivalent: "")
+            let insertBlankStringMenuItem = NSMenuItem(title: String(localized: "MenuItemInsertBlankString", comment: "空文字挿入 (互換性)"), action: #selector(toggleInsertBlankString), keyEquivalent: "")
             insertBlankStringMenuItem.state = insertBlankString ? .on : .off
             preferenceMenu.addItem(insertBlankStringMenuItem)
         }
