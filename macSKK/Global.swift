@@ -24,6 +24,8 @@ import Combine
     static var kanaRule: Romaji!
     /// デフォルトでもってるローマ字かな変換ルール
     static var defaultKanaRule: Romaji!
+    /// 現在のキーバインディング
+    static var keyBinding: KeyBinding!
     // 現在のモードを表示するパネル
     private let inputModePanel: InputModePanel
     // 変換候補を表示するパネル

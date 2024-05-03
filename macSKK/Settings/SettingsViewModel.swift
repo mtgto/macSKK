@@ -162,6 +162,8 @@ final class SettingsViewModel: ObservableObject {
     @Published var workaroundApplications: [WorkaroundApplication]
     /// skkserv辞書設定
     @Published var skkservDictSetting: SKKServDictSetting
+    /// キーバインディング
+    @Published var keyBinging: [KeyBinding.Key: [KeyBinding.Value]]
     // 辞書ディレクトリ
     let dictionariesDirectoryUrl: URL
     private var cancellables = Set<AnyCancellable>()
@@ -187,12 +189,13 @@ final class SettingsViewModel: ObservableObject {
                 nil
             }
         } ?? []
-        // TODO: UserDefaultsから読み込む
         guard let skkservDictSettingDict = UserDefaults.standard.dictionary(forKey: UserDefaultsKeys.skkservClient),
         let skkservDictSetting = SKKServDictSetting(skkservDictSettingDict) else {
             fatalError("skkservClientの設定がありません")
         }
         self.skkservDictSetting = skkservDictSetting
+
+        self.keyBinging = [:]
 
         // SKK-JISYO.Lのようなファイルの読み込みが遅いのでバックグラウンドで処理
         $dictSettings.filter({ !$0.isEmpty }).receive(on: DispatchQueue.global()).sink { dictSettings in
@@ -355,6 +358,7 @@ final class SettingsViewModel: ObservableObject {
         candidatesFontSize = 13
         annotationFontSize = 13
         skkservDictSetting = SKKServDictSetting(enabled: true, address: "127.0.0.1", port: 1178, encoding: .japaneseEUC)
+        keyBinging = [:]
     }
 
     // DictionaryViewのPreviewProvider用
