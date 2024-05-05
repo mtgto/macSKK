@@ -163,7 +163,7 @@ final class SettingsViewModel: ObservableObject {
     /// skkserv辞書設定
     @Published var skkservDictSetting: SKKServDictSetting
     /// キーバインディング
-    @Published var keyBinging: [KeyBinding.Key: [KeyBinding.Value]]
+    @Published var keyBinging: [KeyBinding.Action: [KeyBinding.Input]]
     // 辞書ディレクトリ
     let dictionariesDirectoryUrl: URL
     private var cancellables = Set<AnyCancellable>()

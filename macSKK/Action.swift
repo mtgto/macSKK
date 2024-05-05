@@ -5,7 +5,7 @@ import Cocoa
 
 struct Action {
     let keyEvent: KeyEvent
-    let keyBind: KeyBinding.Key?
+    let keyBind: KeyBinding.Action?
     let originalEvent: NSEvent?
     /// 現在のカーソル位置。正常に取得できない場合はNSRect.zeroになっているかも?
     let cursorPosition: NSRect
