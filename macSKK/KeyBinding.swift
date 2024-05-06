@@ -8,54 +8,54 @@ import AppKit
  */
 struct KeyBinding {
     enum Action: CaseIterable, CodingKey {
-        // ひらがな入力に切り替える。デフォルトはCtrl-jキー
+        /// ひらがな入力に切り替える。デフォルトはCtrl-jキー
         case hiragana
-        // ひらがな・カタカナ入力に切り替える。デフォルトはqキー
+        /// ひらがな・カタカナ入力に切り替える。デフォルトはqキー
         case toggleKana
-        // 半角カナ入力に切り替える。デフォルトはCtrl-qキー
+        /// 半角カナ入力に切り替える。デフォルトはCtrl-qキー
         case hankakuKana
-        // 半角英数入力に切り替える。デフォルトはlキー
+        /// 半角英数入力に切り替える。デフォルトはlキー
         case direct
-        // 全角英数入力に切り替える。デフォルトはShift-lキー
+        /// 全角英数入力に切り替える。デフォルトはShift-lキー
         case zenkaku
-        // Abbrevに入るためのキー。デフォルトは/キー
+        /// Abbrevに入るためのキー。デフォルトは/キー
         case abbrev
-        // 未確定入力を始めるキー。Sticky Shiftとは違って未確定文字列があるときは確定させてから未確定入力を始める。
-        // デフォルトはShift-qキー
+        /// 未確定入力を始めるキー。Sticky Shiftとは違って未確定文字列があるときは確定させてから未確定入力を始める。
+        /// デフォルトはShift-qキー
         case japanese
-        // デフォルトは;キー
+        /// デフォルトは;キー
         case stickyShift
-        // デフォルトはEnterキー
+        /// デフォルトはEnterキー
         case enter
-        // デフォルトはSpaceキー
+        /// デフォルトはSpaceキー
         case space
-        // 補完候補の確定用。デフォルトはTabキー
+        /// 補完候補の確定用。デフォルトはTabキー
         case tab
-        // デフォルトはBackspaceキーとCtrl-hキー
+        /// デフォルトはBackspaceキーとCtrl-hキー
         case backspace
-        // デフォルトはDeleteキーとCtrl-dキー
+        /// デフォルトはDeleteキーとCtrl-dキー
         case delete
-        // 未確定入力や単語登録状態のキャンセル。デフォルトはESCとCtrl-gキー
+        /// 未確定入力や単語登録状態のキャンセル。デフォルトはESCとCtrl-gキー
         case cancel
-        // カーソルの左移動。デフォルトは左矢印キーとCtrl-bキー
+        /// カーソルの左移動。デフォルトは左矢印キーとCtrl-bキー
         case left
-        // カーソルの右移動。デフォルトは右矢印キーとCtrl-fキー
+        /// カーソルの右移動。デフォルトは右矢印キーとCtrl-fキー
         case right
-        // カーソルの下移動。デフォルトは下矢印キーとCtrl-nキー
+        /// カーソルの下移動。デフォルトは下矢印キーとCtrl-nキー
         case down
-        // カーソルの上移動。デフォルトは上矢印キーとCtrl-pキー
+        /// カーソルの上移動。デフォルトは上矢印キーとCtrl-pキー
         case up
-        // カーソルを行先頭に移動する。デフォルトはCtrl-aキー
+        /// カーソルを行先頭に移動する。デフォルトはCtrl-aキー
         case startOfLine
-        // カーソルを行終端に移動する。デフォルトはCtrl-eキー
+        /// カーソルを行終端に移動する。デフォルトはCtrl-eキー
         case endOfLine
-        // 単語登録時のみクリップボードからテキストをペーストする。デフォルトはCtrl-yキー
+        /// 単語登録時のみクリップボードからテキストをペーストする。デフォルトはCtrl-yキー
         case registerPaste
-        // 英数キー
-        // TODO: カスタマイズできなくする?
+        /// 英数キー
+        /// TODO: カスタマイズできなくする?
         case eisu
-        // かなキー
-        // TODO: カスタマイズできなくする?
+        /// かなキー
+        /// TODO: カスタマイズできなくする?
         case kana
     }
 
