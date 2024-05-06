@@ -16,7 +16,7 @@ final class StateMachineTests: XCTestCase {
 
     @MainActor override func setUpWithError() throws {
         Global.dictionary.setEntries([:])
-        Global.dictionary.skkservDict = nil
+        Global.skkservDict = nil
         cancellables = []
         // テストごとにローマ字かな変換ルールをデフォルトに戻す
         // こうしないとテストの中でGlobal.kanaRuleを書き換えるテストと一緒に走らせると違うかな変換ルールのままに実行されてしまう
