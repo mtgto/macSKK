@@ -65,6 +65,11 @@ struct Romaji: Equatable, Sendable {
         let input: String
         /// 確定した文字。
         let kakutei: Moji?
+        /// 直前の入力で無効になった文字。
+        /// 例として "dg" のように入力した場合 inputに"g"が残り、droppedには"d"が入る
+        /// 無効になった文字列がない場合はnil
+        /// "ng" のように入力した場合は「ん」が確定するため、droppedはnil。
+        let dropped: String?
     }
 
     static let n = Moji(firstRomaji: "n", kana: "ん")
@@ -242,24 +247,27 @@ struct Romaji: Equatable, Sendable {
     /**
      * ローマ字文字列を受け取り、かな確定文字と残りのローマ字文字列を返す.
      *
-     * - "ka" が入力されたら確定文字 "か" と残りのローマ字文字列 "" を返す
-     * - "k" が入力されたら確定文字はnil, 残りのローマ字文字列 "k" を返す
-     * - "kt" のように連続できない子音が連続したinputの場合は"k"を捨てて"t"をinput引数としたときのconvertの結果を返す
-     * - "kya" のように確定した文字が複数の場合がありえる
-     * - "aiueo" のように複数の確定が可能な場合は最初に確定できた文字だけを確定文字として返し、残りは(確定可能だが)inputとして返す
-     * - ",", "." は"、", "。"にする (将来設定で切り変えられるようにするかも)
-     * - "1" のように非ローマ字文字列を受け取った場合は未定義とする (呼び出し側で処理する予定だけどここで処理するかも)
+     * - Parameters:
+     *  - input: ローマ字文字列
+     *     - "ka" が入力されたら確定文字 "か" と残りのローマ字文字列 "" を返す
+     *     - "k" が入力されたら確定文字はnil, 残りのローマ字文字列 "k" を返す
+     *     - "kt" のように連続できない子音が連続したinputの場合は"k"を捨てて"t"をinput引数としたときのconvertの結果を返す
+     *     - "kya" のように確定した文字が複数の場合がありえる
+     *     - "aiueo" のように複数の確定が可能な場合は最初に確定できた文字だけを確定文字として返し、残りは(確定可能だが)inputとして返す
+     *     - ",", "." は"、", "。"にする (ローマ字かな変換ルールで設定可能)
+     *     - "1" のように非ローマ字文字列を受け取った場合は未定義とする (呼び出し側で処理する予定だけどここで処理するかも)
+     *  - dropped: 捨てられたローマ字。再帰のときのみ使用する。
      */
-    func convert(_ input: String) -> ConvertedMoji {
+    func convert(_ input: String, dropped: String? = nil) -> ConvertedMoji {
         if let moji = table[input] {
-            return ConvertedMoji(input: moji.remain ?? "", kakutei: moji)
+            return ConvertedMoji(input: moji.remain ?? "", kakutei: moji, dropped: dropped)
         } else if undecidedInputs.contains(input) {
-            return ConvertedMoji(input: input, kakutei: nil)
+            return ConvertedMoji(input: input, kakutei: nil, dropped: dropped)
         } else if input.hasPrefix("n") && input.count == 2 {
-            return ConvertedMoji(input: String(input.dropFirst()), kakutei: Romaji.n)
+            return ConvertedMoji(input: String(input.dropFirst()), kakutei: Romaji.n, dropped: dropped)
         } else if input.count > 1, let c = input.last {
-            return convert(String(c))
+            return convert(String(c), dropped: String(input.dropLast()))
         }
-        return ConvertedMoji(input: input, kakutei: nil)
+        return ConvertedMoji(input: input, kakutei: nil, dropped: dropped)
     }
 }
