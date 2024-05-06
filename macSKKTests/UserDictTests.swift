@@ -15,7 +15,7 @@ final class UserDictTests: XCTestCase {
         XCTAssertEqual(userDict.refer("い").map { $0.word }, ["井", "伊", "胃", "意"])
     }
 
-    func testReferMergeAnnotation() throws {
+    @MainActor func testReferMergeAnnotation() throws {
         let privateMode = CurrentValueSubject<Bool, Never>(false)
         let dict1 = MemoryDict(entries: ["い": [Word("胃", annotation: Annotation(dictId: "dict1", text: "d1ann")), Word("伊")]], readonly: true)
         let dict2 = MemoryDict(entries: ["い": [Word("胃", annotation: Annotation(dictId: "dict2", text: "d2ann")), Word("意")]], readonly: true)
