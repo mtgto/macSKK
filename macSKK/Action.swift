@@ -4,56 +4,10 @@
 import Cocoa
 
 struct Action {
-    let keyEvent: KeyEvent
     let keyBind: KeyBinding.Action?
     let originalEvent: NSEvent?
     /// 現在のカーソル位置。正常に取得できない場合はNSRect.zeroになっているかも?
     let cursorPosition: NSRect
-
-    enum KeyEvent: Equatable {
-        case enter
-        case backspace
-        case delete
-        case space
-        case tab
-        case stickyShift
-        /**
-         * 印字可能な文字の入力 (space以外).
-         * 値はNSEvent.charactersIgnoringModifiersベースで、シフトが押されているときは小文字になる。Shift-1なら "1" になる
-         * - TODO: NSEvent.keyCodeからキーボードフォーマットを使って生の文字列を取る
-         */
-        case printable(String)
-        /**
-         * Ctrl-J
-         */
-        case ctrlJ
-        /**
-         * Ctrl-G
-         */
-        case cancel
-        /**
-         * 半角カナ
-         */
-        case ctrlQ
-        /// 左矢印キー or Ctrl-B
-        case left
-        /// 右矢印キー or Ctrl-F
-        case right
-        /// 上矢印キー or Ctrl-P
-        case up
-        /// 下矢印キー or Ctrl-N
-        case down
-        /// Ctrl-A
-        case ctrlA
-        /// Ctrl-E
-        case ctrlE
-        /// Ctrl-Y. 登録モードでのみクリップボードからのペースト用
-        case ctrlY
-        /// 英数キー
-        case eisu
-        /// かなキー
-        case kana
-    }
 
     func shiftIsPressed() -> Bool {
         guard let event = originalEvent else {
