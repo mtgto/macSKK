@@ -891,7 +891,7 @@ final class StateMachine {
             }
         }
 
-        switch action.keyEvent {
+        switch action.keyBind {
         case .enter:
             // 選択中の変換候補で確定
             fixCurrentSelect()
@@ -910,7 +910,7 @@ final class StateMachine {
             return handleSelectingPrevious(diff: -1, selecting: selecting)
         case .space, .down:
             let diff: Int
-            if selecting.candidateIndex >= inlineCandidateCount && action.keyEvent == .space {
+            if selecting.candidateIndex >= inlineCandidateCount && action.keyBind == .space {
                 // 次ページの先頭
                 diff = displayCandidateCount - (selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount
             } else {
@@ -941,10 +941,50 @@ final class StateMachine {
             return true
         case .tab:
             return true
-        case .stickyShift, .ctrlJ, .ctrlQ:
+        case .stickyShift, .hiragana, .hankakuKana:
             fixCurrentSelect()
             return handle(action)
-        case .printable(let input):
+        case .cancel:
+            state.inputMethod = .composing(selecting.prev.composing)
+            state.inputMode = selecting.prev.mode
+            updateCandidates(selecting: nil)
+            updateMarkedText()
+            return true
+        case .left, .right:
+            // AquaSKKと同様に何もしない (IMKCandidates表示時はそちらの移動に使われる)
+            return true
+        case .startOfLine:
+            // 現ページの先頭
+            let diff = -(selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount
+            if diff < 0 {
+                let newSelectingState = selecting.addCandidateIndex(diff: diff)
+                state.inputMethod = .selecting(newSelectingState)
+                updateCandidates(selecting: newSelectingState)
+                updateMarkedText()
+            }
+            return true
+        case .endOfLine:
+            // 現ページの末尾
+            let diff = min(
+                displayCandidateCount - (selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount,
+                selecting.candidates.count - selecting.candidateIndex - 1
+            )
+            if diff > 0 {
+                let newSelectingState = selecting.addCandidateIndex(diff: diff)
+                state.inputMethod = .selecting(newSelectingState)
+                updateCandidates(selecting: newSelectingState)
+                updateMarkedText()
+            }
+            return true
+        case .registerPaste, .delete, .eisu, .kana:
+            return true
+        case .toggleKana, .direct, .zenkaku, .abbrev, .japanese:
+            break
+        case nil:
+            break
+        }
+
+        if let input = action.originalEvent?.charactersIgnoringModifiers {
             if input == "x" {
                 if action.shiftIsPressed() {
                     state.specialState = .unregister(
@@ -980,44 +1020,10 @@ final class StateMachine {
                     }
                 }
             }
-            // 選択中候補で確定し、未処理のアクションを処理する
-            fixCurrentSelect()
-            return handle(action)
-        case .cancel:
-            state.inputMethod = .composing(selecting.prev.composing)
-            state.inputMode = selecting.prev.mode
-            updateCandidates(selecting: nil)
-            updateMarkedText()
-            return true
-        case .left, .right:
-            // AquaSKKと同様に何もしない (IMKCandidates表示時はそちらの移動に使われる)
-            return true
-        case .ctrlA:
-            // 現ページの先頭
-            let diff = -(selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount
-            if diff < 0 {
-                let newSelectingState = selecting.addCandidateIndex(diff: diff)
-                state.inputMethod = .selecting(newSelectingState)
-                updateCandidates(selecting: newSelectingState)
-                updateMarkedText()
-            }
-            return true
-        case .ctrlE:
-            // 現ページの末尾
-            let diff = min(
-                displayCandidateCount - (selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount,
-                selecting.candidates.count - selecting.candidateIndex - 1
-            )
-            if diff > 0 {
-                let newSelectingState = selecting.addCandidateIndex(diff: diff)
-                state.inputMethod = .selecting(newSelectingState)
-                updateCandidates(selecting: newSelectingState)
-                updateMarkedText()
-            }
-            return true
-        case .ctrlY, .delete, .eisu, .kana:
-            return true
         }
+        // ここまでのどれにも該当しない入力のときは、選択中候補で確定して未処理のアクションとして処理する
+        fixCurrentSelect()
+        return handle(action)
     }
 
     @MainActor private func handleSelectingPrevious(diff: Int, selecting: SelectingState) -> Bool {
