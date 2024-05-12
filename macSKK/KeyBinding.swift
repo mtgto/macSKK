@@ -72,7 +72,7 @@ struct KeyBinding: Identifiable {
         init(event: NSEvent) {
             keyCode = event.keyCode
             // 使用する可能性があるものだけを抽出する。じゃないとrawValueで256が入ってしまうっぽい?
-            modifierFlags = event.modifierFlags.intersection([.shift, .control, .function, .option])
+            modifierFlags = event.modifierFlags.intersection([.shift, .control, .function, .option, .command])
             displayString = (event.charactersIgnoringModifiers ?? event.characters) ?? ""
         }
 
@@ -151,10 +151,10 @@ struct KeyBinding: Identifiable {
                 return KeyBinding(action, [Input(keyCode: 0x30, displayString: "Tab", modifierFlags: [])])
             case .backspace:
                 return KeyBinding(action, [Input(keyCode: 0x33, displayString: "Backspace", modifierFlags: []),
-                                           Input(keyCode: 0x02, displayString: "H", modifierFlags: .control)])
+                                           Input(keyCode: 0x04, displayString: "H", modifierFlags: .control)])
             case .delete:
                 return KeyBinding(action, [Input(keyCode: 0x75, displayString: "Delete", modifierFlags: []),
-                                           Input(keyCode: 0x04, displayString: "D", modifierFlags: .control)])
+                                           Input(keyCode: 0x02, displayString: "D", modifierFlags: .control)])
             case .cancel:
                 return KeyBinding(action, [Input(keyCode: 0x35, displayString: "ESC", modifierFlags: []),
                                            Input(keyCode: 0x05, displayString: "G", modifierFlags: .control)])
@@ -169,11 +169,11 @@ struct KeyBinding: Identifiable {
                                            Input(keyCode: 0x2d, displayString: "N", modifierFlags: .control)])
             case .up:
                 return KeyBinding(action, [Input(keyCode: 0x7e, displayString: "↑", modifierFlags: .function),
-                                           Input(keyCode: 0x33, displayString: "P", modifierFlags: .control)])
+                                           Input(keyCode: 0x23, displayString: "P", modifierFlags: .control)])
             case .startOfLine:
                 return KeyBinding(action, [Input(keyCode: 0x00, displayString: "A", modifierFlags: .control)])
             case .endOfLine:
-                return KeyBinding(action, [Input(keyCode: 0x0d, displayString: "E", modifierFlags: .control)])
+                return KeyBinding(action, [Input(keyCode: 0x0e, displayString: "E", modifierFlags: .control)])
             case .registerPaste:
                 return KeyBinding(action, [Input(keyCode: 0x10, displayString: "Y", modifierFlags: .control)])
             case .eisu:
