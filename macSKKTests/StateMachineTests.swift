@@ -209,6 +209,14 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    @MainActor func testHandleNormalUnregisteredKeyEventWithModifiers() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        // キーバインドとして登録されてないC-kはhandleはfalseを返す
+        XCTAssertFalse(stateMachine.handle(Action(keyBind: nil, originalEvent: generateNSEvent(character: "k", characterIgnoringModifiers: "k", modifierFlags: .control), cursorPosition: .zero)))
+        // Cmd-cもhandleせずfalseを返す
+        XCTAssertFalse(stateMachine.handle(Action(keyBind: nil, originalEvent: generateNSEvent(character: "c", characterIgnoringModifiers: "c", modifierFlags: .command), cursorPosition: .zero)))
+    }
+
     @MainActor func testHandleNormalNoAlphabetEisu() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .eisu))
         let expectation = XCTestExpectation()
@@ -1689,6 +1697,15 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
         XCTAssertTrue(stateMachine.handle(registerPasteAction))
         wait(for: [expectation], timeout: 1.0)
+    }
+
+    @MainActor func testHandleComposingUnregisteredKeyEventWithModifiers() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        // キーバインドとして登録されてないC-kはhandleはfalseを返す
+        XCTAssertFalse(stateMachine.handle(Action(keyBind: nil, originalEvent: generateNSEvent(character: "k", characterIgnoringModifiers: "k", modifierFlags: .control), cursorPosition: .zero)))
+        // Cmd-cもhandleせずfalseを返す
+        XCTAssertFalse(stateMachine.handle(Action(keyBind: nil, originalEvent: generateNSEvent(character: "c", characterIgnoringModifiers: "c", modifierFlags: .command), cursorPosition: .zero)))
     }
 
     @MainActor func testHandleRegisteringEnter() {

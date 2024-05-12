@@ -301,7 +301,7 @@ final class StateMachine {
             break
         }
 
-        if let originalEvent = action.originalEvent, let input = originalEvent.charactersIgnoringModifiers {
+        if let event = action.originalEvent, let input = event.charactersIgnoringModifiers, !event.modifierFlags.contains(.control) && !event.modifierFlags.contains(.command) {
             return handleNormalPrintable(input: input, action: action, specialState: specialState)
         } else {
             return false
@@ -369,14 +369,14 @@ final class StateMachine {
         let text = composing.text
         let okuri = composing.okuri
         let romaji = composing.romaji
-        let originalEvent = action.originalEvent
-        let input = action.originalEvent?.charactersIgnoringModifiers
+        let event = action.originalEvent
+        let input = event?.charactersIgnoringModifiers
         let converted: Romaji.ConvertedMoji?
 
         // ローマ字かな変換ルールで変換できる場合、そちらを優先する ("z " で全角スペース、"zl" で右矢印など)
         // Controlが押されているときは変換しない (s + Ctrl-a だと "さ" にはせずCtrl-aを優先する)
         // Optionが押されていても無視するようにしている (そちらのほうがうれしい人が多いかな程度の消極的理由)
-        if let input, let originalEvent, !originalEvent.modifierFlags.contains(.control) {
+        if let input, let event, !event.modifierFlags.contains(.control) {
             if !input.isAlphabet, let characters = action.characters() {
                 converted = useKanaRuleIfPresent(inputMode: state.inputMode, romaji: romaji, input: characters)
             } else {
@@ -692,7 +692,7 @@ final class StateMachine {
             break
         }
 
-        if let input {
+        if let input, let event, !event.modifierFlags.contains(.control) && !event.modifierFlags.contains(.command) {
             let converted: Romaji.ConvertedMoji
             if !input.isAlphabet, let characters = action.characters() {
                 converted = Global.kanaRule.convert(romaji + characters)
