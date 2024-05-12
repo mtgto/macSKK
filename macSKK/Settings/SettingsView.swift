@@ -7,8 +7,8 @@ struct SettingsView: View {
     // rawValueはLocalizable.stringsのキー名
     enum Section: String, CaseIterable {
         case general = "SettingsNameGeneral"
-        case keyBinding = "SettingsNameKeyBinding"
         case dictionaries = "SettingsNameDictionaries"
+        case keyBinding = "SettingsNameKeyBinding"
         case softwareUpdate = "SettingsNameSoftwareUpdate"
         case directMode = "SettingsNameDirectMode"
         case workaround = "SettingsNameWorkaround"
@@ -32,10 +32,10 @@ struct SettingsView: View {
                     switch section {
                     case .general:
                         Label(section.localizedStringKey, systemImage: "gear")
-                    case .keyBinding:
-                        Label(section.localizedStringKey, systemImage: "keyboard")
                     case .dictionaries:
                         Label(section.localizedStringKey, systemImage: "books.vertical")
+                    case .keyBinding:
+                        Label(section.localizedStringKey, systemImage: "keyboard")
                     case .softwareUpdate:
                         Label(section.localizedStringKey, systemImage: "gear.badge")
                     case .directMode:
@@ -62,11 +62,11 @@ struct SettingsView: View {
             case .general:
                 GeneralView(settingsViewModel: settingsViewModel)
                     .navigationTitle(selectedSection.localizedStringKey)
-            case .keyBinding:
-                KeyBindingView(settingsViewModel: settingsViewModel)
-                    .navigationTitle(selectedSection.localizedStringKey)
             case .dictionaries:
                 DictionariesView(settingsViewModel: settingsViewModel)
+                    .navigationTitle(selectedSection.localizedStringKey)
+            case .keyBinding:
+                KeyBindingView(settingsViewModel: settingsViewModel)
                     .navigationTitle(selectedSection.localizedStringKey)
             case .softwareUpdate:
                 SoftwareUpdateView(settingsViewModel: settingsViewModel)

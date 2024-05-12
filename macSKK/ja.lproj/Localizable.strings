@@ -4,8 +4,8 @@
 "MenuItemDirectInput" = "\"%@\"では直接入力";
 "MenuItemInsertBlankString" = "空文字挿入 (互換性)";
 "SettingsNameGeneral" = "一般";
-"SettingsNameKeyBinding" = "キーバインド";
 "SettingsNameDictionaries" = "辞書";
+"SettingsNameKeyBinding" = "キーバインド";
 "SettingsNameSoftwareUpdate" = "ソフトウェアアップデート";
 "SettingsNameDirectMode" = "直接入力";
 "SettingsNameWorkaround" = "互換性の設定";
