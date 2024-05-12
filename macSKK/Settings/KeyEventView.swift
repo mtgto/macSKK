@@ -12,6 +12,7 @@ struct KeyEventView: View {
     @State private var charactersIgnoringModifiers: String = ""
     @State private var keyCode: String = ""
     @State private var modifiers: String = ""
+    @State private var keyBinding: KeyBinding.Action? = nil
 
     var body: some View {
         VStack(alignment: .leading) {
@@ -47,6 +48,7 @@ struct KeyEventView: View {
                             modifiers.append("Fn")
                         }
                         self.modifiers = modifiers.joined(separator: ", ")
+                        self.keyBinding = Global.keyBinding.action(event: event)
 
                         return event
                     }
@@ -55,6 +57,9 @@ struct KeyEventView: View {
                     NSEvent.removeMonitor(eventMonitor!)
                 }
             Form {
+                Section {
+                    TextField("KeyBinding", text: .constant(keyBinding?.stringValue ?? ""))
+                }
                 Section {
                     TextField("KeyCode", text: .constant(keyCode))
                 }
