@@ -4,11 +4,16 @@
 import SwiftUI
 
 struct KeyBindingView: View {
+    @StateObject var settingsViewModel: SettingsViewModel
+
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        Table(settingsViewModel.keyBingings) {
+            TableColumn("Action", value: \.localizedAction)
+            TableColumn("Key", value: \.localizedInputs)
+        }
     }
 }
 
 #Preview {
-    KeyBindingView()
+    KeyBindingView(settingsViewModel: try! SettingsViewModel(keyBindings: KeyBinding.defaultKeyBindingSettings))
 }

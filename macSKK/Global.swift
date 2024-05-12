@@ -25,7 +25,7 @@ import Combine
     /// デフォルトでもってるローマ字かな変換ルール
     static var defaultKanaRule: Romaji!
     /// 現在のキーバインディング
-    static var keyBinding: KeyBinding = KeyBinding.defaultKeyBinding
+    static var keyBinding: KeyBindingSet = KeyBindingSet.defaultKeyBindingSet
     // 現在のモードを表示するパネル
     private let inputModePanel: InputModePanel
     // 変換候補を表示するパネル

@@ -163,7 +163,7 @@ final class SettingsViewModel: ObservableObject {
     /// skkserv辞書設定
     @Published var skkservDictSetting: SKKServDictSetting
     /// キーバインディング
-    @Published var keyBinging: [KeyBinding.Action: [KeyBinding.Input]]
+    @Published var keyBingings: [KeyBinding]
     // 辞書ディレクトリ
     let dictionariesDirectoryUrl: URL
     private var cancellables = Set<AnyCancellable>()
@@ -195,7 +195,8 @@ final class SettingsViewModel: ObservableObject {
         }
         self.skkservDictSetting = skkservDictSetting
 
-        self.keyBinging = [:]
+        // TODO: 設定化。いまはとりあえず固定でデフォルト設定を表示
+        self.keyBingings = KeyBinding.defaultKeyBindingSettings
 
         // SKK-JISYO.Lのようなファイルの読み込みが遅いのでバックグラウンドで処理
         $dictSettings.filter({ !$0.isEmpty }).receive(on: DispatchQueue.global()).sink { dictSettings in
@@ -358,7 +359,7 @@ final class SettingsViewModel: ObservableObject {
         candidatesFontSize = 13
         annotationFontSize = 13
         skkservDictSetting = SKKServDictSetting(enabled: true, address: "127.0.0.1", port: 1178, encoding: .japaneseEUC)
-        keyBinging = [:]
+        keyBingings = []
     }
 
     // DictionaryViewのPreviewProvider用
@@ -389,6 +390,12 @@ final class SettingsViewModel: ObservableObject {
     internal convenience init(skkservDictSetting: SKKServDictSetting) throws {
         try self.init()
         self.skkservDictSetting = skkservDictSetting
+    }
+
+    // KeyBindingViewのPreviewProvider用
+    internal convenience init(keyBindings: [KeyBinding]) throws {
+        try self.init()
+        self.keyBingings = keyBindings
     }
 
     /**

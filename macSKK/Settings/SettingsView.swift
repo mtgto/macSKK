@@ -7,6 +7,7 @@ struct SettingsView: View {
     // rawValueはLocalizable.stringsのキー名
     enum Section: String, CaseIterable {
         case general = "SettingsNameGeneral"
+        case keyBinding = "SettingsNameKeyBinding"
         case dictionaries = "SettingsNameDictionaries"
         case softwareUpdate = "SettingsNameSoftwareUpdate"
         case directMode = "SettingsNameDirectMode"
@@ -31,6 +32,8 @@ struct SettingsView: View {
                     switch section {
                     case .general:
                         Label(section.localizedStringKey, systemImage: "gear")
+                    case .keyBinding:
+                        Label(section.localizedStringKey, systemImage: "keyboard")
                     case .dictionaries:
                         Label(section.localizedStringKey, systemImage: "books.vertical")
                     case .softwareUpdate:
@@ -43,7 +46,7 @@ struct SettingsView: View {
                         Label(section.localizedStringKey, systemImage: "doc.plaintext")
                     #if DEBUG
                     case .keyEvent:
-                        Label(section.localizedStringKey, systemImage: "keyboard")
+                        Label(section.localizedStringKey, systemImage: "keyboard.badge.eye")
                     case .systemDict:
                         Label(section.localizedStringKey, systemImage: "book.closed.fill")
                     #endif
@@ -58,6 +61,9 @@ struct SettingsView: View {
             switch selectedSection {
             case .general:
                 GeneralView(settingsViewModel: settingsViewModel)
+                    .navigationTitle(selectedSection.localizedStringKey)
+            case .keyBinding:
+                KeyBindingView(settingsViewModel: settingsViewModel)
                     .navigationTitle(selectedSection.localizedStringKey)
             case .dictionaries:
                 DictionariesView(settingsViewModel: settingsViewModel)
