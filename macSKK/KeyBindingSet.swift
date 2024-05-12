@@ -11,8 +11,8 @@ struct KeyBindingSet {
 
     init(_ values: [KeyBinding]) {
         self.values = Dictionary(uniqueKeysWithValues: values.map { ($0.action, $0.inputs) })
-        self.dict = Dictionary(uniqueKeysWithValues: self.values.flatMap { keyValue in
-            keyValue.value.map { ($0, keyValue.key) }
+        self.dict = Dictionary(uniqueKeysWithValues: values.flatMap { keyValue in
+            keyValue.inputs.map { ($0, keyValue.action) }
         })
     }
 

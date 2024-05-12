@@ -61,7 +61,7 @@ struct KeyBinding: Identifiable {
         case kana
     }
 
-    struct Input: Hashable {
+    struct Input: Hashable, Equatable {
         let keyCode: UInt16
         let modifierFlags: NSEvent.ModifierFlags
         /**
@@ -71,7 +71,8 @@ struct KeyBinding: Identifiable {
 
         init(event: NSEvent) {
             keyCode = event.keyCode
-            modifierFlags = event.modifierFlags
+            // 使用する可能性があるものだけを抽出する。じゃないとrawValueで256が入ってしまうっぽい?
+            modifierFlags = event.modifierFlags.intersection([.shift, .control, .function, .option])
             displayString = (event.charactersIgnoringModifiers ?? event.characters) ?? ""
         }
 
@@ -84,6 +85,10 @@ struct KeyBinding: Identifiable {
         func hash(into hasher: inout Hasher) {
             hasher.combine(keyCode)
             hasher.combine(modifierFlags.rawValue)
+        }
+
+        static func == (lhs: Self, rhs: Self) -> Bool {
+            return lhs.keyCode == rhs.keyCode && lhs.modifierFlags == rhs.modifierFlags
         }
 
         var localized: String {
@@ -145,7 +150,7 @@ struct KeyBinding: Identifiable {
             case .tab:
                 return KeyBinding(action, [Input(keyCode: 0x30, displayString: "Tab", modifierFlags: [])])
             case .backspace:
-                return KeyBinding(action, [Input(keyCode: 0x33, displayString: "Backspace", modifierFlags: [.function]),
+                return KeyBinding(action, [Input(keyCode: 0x33, displayString: "Backspace", modifierFlags: []),
                                            Input(keyCode: 0x02, displayString: "H", modifierFlags: .control)])
             case .delete:
                 return KeyBinding(action, [Input(keyCode: 0x75, displayString: "Delete", modifierFlags: []),
@@ -154,16 +159,16 @@ struct KeyBinding: Identifiable {
                 return KeyBinding(action, [Input(keyCode: 0x35, displayString: "ESC", modifierFlags: []),
                                            Input(keyCode: 0x05, displayString: "G", modifierFlags: .control)])
             case .left:
-                return KeyBinding(action, [Input(keyCode: 0x7b, displayString: "←", modifierFlags: [.function]),
+                return KeyBinding(action, [Input(keyCode: 0x7b, displayString: "←", modifierFlags: .function),
                                            Input(keyCode: 0x0b, displayString: "B", modifierFlags: .control)])
             case .right:
-                return KeyBinding(action, [Input(keyCode: 0x7c, displayString: "→", modifierFlags: [.function]),
+                return KeyBinding(action, [Input(keyCode: 0x7c, displayString: "→", modifierFlags: .function),
                                            Input(keyCode: 0x03, displayString: "F", modifierFlags: .control)])
             case .down:
-                return KeyBinding(action, [Input(keyCode: 0x7d, displayString: "↓", modifierFlags: [.function]),
+                return KeyBinding(action, [Input(keyCode: 0x7d, displayString: "↓", modifierFlags: .function),
                                            Input(keyCode: 0x2d, displayString: "N", modifierFlags: .control)])
             case .up:
-                return KeyBinding(action, [Input(keyCode: 0x7e, displayString: "↑", modifierFlags: [.function]),
+                return KeyBinding(action, [Input(keyCode: 0x7e, displayString: "↑", modifierFlags: .function),
                                            Input(keyCode: 0x33, displayString: "P", modifierFlags: .control)])
             case .startOfLine:
                 return KeyBinding(action, [Input(keyCode: 0x00, displayString: "A", modifierFlags: .control)])
