@@ -369,16 +369,29 @@ final class StateMachine {
         let text = composing.text
         let okuri = composing.okuri
         let romaji = composing.romaji
+        let originalEvent = action.originalEvent
         let input = action.originalEvent?.charactersIgnoringModifiers
         let converted: Romaji.ConvertedMoji?
-        if let originalEvent = action.originalEvent, let input {
+
+        // ローマ字かな変換ルールで変換できる場合、そちらを優先する ("z " で全角スペース、"zl" で右矢印など)
+        // Controlが押されているときは変換しない (s + Ctrl-a だと "さ" にはせずCtrl-aを優先する)
+        // Optionが押されていても無視するようにしている (そちらのほうがうれしい人が多いかな程度の消極的理由)
+        if let input, let originalEvent, !originalEvent.modifierFlags.contains(.control) {
             if !input.isAlphabet, let characters = action.characters() {
-                converted = Global.kanaRule.convert(romaji + characters)
+                converted = useKanaRuleIfPresent(inputMode: state.inputMode, romaji: romaji, input: characters)
             } else {
-                converted = Global.kanaRule.convert(romaji + input)
+                converted = useKanaRuleIfPresent(inputMode: state.inputMode, romaji: romaji, input: input)
             }
         } else {
             converted = nil
+        }
+        if let input, let converted {
+            return handleComposingPrintable(
+                input: input,
+                converted: converted,
+                action: action,
+                composing: composing,
+                specialState: specialState)
         }
 
         func updateModeIfPrevModeExists() {
@@ -400,10 +413,6 @@ final class StateMachine {
             inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
             return true
         case .toggleKana:
-            // qを使ったローマ字が登録されているときはそっちを優先する
-            if let input, let converted {
-                break
-            }
             if okuri == nil {
                 // ひらがな入力中ならカタカナ、カタカナ入力中ならひらがな、半角カタカナ入力中なら全角カタカナで確定する。
                 // 未確定ローマ字はn以外は入力されずに削除される. nだけは"ん"が入力されているとする
@@ -467,10 +476,6 @@ final class StateMachine {
                 return false
             }
         case .japanese:
-            // Shift-qを使ったローマ字が登録されているときはそっちを優先する
-            if let input, let converted {
-                break
-            }
             if okuri == nil {
                 // AquaSKKの挙動に合わせて送り無視で確定、次の入力へ進む
                 switch state.inputMode {
@@ -527,7 +532,17 @@ final class StateMachine {
                     composing: composing,
                     specialState: specialState
                 )
-            } else if !text.isEmpty && composing.cursor != 0 {
+            }
+            if text.isEmpty {
+                addFixedText(" ")
+                state.inputMethod = .normal
+                updateModeIfPrevModeExists()
+                return true
+            } else if composing.cursor == 0 {
+                state.inputMethod = .normal
+                updateMarkedText()
+                return true
+            } else {
                 if state.inputMode != .direct {
                     return handleComposingStartConvert(action, composing: composing.trim(), specialState: specialState)
                 } else {
@@ -677,7 +692,14 @@ final class StateMachine {
             break
         }
 
-        if let input, let converted {
+        if let input {
+            let converted: Romaji.ConvertedMoji
+            if !input.isAlphabet, let characters = action.characters() {
+                converted = Global.kanaRule.convert(romaji + characters)
+            } else {
+                converted = Global.kanaRule.convert(romaji + input)
+            }
+
             return handleComposingPrintable(
                 input: input,
                 converted: converted,
