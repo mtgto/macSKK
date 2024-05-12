@@ -138,7 +138,7 @@ struct KeyBinding: Identifiable {
             case .zenkaku:
                 return KeyBinding(action, [Input(keyCode: 0x25, displayString: "L", modifierFlags: .shift)])
             case .abbrev:
-                return KeyBinding(action, [Input(keyCode: 0x2c, displayString: "Q", modifierFlags: [])])
+                return KeyBinding(action, [Input(keyCode: 0x2c, displayString: "/", modifierFlags: [])])
             case .japanese:
                 return KeyBinding(action, [Input(keyCode: 0x0c, displayString: "Q", modifierFlags: .shift)])
             case .stickyShift:
@@ -177,9 +177,9 @@ struct KeyBinding: Identifiable {
             case .registerPaste:
                 return KeyBinding(action, [Input(keyCode: 0x10, displayString: "Y", modifierFlags: .control)])
             case .eisu:
-                return KeyBinding(action, [Input(keyCode: 0x66, displayString: "Eisu", modifierFlags: [])])
+                return KeyBinding(action, [Input(keyCode: 0x66, displayString: String(localized: "KeyEisu"), modifierFlags: [])])
             case .kana:
-                return KeyBinding(action, [Input(keyCode: 0x68, displayString: "Kana", modifierFlags: [])])
+                return KeyBinding(action, [Input(keyCode: 0x68, displayString: String(localized: "KeyKana"), modifierFlags: [])])
             }
         }
     }

@@ -94,3 +94,6 @@
 "KeyBindingActionRegisterpaste" = "Paste on register";
 "KeyBindingActionEisu" = "Eisu Key";
 "KeyBindingActionKana" = "Kana Key";
+
+"KeyEisu" = "英数";
+"KeyKana" = "かな";
