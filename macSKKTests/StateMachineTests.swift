@@ -138,7 +138,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleNormalEnter() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         // 未入力状態ならfalse
-        XCTAssertFalse(stateMachine.handle(printableKeyEventAction(character: "\r")))
+        XCTAssertFalse(stateMachine.handle(enterAction))
     }
 
     @MainActor func testHandleNormalEisu() {
@@ -420,6 +420,7 @@ final class StateMachineTests: XCTestCase {
 
     @MainActor func testHandleNormalCtrlQ() {
         var stateMachine = StateMachine(initialState: IMEState(inputMode: .direct))
+        XCTAssertFalse(stateMachine.handle(hankakuKanaAction))
         let expectation = XCTestExpectation()
         stateMachine = StateMachine(initialState: IMEState(inputMode: .katakana))
         stateMachine.inputMethodEvent.collect(3).sink { events in
