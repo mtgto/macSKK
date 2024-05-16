@@ -1860,6 +1860,24 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    @MainActor func testHandleRegisteringUnregisteredKeyEventWithModifiers() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(3).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("い")])))
+            XCTAssertEqual(events[1], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.plain("[登録：い]")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        // キーバインドとして登録されてないC-kはhandleは単語登録中はtrueを返す (未確定文字列がないときはfalseを返す)
+        XCTAssertTrue(stateMachine.handle(Action(keyBind: nil, originalEvent: generateNSEvent(character: "k", characterIgnoringModifiers: "k", modifierFlags: .control), cursorPosition: .zero)))
+        // Cmd-cも処理せずtrueを返す
+        XCTAssertTrue(stateMachine.handle(Action(keyBind: nil, originalEvent: generateNSEvent(character: "c", characterIgnoringModifiers: "c", modifierFlags: .command), cursorPosition: .zero)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     @MainActor func testHandleRegisterN() {
         Global.dictionary.setEntries(["もん": [Word("門")]])
 

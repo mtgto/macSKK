@@ -305,7 +305,8 @@ final class StateMachine {
         if let input = event.charactersIgnoringModifiers, !event.modifierFlags.contains(.control) && !event.modifierFlags.contains(.command) {
             return handleNormalPrintable(input: input, action: action, specialState: specialState)
         } else {
-            return false
+            // 単語登録中や登録解除中はtrueを返してなにもしない
+            return state.specialState != nil
         }
     }
 
