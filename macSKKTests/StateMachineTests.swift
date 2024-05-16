@@ -13,42 +13,6 @@ final class StateMachineTests: XCTestCase {
         let kanaRuleFileURL = Bundle.main.url(forResource: "kana-rule", withExtension: "conf")!
         return try! Romaji(contentsOf: kanaRuleFileURL)
     }
-    // Ctrl-jを押した
-    var hiraganaAction: Action {
-        Action(keyBind: .hiragana, originalEvent: generateNSEvent(character: "j", characterIgnoringModifiers: "j", modifierFlags: .control), cursorPosition: .zero)
-    }
-    // Ctrl-qを押した
-    var hankakuKanaAction: Action {
-        Action(keyBind: .hankakuKana, originalEvent: generateNSEvent(character: "q", characterIgnoringModifiers: "q", modifierFlags: .control), cursorPosition: .zero)
-    }
-    // エンターキーを押した
-    var enterAction: Action {
-        Action(keyBind: .enter, originalEvent: generateNSEvent(character: "\r", characterIgnoringModifiers: "\r"), cursorPosition: .zero)
-    }
-    // Ctrl-gキーを押した
-    var cancelAction: Action {
-        Action(keyBind: .cancel, originalEvent: generateNSEvent(character: "g", characterIgnoringModifiers: "g", modifierFlags: .control), cursorPosition: .zero)
-    }
-    // Ctrl-aキーを押した
-    var startOfLineAction: Action {
-        Action(keyBind: .startOfLine, originalEvent: generateNSEvent(character: "a", characterIgnoringModifiers: "a", modifierFlags: .control), cursorPosition: .zero)
-    }
-    // Ctrl-eキーを押した
-    var endOfLineAction: Action {
-        Action(keyBind: .endOfLine, originalEvent: generateNSEvent(character: "e", characterIgnoringModifiers: "e", modifierFlags: .control), cursorPosition: .zero)
-    }
-    // Ctrl-yキーを押した
-    var registerPasteAction: Action {
-        Action(keyBind: .registerPaste, originalEvent: generateNSEvent(character: "y", characterIgnoringModifiers: "y", modifierFlags: .control), cursorPosition: .zero)
-    }
-    // 英数キーを押した
-    var eisuKeyAction: Action {
-        Action(keyBind: .eisu, originalEvent: generateNSEvent(character: "\u{10}", characterIgnoringModifiers: "\u{10}"), cursorPosition: .zero)
-    }
-    // かなキーを押した
-    var kanaKeyAction: Action {
-        Action(keyBind: .kana, originalEvent: generateNSEvent(character: "\u{10}", characterIgnoringModifiers: "\u{10}"), cursorPosition: .zero)
-    }
 
     @MainActor override func setUpWithError() throws {
         Global.dictionary.setEntries([:])
@@ -236,8 +200,8 @@ final class StateMachineTests: XCTestCase {
 
     @MainActor func testHandleNormalUpDown() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-        XCTAssertFalse(stateMachine.handle(Action(keyBind: .up, originalEvent: nil, cursorPosition: .zero)))
-        XCTAssertFalse(stateMachine.handle(Action(keyBind: .down, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertFalse(stateMachine.handle(upKeyAction))
+        XCTAssertFalse(stateMachine.handle(downKeyAction))
     }
 
     @MainActor func testHandleNormalPrintable() {
@@ -295,7 +259,7 @@ final class StateMachineTests: XCTestCase {
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .space, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u", withShift: true)))
         wait(for: [expectation], timeout: 1.0)
@@ -465,14 +429,14 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "k")))
         XCTAssertTrue(stateMachine.handle(cancelAction))
         XCTAssertEqual(stateMachine.state.inputMethod, .normal)
-        XCTAssertFalse(stateMachine.handle(Action(keyBind: .left, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertFalse(stateMachine.handle(leftKeyAction))
         wait(for: [expectation], timeout: 1.0)
     }
 
     @MainActor func testHandleNormalLeftRight() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-        XCTAssertFalse(stateMachine.handle(Action(keyBind: .left, originalEvent: nil, cursorPosition: .zero)))
-        XCTAssertFalse(stateMachine.handle(Action(keyBind: .right, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertFalse(stateMachine.handle(leftKeyAction))
+        XCTAssertFalse(stateMachine.handle(rightKeyAction))
     }
 
     @MainActor func testHandleNormalCtrlAEY() {
@@ -758,12 +722,12 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "s", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "h", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u", withShift: true)))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .backspace, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(backspaceAction))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t", withShift: true)))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .backspace, originalEvent: nil, cursorPosition: .zero)))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .backspace, originalEvent: nil, cursorPosition: .zero)))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .backspace, originalEvent: nil, cursorPosition: .zero)))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .backspace, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(backspaceAction))
+        XCTAssertTrue(stateMachine.handle(backspaceAction))
+        XCTAssertTrue(stateMachine.handle(backspaceAction))
+        XCTAssertTrue(stateMachine.handle(backspaceAction))
         wait(for: [expectation], timeout: 1.0)
     }
 
@@ -1173,7 +1137,7 @@ final class StateMachineTests: XCTestCase {
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .left, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(leftKeyAction))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u", withShift: true)))
         wait(for: [expectation], timeout: 1.0)
     }
@@ -1192,7 +1156,7 @@ final class StateMachineTests: XCTestCase {
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .left, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(leftKeyAction))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
         wait(for: [expectation], timeout: 1.0)
     }
@@ -1212,7 +1176,7 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "/")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "b")))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .left, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(leftKeyAction))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "c")))
         wait(for: [expectation], timeout: 1.0)
     }
@@ -1444,13 +1408,13 @@ final class StateMachineTests: XCTestCase {
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ";")))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .left, originalEvent: nil, cursorPosition: .zero)))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .right, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(leftKeyAction))
+        XCTAssertTrue(stateMachine.handle(rightKeyAction))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .left, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(leftKeyAction))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e")))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .right, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(rightKeyAction))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "k", withShift: true)))
         wait(for: [expectation], timeout: 1.0)
     }
@@ -1471,7 +1435,7 @@ final class StateMachineTests: XCTestCase {
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e")))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .left, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(leftKeyAction))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "r")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "y")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u")))
@@ -1495,13 +1459,13 @@ final class StateMachineTests: XCTestCase {
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "k")))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .left, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(leftKeyAction))
         XCTAssertEqual(stateMachine.state.inputMethod, .normal, "ローマ字のみで左矢印キーが押されたら未入力に戻す")
-        XCTAssertFalse(stateMachine.handle(Action(keyBind: .left, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertFalse(stateMachine.handle(leftKeyAction))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "s")))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .right, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(rightKeyAction))
         XCTAssertEqual(stateMachine.state.inputMethod, .normal, "ローマ字のみで右矢印キーが押されたら未入力に戻す")
-        XCTAssertFalse(stateMachine.handle(Action(keyBind: .right, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertFalse(stateMachine.handle(rightKeyAction))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t")))
         XCTAssertTrue(stateMachine.handle(startOfLineAction))
         XCTAssertEqual(stateMachine.state.inputMethod, .normal, "ローマ字のみでCtrl-Aが押されたら未入力に戻す")
@@ -1511,9 +1475,9 @@ final class StateMachineTests: XCTestCase {
         XCTAssertEqual(stateMachine.state.inputMethod, .normal, "ローマ字のみでCtrl-Eが押されたら未入力に戻す")
         XCTAssertFalse(stateMachine.handle(endOfLineAction))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "b")))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .backspace, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(backspaceAction))
         XCTAssertEqual(stateMachine.state.inputMethod, .normal, "ローマ字のみでBackspaceが押されたら未入力に戻す")
-        XCTAssertFalse(stateMachine.handle(Action(keyBind: .backspace, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertFalse(stateMachine.handle(backspaceAction))
         wait(for: [expectation], timeout: 1.0)
     }
 
@@ -1532,7 +1496,7 @@ final class StateMachineTests: XCTestCase {
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .left, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(leftKeyAction))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "s", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
         wait(for: [expectation], timeout: 1.0)
@@ -1551,9 +1515,9 @@ final class StateMachineTests: XCTestCase {
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .left, originalEvent: nil, cursorPosition: .zero)))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .up, originalEvent: nil, cursorPosition: .zero)), "受理するけど無視する")
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .down, originalEvent: nil, cursorPosition: .zero)), "受理するけど無視する")
+        XCTAssertTrue(stateMachine.handle(leftKeyAction))
+        XCTAssertTrue(stateMachine.handle(upKeyAction), "受理するけど無視する")
+        XCTAssertTrue(stateMachine.handle(downKeyAction), "受理するけど無視する")
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
         wait(for: [expectation], timeout: 1.0)
     }
@@ -1568,7 +1532,7 @@ final class StateMachineTests: XCTestCase {
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .left, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(leftKeyAction))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
         wait(for: [expectation], timeout: 1.0)
     }
@@ -1612,8 +1576,8 @@ final class StateMachineTests: XCTestCase {
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .left, originalEvent: nil, cursorPosition: .zero)))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .backspace, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(leftKeyAction))
+        XCTAssertTrue(stateMachine.handle(backspaceAction))
         wait(for: [expectation], timeout: 1.0)
     }
 
@@ -1629,9 +1593,9 @@ final class StateMachineTests: XCTestCase {
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .delete, originalEvent: nil, cursorPosition: .zero)))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .left, originalEvent: nil, cursorPosition: .zero)))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .delete, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(deleteAction))
+        XCTAssertTrue(stateMachine.handle(leftKeyAction))
+        XCTAssertTrue(stateMachine.handle(deleteAction))
         wait(for: [expectation], timeout: 1.0)
     }
 
@@ -1661,7 +1625,7 @@ final class StateMachineTests: XCTestCase {
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .left, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(leftKeyAction))
         stateMachine.completion = ("い", "いろは")
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "\t")))
         wait(for: [expectation], timeout: 1.0)
@@ -1815,14 +1779,14 @@ final class StateMachineTests: XCTestCase {
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u", withShift: true)))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .left, originalEvent: nil, cursorPosition: .zero)))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .right, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(leftKeyAction))
+        XCTAssertTrue(stateMachine.handle(rightKeyAction))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e")))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .left, originalEvent: nil, cursorPosition: .zero)))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .left, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(leftKeyAction))
+        XCTAssertTrue(stateMachine.handle(leftKeyAction))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .right, originalEvent: nil, cursorPosition: .zero)))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .left, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(rightKeyAction))
+        XCTAssertTrue(stateMachine.handle(leftKeyAction))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "s")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
@@ -1847,8 +1811,8 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e")))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .left, originalEvent: nil, cursorPosition: .zero)))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .backspace, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(leftKeyAction))
+        XCTAssertTrue(stateMachine.handle(backspaceAction))
         wait(for: [expectation], timeout: 1.0)
     }
 
@@ -1869,8 +1833,8 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e")))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .left, originalEvent: nil, cursorPosition: .zero)))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .delete, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(leftKeyAction))
+        XCTAssertTrue(stateMachine.handle(deleteAction))
         wait(for: [expectation], timeout: 1.0)
     }
 
@@ -1933,8 +1897,8 @@ final class StateMachineTests: XCTestCase {
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .up, originalEvent: nil, cursorPosition: .zero)))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .down, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(upKeyAction))
+        XCTAssertTrue(stateMachine.handle(downKeyAction))
         Pasteboard.stringForTest = nil
         wait(for: [expectation], timeout: 1.0)
     }
@@ -2058,7 +2022,7 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u")))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .left, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(leftKeyAction))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
         XCTAssertTrue(stateMachine.handle(enterAction))
         wait(for: [expectation], timeout: 1.0)
@@ -2083,7 +2047,7 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u")))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .left, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(leftKeyAction))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e")))
         wait(for: [expectation], timeout: 1.0)
@@ -2107,9 +2071,9 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .backspace, originalEvent: nil, cursorPosition: .zero)))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .backspace, originalEvent: nil, cursorPosition: .zero)))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .backspace, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(backspaceAction))
+        XCTAssertTrue(stateMachine.handle(backspaceAction))
+        XCTAssertTrue(stateMachine.handle(backspaceAction))
         wait(for: [expectation], timeout: 1.0)
     }
 
@@ -2219,11 +2183,11 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .down, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(downKeyAction))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .down, originalEvent: nil, cursorPosition: .zero)))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .backspace, originalEvent: nil, cursorPosition: .zero)))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .backspace, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(downKeyAction))
+        XCTAssertTrue(stateMachine.handle(backspaceAction))
+        XCTAssertTrue(stateMachine.handle(backspaceAction))
         wait(for: [expectation], timeout: 1.0)
     }
 
@@ -2281,7 +2245,7 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .up, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(upKeyAction))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "x")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
@@ -2337,8 +2301,8 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .down, originalEvent: nil, cursorPosition: .zero)))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .down, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(downKeyAction))
+        XCTAssertTrue(stateMachine.handle(downKeyAction))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "2")))
         wait(for: [expectation], timeout: 1.0)
     }
@@ -2361,8 +2325,8 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "x", withShift: true)))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .up, originalEvent: nil, cursorPosition: .zero)), "上キーやC-pは無視")
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .down, originalEvent: nil, cursorPosition: .zero)), "下キーやC-nは無視")
+        XCTAssertTrue(stateMachine.handle(upKeyAction), "上キーやC-pは無視")
+        XCTAssertTrue(stateMachine.handle(downKeyAction), "下キーやC-nは無視")
         XCTAssertTrue(stateMachine.handle(hiraganaAction))
         "yes".forEach { character in
             XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: character)))
@@ -2409,14 +2373,14 @@ final class StateMachineTests: XCTestCase {
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u", withShift: true)))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .left, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(leftKeyAction))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .backspace, originalEvent: nil, cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(backspaceAction))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "r", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u")))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .backspace, originalEvent: nil, cursorPosition: .zero)))
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: .left, originalEvent: nil, cursorPosition: .zero))) // 何もinputMethodEventには流れない
+        XCTAssertTrue(stateMachine.handle(backspaceAction))
+        XCTAssertTrue(stateMachine.handle(leftKeyAction)) // 何もinputMethodEventには流れない
         wait(for: [expectation], timeout: 1.0)
     }
 
@@ -2572,6 +2536,67 @@ final class StateMachineTests: XCTestCase {
         XCTAssertEqual(Global.dictionary.refer("いt"), [Word("言", okuri: "った", annotation: nil)])
     }
 
+    // Ctrl-jを押した
+    var hiraganaAction: Action {
+        Action(keyBind: .hiragana, originalEvent: generateNSEvent(character: "j", characterIgnoringModifiers: "j", modifierFlags: .control), cursorPosition: .zero)
+    }
+    // Ctrl-qを押した
+    var hankakuKanaAction: Action {
+        Action(keyBind: .hankakuKana, originalEvent: generateNSEvent(character: "q", characterIgnoringModifiers: "q", modifierFlags: .control), cursorPosition: .zero)
+    }
+    // エンターキーを押した
+    var enterAction: Action {
+        Action(keyBind: .enter, originalEvent: generateNSEvent(character: "\r", characterIgnoringModifiers: "\r"), cursorPosition: .zero)
+    }
+    // Ctrl-gキーを押した
+    var cancelAction: Action {
+        Action(keyBind: .cancel, originalEvent: generateNSEvent(character: "g", characterIgnoringModifiers: "g", modifierFlags: .control), cursorPosition: .zero)
+    }
+    // Ctrl-aキーを押した
+    var startOfLineAction: Action {
+        Action(keyBind: .startOfLine, originalEvent: generateNSEvent(character: "a", characterIgnoringModifiers: "a", modifierFlags: .control), cursorPosition: .zero)
+    }
+    // Ctrl-eキーを押した
+    var endOfLineAction: Action {
+        Action(keyBind: .endOfLine, originalEvent: generateNSEvent(character: "e", characterIgnoringModifiers: "e", modifierFlags: .control), cursorPosition: .zero)
+    }
+    // Ctrl-yキーを押した
+    var registerPasteAction: Action {
+        Action(keyBind: .registerPaste, originalEvent: generateNSEvent(character: "y", characterIgnoringModifiers: "y", modifierFlags: .control), cursorPosition: .zero)
+    }
+    // 矢印の上キーを押した
+    var upKeyAction: Action {
+        Action(keyBind: .up, originalEvent: generateNSEvent(character: "\u{63232}", characterIgnoringModifiers: "\u{63232}", modifierFlags: [.function, .numericPad]), cursorPosition: .zero)
+    }
+    // 矢印の下キーを押した
+    var downKeyAction: Action {
+        Action(keyBind: .down, originalEvent: generateNSEvent(character: "\u{63233}", characterIgnoringModifiers: "\u{63233}", modifierFlags: [.function, .numericPad]), cursorPosition: .zero)
+    }
+    // 矢印の左キーを押した
+    var leftKeyAction: Action {
+        Action(keyBind: .left, originalEvent: generateNSEvent(character: "\u{63234}", characterIgnoringModifiers: "\u{63234}", modifierFlags: [.function, .numericPad]), cursorPosition: .zero)
+    }
+    // 矢印の右キーを押した
+    var rightKeyAction: Action {
+        Action(keyBind: .right, originalEvent: generateNSEvent(character: "\u{63235}", characterIgnoringModifiers: "\u{63235}", modifierFlags: [.function, .numericPad]), cursorPosition: .zero)
+    }
+    // Backspaceを押した
+    var backspaceAction: Action {
+        Action(keyBind: .backspace, originalEvent: generateNSEvent(character: "\u{127}", characterIgnoringModifiers: "\u{127}"), cursorPosition: .zero)
+    }
+    // Deleteを押した
+    var deleteAction: Action {
+        Action(keyBind: .delete, originalEvent: generateNSEvent(character: "\u{63272}", characterIgnoringModifiers: "\u{63272}", modifierFlags: .function), cursorPosition: .zero)
+    }
+    // 英数キーを押した
+    var eisuKeyAction: Action {
+        Action(keyBind: .eisu, originalEvent: generateNSEvent(character: "\u{10}", characterIgnoringModifiers: "\u{10}"), cursorPosition: .zero)
+    }
+    // かなキーを押した
+    var kanaKeyAction: Action {
+        Action(keyBind: .kana, originalEvent: generateNSEvent(character: "\u{10}", characterIgnoringModifiers: "\u{10}"), cursorPosition: .zero)
+    }
+
     private func printableKeyEventAction(character: Character, characterIgnoringModifier: Character? = nil, withShift: Bool = false) -> Action {
         let characterIgnoringModifiers = characterIgnoringModifier ?? character
         if withShift {
@@ -2622,7 +2647,7 @@ final class StateMachineTests: XCTestCase {
         }
     }
 
-    private func generateKeyEventWithShift(character: Character) -> NSEvent? {
+    private func generateKeyEventWithShift(character: Character) -> NSEvent {
         return generateNSEvent(
             character: character.uppercased().first!,
             characterIgnoringModifiers: character.lowercased().first!,
@@ -2631,7 +2656,7 @@ final class StateMachineTests: XCTestCase {
 
     private func generateNSEvent(
         character: Character, characterIgnoringModifiers: Character, modifierFlags: NSEvent.ModifierFlags = []
-    ) -> NSEvent? {
+    ) -> NSEvent {
         return NSEvent.keyEvent(
             with: .keyDown,
             location: .zero,
@@ -2643,6 +2668,6 @@ final class StateMachineTests: XCTestCase {
             charactersIgnoringModifiers: String(characterIgnoringModifiers),
             isARepeat: false,
             keyCode: characterIgnoringModifiers.keyCode ?? UInt16(0)
-        )
+        )!
     }
 }

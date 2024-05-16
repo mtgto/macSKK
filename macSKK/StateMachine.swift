@@ -301,7 +301,8 @@ final class StateMachine {
             break
         }
 
-        if let event = action.originalEvent, let input = event.charactersIgnoringModifiers, !event.modifierFlags.contains(.control) && !event.modifierFlags.contains(.command) {
+        let event = action.originalEvent
+        if let input = event.charactersIgnoringModifiers, !event.modifierFlags.contains(.control) && !event.modifierFlags.contains(.command) {
             return handleNormalPrintable(input: input, action: action, specialState: specialState)
         } else {
             return false
@@ -370,13 +371,15 @@ final class StateMachine {
         let okuri = composing.okuri
         let romaji = composing.romaji
         let event = action.originalEvent
-        let input = event?.charactersIgnoringModifiers
+        let input = event.charactersIgnoringModifiers
         let converted: Romaji.ConvertedMoji?
 
         // ローマ字かな変換ルールで変換できる場合、そちらを優先する ("z " で全角スペース、"zl" で右矢印など)
         // Controlが押されているときは変換しない (s + Ctrl-a だと "さ" にはせずCtrl-aを優先する)
         // Optionが押されていても無視するようにしている (そちらのほうがうれしい人が多いかな程度の消極的理由)
-        if let input, let event, !event.modifierFlags.contains(.control) {
+        if action.keyBind == nil && (event.modifierFlags.contains(.control) || event.modifierFlags.contains(.command)) {
+            return false
+        } else if let input, !event.modifierFlags.contains(.control) {
             if !input.isAlphabet, let characters = action.characters() {
                 converted = useKanaRuleIfPresent(inputMode: state.inputMode, romaji: romaji, input: characters)
             } else {
@@ -692,7 +695,7 @@ final class StateMachine {
             break
         }
 
-        if let input, let event, !event.modifierFlags.contains(.control) && !event.modifierFlags.contains(.command) {
+        if let input {
             let converted: Romaji.ConvertedMoji
             if !input.isAlphabet, let characters = action.characters() {
                 converted = Global.kanaRule.convert(romaji + characters)
@@ -1006,7 +1009,7 @@ final class StateMachine {
             break
         }
 
-        if let input = action.originalEvent?.charactersIgnoringModifiers {
+        if let input = action.originalEvent.charactersIgnoringModifiers {
             if input == "x" {
                 if action.shiftIsPressed() {
                     state.specialState = .unregister(

@@ -5,26 +5,20 @@ import Cocoa
 
 struct Action {
     let keyBind: KeyBinding.Action?
-    let originalEvent: NSEvent?
+    let originalEvent: NSEvent
     /// 現在のカーソル位置。正常に取得できない場合はNSRect.zeroになっているかも?
     let cursorPosition: NSRect
 
     func shiftIsPressed() -> Bool {
-        guard let event = originalEvent else {
-            return false
-        }
-        return event.modifierFlags.contains(.shift)
+        return originalEvent.modifierFlags.contains(.shift)
     }
 
     func optionIsPressed() -> Bool {
-        guard let event = originalEvent else {
-            return false
-        }
-        return event.modifierFlags.contains(.option)
+        return originalEvent.modifierFlags.contains(.option)
     }
 
     /// Option-Shift-E (´) のように入力したキーコードを元に整形された文字列を返す
     func characters() -> String? {
-        return originalEvent?.characters
+        return originalEvent.characters
     }
 }
