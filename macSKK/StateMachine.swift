@@ -378,7 +378,7 @@ final class StateMachine {
         // Controlが押されているときは変換しない (s + Ctrl-a だと "さ" にはせずCtrl-aを優先する)
         // Optionが押されていても無視するようにしている (そちらのほうがうれしい人が多いかな程度の消極的理由)
         if action.keyBind == nil && (event.modifierFlags.contains(.control) || event.modifierFlags.contains(.command)) {
-            return false
+            return true
         } else if let input, !event.modifierFlags.contains(.control) {
             if !input.isAlphabet, let characters = action.characters() {
                 converted = useKanaRuleIfPresent(inputMode: state.inputMode, romaji: romaji, input: characters)
