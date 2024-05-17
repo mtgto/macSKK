@@ -212,7 +212,7 @@ class InputController: IMKInputController {
             return stateMachine.handleUnhandledEvent(event)
         }
 
-        return stateMachine.handle(Action(keyBind: keyBind, originalEvent: event, cursorPosition: cursorPosition))
+        return stateMachine.handle(Action(keyBind: keyBind, event: event, cursorPosition: cursorPosition))
     }
 
     override func menu() -> NSMenu! {

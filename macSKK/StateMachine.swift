@@ -301,7 +301,7 @@ final class StateMachine {
             break
         }
 
-        let event = action.originalEvent
+        let event = action.event
         if let input = event.charactersIgnoringModifiers, !event.modifierFlags.contains(.control) && !event.modifierFlags.contains(.command) {
             return handleNormalPrintable(input: input, action: action, specialState: specialState)
         } else {
@@ -371,7 +371,7 @@ final class StateMachine {
         let text = composing.text
         let okuri = composing.okuri
         let romaji = composing.romaji
-        let event = action.originalEvent
+        let event = action.event
         let input = event.charactersIgnoringModifiers
         let converted: Romaji.ConvertedMoji?
 
@@ -1010,7 +1010,7 @@ final class StateMachine {
             break
         }
 
-        if let input = action.originalEvent.charactersIgnoringModifiers {
+        if let input = action.event.charactersIgnoringModifiers {
             if input == "x" {
                 if action.shiftIsPressed() {
                     state.specialState = .unregister(

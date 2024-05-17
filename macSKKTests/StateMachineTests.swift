@@ -176,9 +176,9 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleNormalUnregisteredKeyEventWithModifiers() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         // キーバインドとして登録されてないC-kはhandleはfalseを返す
-        XCTAssertFalse(stateMachine.handle(Action(keyBind: nil, originalEvent: generateNSEvent(character: "k", characterIgnoringModifiers: "k", modifierFlags: .control), cursorPosition: .zero)))
+        XCTAssertFalse(stateMachine.handle(Action(keyBind: nil, event: generateNSEvent(character: "k", characterIgnoringModifiers: "k", modifierFlags: .control), cursorPosition: .zero)))
         // Cmd-cもhandleせずfalseを返す
-        XCTAssertFalse(stateMachine.handle(Action(keyBind: nil, originalEvent: generateNSEvent(character: "c", characterIgnoringModifiers: "c", modifierFlags: .command), cursorPosition: .zero)))
+        XCTAssertFalse(stateMachine.handle(Action(keyBind: nil, event: generateNSEvent(character: "c", characterIgnoringModifiers: "c", modifierFlags: .command), cursorPosition: .zero)))
     }
 
     @MainActor func testHandleNormalNoAlphabetEisu() {
@@ -519,7 +519,7 @@ final class StateMachineTests: XCTestCase {
             character: "Ω",
             characterIgnoringModifiers: "z",
             modifierFlags: [.option])
-        let action = Action(keyBind: nil, originalEvent: event, cursorPosition: .zero)
+        let action = Action(keyBind: nil, event: event, cursorPosition: .zero)
 
         XCTAssertTrue(stateMachine.handle(action))
         wait(for: [expectation], timeout: 1.0)
@@ -1668,9 +1668,9 @@ final class StateMachineTests: XCTestCase {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
         // キーバインドとして登録されてないC-kはhandleはtrueを返して無視する
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: nil, originalEvent: generateNSEvent(character: "k", characterIgnoringModifiers: "k", modifierFlags: .control), cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyBind: nil, event: generateNSEvent(character: "k", characterIgnoringModifiers: "k", modifierFlags: .control), cursorPosition: .zero)))
         // Cmd-cもhandleせずtrueを返して無視する
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: nil, originalEvent: generateNSEvent(character: "c", characterIgnoringModifiers: "c", modifierFlags: .command), cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyBind: nil, event: generateNSEvent(character: "c", characterIgnoringModifiers: "c", modifierFlags: .command), cursorPosition: .zero)))
     }
 
     @MainActor func testHandleRegisteringEnter() {
@@ -1872,9 +1872,9 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
         // キーバインドとして登録されてないC-kはhandleは単語登録中はtrueを返す (未確定文字列がないときはfalseを返す)
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: nil, originalEvent: generateNSEvent(character: "k", characterIgnoringModifiers: "k", modifierFlags: .control), cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyBind: nil, event: generateNSEvent(character: "k", characterIgnoringModifiers: "k", modifierFlags: .control), cursorPosition: .zero)))
         // Cmd-cも処理せずtrueを返す
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: nil, originalEvent: generateNSEvent(character: "c", characterIgnoringModifiers: "c", modifierFlags: .command), cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyBind: nil, event: generateNSEvent(character: "c", characterIgnoringModifiers: "c", modifierFlags: .command), cursorPosition: .zero)))
         wait(for: [expectation], timeout: 1.0)
     }
 
@@ -2556,63 +2556,63 @@ final class StateMachineTests: XCTestCase {
 
     // Ctrl-jを押した
     var hiraganaAction: Action {
-        Action(keyBind: .hiragana, originalEvent: generateNSEvent(character: "j", characterIgnoringModifiers: "j", modifierFlags: .control), cursorPosition: .zero)
+        Action(keyBind: .hiragana, event: generateNSEvent(character: "j", characterIgnoringModifiers: "j", modifierFlags: .control), cursorPosition: .zero)
     }
     // Ctrl-qを押した
     var hankakuKanaAction: Action {
-        Action(keyBind: .hankakuKana, originalEvent: generateNSEvent(character: "q", characterIgnoringModifiers: "q", modifierFlags: .control), cursorPosition: .zero)
+        Action(keyBind: .hankakuKana, event: generateNSEvent(character: "q", characterIgnoringModifiers: "q", modifierFlags: .control), cursorPosition: .zero)
     }
     // エンターキーを押した
     var enterAction: Action {
-        Action(keyBind: .enter, originalEvent: generateNSEvent(character: "\r", characterIgnoringModifiers: "\r"), cursorPosition: .zero)
+        Action(keyBind: .enter, event: generateNSEvent(character: "\r", characterIgnoringModifiers: "\r"), cursorPosition: .zero)
     }
     // Ctrl-gキーを押した
     var cancelAction: Action {
-        Action(keyBind: .cancel, originalEvent: generateNSEvent(character: "g", characterIgnoringModifiers: "g", modifierFlags: .control), cursorPosition: .zero)
+        Action(keyBind: .cancel, event: generateNSEvent(character: "g", characterIgnoringModifiers: "g", modifierFlags: .control), cursorPosition: .zero)
     }
     // Ctrl-aキーを押した
     var startOfLineAction: Action {
-        Action(keyBind: .startOfLine, originalEvent: generateNSEvent(character: "a", characterIgnoringModifiers: "a", modifierFlags: .control), cursorPosition: .zero)
+        Action(keyBind: .startOfLine, event: generateNSEvent(character: "a", characterIgnoringModifiers: "a", modifierFlags: .control), cursorPosition: .zero)
     }
     // Ctrl-eキーを押した
     var endOfLineAction: Action {
-        Action(keyBind: .endOfLine, originalEvent: generateNSEvent(character: "e", characterIgnoringModifiers: "e", modifierFlags: .control), cursorPosition: .zero)
+        Action(keyBind: .endOfLine, event: generateNSEvent(character: "e", characterIgnoringModifiers: "e", modifierFlags: .control), cursorPosition: .zero)
     }
     // Ctrl-yキーを押した
     var registerPasteAction: Action {
-        Action(keyBind: .registerPaste, originalEvent: generateNSEvent(character: "y", characterIgnoringModifiers: "y", modifierFlags: .control), cursorPosition: .zero)
+        Action(keyBind: .registerPaste, event: generateNSEvent(character: "y", characterIgnoringModifiers: "y", modifierFlags: .control), cursorPosition: .zero)
     }
     // 矢印の上キーを押した
     var upKeyAction: Action {
-        Action(keyBind: .up, originalEvent: generateNSEvent(character: "\u{63232}", characterIgnoringModifiers: "\u{63232}", modifierFlags: [.function, .numericPad]), cursorPosition: .zero)
+        Action(keyBind: .up, event: generateNSEvent(character: "\u{63232}", characterIgnoringModifiers: "\u{63232}", modifierFlags: [.function, .numericPad]), cursorPosition: .zero)
     }
     // 矢印の下キーを押した
     var downKeyAction: Action {
-        Action(keyBind: .down, originalEvent: generateNSEvent(character: "\u{63233}", characterIgnoringModifiers: "\u{63233}", modifierFlags: [.function, .numericPad]), cursorPosition: .zero)
+        Action(keyBind: .down, event: generateNSEvent(character: "\u{63233}", characterIgnoringModifiers: "\u{63233}", modifierFlags: [.function, .numericPad]), cursorPosition: .zero)
     }
     // 矢印の左キーを押した
     var leftKeyAction: Action {
-        Action(keyBind: .left, originalEvent: generateNSEvent(character: "\u{63234}", characterIgnoringModifiers: "\u{63234}", modifierFlags: [.function, .numericPad]), cursorPosition: .zero)
+        Action(keyBind: .left, event: generateNSEvent(character: "\u{63234}", characterIgnoringModifiers: "\u{63234}", modifierFlags: [.function, .numericPad]), cursorPosition: .zero)
     }
     // 矢印の右キーを押した
     var rightKeyAction: Action {
-        Action(keyBind: .right, originalEvent: generateNSEvent(character: "\u{63235}", characterIgnoringModifiers: "\u{63235}", modifierFlags: [.function, .numericPad]), cursorPosition: .zero)
+        Action(keyBind: .right, event: generateNSEvent(character: "\u{63235}", characterIgnoringModifiers: "\u{63235}", modifierFlags: [.function, .numericPad]), cursorPosition: .zero)
     }
     // Backspaceを押した
     var backspaceAction: Action {
-        Action(keyBind: .backspace, originalEvent: generateNSEvent(character: "\u{127}", characterIgnoringModifiers: "\u{127}"), cursorPosition: .zero)
+        Action(keyBind: .backspace, event: generateNSEvent(character: "\u{127}", characterIgnoringModifiers: "\u{127}"), cursorPosition: .zero)
     }
     // Deleteを押した
     var deleteAction: Action {
-        Action(keyBind: .delete, originalEvent: generateNSEvent(character: "\u{63272}", characterIgnoringModifiers: "\u{63272}", modifierFlags: .function), cursorPosition: .zero)
+        Action(keyBind: .delete, event: generateNSEvent(character: "\u{63272}", characterIgnoringModifiers: "\u{63272}", modifierFlags: .function), cursorPosition: .zero)
     }
     // 英数キーを押した
     var eisuKeyAction: Action {
-        Action(keyBind: .eisu, originalEvent: generateNSEvent(character: "\u{10}", characterIgnoringModifiers: "\u{10}"), cursorPosition: .zero)
+        Action(keyBind: .eisu, event: generateNSEvent(character: "\u{10}", characterIgnoringModifiers: "\u{10}"), cursorPosition: .zero)
     }
     // かなキーを押した
     var kanaKeyAction: Action {
-        Action(keyBind: .kana, originalEvent: generateNSEvent(character: "\u{10}", characterIgnoringModifiers: "\u{10}"), cursorPosition: .zero)
+        Action(keyBind: .kana, event: generateNSEvent(character: "\u{10}", characterIgnoringModifiers: "\u{10}"), cursorPosition: .zero)
     }
 
     private func printableKeyEventAction(character: Character, characterIgnoringModifier: Character? = nil, withShift: Bool = false) -> Action {
@@ -2621,7 +2621,7 @@ final class StateMachineTests: XCTestCase {
             if let characterIgnoringModifier {
                 return Action(
                     keyBind: keyBind(character: characterIgnoringModifiers, withShift: withShift),
-                    originalEvent: generateNSEvent(character: character,
+                    event: generateNSEvent(character: character,
                                                    characterIgnoringModifiers: characterIgnoringModifier,
                                                    modifierFlags: [.shift]),
                     cursorPosition: .zero
@@ -2629,14 +2629,14 @@ final class StateMachineTests: XCTestCase {
             } else {
                 return Action(
                     keyBind: keyBind(character: characterIgnoringModifiers, withShift: withShift),
-                    originalEvent: generateKeyEventWithShift(character: character),
+                    event: generateKeyEventWithShift(character: character),
                     cursorPosition: .zero
                 )
             }
         } else {
             return Action(
                 keyBind: keyBind(character: characterIgnoringModifiers, withShift: withShift),
-                originalEvent: generateNSEvent(
+                event: generateNSEvent(
                     character: character,
                     characterIgnoringModifiers: characterIgnoringModifier ?? character),
                 cursorPosition: .zero
