@@ -21,6 +21,7 @@ final class StateMachineTests: XCTestCase {
         // テストごとにローマ字かな変換ルールをデフォルトに戻す
         // こうしないとテストの中でGlobal.kanaRuleを書き換えるテストと一緒に走らせると違うかな変換ルールのままに実行されてしまう
         Global.kanaRule = Self.defaultKanaRule
+        Global.selectCandidateKeys = "123456789".map { $0 }
     }
 
     @MainActor func testHandleNormalSimple() {
