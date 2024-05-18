@@ -1037,8 +1037,8 @@ final class StateMachine {
                 }
                 return handle(action)
             } else if selecting.candidateIndex >= inlineCandidateCount {
-                if let index = Int(input), 1 <= index && index <= 9 {
-                    let diff = index - 1 - (selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount
+                if let first = input.first, let index = Global.selectCandidateKeys.firstIndex(of: first), index < displayCandidateCount {
+                    let diff = index - (selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount
                     if selecting.candidateIndex + diff < selecting.candidates.count {
                         let newSelecting = selecting.addCandidateIndex(diff: diff)
                         fixCurrentSelect(selecting: newSelecting)

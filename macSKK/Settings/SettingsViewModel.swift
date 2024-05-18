@@ -197,6 +197,7 @@ final class SettingsViewModel: ObservableObject {
 
         // TODO: 設定化。いまはとりあえず固定でデフォルト設定を表示
         self.keyBingings = KeyBinding.defaultKeyBindingSettings
+        Global.selectCandidateKeys = UserDefaults.standard.string(forKey: UserDefaultsKeys.selectCandidateKeys)!.map { $0 }
 
         // SKK-JISYO.Lのようなファイルの読み込みが遅いのでバックグラウンドで処理
         $dictSettings.filter({ !$0.isEmpty }).receive(on: DispatchQueue.global()).sink { dictSettings in
