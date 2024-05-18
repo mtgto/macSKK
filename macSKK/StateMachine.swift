@@ -77,7 +77,80 @@ final class StateMachine {
      * 状態がnormalのときのhandle
      */
     @MainActor func handleNormal(_ action: Action, specialState: SpecialState?) -> Bool {
-        switch action.keyEvent {
+        switch action.keyBind {
+        case .hiragana, .kana:
+            if case .unregister = specialState {
+                return true
+            } else {
+                state.inputMode = .hiragana
+                inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
+                return true
+            }
+        case .japanese:
+            switch state.inputMode {
+            case .hiragana, .katakana, .hankaku:
+                // 見出し語入力へ遷移する
+                state.inputMethod = .composing(ComposingState(isShift: true, text: [], okuri: nil, romaji: ""))
+                updateMarkedText()
+                return true
+            case .eisu, .direct:
+                break
+            }
+        case .toggleKana:
+            switch state.inputMode {
+            case .hiragana:
+                state.inputMode = .katakana
+                inputMethodEventSubject.send(.modeChanged(.katakana, action.cursorPosition))
+                return true
+            case .katakana, .hankaku:
+                state.inputMode = .hiragana
+                inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
+                return true
+            case .eisu, .direct:
+                break
+            }
+        case .hankakuKana:
+            switch state.inputMode {
+            case .hiragana, .katakana:
+                state.inputMode = .hankaku
+                inputMethodEventSubject.send(.modeChanged(.hankaku, action.cursorPosition))
+                return true
+            case .hankaku:
+                state.inputMode = .hiragana
+                inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
+                return true
+            default:
+                break
+            }
+        case .direct:
+            switch state.inputMode {
+            case .hiragana, .katakana, .hankaku:
+                state.inputMode = .direct
+                inputMethodEventSubject.send(.modeChanged(.direct, action.cursorPosition))
+                return true
+            case .eisu, .direct:
+                break
+            }
+        case .zenkaku:
+            switch state.inputMode {
+            case .hiragana, .katakana, .hankaku:
+                state.inputMode = .eisu
+                inputMethodEventSubject.send(.modeChanged(.eisu, action.cursorPosition))
+                return true
+            case .eisu, .direct:
+                break
+            }
+        case .abbrev:
+            switch state.inputMode {
+            case .hiragana, .katakana, .hankaku:
+                state.inputMethod = .composing(ComposingState(isShift: true, text: [], okuri: nil, romaji: "", prevMode: state.inputMode))
+                state.inputMode = .direct
+                inputMethodEventSubject.send(.modeChanged(.direct, action.cursorPosition))
+                updateMarkedText()
+                return true
+            case .eisu, .direct:
+                break
+            }
         case .enter:
             if let specialState {
                 if case .register(let registerState) = specialState {
@@ -147,16 +220,6 @@ final class StateMachine {
                 addFixedText(";")
             }
             return true
-        case .printable(let input):
-            return handleNormalPrintable(input: input, action: action, specialState: specialState)
-        case .ctrlJ, .kana:
-            if case .unregister = specialState {
-                return true
-            } else {
-                state.inputMode = .hiragana
-                inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
-                return true
-            }
         case .cancel:
             if let specialState = state.specialState {
                 switch specialState {
@@ -172,19 +235,6 @@ final class StateMachine {
                 updateMarkedText()
                 return true
             } else {
-                return false
-            }
-        case .ctrlQ:
-            switch state.inputMode {
-            case .hiragana, .katakana:
-                state.inputMode = .hankaku
-                inputMethodEventSubject.send(.modeChanged(.hankaku, action.cursorPosition))
-                return true
-            case .hankaku:
-                state.inputMode = .hiragana
-                inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
-                return true
-            default:
                 return false
             }
         case .left:
@@ -203,7 +253,7 @@ final class StateMachine {
             } else {
                 return false
             }
-        case .ctrlA:
+        case .startOfLine:
             if let specialState = state.specialState {
                 state.specialState = specialState.moveCursorFirst()
                 updateMarkedText()
@@ -211,7 +261,7 @@ final class StateMachine {
             } else {
                 return false
             }
-        case .ctrlE:
+        case .endOfLine:
             if let specialState = state.specialState {
                 state.specialState = specialState.moveCursorLast()
                 updateMarkedText()
@@ -233,7 +283,7 @@ final class StateMachine {
             } else {
                 return false
             }
-        case .ctrlY:
+        case .registerPaste:
             if case .register = state.specialState {
                 if let text = Pasteboard.getString() {
                     addFixedText(text)
@@ -247,6 +297,16 @@ final class StateMachine {
         case .eisu:
             // 何もしない (OSがIMEの切り替えはしてくれる)
             return true
+        case nil:
+            break
+        }
+
+        let event = action.event
+        if let input = event.charactersIgnoringModifiers, !event.modifierFlags.contains(.control) && !event.modifierFlags.contains(.command) {
+            return handleNormalPrintable(input: input, action: action, specialState: specialState)
+        } else {
+            // 単語登録中や登録解除中はtrueを返してなにもしない
+            return state.specialState != nil
         }
     }
 
@@ -258,62 +318,6 @@ final class StateMachine {
      *   - specialState: 単語登録モードや単語登録解除モード
      */
     @MainActor func handleNormalPrintable(input: String, action: Action, specialState: SpecialState?) -> Bool {
-        if input == "q" {
-            if action.shiftIsPressed() {
-                // 見出し語入力へ遷移する
-                switch state.inputMode {
-                case .hiragana, .katakana, .hankaku:
-                    state.inputMethod = .composing(ComposingState(isShift: true, text: [], okuri: nil, romaji: ""))
-                    updateMarkedText()
-                    return true
-                case .eisu:
-                    break
-                case .direct:
-                    break
-                }
-            } else {
-                switch state.inputMode {
-                case .hiragana:
-                    state.inputMode = .katakana
-                    inputMethodEventSubject.send(.modeChanged(.katakana, action.cursorPosition))
-                    return true
-                case .katakana, .hankaku:
-                    state.inputMode = .hiragana
-                    inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
-                    return true
-                case .eisu, .direct:
-                    break
-                }
-            }
-        } else if input == "l" {
-            switch state.inputMode {
-            case .hiragana, .katakana, .hankaku:
-                if action.shiftIsPressed() {
-                    state.inputMode = .eisu
-                    inputMethodEventSubject.send(.modeChanged(.eisu, action.cursorPosition))
-                } else {
-                    state.inputMode = .direct
-                    inputMethodEventSubject.send(.modeChanged(.direct, action.cursorPosition))
-                }
-                return true
-            case .eisu:
-                break
-            case .direct:
-                break
-            }
-        } else if input == "/" && !action.shiftIsPressed() {
-            switch state.inputMode {
-            case .hiragana, .katakana, .hankaku:
-                state.inputMethod = .composing(ComposingState(isShift: true, text: [], okuri: nil, romaji: "", prevMode: state.inputMode))
-                state.inputMode = .direct
-                inputMethodEventSubject.send(.modeChanged(.direct, action.cursorPosition))
-                updateMarkedText()
-                return true
-            case .eisu, .direct:
-                break
-            }
-        }
-
         switch state.inputMode {
         case .hiragana, .katakana, .hankaku:
             if input.isAlphabet && !action.optionIsPressed() {
@@ -367,6 +371,32 @@ final class StateMachine {
         let text = composing.text
         let okuri = composing.okuri
         let romaji = composing.romaji
+        let event = action.event
+        let input = event.charactersIgnoringModifiers
+        let converted: Romaji.ConvertedMoji?
+
+        // ローマ字かな変換ルールで変換できる場合、そちらを優先する ("z " で全角スペース、"zl" で右矢印など)
+        // Controlが押されているときは変換しない (s + Ctrl-a だと "さ" にはせずCtrl-aを優先する)
+        // Optionが押されていても無視するようにしている (そちらのほうがうれしい人が多いかな程度の消極的理由)
+        if action.keyBind == nil && (event.modifierFlags.contains(.control) || event.modifierFlags.contains(.command)) {
+            return true
+        } else if let input, !event.modifierFlags.contains(.control) {
+            if !input.isAlphabet, let characters = action.characters() {
+                converted = useKanaRuleIfPresent(inputMode: state.inputMode, romaji: romaji, input: characters)
+            } else {
+                converted = useKanaRuleIfPresent(inputMode: state.inputMode, romaji: romaji, input: input)
+            }
+        } else {
+            converted = nil
+        }
+        if let input, let converted {
+            return handleComposingPrintable(
+                input: input,
+                converted: converted,
+                action: action,
+                composing: composing,
+                specialState: specialState)
+        }
 
         func updateModeIfPrevModeExists() {
             if let prevMode = composing.prevMode {
@@ -375,7 +405,112 @@ final class StateMachine {
             }
         }
 
-        switch action.keyEvent {
+        switch action.keyBind {
+        case .hiragana:
+            if let converted, converted.kakutei != nil {
+                break
+            }
+            // 入力中文字列を確定させてひらがなモードにする
+            addFixedText(composing.string(for: state.inputMode, convertHatsuon: true))
+            state.inputMethod = .normal
+            state.inputMode = .hiragana
+            inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
+            return true
+        case .toggleKana:
+            if okuri == nil {
+                // ひらがな入力中ならカタカナ、カタカナ入力中ならひらがな、半角カタカナ入力中なら全角カタカナで確定する。
+                // 未確定ローマ字はn以外は入力されずに削除される. nだけは"ん"が入力されているとする
+                state.inputMethod = .normal
+                switch state.inputMode {
+                case .hiragana, .hankaku:
+                    addFixedText(composing.string(for: .katakana, convertHatsuon: true))
+                    return true
+                case .katakana:
+                    addFixedText(composing.string(for: .hiragana, convertHatsuon: true))
+                    return true
+                case .direct:
+                    // 普通に入力させる
+                    break
+                default:
+                    fatalError("inputMode=\(state.inputMode), handleComposingでqが入力された")
+                }
+            } else {
+                // 送り仮名があるときはローマ字部分をリセットする
+                state.inputMethod = .composing(ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: ""))
+                updateMarkedText()
+                return true
+            }
+        case .hankakuKana:
+            if okuri == nil {
+                if case .direct = state.inputMode {
+                    // 全角英数で確定する
+                    state.inputMethod = .normal
+                    addFixedText(text.map { $0.toZenkaku() }.joined())
+                    // TODO: AquaSKKはAbbrevに入る前のモードに戻しているのでそれに合わせる?
+                    state.inputMode = .hiragana
+                    inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
+                } else {
+                    // 半角カタカナで確定する。
+                    state.inputMethod = .normal
+                    addFixedText(composing.string(for: .hankaku, convertHatsuon: false))
+                }
+                return true
+            } else {
+                // 送り仮名があるときはなにもしない
+                return true
+            }
+        case .direct, .zenkaku:
+            // 入力済みを確定してからlを打ったのと同じ処理をする
+            if okuri == nil {
+                switch state.inputMode {
+                case .hiragana, .katakana, .hankaku:
+                    state.inputMethod = .normal
+                    addFixedText(composing.string(for: state.inputMode, convertHatsuon: true))
+                    return handleNormal(action, specialState: specialState)
+                case .direct:
+                    // 普通にlを入力させる
+                    break
+                default:
+                    fatalError("inputMode=\(state.inputMode), handleComposingでlが入力された")
+                }
+            } else {
+                // 送り仮名があるときはローマ字部分をリセットする
+                state.inputMethod = .composing(
+                    ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: ""))
+                return false
+            }
+        case .japanese:
+            if okuri == nil {
+                // AquaSKKの挙動に合わせて送り無視で確定、次の入力へ進む
+                switch state.inputMode {
+                case .hiragana:
+                    if !text.isEmpty {
+                        addFixedText(text.joined())
+                        state.inputMethod = .composing(ComposingState(isShift: true, text: [], okuri: nil, romaji: ""))
+                        updateMarkedText()
+                    }
+                    return true
+                case .katakana, .hankaku:
+                    if !text.isEmpty {
+                        addFixedText(text.map { $0.toKatakana() }.joined())
+                        state.inputMethod = .composing(ComposingState(isShift: true, text: [], okuri: nil, romaji: ""))
+                        updateMarkedText()
+                    }
+                    return true
+                case .direct:
+                    break
+                default:
+                    // FIXME: KeyBindにdebugDescriptionを実装したい
+                    fatalError("inputMode=\(state.inputMode), handleComposingでShift-Qが入力された")
+                }
+            } else {
+                // 送り仮名があるときはローマ字部分をリセットする
+                state.inputMethod = .composing(
+                    ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: ""))
+                updateMarkedText()
+                return true
+            }
+            break
         case .enter:
             // 未確定ローマ字はn以外は入力されずに削除される. nだけは"ん"として変換する
             let fixedText = composing.string(for: state.inputMode, convertHatsuon: true)
@@ -393,9 +528,9 @@ final class StateMachine {
             return true
         case .space:
             // "z " のようなスペースを使ったローマ字変換ルールがある場合は漢字変換よりも優先する
-            if let converted = useKanaRuleIfPresent(inputMode: state.inputMode, romaji: romaji, input: " ") {
+            if let converted, let input {
                 return handleComposingPrintable(
-                    input: " ",
+                    input: input,
                     converted: converted,
                     action: action,
                     composing: composing,
@@ -419,6 +554,7 @@ final class StateMachine {
                 }
             }
         case .tab:
+            // FIXME: この記号がローマ字に含まれていることも考慮するべき?
             if let completion {
                 // カーソル位置に関わらずカーソル位置はリセットされる
                 let newText = completion.1.map({ String($0) })
@@ -480,26 +616,6 @@ final class StateMachine {
                 }
                 return true
             }
-        case .printable(let input):
-            let converted: Romaji.ConvertedMoji
-            if !input.isAlphabet, let characters = action.characters() {
-                converted = Global.kanaRule.convert(romaji + characters)
-            } else {
-                converted = Global.kanaRule.convert(romaji + input)
-            }
-            return handleComposingPrintable(
-                input: input,
-                converted: converted,
-                action: action,
-                composing: composing,
-                specialState: specialState)
-        case .ctrlJ:
-            // 入力中文字列を確定させてひらがなモードにする
-            addFixedText(composing.string(for: state.inputMode, convertHatsuon: true))
-            state.inputMethod = .normal
-            state.inputMode = .hiragana
-            inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
-            return true
         case .cancel:
             if text.isEmpty || romaji.isEmpty {
                 // 下線テキストをリセットする
@@ -510,25 +626,6 @@ final class StateMachine {
             }
             updateMarkedText()
             return true
-        case .ctrlQ:
-            if okuri == nil {
-                if case .direct = state.inputMode {
-                    // 全角英数で確定する
-                    state.inputMethod = .normal
-                    addFixedText(text.map { $0.toZenkaku() }.joined())
-                    // TODO: AquaSKKはAbbrevに入る前のモードに戻しているのでそれに合わせる?
-                    state.inputMode = .hiragana
-                    inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
-                } else {
-                    // 半角カタカナで確定する。
-                    state.inputMethod = .normal
-                    addFixedText(composing.string(for: .hankaku, convertHatsuon: false))
-                }
-                return true
-            } else {
-                // 送り仮名があるときはなにもしない
-                return true
-            }
         case .left:
             if okuri == nil { // 一度変換候補選択に遷移してからキャンセルで戻ると送り仮名ありになっている
                 if romaji.isEmpty {
@@ -558,7 +655,7 @@ final class StateMachine {
                 updateMarkedText()
             }
             return true
-        case .ctrlA:
+        case .startOfLine:
             if okuri == nil { // 一度変換候補選択に遷移してからキャンセルで戻ると送り仮名ありになっている
                 if romaji.isEmpty {
                     state.inputMethod = .composing(composing.moveCursorFirst())
@@ -573,7 +670,7 @@ final class StateMachine {
                 updateMarkedText()
             }
             return true
-        case .ctrlE:
+        case .endOfLine:
             if okuri == nil { // 一度変換候補選択に遷移してからキャンセルで戻ると送り仮名ありになっている
                 if romaji.isEmpty {
                     state.inputMethod = .composing(composing.moveCursorLast())
@@ -593,11 +690,41 @@ final class StateMachine {
                 updateMarkedText()
             }
             return true
-        case .up, .down, .ctrlY, .eisu, .kana:
+        case .abbrev, .up, .down, .registerPaste, .eisu, .kana:
             return true
+        case .none:
+            break
+        }
+
+        if let input {
+            let converted: Romaji.ConvertedMoji
+            if !input.isAlphabet, let characters = action.characters() {
+                converted = Global.kanaRule.convert(romaji + characters)
+            } else {
+                converted = Global.kanaRule.convert(romaji + input)
+            }
+
+            return handleComposingPrintable(
+                input: input,
+                converted: converted,
+                action: action,
+                composing: composing,
+                specialState: specialState)
+        } else {
+            return false
         }
     }
 
+    /**
+     * 状態がcomposingのときのprintableイベントのhandle
+     *
+     * - Parameters:
+     *   - input: NSEvent.characterIgnoringModifiersと同等
+     *   - converted: ローマ字変換結果
+     *   - action: キー入力
+     *   - composing: 現在の状態
+     *   - specialState: 単語登録モードや単語登録解除モード
+     */
     @MainActor func handleComposingPrintable(
         input: String, converted: Romaji.ConvertedMoji, action: Action, composing: ComposingState,
         specialState: SpecialState?
@@ -606,90 +733,7 @@ final class StateMachine {
         let text = composing.text
         let okuri = composing.okuri
 
-        if input == "q" {
-            // "tq"のような"q"を使ったルールがある場合はそれを優先させる
-            if let converted = useKanaRuleIfPresent(inputMode: state.inputMode, romaji: composing.romaji, input: "q") {
-                if converted.kakutei != nil {
-                    return handleComposingPrintable(
-                        input: " ",
-                        converted: converted,
-                        action: action,
-                        composing: composing,
-                        specialState: specialState
-                    )
-                }
-            }
-
-            if okuri == nil {
-                // AquaSKKの挙動に合わせてShift-Qのときは送り無視で確定、次の入力へ進む
-                if action.shiftIsPressed() {
-                    switch state.inputMode {
-                    case .hiragana:
-                        if !text.isEmpty {
-                            addFixedText(text.joined())
-                            state.inputMethod = .composing(ComposingState(isShift: true, text: [], okuri: nil, romaji: ""))
-                            updateMarkedText()
-                        }
-                        return true
-                    case .katakana, .hankaku:
-                        if !text.isEmpty {
-                            addFixedText(text.map { $0.toKatakana() }.joined())
-                            state.inputMethod = .composing(ComposingState(isShift: true, text: [], okuri: nil, romaji: ""))
-                            updateMarkedText()
-                        }
-                        return true
-                    case .direct:
-                        // 普通にqを入力させる
-                        break
-                    default:
-                        fatalError("inputMode=\(state.inputMode), handleComposingでShift-Qが入力された")
-                    }
-                } else {
-                    // ひらがな入力中ならカタカナ、カタカナ入力中ならひらがな、半角カタカナ入力中なら全角カタカナで確定する。
-                    // 未確定ローマ字はn以外は入力されずに削除される. nだけは"ん"が入力されているとする
-                    state.inputMethod = .normal
-                    switch state.inputMode {
-                    case .hiragana, .hankaku:
-                        addFixedText(composing.string(for: .katakana, convertHatsuon: true))
-                        return true
-                    case .katakana:
-                        addFixedText(composing.string(for: .hiragana, convertHatsuon: true))
-                        return true
-                    case .direct:
-                        // 普通にqを入力させる
-                        break
-                    default:
-                        fatalError("inputMode=\(state.inputMode), handleComposingでqが入力された")
-                    }
-                }
-            } else {
-                // 送り仮名があるときはローマ字部分をリセットする
-                state.inputMethod = .composing(
-                    ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: ""))
-                updateMarkedText()
-                return true
-            }
-        } else if input == "l" && converted.kakutei == nil {
-            // 入力済みを確定してからlを打ったのと同じ処理をする
-            if okuri == nil {
-                switch state.inputMode {
-                case .hiragana, .katakana, .hankaku:
-                    state.inputMethod = .normal
-                    addFixedText(composing.string(for: state.inputMode, convertHatsuon: true))
-                    return handleNormal(action, specialState: specialState)
-                case .direct:
-                    // 普通にlを入力させる
-                    break
-                default:
-                    fatalError("inputMode=\(state.inputMode), handleComposingでlが入力された")
-                }
-            } else {
-                // 送り仮名があるときはローマ字部分をリセットする
-                state.inputMethod = .composing(
-                    ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: ""))
-                return false
-            }
-        } else if input == "." && action.shiftIsPressed() && state.inputMode != .direct && !composing.text.isEmpty { // ">"
+        if input == "." && action.shiftIsPressed() && state.inputMode != .direct && !composing.text.isEmpty { // ">"
             // 接頭辞が入力されたものとして ">" より前で変換を開始する
             let newComposing = composing.appendText(Romaji.Moji(firstRomaji: "", kana: ">"))
             return handleComposingStartConvert(action, composing: newComposing, specialState: specialState)
@@ -873,7 +917,7 @@ final class StateMachine {
             }
         }
 
-        switch action.keyEvent {
+        switch action.keyBind {
         case .enter:
             // 選択中の変換候補で確定
             fixCurrentSelect()
@@ -892,7 +936,7 @@ final class StateMachine {
             return handleSelectingPrevious(diff: -1, selecting: selecting)
         case .space, .down:
             let diff: Int
-            if selecting.candidateIndex >= inlineCandidateCount && action.keyEvent == .space {
+            if selecting.candidateIndex >= inlineCandidateCount && action.keyBind == .space {
                 // 次ページの先頭
                 diff = displayCandidateCount - (selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount
             } else {
@@ -923,10 +967,50 @@ final class StateMachine {
             return true
         case .tab:
             return true
-        case .stickyShift, .ctrlJ, .ctrlQ:
+        case .stickyShift, .hiragana, .hankakuKana:
             fixCurrentSelect()
             return handle(action)
-        case .printable(let input):
+        case .cancel:
+            state.inputMethod = .composing(selecting.prev.composing)
+            state.inputMode = selecting.prev.mode
+            updateCandidates(selecting: nil)
+            updateMarkedText()
+            return true
+        case .left, .right:
+            // AquaSKKと同様に何もしない (IMKCandidates表示時はそちらの移動に使われる)
+            return true
+        case .startOfLine:
+            // 現ページの先頭
+            let diff = -(selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount
+            if diff < 0 {
+                let newSelectingState = selecting.addCandidateIndex(diff: diff)
+                state.inputMethod = .selecting(newSelectingState)
+                updateCandidates(selecting: newSelectingState)
+                updateMarkedText()
+            }
+            return true
+        case .endOfLine:
+            // 現ページの末尾
+            let diff = min(
+                displayCandidateCount - (selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount,
+                selecting.candidates.count - selecting.candidateIndex - 1
+            )
+            if diff > 0 {
+                let newSelectingState = selecting.addCandidateIndex(diff: diff)
+                state.inputMethod = .selecting(newSelectingState)
+                updateCandidates(selecting: newSelectingState)
+                updateMarkedText()
+            }
+            return true
+        case .registerPaste, .delete, .eisu, .kana:
+            return true
+        case .toggleKana, .direct, .zenkaku, .abbrev, .japanese:
+            break
+        case nil:
+            break
+        }
+
+        if let input = action.event.charactersIgnoringModifiers {
             if input == "x" {
                 if action.shiftIsPressed() {
                     state.specialState = .unregister(
@@ -962,44 +1046,10 @@ final class StateMachine {
                     }
                 }
             }
-            // 選択中候補で確定し、未処理のアクションを処理する
-            fixCurrentSelect()
-            return handle(action)
-        case .cancel:
-            state.inputMethod = .composing(selecting.prev.composing)
-            state.inputMode = selecting.prev.mode
-            updateCandidates(selecting: nil)
-            updateMarkedText()
-            return true
-        case .left, .right:
-            // AquaSKKと同様に何もしない (IMKCandidates表示時はそちらの移動に使われる)
-            return true
-        case .ctrlA:
-            // 現ページの先頭
-            let diff = -(selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount
-            if diff < 0 {
-                let newSelectingState = selecting.addCandidateIndex(diff: diff)
-                state.inputMethod = .selecting(newSelectingState)
-                updateCandidates(selecting: newSelectingState)
-                updateMarkedText()
-            }
-            return true
-        case .ctrlE:
-            // 現ページの末尾
-            let diff = min(
-                displayCandidateCount - (selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount,
-                selecting.candidates.count - selecting.candidateIndex - 1
-            )
-            if diff > 0 {
-                let newSelectingState = selecting.addCandidateIndex(diff: diff)
-                state.inputMethod = .selecting(newSelectingState)
-                updateCandidates(selecting: newSelectingState)
-                updateMarkedText()
-            }
-            return true
-        case .ctrlY, .delete, .eisu, .kana:
-            return true
         }
+        // ここまでのどれにも該当しない入力のときは、選択中候補で確定して未処理のアクションとして処理する
+        fixCurrentSelect()
+        return handle(action)
     }
 
     @MainActor private func handleSelectingPrevious(diff: Int, selecting: SelectingState) -> Bool {

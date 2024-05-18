@@ -5,6 +5,7 @@
 "MenuItemInsertBlankString" = "空文字挿入 (互換性)";
 "SettingsNameGeneral" = "一般";
 "SettingsNameDictionaries" = "辞書";
+"SettingsNameKeyBinding" = "キーバインド";
 "SettingsNameSoftwareUpdate" = "ソフトウェアアップデート";
 "SettingsNameDirectMode" = "直接入力";
 "SettingsNameWorkaround" = "互換性の設定";
@@ -69,3 +70,30 @@
 "Address" = "アドレス";
 "TCP Port" = "TCPポート番号";
 "Response Encoding" = "応答エンコーディング";
+
+"KeyBindingActionHiragana" = "ひらがなモード";
+"KeyBindingActionTogglekana" = "かなカナ切り替え";
+"KeyBindingActionHankakukana" = "半角カナモード";
+"KeyBindingActionDirect" = "直接入力";
+"KeyBindingActionZenkaku" = "全角英数モード";
+"KeyBindingActionAbbrev" = "Abbrevモード";
+"KeyBindingActionJapanese" = "未確定入力開始";
+"KeyBindingActionStickyshift" = "Sticky Shift";
+"KeyBindingActionEnter" = "Enter";
+"KeyBindingActionSpace" = "Space";
+"KeyBindingActionTab" = "Tab";
+"KeyBindingActionBackspace" = "Backspace";
+"KeyBindingActionDelete" = "Delete";
+"KeyBindingActionCancel" = "キャンセル";
+"KeyBindingActionLeft" = "左";
+"KeyBindingActionRight" = "右";
+"KeyBindingActionDown" = "下";
+"KeyBindingActionUp" = "上";
+"KeyBindingActionStartofline" = "行頭へ移動";
+"KeyBindingActionEndofline" = "行末へ移動";
+"KeyBindingActionRegisterpaste" = "登録モードでペースト";
+"KeyBindingActionEisu" = "英数キー";
+"KeyBindingActionKana" = "かなキー";
+
+"KeyEisu" = "英数";
+"KeyKana" = "かな";

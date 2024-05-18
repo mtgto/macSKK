@@ -5,6 +5,7 @@
 "MenuItemInsertBlankString" = "Insert Blank String for Workaround";
 "SettingsNameGeneral" = "General";
 "SettingsNameDictionaries" = "Dictionaries";
+"SettingsNameKeyBinding" = "Key Bindings";
 "SettingsNameSoftwareUpdate" = "Software Update";
 "SettingsNameDirectMode" = "Direct Mode";
 "SettingsNameWorkaround" = "Workaround";
@@ -69,3 +70,30 @@
 "Address" = "Address";
 "TCP Port" = "TCP Port No.";
 "Response Encoding" = "Response Encoding";
+
+"KeyBindingActionHiragana" = "Hiragana Mode";
+"KeyBindingActionTogglekana" = "Toggle Kana";
+"KeyBindingActionHankakukana" = "Hankaku Kana";
+"KeyBindingActionDirect" = "Direct Input";
+"KeyBindingActionZenkaku" = "Zenkaku Eisu Mode";
+"KeyBindingActionAbbrev" = "Abbrev Mode";
+"KeyBindingActionJapanese" = "Start Input Mode";
+"KeyBindingActionStickyshift" = "Sticky Shift";
+"KeyBindingActionEnter" = "Enter";
+"KeyBindingActionSpace" = "Space";
+"KeyBindingActionTab" = "Tab";
+"KeyBindingActionBackspace" = "Backspace";
+"KeyBindingActionDelete" = "Delete";
+"KeyBindingActionCancel" = "Cancel";
+"KeyBindingActionLeft" = "Left";
+"KeyBindingActionRight" = "Right";
+"KeyBindingActionDown" = "Down";
+"KeyBindingActionUp" = "Up";
+"KeyBindingActionStartofline" = "Go start of line";
+"KeyBindingActionEndofline" = "Go end of line";
+"KeyBindingActionRegisterpaste" = "Paste on register";
+"KeyBindingActionEisu" = "Eisu Key";
+"KeyBindingActionKana" = "Kana Key";
+
+"KeyEisu" = "英数";
+"KeyKana" = "かな";

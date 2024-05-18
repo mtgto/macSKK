@@ -8,6 +8,7 @@ struct SettingsView: View {
     enum Section: String, CaseIterable {
         case general = "SettingsNameGeneral"
         case dictionaries = "SettingsNameDictionaries"
+        case keyBinding = "SettingsNameKeyBinding"
         case softwareUpdate = "SettingsNameSoftwareUpdate"
         case directMode = "SettingsNameDirectMode"
         case workaround = "SettingsNameWorkaround"
@@ -33,6 +34,8 @@ struct SettingsView: View {
                         Label(section.localizedStringKey, systemImage: "gear")
                     case .dictionaries:
                         Label(section.localizedStringKey, systemImage: "books.vertical")
+                    case .keyBinding:
+                        Label(section.localizedStringKey, systemImage: "keyboard")
                     case .softwareUpdate:
                         Label(section.localizedStringKey, systemImage: "gear.badge")
                     case .directMode:
@@ -43,7 +46,7 @@ struct SettingsView: View {
                         Label(section.localizedStringKey, systemImage: "doc.plaintext")
                     #if DEBUG
                     case .keyEvent:
-                        Label(section.localizedStringKey, systemImage: "keyboard")
+                        Label(section.localizedStringKey, systemImage: "keyboard.badge.eye")
                     case .systemDict:
                         Label(section.localizedStringKey, systemImage: "book.closed.fill")
                     #endif
@@ -61,6 +64,9 @@ struct SettingsView: View {
                     .navigationTitle(selectedSection.localizedStringKey)
             case .dictionaries:
                 DictionariesView(settingsViewModel: settingsViewModel)
+                    .navigationTitle(selectedSection.localizedStringKey)
+            case .keyBinding:
+                KeyBindingView(settingsViewModel: settingsViewModel)
                     .navigationTitle(selectedSection.localizedStringKey)
             case .softwareUpdate:
                 SoftwareUpdateView(settingsViewModel: settingsViewModel)

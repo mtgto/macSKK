@@ -11,6 +11,8 @@
 		CE06CA2D2AAC172F00E80E5E /* empty.txt in Resources */ = {isa = PBXBuildFile; fileRef = CE06CA2C2AAC172F00E80E5E /* empty.txt */; };
 		CE06CA342AAC199500E80E5E /* UserDict+Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE06CA332AAC199500E80E5E /* UserDict+Utilities.swift */; };
 		CE11C7B52BDD461C00A35F3D /* Global.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE11C7B42BDD461C00A35F3D /* Global.swift */; };
+		CE11C7BD2BE47D5D00A35F3D /* KeyBindingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE11C7BC2BE47D5D00A35F3D /* KeyBindingView.swift */; };
+		CE11C7BF2BE47D9800A35F3D /* KeyBinding.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE11C7BE2BE47D9800A35F3D /* KeyBinding.swift */; };
 		CE1B00552BA3DDEB00C830FD /* SKKServDict.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE1B00542BA3DDEB00C830FD /* SKKServDict.swift */; };
 		CE1B00622BA4286800C830FD /* Message+SKKServ.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE1B00612BA4286800C830FD /* Message+SKKServ.swift */; };
 		CE1B00642BA4287C00C830FD /* SKKServRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE1B00632BA4287C00C830FD /* SKKServRequest.swift */; };
@@ -22,6 +24,8 @@
 		CE2157662B2EA985006E4C41 /* UserDefaultsKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE2157652B2EA985006E4C41 /* UserDefaultsKeys.swift */; };
 		CE313A1F2AF5213700A49142 /* Candidate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE313A1E2AF5213700A49142 /* Candidate.swift */; };
 		CE39DB212A8DFD8F00BC619F /* MarkedText.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE39DB202A8DFD8F00BC619F /* MarkedText.swift */; };
+		CE39FA952BEB942B00E293F0 /* Character+KeyCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE39FA942BEB942B00E293F0 /* Character+KeyCode.swift */; };
+		CE39FA972BF0813E00E293F0 /* KeyBindingSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE39FA962BF0813E00E293F0 /* KeyBindingSet.swift */; };
 		CE3E44A52B4ED2D700105798 /* utf8-bom.txt in Resources */ = {isa = PBXBuildFile; fileRef = CE3E44A42B4ED2D700105798 /* utf8-bom.txt */; };
 		CE3E44A72B52AFB400105798 /* kana-rule.conf in Resources */ = {isa = PBXBuildFile; fileRef = CE3E44A62B52AFB400105798 /* kana-rule.conf */; };
 		CE3E44A92B52C89800105798 /* kana-rule-for-test.conf in Resources */ = {isa = PBXBuildFile; fileRef = CE3E44A82B52C89800105798 /* kana-rule-for-test.conf */; };
@@ -156,6 +160,8 @@
 		CE06CA2C2AAC172F00E80E5E /* empty.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = empty.txt; sourceTree = "<group>"; };
 		CE06CA332AAC199500E80E5E /* UserDict+Utilities.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UserDict+Utilities.swift"; sourceTree = "<group>"; };
 		CE11C7B42BDD461C00A35F3D /* Global.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Global.swift; sourceTree = "<group>"; };
+		CE11C7BC2BE47D5D00A35F3D /* KeyBindingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyBindingView.swift; sourceTree = "<group>"; };
+		CE11C7BE2BE47D9800A35F3D /* KeyBinding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyBinding.swift; sourceTree = "<group>"; };
 		CE1B00542BA3DDEB00C830FD /* SKKServDict.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServDict.swift; sourceTree = "<group>"; };
 		CE1B00612BA4286800C830FD /* Message+SKKServ.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Message+SKKServ.swift"; sourceTree = "<group>"; };
 		CE1B00632BA4287C00C830FD /* SKKServRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServRequest.swift; sourceTree = "<group>"; };
@@ -166,6 +172,8 @@
 		CE2157652B2EA985006E4C41 /* UserDefaultsKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsKeys.swift; sourceTree = "<group>"; };
 		CE313A1E2AF5213700A49142 /* Candidate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Candidate.swift; sourceTree = "<group>"; };
 		CE39DB202A8DFD8F00BC619F /* MarkedText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkedText.swift; sourceTree = "<group>"; };
+		CE39FA942BEB942B00E293F0 /* Character+KeyCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Character+KeyCode.swift"; sourceTree = "<group>"; };
+		CE39FA962BF0813E00E293F0 /* KeyBindingSet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyBindingSet.swift; sourceTree = "<group>"; };
 		CE3E44A42B4ED2D700105798 /* utf8-bom.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "utf8-bom.txt"; sourceTree = "<group>"; };
 		CE3E44A62B52AFB400105798 /* kana-rule.conf */ = {isa = PBXFileReference; lastKnownFileType = text; path = "kana-rule.conf"; sourceTree = "<group>"; };
 		CE3E44A82B52C89800105798 /* kana-rule-for-test.conf */ = {isa = PBXFileReference; lastKnownFileType = text; path = "kana-rule-for-test.conf"; sourceTree = "<group>"; };
@@ -364,6 +372,8 @@
 				CEA78FAF2964209B00B67E25 /* UserDict.swift */,
 				CEADA44A2B025A0F0026E2BD /* Entry.swift */,
 				CE84A3E6295DA4DA009394C4 /* Romaji.swift */,
+				CE11C7BE2BE47D9800A35F3D /* KeyBinding.swift */,
+				CE39FA962BF0813E00E293F0 /* KeyBindingSet.swift */,
 				CE3E44AC2B5391DB00105798 /* SettingsWatcher.swift */,
 				CE40D9A22A6D0C3900D44799 /* SystemDict.swift */,
 				CEB0888F2A7F73B400EFD1E3 /* Pasteboard.swift */,
@@ -423,6 +433,7 @@
 				CEA78FAD2961BA1D00B67E25 /* String+TransformTests.swift */,
 				CE496C942B440BBD001C623C /* Data+EucJis2004Tests.swift */,
 				CE06CA332AAC199500E80E5E /* UserDict+Utilities.swift */,
+				CE39FA942BEB942B00E293F0 /* Character+KeyCode.swift */,
 				CED7CA572A83BFE9004EF988 /* fixture */,
 			);
 			path = macSKKTests;
@@ -460,6 +471,7 @@
 				CE496C8B2B43968A001C623C /* LogView.swift */,
 				CEC376EA2965211200D9C432 /* KeyEventView.swift */,
 				CE40D9A02A6D0C2F00D44799 /* SystemDictView.swift */,
+				CE11C7BC2BE47D5D00A35F3D /* KeyBindingView.swift */,
 				CE2157652B2EA985006E4C41 /* UserDefaultsKeys.swift */,
 			);
 			path = Settings;
@@ -717,6 +729,7 @@
 				CE84A3B929570C37009394C4 /* InputController.swift in Sources */,
 				CE6599DC2ADBF2630052F8C0 /* SettingsWindow.swift in Sources */,
 				CE3E44AD2B5391DB00105798 /* SettingsWatcher.swift in Sources */,
+				CE39FA972BF0813E00E293F0 /* KeyBindingSet.swift in Sources */,
 				CE485A8A2A8FA5C6008271EF /* UserNotificationDelegate.swift in Sources */,
 				CE84A3EB295DA715009394C4 /* Dict.swift in Sources */,
 				CE40D9A12A6D0C2F00D44799 /* SystemDictView.swift in Sources */,
@@ -753,6 +766,7 @@
 				CE496C8C2B43968A001C623C /* LogView.swift in Sources */,
 				CEE3717529653112000DB2C3 /* SoftwareUpdateView.swift in Sources */,
 				CE496C912B440892001C623C /* URL+Additions.swift in Sources */,
+				CE11C7BD2BE47D5D00A35F3D /* KeyBindingView.swift in Sources */,
 				CE39DB212A8DFD8F00BC619F /* MarkedText.swift in Sources */,
 				CE40D9A32A6D0C3900D44799 /* SystemDict.swift in Sources */,
 				CE5EB6AD2AAC0DE000389B98 /* FileDict.swift in Sources */,
@@ -760,6 +774,7 @@
 				CEC376E82965199500D9C432 /* SettingsView.swift in Sources */,
 				CEC376EB2965211200D9C432 /* KeyEventView.swift in Sources */,
 				CE6DBAB02A85AA1200F5A227 /* LatestReleaseFetcher.swift in Sources */,
+				CE11C7BF2BE47D9800A35F3D /* KeyBinding.swift in Sources */,
 				CE6DBACD2A864A3B00F5A227 /* DictionariesView.swift in Sources */,
 				CEF0823A296BCDB000646366 /* InputModePanel.swift in Sources */,
 			);
@@ -783,6 +798,7 @@
 				CE06CA2B2AAC171B00E80E5E /* FileDictTests.swift in Sources */,
 				CED1CA1E2BAFBE0600C32AE3 /* SKKServDictTests.swift in Sources */,
 				CE6DBA912A846C1700F5A227 /* ReleaseVersionTests.swift in Sources */,
+				CE39FA952BEB942B00E293F0 /* Character+KeyCode.swift in Sources */,
 				CEA78FAE2961BA1D00B67E25 /* String+TransformTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

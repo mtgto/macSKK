@@ -190,8 +190,9 @@ class InputController: IMKInputController {
     }
 
     override func handle(_ event: NSEvent!, client sender: Any!) -> Bool {
+        let keyBind = Global.keyBinding.action(event: event)
         if directMode {
-            if let keyEvent = convert(event: event), keyEvent == .kana || keyEvent == .eisu {
+            if let keyBind, keyBind == .kana || keyBind == .eisu {
                 // 英数・かなキーは握り潰さないとエディタによって空白が入ってしまう
                 return true
             }
@@ -207,12 +208,11 @@ class InputController: IMKInputController {
         } else {
             logger.log("IMKTextInputが取得できません")
         }
-        guard let keyEvent = convert(event: event) else {
-            logger.debug("Can not convert event to KeyEvent")
+        if keyBind == nil && event.charactersIgnoringModifiers == nil {
             return stateMachine.handleUnhandledEvent(event)
         }
 
-        return stateMachine.handle(Action(keyEvent: keyEvent, originalEvent: event, cursorPosition: cursorPosition))
+        return stateMachine.handle(Action(keyBind: keyBind, event: event, cursorPosition: cursorPosition))
     }
 
     override func menu() -> NSMenu! {
@@ -336,93 +336,6 @@ class InputController: IMKInputController {
         let printable = [CharacterSet.alphanumerics, CharacterSet.symbols, CharacterSet.punctuationCharacters]
             .reduce(CharacterSet()) { $0.union($1) }
         return !text.unicodeScalars.contains { !printable.contains($0) }
-    }
-
-    private func convert(event: NSEvent) -> Action.KeyEvent? {
-        // Ctrl-J, Ctrl-Gなどは受け取るが、基本的にはCtrl, Command, Fnが押されていたら無視する
-        // Optionは修飾キーを打つかもしれないので許容する
-        let modifiers = event.modifierFlags
-        let keyCode = event.keyCode
-        let charactersIgnoringModifiers = event.charactersIgnoringModifiers
-        if modifiers.contains(.control) || modifiers.contains(.command) || modifiers.contains(.function) {
-            if modifiers == [.control] {
-                switch charactersIgnoringModifiers {
-                case "j":
-                    return .ctrlJ
-                case "g":
-                    return .cancel
-                case "q":
-                    return .ctrlQ
-                case "h":
-                    return .backspace
-                case "b":
-                    return .left
-                case "f":
-                    return .right
-                case "p":
-                    return .up
-                case "n":
-                    return .down
-                case "a":
-                    return .ctrlA
-                case "e":
-                    return .ctrlE
-                case "d":
-                    return .delete
-                case "y":
-                    return .ctrlY
-                default:
-                    break
-                }
-            }
-            // カーソルキーやDelキーはFn + NumPadがmodifierFlagsに設定されている
-            if !modifiers.contains(.control) && !modifiers.contains(.command) && modifiers.contains(.function) {
-                if keyCode == 123 {
-                    return .left
-                } else if keyCode == 124 {
-                    return .right
-                } else if keyCode == 125 {
-                    return .down
-                } else if keyCode == 126 {
-                    return .up
-                } else if keyCode == 117 {
-                    return .delete
-                }
-            }
-
-            return nil
-        }
-
-        if keyCode == 36 {  // エンター
-            return .enter
-        } else if keyCode == 48 {
-            return .tab
-        } else if keyCode == 123 {
-            return .left
-        } else if keyCode == 124 {
-            return .right
-        } else if keyCode == 126 {
-            return .up
-        } else if keyCode == 125 {
-            return .down
-        } else if keyCode == 51 {
-            return .backspace
-        } else if keyCode == 53 {  // ESC
-            return .cancel
-        } else if keyCode == 102 { // 英数キー
-            return .eisu
-        } else if keyCode == 104 { // かなキー
-            return .kana
-        } else if event.characters == " " {
-            return .space
-        } else if event.characters == ";" {
-            return .stickyShift
-        } else if let text = charactersIgnoringModifiers {
-            if isPrintable(text) {
-                return .printable(text)
-            }
-        }
-        return nil
     }
 
     // キー配列を設定する
