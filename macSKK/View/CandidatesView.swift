@@ -42,7 +42,7 @@ struct CandidatesView: View {
                 VStack(spacing: 0) {
                     List(Array(words.enumerated()), id: \.element, selection: $candidates.selected) { index, candidate in
                         HStack {
-                            Text("\(index + 1)")
+                            Text(String(Global.selectCandidateKeys[index]).uppercased())
                                 // 変換候補の90%のフォントサイズ
                                 .font(.system(size: candidates.candidatesFontSize * 0.9))
                                 .padding(EdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 0))

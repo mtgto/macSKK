@@ -2325,6 +2325,30 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    @MainActor func testHandleSelectingByAlphabet() {
+        Global.dictionary.setEntries(["あ": "123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".map { Word(String($0)) }])
+        Global.selectCandidateKeys = "asdfghjkl".map { $0 }
+
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(6).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerSelect, .emphasized("1")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerSelect, .emphasized("2")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerSelect, .emphasized("3")])))
+            XCTAssertEqual(events[4], .markedText(MarkedText([.markerSelect, .emphasized("4")])), "変換候補パネルが表示開始")
+            XCTAssertEqual(events[5], .fixedText("8"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "g")), "5番目で決定")
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     @MainActor func testHandleSelectingUnregister() {
         Global.dictionary.setEntries(["え": [Word("絵")]])
 

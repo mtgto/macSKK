@@ -164,6 +164,9 @@ final class SettingsViewModel: ObservableObject {
     @Published var skkservDictSetting: SKKServDictSetting
     /// キーバインディング
     @Published var keyBingings: [KeyBinding]
+    /// 変換候補パネルで表示されている候補を決定するキーの集合
+    @Published var selectCandidateKeys: String
+
     // 辞書ディレクトリ
     let dictionariesDirectoryUrl: URL
     private var cancellables = Set<AnyCancellable>()
@@ -197,7 +200,9 @@ final class SettingsViewModel: ObservableObject {
 
         // TODO: 設定化。いまはとりあえず固定でデフォルト設定を表示
         self.keyBingings = KeyBinding.defaultKeyBindingSettings
-        Global.selectCandidateKeys = UserDefaults.standard.string(forKey: UserDefaultsKeys.selectCandidateKeys)!.map { $0 }
+
+        selectCandidateKeys = UserDefaults.standard.string(forKey: UserDefaultsKeys.selectCandidateKeys)!
+        Global.selectCandidateKeys = selectCandidateKeys.lowercased().map { $0 }
 
         // SKK-JISYO.Lのようなファイルの読み込みが遅いのでバックグラウンドで処理
         $dictSettings.filter({ !$0.isEmpty }).receive(on: DispatchQueue.global()).sink { dictSettings in
@@ -328,6 +333,12 @@ final class SettingsViewModel: ObservableObject {
             logger.log("注釈のフォントサイズを\(annotationFontSize)に変更しました")
         }.store(in: &cancellables)
 
+        $selectCandidateKeys.dropFirst().sink { selectCandidateKeys in
+            UserDefaults.standard.set(selectCandidateKeys, forKey: UserDefaultsKeys.selectCandidateKeys)
+            Global.selectCandidateKeys = selectCandidateKeys.lowercased().map { $0 }
+            logger.log("変換候補決定のキーを\"\(selectCandidateKeys, privacy: .public)\"に変更しました")
+        }.store(in: &cancellables)
+
         NotificationCenter.default.publisher(for: notificationNameDictLoad).receive(on: RunLoop.main).sink { [weak self] notification in
             if let loadEvent = notification.object as? DictLoadEvent, let self {
                 if let userDict = Global.dictionary.userDict as? FileDict, userDict.id == loadEvent.id {
@@ -361,6 +372,7 @@ final class SettingsViewModel: ObservableObject {
         annotationFontSize = 13
         skkservDictSetting = SKKServDictSetting(enabled: true, address: "127.0.0.1", port: 1178, encoding: .japaneseEUC)
         keyBingings = []
+        selectCandidateKeys = "123456789"
     }
 
     // DictionaryViewのPreviewProvider用

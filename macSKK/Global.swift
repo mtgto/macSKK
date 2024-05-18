@@ -26,7 +26,7 @@ import Combine
     static var defaultKanaRule: Romaji!
     /// 現在のキーバインディング
     static var keyBinding: KeyBindingSet = KeyBindingSet.defaultKeyBindingSet
-    /// 変換候補パネルから選択するときに使用するキーの配列。
+    /// 変換候補パネルから選択するときに使用するキーの配列。英字の場合は小文字にしておくこと。
     static var selectCandidateKeys: [Character] = ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
     // 現在のモードを表示するパネル
     private let inputModePanel: InputModePanel

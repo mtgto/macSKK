@@ -1037,7 +1037,7 @@ final class StateMachine {
                 }
                 return handle(action)
             } else if selecting.candidateIndex >= inlineCandidateCount {
-                if let first = input.first, let index = Global.selectCandidateKeys.firstIndex(of: first), index < displayCandidateCount {
+                if let first = input.lowercased().first, let index = Global.selectCandidateKeys.firstIndex(of: first), index < displayCandidateCount {
                     let diff = index - (selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount
                     if selecting.candidateIndex + diff < selecting.candidates.count {
                         let newSelecting = selecting.addCandidateIndex(diff: diff)
