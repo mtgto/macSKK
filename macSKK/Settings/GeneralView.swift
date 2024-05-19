@@ -17,6 +17,11 @@ struct GeneralView: View {
                 Toggle(isOn: $settingsViewModel.showAnnotation, label: {
                     Text("Show Annotation")
                 })
+                Picker("Keys of selecting candidates", selection: $settingsViewModel.selectCandidateKeys) {
+                    Text("123456789").tag("123456789")
+                    Text("ASDFGHJKL").tag("ASDFGHJKL")
+                    Text("AOEUIDHTN").tag("AOEUIDHTN")
+                }
                 Section {
                     Picker("Number of inline candidates", selection: $settingsViewModel.inlineCandidateCount) {
                         ForEach(0..<10) { count in

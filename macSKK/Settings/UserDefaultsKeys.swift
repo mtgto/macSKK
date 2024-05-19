@@ -3,6 +3,7 @@
 
 import Foundation
 
+// UserDefaultsのキー。camelCaseでの命名を採用しています。
 struct UserDefaultsKeys {
     static let dictionaries = "dictionaries"
     static let directModeBundleIdentifiers = "directModeBundleIdentifiers"
@@ -15,4 +16,7 @@ struct UserDefaultsKeys {
     static let annotationFontSize = "annotationFontSize"
     // SKK辞書サーバーへの接続設定
     static let skkservClient = "skkserv"
+    // 選択候補パネルから決定するショートカットキー。
+    // 初期値は "123456789"。
+    static let selectCandidateKeys = "selectCandidateKeys"
 }

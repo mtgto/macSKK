@@ -177,6 +177,7 @@ struct macSKKApp: App {
             UserDefaultsKeys.selectedInputSource: InputSource.defaultInputSourceId,
             UserDefaultsKeys.showAnnotation: true,
             UserDefaultsKeys.inlineCandidateCount: 3,
+            UserDefaultsKeys.selectCandidateKeys: "123456789",
             UserDefaultsKeys.workarounds: [
                 ["bundleIdentifier": "net.kovidgoyal.kitty", "insertBlankString": true],
                 ["bundleIdentifier": "jp.naver.line.mac", "insertBlankString": true],

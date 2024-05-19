@@ -21,6 +21,7 @@ final class StateMachineTests: XCTestCase {
         // テストごとにローマ字かな変換ルールをデフォルトに戻す
         // こうしないとテストの中でGlobal.kanaRuleを書き換えるテストと一緒に走らせると違うかな変換ルールのままに実行されてしまう
         Global.kanaRule = Self.defaultKanaRule
+        Global.selectCandidateKeys = "123456789".map { $0 }
     }
 
     @MainActor func testHandleNormalSimple() {
@@ -2322,6 +2323,30 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(downKeyAction))
         XCTAssertTrue(stateMachine.handle(downKeyAction))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "2")))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    @MainActor func testHandleSelectingByAlphabet() {
+        Global.dictionary.setEntries(["あ": "123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".map { Word(String($0)) }])
+        Global.selectCandidateKeys = "asdfghjkl".map { $0 }
+
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(6).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerSelect, .emphasized("1")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerSelect, .emphasized("2")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerSelect, .emphasized("3")])))
+            XCTAssertEqual(events[4], .markedText(MarkedText([.markerSelect, .emphasized("4")])), "変換候補パネルが表示開始")
+            XCTAssertEqual(events[5], .fixedText("8"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "g")), "5番目で決定")
         wait(for: [expectation], timeout: 1.0)
     }
 

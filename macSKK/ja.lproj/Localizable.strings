@@ -56,6 +56,7 @@
 "Open Release Page" = "リリースページを開く";
 "Keyboard Layout" = "キー配列";
 "Show Annotation" = "現在の変換候補の注釈を表示";
+"Keys of selecting candidates" = "変換候補の決定に使用するキー";
 "Copy" = "コピー";
 "Number of inline candidates" = "インラインで表示する変換候補の数";
 "Candidates font size" = "変換候補のフォントサイズ";
