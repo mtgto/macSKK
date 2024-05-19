@@ -6,5 +6,7 @@
 	<false/>
 	<key>method</key>
 	<string>developer-id</string>
+	<key>signingStyle</key>
+	<string>automatic</string>
 </dict>
 </plist>
