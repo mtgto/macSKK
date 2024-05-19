@@ -66,9 +66,11 @@ macSKKが入力メソッドとして選択されているときに入力メニ�
 | selectedInputSource         | String  | キー配列 (KeyLayout) のID               |
 | showAnnotation              | Boolean | 注釈を変換候補のそばに表示するか        |
 | inlineCandidateCount        | Number  | インラインで表示する変換候補の数        |
-| workarounds                 | Array   | 互換性設定がされているアプリケーション  |
-| candidatesFontSize          | Number  | 変換候補のフォントサイズ (デフォルト13) |
-| annotationFontSize          | Number  | 注釈のフォントサイズ (デフォルト13)     |
+| workarounds                 | Array      | 互換性設定がされているアプリケーション  |
+| candidatesFontSize          | Number     | 変換候補のフォントサイズ (デフォルト13) |
+| annotationFontSize          | Number     | 注釈のフォントサイズ (デフォルト13)     |
+| skkserv                     | Dictionary | skkservサーバーへの接続設定             |
+| selectCandidateKeys         | String     | 変換候補から確定するキー配列            |
 
 ## 機能
 
