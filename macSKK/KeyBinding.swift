@@ -53,6 +53,8 @@ struct KeyBinding: Identifiable {
         case endOfLine
         /// 単語登録時のみクリップボードからテキストをペーストする。デフォルトはCtrl-yキー
         case registerPaste
+        /// 変換候補選択時に入力することで登録解除確認へ遷移する。デフォルトはShift-xキー
+        case unregister
         /// 英数キー
         /// TODO: カスタマイズできなくする?
         case eisu
@@ -63,6 +65,7 @@ struct KeyBinding: Identifiable {
 
     enum Key: Hashable, Equatable {
         /// jやqやlなど、キーに印字されているテキスト。
+        /// シフトを押しながら入力する場合は英字は小文字、!や#など記号はそのまま。
         case character(Character)
         /// keyCode形式。矢印キーなど表記できないキーを表現するために使用する。
         /// 設定でDvorak配列を選んでいる場合などもkeyCodeはQwerty配列の位置のままなので基本的にはcharacterで設定すること。
@@ -81,7 +84,7 @@ struct KeyBinding: Identifiable {
         let displayString: String
 
         init(event: NSEvent) {
-            if let character = event.charactersIgnoringModifiers?.first, Key.characters.contains(character) {
+            if let character = event.charactersIgnoringModifiers?.lowercased().first, Key.characters.contains(character) {
                 key = .character(character)
             } else {
                 key = .code(event.keyCode)
@@ -189,6 +192,8 @@ struct KeyBinding: Identifiable {
                 return KeyBinding(action, [Input(key: .character("a"), displayString: "A", modifierFlags: .control)])
             case .endOfLine:
                 return KeyBinding(action, [Input(key: .character("e"), displayString: "E", modifierFlags: .control)])
+            case .unregister:
+                return KeyBinding(action, [Input(key: .character("x"), displayString: "X", modifierFlags: .shift)])
             case .registerPaste:
                 return KeyBinding(action, [Input(key: .character("y"), displayString: "Y", modifierFlags: .control)])
             case .eisu:

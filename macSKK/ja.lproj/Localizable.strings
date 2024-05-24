@@ -92,6 +92,7 @@
 "KeyBindingActionUp" = "上";
 "KeyBindingActionStartofline" = "行頭へ移動";
 "KeyBindingActionEndofline" = "行末へ移動";
+"KeyBindingActionUnregister" = "選択中の変換候補の削除";
 "KeyBindingActionRegisterpaste" = "登録モードでペースト";
 "KeyBindingActionEisu" = "英数キー";
 "KeyBindingActionKana" = "かなキー";
