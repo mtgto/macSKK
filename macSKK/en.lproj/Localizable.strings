@@ -92,6 +92,7 @@
 "KeyBindingActionUp" = "Up";
 "KeyBindingActionStartofline" = "Go start of line";
 "KeyBindingActionEndofline" = "Go end of line";
+"KeyBindingActionUnregister" = "Unregister selected candidate";
 "KeyBindingActionRegisterpaste" = "Paste on register";
 "KeyBindingActionEisu" = "Eisu Key";
 "KeyBindingActionKana" = "Kana Key";

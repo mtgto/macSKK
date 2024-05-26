@@ -208,13 +208,16 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleNormalPrintable() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .direct))
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(2).sink { events in
+        stateMachine.inputMethodEvent.collect(3).sink { events in
             XCTAssertEqual(events[0], .fixedText("c"))
             XCTAssertEqual(events[1], .fixedText("C"))
+            XCTAssertEqual(events[2], .fixedText("X"))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "c")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "C", characterIgnoringModifier: "c", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "c", withShift: true)))
+        // 変換候補選択画面で登録解除へ遷移するキー。Normalではなにも起きない
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "x", withShift: true)))
         wait(for: [expectation], timeout: 1.0)
     }
 
@@ -1270,13 +1273,16 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleComposingPrintableAndL() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(4).sink { events in
-            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("え")])))
-            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("えb")])))
-            XCTAssertEqual(events[2], .fixedText("え"))
-            XCTAssertEqual(events[3], .modeChanged(.direct, .zero))
+        stateMachine.inputMethodEvent.collect(5).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("x")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("ぇ")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("ぇb")])))
+            XCTAssertEqual(events[3], .fixedText("ぇ"))
+            XCTAssertEqual(events[4], .modeChanged(.direct, .zero))
             expectation.fulfill()
         }.store(in: &cancellables)
+        // 変換候補選択画面で登録解除へ遷移するキー。Normalではなにも起きない
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "x", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "b")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "l")))
@@ -2365,7 +2371,7 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[6], .markedText(MarkedText([])))
             expectation.fulfill()
         }.store(in: &cancellables)
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "E", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "x", withShift: true)))
         XCTAssertTrue(stateMachine.handle(upKeyAction), "上キーやC-pは無視")
@@ -2675,6 +2681,8 @@ final class StateMachineTests: XCTestCase {
             return withShift ? .zenkaku : .direct
         case "q":
             return withShift ? .japanese : .toggleKana
+        case "x":
+            return withShift ? .unregister : nil
         case ";":
             return withShift ? nil : .stickyShift
         case "/":

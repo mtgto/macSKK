@@ -297,7 +297,7 @@ final class StateMachine {
         case .eisu:
             // 何もしない (OSがIMEの切り替えはしてくれる)
             return true
-        case nil:
+        case .unregister, nil:
             break
         }
 
@@ -692,7 +692,7 @@ final class StateMachine {
             return true
         case .abbrev, .up, .down, .registerPaste, .eisu, .kana:
             return true
-        case .none:
+        case .unregister, .none:
             break
         }
 
@@ -1002,6 +1002,14 @@ final class StateMachine {
                 updateMarkedText()
             }
             return true
+        case .unregister:
+            state.specialState = .unregister(
+                UnregisterState(prev: UnregisterState.PrevState(mode: state.inputMode, selecting: selecting)))
+            state.inputMethod = .normal
+            state.inputMode = .direct
+            updateCandidates(selecting: nil)
+            updateMarkedText()
+            return true
         case .registerPaste, .delete, .eisu, .kana:
             return true
         case .toggleKana, .direct, .zenkaku, .abbrev, .japanese:
@@ -1012,17 +1020,7 @@ final class StateMachine {
 
         if let input = action.event.charactersIgnoringModifiers {
             if input == "x" {
-                if action.shiftIsPressed() {
-                    state.specialState = .unregister(
-                        UnregisterState(prev: UnregisterState.PrevState(mode: state.inputMode, selecting: selecting)))
-                    state.inputMethod = .normal
-                    state.inputMode = .direct
-                    updateCandidates(selecting: nil)
-                    updateMarkedText()
-                    return true
-                } else {
-                    return handleSelectingPrevious(diff: -1, selecting: selecting)
-                }
+                return handleSelectingPrevious(diff: -1, selecting: selecting)
             } else if input == "." && action.shiftIsPressed() {
                 // 選択中候補で確定し、接尾辞入力に移行。
                 // カーソル位置より右に文字列がある場合は接頭辞入力として扱う (無視してもいいかも)
