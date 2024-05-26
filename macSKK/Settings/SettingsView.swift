@@ -41,7 +41,7 @@ struct SettingsView: View {
                     case .directMode:
                         Label(section.localizedStringKey, systemImage: "hand.raised.app")
                     case .workaround:
-                        Label(section.localizedStringKey, systemImage: "shield.checkered")
+                        Label(section.localizedStringKey, systemImage: "shield.lefthalf.filled")
                     case .log:
                         Label(section.localizedStringKey, systemImage: "doc.plaintext")
                     #if DEBUG
