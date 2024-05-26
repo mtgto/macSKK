@@ -22,6 +22,7 @@
 		CE1B006C2BA54D9800C830FD /* SKKServService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE1B006B2BA54D9800C830FD /* SKKServService.swift */; };
 		CE1B006D2BA54DE400C830FD /* SKKServClientProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF3D8752B9EF0C000BD1D3A /* SKKServClientProtocol.swift */; };
 		CE2157662B2EA985006E4C41 /* UserDefaultsKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE2157652B2EA985006E4C41 /* UserDefaultsKeys.swift */; };
+		CE2F3B132C030C9A00CE342B /* KeyBindingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE2F3B122C030C9A00CE342B /* KeyBindingTests.swift */; };
 		CE313A1F2AF5213700A49142 /* Candidate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE313A1E2AF5213700A49142 /* Candidate.swift */; };
 		CE39DB212A8DFD8F00BC619F /* MarkedText.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE39DB202A8DFD8F00BC619F /* MarkedText.swift */; };
 		CE39FA952BEB942B00E293F0 /* Character+KeyCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE39FA942BEB942B00E293F0 /* Character+KeyCode.swift */; };
@@ -170,6 +171,7 @@
 		CE1B00692BA5490E00C830FD /* SKKServDictView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServDictView.swift; sourceTree = "<group>"; };
 		CE1B006B2BA54D9800C830FD /* SKKServService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServService.swift; sourceTree = "<group>"; };
 		CE2157652B2EA985006E4C41 /* UserDefaultsKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsKeys.swift; sourceTree = "<group>"; };
+		CE2F3B122C030C9A00CE342B /* KeyBindingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyBindingTests.swift; sourceTree = "<group>"; };
 		CE313A1E2AF5213700A49142 /* Candidate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Candidate.swift; sourceTree = "<group>"; };
 		CE39DB202A8DFD8F00BC619F /* MarkedText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkedText.swift; sourceTree = "<group>"; };
 		CE39FA942BEB942B00E293F0 /* Character+KeyCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Character+KeyCode.swift"; sourceTree = "<group>"; };
@@ -363,7 +365,6 @@
 				CE84A3DB2957174D009394C4 /* State.swift */,
 				CE84A3DF295717CB009394C4 /* StateMachine.swift */,
 				CEE2D9762A99FE1B00A4CD76 /* Word.swift */,
-				CE4CB5CB2AD557D90046FA34 /* NumberEntry.swift */,
 				CE313A1E2AF5213700A49142 /* Candidate.swift */,
 				CE84A3EA295DA715009394C4 /* Dict.swift */,
 				CE5EB6AC2AAC0DE000389B98 /* FileDict.swift */,
@@ -371,6 +372,7 @@
 				CE1B00542BA3DDEB00C830FD /* SKKServDict.swift */,
 				CEA78FAF2964209B00B67E25 /* UserDict.swift */,
 				CEADA44A2B025A0F0026E2BD /* Entry.swift */,
+				CE4CB5CB2AD557D90046FA34 /* NumberEntry.swift */,
 				CE84A3E6295DA4DA009394C4 /* Romaji.swift */,
 				CE11C7BE2BE47D9800A35F3D /* KeyBinding.swift */,
 				CE39FA962BF0813E00E293F0 /* KeyBindingSet.swift */,
@@ -418,16 +420,17 @@
 		CE5ECF462957034D00E7BE7D /* macSKKTests */ = {
 			isa = PBXGroup;
 			children = (
-				CE84A3E8295DA504009394C4 /* RomajiTests.swift */,
+				CEF0823529685C0800646366 /* StateTests.swift */,
+				CEA78FA9295EBCAC00B67E25 /* StateMachineTests.swift */,
 				CEE2D9782A99FEC700A4CD76 /* CandidateTest.swift */,
 				CE4CB5CD2AD55DF90046FA34 /* NumberEntryTests.swift */,
 				CE84A3EC295DA818009394C4 /* MemoryDictTests.swift */,
 				CE06CA292AAC171B00E80E5E /* FileDictTests.swift */,
 				CEA78FB129646CA100B67E25 /* UserDictTests.swift */,
 				CED1CA1D2BAFBE0600C32AE3 /* SKKServDictTests.swift */,
-				CEF0823529685C0800646366 /* StateTests.swift */,
-				CEA78FA9295EBCAC00B67E25 /* StateMachineTests.swift */,
 				CEADA44C2B025A8A0026E2BD /* EntryTests.swift */,
+				CE84A3E8295DA504009394C4 /* RomajiTests.swift */,
+				CE2F3B122C030C9A00CE342B /* KeyBindingTests.swift */,
 				CED7CA3D2A8397E4004EF988 /* UpdateCheckerTests.swift */,
 				CE6DBA902A846C1700F5A227 /* ReleaseVersionTests.swift */,
 				CEA78FAD2961BA1D00B67E25 /* String+TransformTests.swift */,
@@ -794,6 +797,7 @@
 				CEE2D9792A99FEC700A4CD76 /* CandidateTest.swift in Sources */,
 				CEF0823629685C0800646366 /* StateTests.swift in Sources */,
 				CED7CA3E2A8397E4004EF988 /* UpdateCheckerTests.swift in Sources */,
+				CE2F3B132C030C9A00CE342B /* KeyBindingTests.swift in Sources */,
 				CEA78FB229646CA100B67E25 /* UserDictTests.swift in Sources */,
 				CE06CA2B2AAC171B00E80E5E /* FileDictTests.swift in Sources */,
 				CED1CA1E2BAFBE0600C32AE3 /* SKKServDictTests.swift in Sources */,
