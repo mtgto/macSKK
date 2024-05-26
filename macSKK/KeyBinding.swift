@@ -77,6 +77,8 @@ struct KeyBinding: Identifiable {
 
     struct Input: Hashable, Equatable {
         let key: Key
+        /// 入力時に押されている修飾キー。
+        /// keyがcode形式の場合 (スペース、タブ、バックスペース、矢印キーなど) はmodifierFlagsは
         let modifierFlags: NSEvent.ModifierFlags
         /**
          * 設定画面の表示用文字
@@ -101,12 +103,25 @@ struct KeyBinding: Identifiable {
         }
 
         func hash(into hasher: inout Hasher) {
+            // NOTE: keyCodeで定義されているときはハッシュ値の計算にシフトキーをmodifierFlagsに入れていません。
+            // 矢印キーとShift押しながら矢印キーをどちらも矢印キーと扱うようにしたいためです。
             hasher.combine(key)
-            hasher.combine(modifierFlags.rawValue)
+            switch key {
+            case .character(let c):
+                hasher.combine(modifierFlags.rawValue)
+            case .code(let code):
+                hasher.combine(modifierFlags.subtracting(.shift).rawValue)
+            }
         }
 
         static func == (lhs: Self, rhs: Self) -> Bool {
-            return lhs.key == rhs.key && lhs.modifierFlags == rhs.modifierFlags
+            // NOTE: keyCodeで定義されているときはmodifierFlagsを比較しません。
+            // 矢印キーとShift押しながら矢印キーをどちらも矢印キーと扱うようにしたいためです。
+            if case .code = lhs.key, case .code = rhs.key {
+                return lhs.key == rhs.key && lhs.modifierFlags.subtracting(.shift) == rhs.modifierFlags.subtracting(.shift)
+            } else {
+                return lhs.key == rhs.key && lhs.modifierFlags == rhs.modifierFlags
+            }
         }
 
         var localized: String {

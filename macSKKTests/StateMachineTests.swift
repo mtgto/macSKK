@@ -437,10 +437,15 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    @MainActor func testHandleNormalLeftRight() {
+    @MainActor func testHandleNormalArrowKeys() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         XCTAssertFalse(stateMachine.handle(leftKeyAction))
         XCTAssertFalse(stateMachine.handle(rightKeyAction))
+        XCTAssertFalse(stateMachine.handle(downKeyAction))
+        XCTAssertFalse(stateMachine.handle(upKeyAction))
+        // シフトキーを押しながら矢印キーを押したときも矢印アクションとして扱われ、falseが返る
+        let shiftRightKeyAction = Action(keyBind: .right, event: generateNSEvent(character: "\u{63235}", characterIgnoringModifiers: "\u{63235}", modifierFlags: [.function, .numericPad, .shift]), cursorPosition: .zero)
+        XCTAssertFalse(stateMachine.handle(shiftRightKeyAction))
     }
 
     @MainActor func testHandleNormalCtrlAEY() {
