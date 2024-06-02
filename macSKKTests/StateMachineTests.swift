@@ -1872,6 +1872,34 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    @MainActor func testHandleRegisteringRecursive() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(9).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("い")])))
+            XCTAssertEqual(events[1], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.plain("[登録：い]")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.plain("[登録：い]"), .plain("う")])))
+            XCTAssertEqual(events[4], .markedText(MarkedText([.plain("[登録：い]"), .plain("う"), .markerCompose, .plain("え")])))
+            XCTAssertEqual(events[5], .markedText(MarkedText([.plain("[登録：い]"), .plain("う")])))
+            XCTAssertEqual(events[6], .markedText(MarkedText([.plain("[[登録：う]]")])))
+            XCTAssertEqual(events[6], .markedText(MarkedText([.plain("[[登録：う]]"), .plain("え")])))
+            XCTAssertEqual(events[7], .markedText(MarkedText([.plain("[登録：い]"), .plain("え")])))
+            XCTAssertEqual(events[8], .markedText(MarkedText([.markerCompose, .plain("え")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e")))
+        XCTAssertTrue(stateMachine.handle(enterAction))
+        XCTAssertTrue(stateMachine.handle(enterAction))
+        wait(for: [expectation], timeout: 1.0)
+        XCTAssertEqual(Global.dictionary.refer("い"), [Word("え")])
+        XCTAssertEqual(Global.dictionary.refer("う"), [Word("え")])
+    }
+
     @MainActor func testHandleRegisteringUnregisteredKeyEventWithModifiers() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
