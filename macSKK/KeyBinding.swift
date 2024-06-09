@@ -73,6 +73,25 @@ struct KeyBinding: Identifiable {
         case code(UInt16)
         /// macSKKでkeyCodeベースでなく印字されている文字で取り扱うキーの集合。
         static let characters: [Character] = "abcdefghijklmnopqrstuvwxyz1234567890,./;".map { $0 }
+
+        init?(rawValue: Any) {
+            if let character = rawValue as? String, Self.characters.contains(character) {
+                self = .character(Character(character))
+            } else if let keyCode = rawValue as? UInt16 {
+                self = .code(keyCode)
+            } else {
+                return nil
+            }
+        }
+
+        func encode() -> Any {
+            switch self {
+            case .character(let character):
+                return String(character)
+            case .code(let keyCode):
+                return keyCode
+            }
+        }
     }
 
     struct Input: Hashable, Equatable {
@@ -102,14 +121,25 @@ struct KeyBinding: Identifiable {
             self.displayString = displayString
         }
 
+        init?(dict: [String: Any]) {
+            guard let keyValue = dict["key"], let key = Key(rawValue: keyValue),
+            let modifierFlagsValue = dict["modifierFlags"] as? UInt,
+            let displayString = dict["displayString"] as? String else {
+                return nil
+            }
+            self.key = key
+            self.modifierFlags = NSEvent.ModifierFlags(rawValue: modifierFlagsValue)
+            self.displayString = displayString
+        }
+
         func hash(into hasher: inout Hasher) {
             // NOTE: keyCodeで定義されているときはハッシュ値の計算にシフトキーをmodifierFlagsに入れていません。
             // 矢印キーとShift押しながら矢印キーをどちらも矢印キーと扱うようにしたいためです。
             hasher.combine(key)
             switch key {
-            case .character(let c):
+            case .character:
                 hasher.combine(modifierFlags.rawValue)
-            case .code(let code):
+            case .code:
                 hasher.combine(modifierFlags.subtracting(.shift).rawValue)
             }
         }
@@ -135,6 +165,10 @@ struct KeyBinding: Identifiable {
             result.append(displayString)
             return result.joined(separator: " ")
         }
+
+        func encode() -> [String: Any] {
+            return ["key": key.encode(), "modifierFlags": modifierFlags.rawValue, "displayString": displayString]
+        }
     }
 
     let action: Action
@@ -144,6 +178,27 @@ struct KeyBinding: Identifiable {
     init(_ action: Action, _ inputs: [Input]) {
         self.action = action
         self.inputs = inputs
+    }
+
+    // UserDefaultsからのデコード用
+    init?(dict: [String: Any]) {
+        guard let actionValue = dict["action"] as? String, let action = Action(stringValue: actionValue),
+        let inputsValue = dict["inputs"] as? Array<[String: Any]> else {
+            return nil
+        }
+        let inputs = inputsValue.compactMap({ Input(dict: $0) })
+        if inputs.count != inputsValue.count {
+            return nil
+        }
+        self.action = action
+        self.inputs = inputs
+    }
+
+    func encode() -> [String: Any] {
+        return [
+            "action": action.stringValue,
+            "inputs": inputs.map { $0.encode() },
+        ]
     }
 
     var localizedAction: String {
