@@ -558,15 +558,15 @@ struct UnregisterState: SpecialStateProtocol {
 enum SpecialState: SpecialStateProtocol {
     /// 単語登録状態。登録中に登録する再帰可能でその場合はprevの末尾に現在の登録状態を付けて新しい状態に遷移する。
     case register(RegisterState, prev: [RegisterState])
-    /// 単語登録解除
-    case unregister(UnregisterState)
+    /// 単語登録解除。登録中に入力した単語を登録解除したときには登録状態を保持しておく
+    case unregister(UnregisterState, prev: (RegisterState, [RegisterState])?)
 
     func appendText(_ text: String) -> Self {
         switch self {
         case .register(let registerState, let prev):
             return .register(registerState.appendText(text), prev: prev)
-        case .unregister(let unregisterState):
-            return .unregister(unregisterState.appendText(text))
+        case .unregister(let unregisterState, let prev):
+            return .unregister(unregisterState.appendText(text), prev: prev)
         }
     }
 
@@ -574,8 +574,8 @@ enum SpecialState: SpecialStateProtocol {
         switch self {
         case .register(let registerState, let prev):
             return .register(registerState.dropLast(), prev: prev)
-        case .unregister(let unregisterState):
-            return .unregister(unregisterState.dropLast())
+        case .unregister(let unregisterState, let prev):
+            return .unregister(unregisterState.dropLast(), prev: prev)
         }
     }
 
@@ -594,8 +594,8 @@ enum SpecialState: SpecialStateProtocol {
         switch self {
         case .register(let registerState, let prev):
             return .register(registerState.moveCursorLeft(), prev: prev)
-        case .unregister(let unregisterState):
-            return .unregister(unregisterState.moveCursorLeft())
+        case .unregister(let unregisterState, let prev):
+            return .unregister(unregisterState.moveCursorLeft(), prev: prev)
         }
     }
 
@@ -603,8 +603,8 @@ enum SpecialState: SpecialStateProtocol {
         switch self {
         case .register(let registerState, let prev):
             return .register(registerState.moveCursorRight(), prev: prev)
-        case .unregister(let unregisterState):
-            return .unregister(unregisterState.moveCursorRight())
+        case .unregister(let unregisterState, let prev):
+            return .unregister(unregisterState.moveCursorRight(), prev: prev)
         }
     }
 
@@ -612,8 +612,8 @@ enum SpecialState: SpecialStateProtocol {
         switch self {
         case .register(let registerState, let prev):
             return .register(registerState.moveCursorFirst(), prev: prev)
-        case .unregister(let unregisterState):
-            return .unregister(unregisterState.moveCursorFirst())
+        case .unregister(let unregisterState, let prev):
+            return .unregister(unregisterState.moveCursorFirst(), prev: prev)
         }
     }
 
@@ -621,8 +621,8 @@ enum SpecialState: SpecialStateProtocol {
         switch self {
         case .register(let registerState, let prev):
             return .register(registerState.moveCursorLast(), prev: prev)
-        case .unregister(let unregisterState):
-            return .unregister(unregisterState.moveCursorLast())
+        case .unregister(let unregisterState, let prev):
+            return .unregister(unregisterState.moveCursorLast(), prev: prev)
         }
     }
 }
@@ -688,7 +688,7 @@ struct IMEState {
                     }
                     elements += inputMethod.markedTextElements(inputMode: inputMode)
                 }
-            case .unregister(let unregisterState):
+            case .unregister(let unregisterState, _):
                 let selectingState = unregisterState.prev.selecting
                 let selectingCandidate = selectingState.candidates[selectingState.candidateIndex]
                 elements.append(.plain("\(selectingCandidate.toMidashiString(yomi: selectingState.yomi)) /\(selectingCandidate.candidateString)/ を削除します(yes/no)"))

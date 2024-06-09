@@ -1948,6 +1948,32 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    @MainActor func testHandleCancelUnregisterWhileRegistering() {
+        Global.dictionary.setEntries(["あ": [Word("亜")]])
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(7).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("い")])))
+            XCTAssertEqual(events[1], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.plain("[登録：い]")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.plain("[登録：い]"), .markerCompose, .plain("あ")])))
+            XCTAssertEqual(events[4], .markedText(MarkedText([.plain("[登録：い]"), .markerSelect, .emphasized("亜")])))
+            XCTAssertEqual(events[5], .markedText(MarkedText([.plain("あ /亜/ を削除します(yes/no)")])))
+            XCTAssertEqual(events[6], .markedText(MarkedText([.plain("[登録：い]"), .markerSelect, .emphasized("亜")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        // 読み「い」の単語登録中に「あ→亜」で変換する
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        // 単語登録中に変換した単語「亜」を登録削除開始
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "x", withShift: true)))
+        // 単語登録中に変換した単語の登録削除をキャンセルしたら、単語登録画面の単語変換中に戻る
+        XCTAssertTrue(stateMachine.handle(cancelAction))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     @MainActor func testHandleRegisterN() {
         Global.dictionary.setEntries(["もん": [Word("門")]])
 
