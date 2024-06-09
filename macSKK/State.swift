@@ -348,6 +348,7 @@ struct SelectingState: Equatable, MarkedTextProtocol {
     }
     /// 候補選択状態に遷移する前の状態。
     let prev: PrevState
+
     /**
      * 辞書登録する際の読み。ただし数値変換エントリの場合は例外あり。
      *
@@ -555,15 +556,15 @@ struct UnregisterState: SpecialStateProtocol {
 
 /// 入力中に遷移する特別なモード
 enum SpecialState: SpecialStateProtocol {
-    /// 単語登録
-    case register(RegisterState)
+    /// 単語登録状態。登録中に登録する再帰可能でその場合はprevの末尾に現在の登録状態を付けて新しい状態に遷移する。
+    case register(RegisterState, prev: [RegisterState])
     /// 単語登録解除
     case unregister(UnregisterState)
 
     func appendText(_ text: String) -> Self {
         switch self {
-        case .register(let registerState):
-            return .register(registerState.appendText(text))
+        case .register(let registerState, let prev):
+            return .register(registerState.appendText(text), prev: prev)
         case .unregister(let unregisterState):
             return .unregister(unregisterState.appendText(text))
         }
@@ -571,8 +572,8 @@ enum SpecialState: SpecialStateProtocol {
 
     func dropLast() -> Self {
         switch self {
-        case .register(let registerState):
-            return .register(registerState.dropLast())
+        case .register(let registerState, let prev):
+            return .register(registerState.dropLast(), prev: prev)
         case .unregister(let unregisterState):
             return .unregister(unregisterState.dropLast())
         }
@@ -580,8 +581,8 @@ enum SpecialState: SpecialStateProtocol {
 
     func dropForward() -> Self {
         switch self {
-        case .register(let registerState):
-            return .register(registerState.dropForward())
+        case .register(let registerState, let prev):
+            return .register(registerState.dropForward(), prev: prev)
         case .unregister:
             // unregister時はカーソル移動できないので無視
             return self
@@ -591,8 +592,8 @@ enum SpecialState: SpecialStateProtocol {
     // MARK: - CursorProtocol
     func moveCursorLeft() -> Self {
         switch self {
-        case .register(let registerState):
-            return .register(registerState.moveCursorLeft())
+        case .register(let registerState, let prev):
+            return .register(registerState.moveCursorLeft(), prev: prev)
         case .unregister(let unregisterState):
             return .unregister(unregisterState.moveCursorLeft())
         }
@@ -600,8 +601,8 @@ enum SpecialState: SpecialStateProtocol {
 
     func moveCursorRight() -> Self {
         switch self {
-        case .register(let registerState):
-            return .register(registerState.moveCursorRight())
+        case .register(let registerState, let prev):
+            return .register(registerState.moveCursorRight(), prev: prev)
         case .unregister(let unregisterState):
             return .unregister(unregisterState.moveCursorRight())
         }
@@ -609,8 +610,8 @@ enum SpecialState: SpecialStateProtocol {
 
     func moveCursorFirst() -> Self {
         switch self {
-        case .register(let registerState):
-            return .register(registerState.moveCursorFirst())
+        case .register(let registerState, let prev):
+            return .register(registerState.moveCursorFirst(), prev: prev)
         case .unregister(let unregisterState):
             return .unregister(unregisterState.moveCursorFirst())
         }
@@ -618,8 +619,8 @@ enum SpecialState: SpecialStateProtocol {
 
     func moveCursorLast() -> Self {
         switch self {
-        case .register(let registerState):
-            return .register(registerState.moveCursorLast())
+        case .register(let registerState, let prev):
+            return .register(registerState.moveCursorLast(), prev: prev)
         case .unregister(let unregisterState):
             return .unregister(unregisterState.moveCursorLast())
         }
@@ -655,14 +656,14 @@ struct IMEState {
         var elements = [MarkedText.Element]()
         if let specialState {
             switch specialState {
-            case .register(let registerState):
+            case .register(let registerState, let prevRegisterStates):
                 let mode = registerState.prev.mode
                 let composing = registerState.prev.composing
                 var yomi = composing.subText().joined()
                 if let okuri = composing.okuri, !okuri.isEmpty {
                     yomi += "*" + okuri.map { $0.string(for: mode) }.joined()
                 }
-                elements.append(.plain("[登録：\(yomi)]"))
+                elements.append(.plain(String(repeating: "[", count: prevRegisterStates.count + 1) + "登録：\(yomi)" + String(repeating: "]", count: prevRegisterStates.count + 1)))
                 if let registerCursor = registerState.cursor {
                     let subtext = String(registerState.text.prefix(registerCursor))
                     if !subtext.isEmpty {

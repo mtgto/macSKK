@@ -153,15 +153,23 @@ final class StateMachine {
             }
         case .enter:
             if let specialState {
-                if case .register(let registerState) = specialState {
+                if case .register(let registerState, let prev) = specialState {
                     if registerState.text.isEmpty {
                         state.inputMode = registerState.prev.mode
                         state.inputMethod = .composing(registerState.prev.composing)
-                        state.specialState = nil
+                        if let last = prev.last {
+                            state.specialState = .register(last, prev: prev.dropLast())
+                        } else {
+                            state.specialState = nil
+                        }
                         updateMarkedText()
                     } else {
                         addWordToUserDict(yomi: registerState.yomi, okuri: registerState.okuri, candidate: Candidate(registerState.text))
-                        state.specialState = nil
+                        if let last = prev.last {
+                            state.specialState = .register(last, prev: prev.dropLast())
+                        } else {
+                            state.specialState = nil
+                        }
                         state.inputMode = registerState.prev.mode
                         if let okuri = registerState.okuri {
                             addFixedText(registerState.text + okuri)
@@ -223,15 +231,20 @@ final class StateMachine {
         case .cancel:
             if let specialState = state.specialState {
                 switch specialState {
-                case .register(let registerState):
+                case .register(let registerState, let prevRegisterStates):
                     state.inputMode = registerState.prev.mode
                     state.inputMethod = .composing(registerState.prev.composing)
+                    if let prevRegisterState = prevRegisterStates.last {
+                        state.specialState = .register(prevRegisterState, prev: prevRegisterStates.dropLast())
+                    } else {
+                        state.specialState = nil
+                    }
                 case .unregister(let unregisterState):
                     state.inputMode = unregisterState.prev.mode
                     updateCandidates(selecting: unregisterState.prev.selecting)
                     state.inputMethod = .selecting(unregisterState.prev.selecting)
+                    state.specialState = nil
                 }
-                state.specialState = nil
                 updateMarkedText()
                 return true
             } else {
@@ -870,15 +883,23 @@ final class StateMachine {
             candidateWords = candidates(for: yomiText, option: nil)
         }
         if candidateWords.isEmpty {
-            if specialState != nil {
-                // 登録中に変換不能な変換をした場合は空文字列に変換する
+            if case .register(let registerState, let prev) = specialState {
+                // 単語登録中に単語登録する
+                state.specialState = .register(
+                    RegisterState(
+                        prev: RegisterState.PrevState(mode: state.inputMode, composing: trimmedComposing),
+                        yomi: yomiText),
+                    prev: prev + [registerState])
                 state.inputMethod = .normal
+                state.inputMode = .hiragana
+                inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
             } else {
                 // 単語登録に遷移する
                 state.specialState = .register(
                     RegisterState(
                         prev: RegisterState.PrevState(mode: state.inputMode, composing: trimmedComposing),
-                        yomi: yomiText))
+                        yomi: yomiText),
+                    prev: [])
                 state.inputMethod = .normal
                 state.inputMode = .hiragana
                 inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
@@ -947,7 +968,14 @@ final class StateMachine {
                 state.inputMethod = .selecting(newSelectingState)
                 updateCandidates(selecting: newSelectingState)
             } else {
-                if specialState != nil {
+                if case .register(let registerState, let prev) = specialState {
+                    state.specialState = .register(RegisterState(
+                        prev: RegisterState.PrevState(
+                            mode: selecting.prev.mode,
+                            composing: selecting.prev.composing),
+                        yomi: selecting.yomi),
+                    prev: prev + [registerState])
+                } else if specialState != nil {
                     state.inputMethod = .normal
                     state.inputMode = selecting.prev.mode
                 } else {
@@ -956,7 +984,8 @@ final class StateMachine {
                             prev: RegisterState.PrevState(
                                 mode: selecting.prev.mode,
                                 composing: selecting.prev.composing),
-                            yomi: selecting.yomi))
+                            yomi: selecting.yomi),
+                        prev: [])
                     state.inputMethod = .normal
                     state.inputMode = .hiragana
                     inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
