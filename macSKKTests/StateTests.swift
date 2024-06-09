@@ -449,7 +449,7 @@ final class StateTests: XCTestCase {
                                               yomi: "あいうえお",
                                               text: "",
                                               cursor: nil)
-        let prevComposingState = ComposingState(isShift: true, text: ["愛上"], romaji: "")
+        let prevComposingState = ComposingState(isShift: true, text: ["あいうえ"], romaji: "")
         let registerState = RegisterState(prev: RegisterState.PrevState(mode: .hiragana, composing: prevComposingState),
                                           yomi: "あいうえ",
                                           text: "愛上",
