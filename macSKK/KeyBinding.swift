@@ -232,7 +232,14 @@ struct KeyBinding: Identifiable {
             case .stickyShift:
                 return KeyBinding(action, [Input(key: .character(";"), displayString: ";", modifierFlags: [])])
             case .enter:
-                return KeyBinding(action, [Input(key: .code(0x24), displayString: "Enter", modifierFlags: [])])
+                return KeyBinding(
+                    action,
+                    [
+                        Input(key: .code(0x24), displayString: "Enter", modifierFlags: []),
+                        // IntelliJで利用するAlt + Enterを.enterとして認識されるようにする
+                        Input(key: .code(0x24), displayString: "Alt + Enter", modifierFlags: .option)
+                    ]
+                )
             case .space:
                 return KeyBinding(action, [Input(key: .code(0x31), displayString: "Space", modifierFlags: [])])
             case .tab:
