@@ -1040,8 +1040,8 @@ final class StateMachine {
             return true
         case .unregister:
             let prevRegisterState: (RegisterState, [RegisterState])?
-            if case .register(let registerState, _) = specialState {
-                prevRegisterState = (registerState, [])
+            if case .register(let registerState, let prev) = specialState {
+                prevRegisterState = (registerState, prev)
             } else {
                 prevRegisterState = nil
             }
