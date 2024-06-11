@@ -187,14 +187,16 @@ final class StateMachine {
                         state.inputMethod = .normal
                         state.specialState = nil
                         updateMarkedText()
-                    } else if let prev {
-                        // 登録状態から登録解除状態に行き、また登録状態に戻る
-                        state.specialState = .register(prev.0, prev: prev.1)
                     } else {
                         state.inputMode = unregisterState.prev.mode
                         updateCandidates(selecting: unregisterState.prev.selecting)
                         state.inputMethod = .selecting(unregisterState.prev.selecting)
-                        state.specialState = nil
+                        if let prev {
+                            // 登録状態から登録解除状態に行き、また登録状態に戻る
+                            state.specialState = .register(prev.0, prev: prev.1)
+                        } else {
+                            state.specialState = nil
+                        }
                         updateMarkedText()
                     }
                     return true
