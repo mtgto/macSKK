@@ -39,11 +39,11 @@ struct KeyBindingSet {
         for keyBind in sorted {
             if keyBind.0.key == input.key {
                 switch input.key {
-                case .character(let c):
-                    if KeyBinding.Key.characters.contains(c) && keyBind.0.modifierFlags == input.modifierFlags {
+                case .character:
+                    if keyBind.0.modifierFlags == input.modifierFlags {
                         return keyBind.1
                     }
-                case .code(let code):
+                case .code:
                     if input.modifierFlags.contains(keyBind.0.modifierFlags) {
                         return keyBind.1
                     }
