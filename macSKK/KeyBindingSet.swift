@@ -24,6 +24,7 @@ struct KeyBindingSet {
                     return l < r
                 case let (.code(l), .code(r)):
                     return l < r
+                // .character, .codeはどういう順序で並んでいてもいいので、いったん`.code < .character`としておく。
                 case (.character, .code):
                     return false
                 case (.code, .character):
