@@ -35,19 +35,9 @@ struct KeyBindingSet {
     }
 
     func action(event: NSEvent) -> KeyBinding.Action? {
-        let input = KeyBinding.Input(event: event)
         for keyBind in sorted {
-            if keyBind.0.key == input.key {
-                switch input.key {
-                case .character:
-                    if keyBind.0.modifierFlags == input.modifierFlags {
-                        return keyBind.1
-                    }
-                case .code:
-                    if input.modifierFlags.contains(keyBind.0.modifierFlags) {
-                        return keyBind.1
-                    }
-                }
+            if keyBind.0.accept(event: event) {
+                return keyBind.1
             }
         }
         return nil

@@ -433,6 +433,7 @@
 				CEADA44C2B025A8A0026E2BD /* EntryTests.swift */,
 				CE84A3E8295DA504009394C4 /* RomajiTests.swift */,
 				CE2F3B122C030C9A00CE342B /* KeyBindingTests.swift */,
+				CE49A2772C19E07800D53CFE /* KeyBindingSetTests.swift */,
 				CED7CA3D2A8397E4004EF988 /* UpdateCheckerTests.swift */,
 				CE6DBA902A846C1700F5A227 /* ReleaseVersionTests.swift */,
 				CEA78FAD2961BA1D00B67E25 /* String+TransformTests.swift */,
@@ -440,7 +441,6 @@
 				CE06CA332AAC199500E80E5E /* UserDict+Utilities.swift */,
 				CE39FA942BEB942B00E293F0 /* Character+KeyCode.swift */,
 				CED7CA572A83BFE9004EF988 /* fixture */,
-				CE49A2772C19E07800D53CFE /* KeyBindingSetTests.swift */,
 			);
 			path = macSKKTests;
 			sourceTree = "<group>";
