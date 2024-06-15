@@ -35,11 +35,6 @@ struct KeyBindingSet {
     }
 
     func action(event: NSEvent) -> KeyBinding.Action? {
-        for keyBind in sorted {
-            if keyBind.0.accept(event: event) {
-                return keyBind.1
-            }
-        }
-        return nil
+        sorted.first(where: { $0.0.accepts(event: event) })?.1
     }
 }

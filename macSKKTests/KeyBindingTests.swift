@@ -52,7 +52,7 @@ final class KeyBindingTests: XCTestCase {
         XCTAssertNil(KeyBinding(dict: ["inputs": []]))
     }
 
-    func testInputAccept() {
+    func testInputAccepts() {
         func generateKeyEvent(modifierFlags: NSEvent.ModifierFlags, characters: String, charactersIgnoringModifiers: String? = nil, keyCode: UInt16 = 0) -> NSEvent {
             NSEvent.keyEvent(with: .keyDown,
                              location: .zero,
@@ -69,21 +69,21 @@ final class KeyBindingTests: XCTestCase {
         let inputShiftQ = KeyBinding.Input(key: .character("q"), displayString: "Q", modifierFlags: .shift)
         let eventQ = generateKeyEvent(modifierFlags: [], characters: "q")
         let eventShiftQ = generateKeyEvent(modifierFlags: .shift, characters: "q")
-        XCTAssertTrue(inputQ.accept(event: eventQ))
-        XCTAssertFalse(inputShiftQ.accept(event: eventQ))
-        XCTAssertFalse(inputQ.accept(event: eventShiftQ))
-        XCTAssertTrue(inputShiftQ.accept(event: eventShiftQ))
+        XCTAssertTrue(inputQ.accepts(event: eventQ))
+        XCTAssertFalse(inputShiftQ.accepts(event: eventQ))
+        XCTAssertFalse(inputQ.accepts(event: eventShiftQ))
+        XCTAssertTrue(inputShiftQ.accepts(event: eventShiftQ))
         let inputLeft = KeyBinding.Input(key: .code(0x7b), displayString: "←", modifierFlags: .function, optionalModifierFlags: .shift)
         let eventLeft = generateKeyEvent(modifierFlags: [.function], characters: "\u{63234}", keyCode: 0x7b)
         let eventShiftLeft = generateKeyEvent(modifierFlags: [.function, .shift], characters: "\u{63234}", keyCode: 0x7b)
-        XCTAssertTrue(inputLeft.accept(event: eventLeft))
-        XCTAssertTrue(inputLeft.accept(event: eventShiftLeft))
-        XCTAssertFalse(inputLeft.accept(event: eventQ))
+        XCTAssertTrue(inputLeft.accepts(event: eventLeft))
+        XCTAssertTrue(inputLeft.accepts(event: eventShiftLeft))
+        XCTAssertFalse(inputLeft.accepts(event: eventQ))
         let inputEnter = KeyBinding.Input(key: .code(0x24), displayString: "Enter", modifierFlags: [], optionalModifierFlags: .option)
         let eventEnter = generateKeyEvent(modifierFlags: [], characters: "\r", keyCode: 0x24)
         let eventOptionEnter = generateKeyEvent(modifierFlags: .option, characters: "\r", keyCode: 0x24)
-        XCTAssertTrue(inputEnter.accept(event: eventEnter))
-        XCTAssertTrue(inputEnter.accept(event: eventOptionEnter))
-        XCTAssertFalse(inputEnter.accept(event: eventLeft))
+        XCTAssertTrue(inputEnter.accepts(event: eventEnter))
+        XCTAssertTrue(inputEnter.accepts(event: eventOptionEnter))
+        XCTAssertFalse(inputEnter.accepts(event: eventLeft))
     }
 }

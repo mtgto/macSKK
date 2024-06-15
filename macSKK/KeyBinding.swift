@@ -155,7 +155,7 @@ struct KeyBinding: Identifiable {
         }
 
         /// このキーバインド設定がキーイベントをこのキーバインドの入力として受理するかどうかを返す。
-        func accept(event: NSEvent) -> Bool {
+        func accepts(event: NSEvent) -> Bool {
             if let character = event.charactersIgnoringModifiers?.lowercased().first, Key.characters.contains(character) {
                 if key != .character(character) {
                     return false
