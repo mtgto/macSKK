@@ -38,7 +38,11 @@ final class KeyBindingTests: XCTestCase {
         let input3 = KeyBinding.Input(key: .code(0x7e), displayString: "↑", modifierFlags: .function, optionalModifierFlags: .shift)
         XCTAssertEqual(input3, KeyBinding.Input(dict: input3.encode()))
         XCTAssertNil(KeyBinding.Input(dict: [:]), "key, modifierFlags, optionalModifierFlags, displayStringキーが必要")
-        XCTAssertNil(KeyBinding.Input(dict: ["key": "q", "modifierFlags": []]))
+        XCTAssertNil(KeyBinding.Input(dict: ["key": "q", "modifierFlags": 0]))
+        let input4 = KeyBinding.Input(dict: ["key": "q", "modifierFlags": UInt(256), "optionalModifierFlags": UInt(256), "displayString": "Q"])
+        XCTAssertNotNil(input4)
+        XCTAssertEqual(input4?.modifierFlags.rawValue, 0)
+        XCTAssertEqual(input4?.optionalModifierFlags.rawValue, 0)
     }
 
     func testEncodeAndDecode() {

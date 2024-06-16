@@ -104,6 +104,9 @@ struct KeyBinding: Identifiable {
         /// 入力時に押されていてもよい修飾キー。
         let optionalModifierFlags: NSEvent.ModifierFlags
 
+        /// Inputで管理する修飾キーの集合。ここに含まれてない修飾キーは無視する
+        static let allowedModifierFlags: NSEvent.ModifierFlags = [.shift, .control, .function, .option, .command]
+
         /**
          * 設定画面の表示用文字
          */
@@ -111,9 +114,9 @@ struct KeyBinding: Identifiable {
 
         init(key: KeyBinding.Key, displayString: String, modifierFlags: NSEvent.ModifierFlags, optionalModifierFlags: NSEvent.ModifierFlags = []) {
             self.key = key
-            self.modifierFlags = modifierFlags
             self.displayString = displayString
-            self.optionalModifierFlags = optionalModifierFlags
+            self.modifierFlags = modifierFlags.intersection(Self.allowedModifierFlags)
+            self.optionalModifierFlags = optionalModifierFlags.intersection(Self.allowedModifierFlags)
         }
 
         init?(dict: [String: Any]) {
@@ -124,8 +127,8 @@ struct KeyBinding: Identifiable {
                 return nil
             }
             self.key = key
-            self.modifierFlags = NSEvent.ModifierFlags(rawValue: modifierFlagsValue)
-            self.optionalModifierFlags = NSEvent.ModifierFlags(rawValue: optionalModifierFlagsValue)
+            self.modifierFlags = NSEvent.ModifierFlags(rawValue: modifierFlagsValue).intersection(Self.allowedModifierFlags)
+            self.optionalModifierFlags = NSEvent.ModifierFlags(rawValue: optionalModifierFlagsValue).intersection(Self.allowedModifierFlags)
             self.displayString = displayString
         }
 
@@ -163,7 +166,9 @@ struct KeyBinding: Identifiable {
             } else if key != .code(event.keyCode) {
                 return false
             }
-            return modifierFlags.isSubset(of: event.modifierFlags) && modifierFlags.union(optionalModifierFlags).isSuperset(of: event.modifierFlags)
+            // 使用する可能性があるものだけを抽出する。じゃないとrawValueで256が入ってしまうっぽい?
+            let eventModifierFlags = event.modifierFlags.intersection(Self.allowedModifierFlags)
+            return modifierFlags.isSubset(of: eventModifierFlags) && modifierFlags.union(optionalModifierFlags).isSuperset(of: eventModifierFlags)
         }
     }
 
