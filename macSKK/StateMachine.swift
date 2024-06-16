@@ -178,7 +178,7 @@ final class StateMachine {
                         }
                     }
                     return true
-                } else if case .unregister(let unregisterState) = specialState {
+                } else if case .unregister(let unregisterState, let prev) = specialState {
                     if unregisterState.text == "yes" {
                         let word = unregisterState.prev.selecting.candidates[
                             unregisterState.prev.selecting.candidateIndex]
@@ -191,7 +191,12 @@ final class StateMachine {
                         state.inputMode = unregisterState.prev.mode
                         updateCandidates(selecting: unregisterState.prev.selecting)
                         state.inputMethod = .selecting(unregisterState.prev.selecting)
-                        state.specialState = nil
+                        if let prev {
+                            // 登録状態から登録解除状態に行き、また登録状態に戻る
+                            state.specialState = .register(prev.0, prev: prev.1)
+                        } else {
+                            state.specialState = nil
+                        }
                         updateMarkedText()
                     }
                     return true
@@ -239,11 +244,15 @@ final class StateMachine {
                     } else {
                         state.specialState = nil
                     }
-                case .unregister(let unregisterState):
+                case .unregister(let unregisterState, let prev):
                     state.inputMode = unregisterState.prev.mode
                     updateCandidates(selecting: unregisterState.prev.selecting)
                     state.inputMethod = .selecting(unregisterState.prev.selecting)
-                    state.specialState = nil
+                    if let prev {
+                        state.specialState = .register(prev.0, prev: prev.1)
+                    } else {
+                        state.specialState = nil
+                    }
                 }
                 updateMarkedText()
                 return true
@@ -1032,8 +1041,15 @@ final class StateMachine {
             }
             return true
         case .unregister:
+            let prevRegisterState: (RegisterState, [RegisterState])?
+            if case .register(let registerState, let prev) = specialState {
+                prevRegisterState = (registerState, prev)
+            } else {
+                prevRegisterState = nil
+            }
             state.specialState = .unregister(
-                UnregisterState(prev: UnregisterState.PrevState(mode: state.inputMode, selecting: selecting)))
+                UnregisterState(prev: UnregisterState.PrevState(mode: state.inputMode, selecting: selecting)),
+                prev: prevRegisterState)
             state.inputMethod = .normal
             state.inputMode = .direct
             updateCandidates(selecting: nil)

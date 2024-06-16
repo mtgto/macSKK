@@ -489,7 +489,7 @@ final class StateTests: XCTestCase {
         let unregisterState = UnregisterState(prev: UnregisterState.PrevState(mode: .hiragana, selecting: prevSelectingState), text: "yes")
         let state = IMEState(inputMode: .hiragana,
                              inputMethod: .normal,
-                             specialState: .unregister(unregisterState),
+                             specialState: .unregister(unregisterState, prev: nil),
                              candidates: [])
         let displayText = state.displayText()
         XCTAssertEqual(displayText.elements, [.plain("あr /有/ を削除します(yes/no)"), .plain("yes")])
@@ -515,7 +515,7 @@ final class StateTests: XCTestCase {
         let unregisterState = UnregisterState(prev: UnregisterState.PrevState(mode: .hiragana, selecting: prevSelectingState), text: "yes")
         let state = IMEState(inputMode: .hiragana,
                              inputMethod: .normal,
-                             specialState: .unregister(unregisterState),
+                             specialState: .unregister(unregisterState, prev: nil),
                              candidates: [])
         let displayText = state.displayText()
         XCTAssertEqual(displayText.elements, [.plain("だい# /第#/ を削除します(yes/no)"), .plain("yes")])
