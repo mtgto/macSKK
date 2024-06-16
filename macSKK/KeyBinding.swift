@@ -242,7 +242,7 @@ struct KeyBinding: Identifiable {
                 return KeyBinding(action, [Input(key: .code(0x33), displayString: "Backspace", modifierFlags: []),
                                            Input(key: .character("h"), displayString: "H", modifierFlags: .control)])
             case .delete:
-                return KeyBinding(action, [Input(key: .code(0x75), displayString: "Delete", modifierFlags: []),
+                return KeyBinding(action, [Input(key: .code(0x75), displayString: "Delete", modifierFlags: .function),
                                            Input(key: .character("d"), displayString: "D", modifierFlags: .control)])
             case .cancel:
                 return KeyBinding(action, [Input(key: .code(0x35), displayString: "ESC", modifierFlags: []),
