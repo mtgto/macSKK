@@ -94,64 +94,43 @@ struct KeyBinding: Identifiable {
         }
     }
 
-    struct Input: Hashable, Equatable {
+    struct Input: Equatable {
         let key: Key
-        /// 入力時に押されている修飾キー。
-        /// keyがcode形式の場合 (スペース、タブ、バックスペース、矢印キーなど) はmodifierFlagsは
+        /// 入力時に押されていないといけない修飾キー。
+        /// keyがcode形式の場合 (スペース、タブ、バックスペース、矢印キーなど) はmodifierFlagsはShiftのみ許可する
+        /// keyがcharacter形式の場合は
         let modifierFlags: NSEvent.ModifierFlags
+
+        /// 入力時に押されていてもよい修飾キー。
+        let optionalModifierFlags: NSEvent.ModifierFlags
+
         /**
          * 設定画面の表示用文字
          */
         let displayString: String
 
-        init(event: NSEvent) {
-            if let character = event.charactersIgnoringModifiers?.lowercased().first, Key.characters.contains(character) {
-                key = .character(character)
-            } else {
-                key = .code(event.keyCode)
-            }
-            // 使用する可能性があるものだけを抽出する。じゃないとrawValueで256が入ってしまうっぽい?
-            modifierFlags = event.modifierFlags.intersection([.shift, .control, .function, .option, .command])
-            displayString = (event.charactersIgnoringModifiers ?? event.characters) ?? ""
-        }
-
-        init(key: KeyBinding.Key, displayString: String, modifierFlags: NSEvent.ModifierFlags) {
+        init(key: KeyBinding.Key, displayString: String, modifierFlags: NSEvent.ModifierFlags, optionalModifierFlags: NSEvent.ModifierFlags = []) {
             self.key = key
             self.modifierFlags = modifierFlags
             self.displayString = displayString
+            self.optionalModifierFlags = optionalModifierFlags
         }
 
         init?(dict: [String: Any]) {
             guard let keyValue = dict["key"], let key = Key(rawValue: keyValue),
             let modifierFlagsValue = dict["modifierFlags"] as? UInt,
+            let optionalModifierFlagsValue = dict["optionalModifierFlags"] as? UInt,
             let displayString = dict["displayString"] as? String else {
                 return nil
             }
             self.key = key
             self.modifierFlags = NSEvent.ModifierFlags(rawValue: modifierFlagsValue)
+            self.optionalModifierFlags = NSEvent.ModifierFlags(rawValue: optionalModifierFlagsValue)
             self.displayString = displayString
         }
 
-        func hash(into hasher: inout Hasher) {
-            // NOTE: keyCodeで定義されているときはハッシュ値の計算にシフトキーをmodifierFlagsに入れていません。
-            // 矢印キーとShift押しながら矢印キーをどちらも矢印キーと扱うようにしたいためです。
-            hasher.combine(key)
-            switch key {
-            case .character:
-                hasher.combine(modifierFlags.rawValue)
-            case .code:
-                hasher.combine(modifierFlags.subtracting(.shift).rawValue)
-            }
-        }
-
         static func == (lhs: Self, rhs: Self) -> Bool {
-            // NOTE: keyCodeで定義されているときはmodifierFlagsを比較しません。
-            // 矢印キーとShift押しながら矢印キーをどちらも矢印キーと扱うようにしたいためです。
-            if case .code = lhs.key, case .code = rhs.key {
-                return lhs.key == rhs.key && lhs.modifierFlags.subtracting(.shift) == rhs.modifierFlags.subtracting(.shift)
-            } else {
-                return lhs.key == rhs.key && lhs.modifierFlags == rhs.modifierFlags
-            }
+            return lhs.key == rhs.key && lhs.modifierFlags == rhs.modifierFlags && lhs.optionalModifierFlags == rhs.optionalModifierFlags
         }
 
         var localized: String {
@@ -167,7 +146,24 @@ struct KeyBinding: Identifiable {
         }
 
         func encode() -> [String: Any] {
-            return ["key": key.encode(), "modifierFlags": modifierFlags.rawValue, "displayString": displayString]
+            return [
+                "key": key.encode(),
+                "modifierFlags": modifierFlags.rawValue,
+                "optionalModifierFlags": optionalModifierFlags.rawValue,
+                "displayString": displayString,
+            ]
+        }
+
+        /// このキーバインド設定がキーイベントをこのキーバインドの入力として受理するかどうかを返す。
+        func accepts(event: NSEvent) -> Bool {
+            if let character = event.charactersIgnoringModifiers?.lowercased().first, Key.characters.contains(character) {
+                if key != .character(character) {
+                    return false
+                }
+            } else if key != .code(event.keyCode) {
+                return false
+            }
+            return modifierFlags.isSubset(of: event.modifierFlags) && modifierFlags.union(optionalModifierFlags).isSuperset(of: event.modifierFlags)
         }
     }
 
@@ -232,7 +228,7 @@ struct KeyBinding: Identifiable {
             case .stickyShift:
                 return KeyBinding(action, [Input(key: .character(";"), displayString: ";", modifierFlags: [])])
             case .enter:
-                return KeyBinding(action, [Input(key: .code(0x24), displayString: "Enter", modifierFlags: [])])
+                return KeyBinding(action, [Input(key: .code(0x24), displayString: "Enter", modifierFlags: [], optionalModifierFlags: [.shift, .option])])
             case .space:
                 return KeyBinding(action, [Input(key: .code(0x31), displayString: "Space", modifierFlags: [])])
             case .tab:
@@ -247,16 +243,16 @@ struct KeyBinding: Identifiable {
                 return KeyBinding(action, [Input(key: .code(0x35), displayString: "ESC", modifierFlags: []),
                                            Input(key: .character("g"), displayString: "G", modifierFlags: .control)])
             case .left:
-                return KeyBinding(action, [Input(key: .code(0x7b), displayString: "←", modifierFlags: .function),
+                return KeyBinding(action, [Input(key: .code(0x7b), displayString: "←", modifierFlags: .function, optionalModifierFlags: [.shift]),
                                            Input(key: .character("b"), displayString: "B", modifierFlags: .control)])
             case .right:
-                return KeyBinding(action, [Input(key: .code(0x7c), displayString: "→", modifierFlags: .function),
+                return KeyBinding(action, [Input(key: .code(0x7c), displayString: "→", modifierFlags: .function, optionalModifierFlags: [.shift]),
                                            Input(key: .character("f"), displayString: "F", modifierFlags: .control)])
             case .down:
-                return KeyBinding(action, [Input(key: .code(0x7d), displayString: "↓", modifierFlags: .function),
+                return KeyBinding(action, [Input(key: .code(0x7d), displayString: "↓", modifierFlags: .function, optionalModifierFlags: [.shift]),
                                            Input(key: .character("n"), displayString: "N", modifierFlags: .control)])
             case .up:
-                return KeyBinding(action, [Input(key: .code(0x7e), displayString: "↑", modifierFlags: .function),
+                return KeyBinding(action, [Input(key: .code(0x7e), displayString: "↑", modifierFlags: .function, optionalModifierFlags: [.shift]),
                                            Input(key: .character("p"), displayString: "P", modifierFlags: .control)])
             case .startOfLine:
                 return KeyBinding(action, [Input(key: .character("a"), displayString: "A", modifierFlags: .control)])

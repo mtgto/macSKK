@@ -41,6 +41,7 @@
 		CE496C932B440B9B001C623C /* euc-jis-2004.txt in Resources */ = {isa = PBXBuildFile; fileRef = CE496C922B440B9B001C623C /* euc-jis-2004.txt */; };
 		CE496C952B440BBD001C623C /* Data+EucJis2004Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE496C942B440BBD001C623C /* Data+EucJis2004Tests.swift */; };
 		CE496C982B440CDA001C623C /* libiconv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = CE496C972B440CCA001C623C /* libiconv.tbd */; };
+		CE49A2782C19E07800D53CFE /* KeyBindingSetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE49A2772C19E07800D53CFE /* KeyBindingSetTests.swift */; };
 		CE4CB5CC2AD557D90046FA34 /* NumberEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE4CB5CB2AD557D90046FA34 /* NumberEntry.swift */; };
 		CE4CB5CE2AD55DF90046FA34 /* NumberEntryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE4CB5CD2AD55DF90046FA34 /* NumberEntryTests.swift */; };
 		CE5EB6AD2AAC0DE000389B98 /* FileDict.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE5EB6AC2AAC0DE000389B98 /* FileDict.swift */; };
@@ -189,6 +190,7 @@
 		CE496C922B440B9B001C623C /* euc-jis-2004.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "euc-jis-2004.txt"; sourceTree = "<group>"; };
 		CE496C942B440BBD001C623C /* Data+EucJis2004Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+EucJis2004Tests.swift"; sourceTree = "<group>"; };
 		CE496C972B440CCA001C623C /* libiconv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libiconv.tbd; path = usr/lib/libiconv.tbd; sourceTree = SDKROOT; };
+		CE49A2772C19E07800D53CFE /* KeyBindingSetTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyBindingSetTests.swift; sourceTree = "<group>"; };
 		CE4CB5CB2AD557D90046FA34 /* NumberEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumberEntry.swift; sourceTree = "<group>"; };
 		CE4CB5CD2AD55DF90046FA34 /* NumberEntryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumberEntryTests.swift; sourceTree = "<group>"; };
 		CE5EB6AC2AAC0DE000389B98 /* FileDict.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileDict.swift; sourceTree = "<group>"; };
@@ -431,6 +433,7 @@
 				CEADA44C2B025A8A0026E2BD /* EntryTests.swift */,
 				CE84A3E8295DA504009394C4 /* RomajiTests.swift */,
 				CE2F3B122C030C9A00CE342B /* KeyBindingTests.swift */,
+				CE49A2772C19E07800D53CFE /* KeyBindingSetTests.swift */,
 				CED7CA3D2A8397E4004EF988 /* UpdateCheckerTests.swift */,
 				CE6DBA902A846C1700F5A227 /* ReleaseVersionTests.swift */,
 				CEA78FAD2961BA1D00B67E25 /* String+TransformTests.swift */,
@@ -791,6 +794,7 @@
 				CE06CA342AAC199500E80E5E /* UserDict+Utilities.swift in Sources */,
 				CE84A3E9295DA504009394C4 /* RomajiTests.swift in Sources */,
 				CE4CB5CE2AD55DF90046FA34 /* NumberEntryTests.swift in Sources */,
+				CE49A2782C19E07800D53CFE /* KeyBindingSetTests.swift in Sources */,
 				CEADA44D2B025A8A0026E2BD /* EntryTests.swift in Sources */,
 				CEA78FAA295EBCAC00B67E25 /* StateMachineTests.swift in Sources */,
 				CE496C952B440BBD001C623C /* Data+EucJis2004Tests.swift in Sources */,
