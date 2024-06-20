@@ -42,6 +42,7 @@
 		CE496C952B440BBD001C623C /* Data+EucJis2004Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE496C942B440BBD001C623C /* Data+EucJis2004Tests.swift */; };
 		CE496C982B440CDA001C623C /* libiconv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = CE496C972B440CCA001C623C /* libiconv.tbd */; };
 		CE49A2782C19E07800D53CFE /* KeyBindingSetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE49A2772C19E07800D53CFE /* KeyBindingSetTests.swift */; };
+		CE49A27A2C245F6400D53CFE /* KeyBindingSetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE49A2792C245F6400D53CFE /* KeyBindingSetView.swift */; };
 		CE4CB5CC2AD557D90046FA34 /* NumberEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE4CB5CB2AD557D90046FA34 /* NumberEntry.swift */; };
 		CE4CB5CE2AD55DF90046FA34 /* NumberEntryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE4CB5CD2AD55DF90046FA34 /* NumberEntryTests.swift */; };
 		CE5EB6AD2AAC0DE000389B98 /* FileDict.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE5EB6AC2AAC0DE000389B98 /* FileDict.swift */; };
@@ -191,6 +192,7 @@
 		CE496C942B440BBD001C623C /* Data+EucJis2004Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+EucJis2004Tests.swift"; sourceTree = "<group>"; };
 		CE496C972B440CCA001C623C /* libiconv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libiconv.tbd; path = usr/lib/libiconv.tbd; sourceTree = SDKROOT; };
 		CE49A2772C19E07800D53CFE /* KeyBindingSetTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyBindingSetTests.swift; sourceTree = "<group>"; };
+		CE49A2792C245F6400D53CFE /* KeyBindingSetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyBindingSetView.swift; sourceTree = "<group>"; };
 		CE4CB5CB2AD557D90046FA34 /* NumberEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumberEntry.swift; sourceTree = "<group>"; };
 		CE4CB5CD2AD55DF90046FA34 /* NumberEntryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumberEntryTests.swift; sourceTree = "<group>"; };
 		CE5EB6AC2AAC0DE000389B98 /* FileDict.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileDict.swift; sourceTree = "<group>"; };
@@ -478,6 +480,7 @@
 				CEC376EA2965211200D9C432 /* KeyEventView.swift */,
 				CE40D9A02A6D0C2F00D44799 /* SystemDictView.swift */,
 				CE11C7BC2BE47D5D00A35F3D /* KeyBindingView.swift */,
+				CE49A2792C245F6400D53CFE /* KeyBindingSetView.swift */,
 				CE2157652B2EA985006E4C41 /* UserDefaultsKeys.swift */,
 			);
 			path = Settings;
@@ -773,6 +776,7 @@
 				CEE3717529653112000DB2C3 /* SoftwareUpdateView.swift in Sources */,
 				CE496C912B440892001C623C /* URL+Additions.swift in Sources */,
 				CE11C7BD2BE47D5D00A35F3D /* KeyBindingView.swift in Sources */,
+				CE49A27A2C245F6400D53CFE /* KeyBindingSetView.swift in Sources */,
 				CE39DB212A8DFD8F00BC619F /* MarkedText.swift in Sources */,
 				CE40D9A32A6D0C3900D44799 /* SystemDict.swift in Sources */,
 				CE5EB6AD2AAC0DE000389B98 /* FileDict.swift in Sources */,

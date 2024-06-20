@@ -419,6 +419,12 @@ final class SettingsViewModel: ObservableObject {
         self.keyBingings = keyBindings
     }
 
+    // KeyBindingSetViewのPreviewProvider用
+    internal convenience init(selectedKeyBindingSet: KeyBindingSet?) throws {
+        try self.init()
+        self.selectedKeyBindingSet = selectedKeyBindingSet ?? KeyBindingSet.defaultKeyBindingSet
+    }
+
     /**
      * 辞書ファイルが追加・削除された通知を受け取りdictSettingsを更新する処理をセットアップします。
      *

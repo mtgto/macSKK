@@ -38,12 +38,21 @@ struct KeyBindingSet: Identifiable, Hashable {
         })
     }
 
+    private init(id: String, sorted: [(KeyBinding.Input, KeyBinding.Action)]) {
+        self.id = id
+        self.sorted = sorted
+    }
+
     func action(event: NSEvent) -> KeyBinding.Action? {
         sorted.first(where: { $0.0.accepts(event: event) })?.1
     }
 
     var canDelete: Bool {
         id != Self.defaultId
+    }
+
+    func copy(id: String) -> Self {
+        return Self(id: id, sorted: sorted)
     }
 
     // MARK: Hashable
