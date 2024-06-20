@@ -72,6 +72,8 @@
 "Address" = "Address";
 "TCP Port" = "TCP Port No.";
 "Response Encoding" = "Response Encoding";
+"Rename" = "Rename";
+"Duplicate" = "Duplicate";
 
 "KeyBindingActionHiragana" = "Hiragana Mode";
 "KeyBindingActionTogglekana" = "Toggle Kana";

@@ -3,16 +3,20 @@
 
 import AppKit
 
-struct KeyBindingSet {
+struct KeyBindingSet: Identifiable, Hashable {
+    /// 設定の名称。
+    let id: String
+    static let defaultId: ID = "default"
     /**
      * 修飾キーを除いたキー入力が同じ場合は修飾キーが多いものが前に来るように並べた配列。
      * 入力に一番合致するキー入力を返すために最初にソートしてもっておく。
      */
     let sorted: [(KeyBinding.Input, KeyBinding.Action)]
 
-    static let defaultKeyBindingSet = KeyBindingSet(KeyBinding.defaultKeyBindingSettings)
+    static let defaultKeyBindingSet = KeyBindingSet(id: Self.defaultId, values: KeyBinding.defaultKeyBindingSettings)
 
-    init(_ values: [KeyBinding]) {
+    init(id: String, values: [KeyBinding]) {
+        self.id = id
         sorted = values.flatMap { keyValue in
             keyValue.inputs.map { ($0, keyValue.action) }
         }.sorted(by: { lts, rts in
@@ -36,5 +40,18 @@ struct KeyBindingSet {
 
     func action(event: NSEvent) -> KeyBinding.Action? {
         sorted.first(where: { $0.0.accepts(event: event) })?.1
+    }
+
+    var canDelete: Bool {
+        id != Self.defaultId
+    }
+
+    // MARK: Hashable
+    static func == (lhs: KeyBindingSet, rhs: KeyBindingSet) -> Bool {
+        return lhs.id == rhs.id
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
     }
 }

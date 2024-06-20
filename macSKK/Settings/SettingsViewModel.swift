@@ -166,6 +166,10 @@ final class SettingsViewModel: ObservableObject {
     @Published var keyBingings: [KeyBinding]
     /// 変換候補パネルで表示されている候補を決定するキーの集合
     @Published var selectCandidateKeys: String
+    /// 利用可能なキーバインディングのセットの種類
+    @Published var keyBindingSets: [KeyBindingSet]
+    /// 現在選択中のキーバインディングのセット
+    @Published var selectedKeyBindingSet: KeyBindingSet
 
     // 辞書ディレクトリ
     let dictionariesDirectoryUrl: URL
@@ -200,6 +204,8 @@ final class SettingsViewModel: ObservableObject {
 
         // TODO: 設定化。いまはとりあえず固定でデフォルト設定を表示
         self.keyBingings = KeyBinding.defaultKeyBindingSettings
+        self.keyBindingSets = [KeyBindingSet.defaultKeyBindingSet]
+        self.selectedKeyBindingSet = KeyBindingSet.defaultKeyBindingSet
 
         selectCandidateKeys = UserDefaults.standard.string(forKey: UserDefaultsKeys.selectCandidateKeys)!
         Global.selectCandidateKeys = selectCandidateKeys.lowercased().map { $0 }
@@ -373,6 +379,8 @@ final class SettingsViewModel: ObservableObject {
         skkservDictSetting = SKKServDictSetting(enabled: true, address: "127.0.0.1", port: 1178, encoding: .japaneseEUC)
         keyBingings = []
         selectCandidateKeys = "123456789"
+        keyBindingSets = [KeyBindingSet.defaultKeyBindingSet]
+        selectedKeyBindingSet = KeyBindingSet.defaultKeyBindingSet
     }
 
     // DictionaryViewのPreviewProvider用

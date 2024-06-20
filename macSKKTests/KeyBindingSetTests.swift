@@ -7,7 +7,7 @@ import XCTest
 
 final class KeyBindingSetTests: XCTestCase {
     func testInit() throws {
-        let set = KeyBindingSet([
+        let set = KeyBindingSet(id: "test", values: [
             KeyBinding(.toggleKana, [.init(key: .character("q"), displayString: "Q", modifierFlags: [])]),
             KeyBinding(.japanese, [.init(key: .character("q"), displayString: "Q", modifierFlags: .shift)]),
             KeyBinding(.hiragana, [.init(key: .character("j"), displayString: "J", modifierFlags: .control)]),

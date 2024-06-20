@@ -72,6 +72,8 @@
 "Address" = "アドレス";
 "TCP Port" = "TCPポート番号";
 "Response Encoding" = "応答エンコーディング";
+"Rename" = "リネーム";
+"Duplicate" = "複製";
 
 "KeyBindingActionHiragana" = "ひらがなモード";
 "KeyBindingActionTogglekana" = "かなカナ切り替え";
