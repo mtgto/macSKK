@@ -74,6 +74,7 @@
 "Response Encoding" = "応答エンコーディング";
 "Rename" = "リネーム";
 "Duplicate" = "複製";
+"Are you sure you want to delete %@?" = "%@を本当に削除しますか?";
 
 "KeyBindingActionHiragana" = "ひらがなモード";
 "KeyBindingActionTogglekana" = "かなカナ切り替え";
