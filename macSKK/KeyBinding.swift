@@ -237,9 +237,9 @@ struct KeyBinding: Identifiable {
             case .space:
                 return KeyBinding(action, [Input(key: .code(0x31), displayString: "Space", modifierFlags: [])])
             case .tab:
-                return KeyBinding(action, [Input(key: .code(0x30), displayString: "Tab", modifierFlags: [])])
+                return KeyBinding(action, [Input(key: .code(0x30), displayString: "Tab", modifierFlags: [], optionalModifierFlags: .shift)])
             case .backspace:
-                return KeyBinding(action, [Input(key: .code(0x33), displayString: "Backspace", modifierFlags: []),
+                return KeyBinding(action, [Input(key: .code(0x33), displayString: "Backspace", modifierFlags: [], optionalModifierFlags: .shift),
                                            Input(key: .character("h"), displayString: "H", modifierFlags: .control)])
             case .delete:
                 return KeyBinding(action, [Input(key: .code(0x75), displayString: "Delete", modifierFlags: .function),
