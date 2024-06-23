@@ -47,7 +47,7 @@ struct KeyBindingView: View {
             Text("Are you sure you want to delete \(settingsViewModel.selectedKeyBindingSet.id)?")
         }
         Table(settingsViewModel.keyBingings) {
-            TableColumn("Action", value: \.localizedAction)
+            TableColumn("Action", value: \.action.localizedAction)
             TableColumn("Key", value: \.localizedInputs)
         }
     }

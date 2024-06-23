@@ -61,6 +61,12 @@ struct KeyBinding: Identifiable {
         /// かなキー
         /// TODO: カスタマイズできなくする?
         case kana
+
+        var localizedAction: String {
+            // CodingKeyのstringValueを使う
+            // String#capitalizedは先頭以外の大文字を小文字に変換するのでLocalized.stringsでのキーに注意
+            String(localized: LocalizedStringResource(stringLiteral: "KeyBindingAction\(stringValue.capitalized)"))
+        }
     }
 
     enum Key: Hashable, Equatable {
@@ -94,7 +100,7 @@ struct KeyBinding: Identifiable {
         }
     }
 
-    struct Input: Equatable {
+    struct Input: Equatable, Identifiable, Hashable {
         let key: Key
         /// 入力時に押されていないといけない修飾キー。
         /// keyがcode形式の場合 (スペース、タブ、バックスペース、矢印キーなど) はmodifierFlagsはShiftのみ許可する
@@ -111,6 +117,16 @@ struct KeyBinding: Identifiable {
          * 設定画面の表示用文字
          */
         let displayString: String
+
+        // MARK: Identifiable
+        var id: String {
+            switch key {
+            case .character(let c):
+                return "c\(c)"
+            case .code(let c):
+                return "i\(c)"
+            }
+        }
 
         init(key: KeyBinding.Key, displayString: String, modifierFlags: NSEvent.ModifierFlags, optionalModifierFlags: NSEvent.ModifierFlags = []) {
             self.key = key
@@ -170,6 +186,16 @@ struct KeyBinding: Identifiable {
             let eventModifierFlags = event.modifierFlags.intersection(Self.allowedModifierFlags)
             return modifierFlags.isSubset(of: eventModifierFlags) && modifierFlags.union(optionalModifierFlags).isSuperset(of: eventModifierFlags)
         }
+
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(key)
+            hasher.combine(modifierFlags.rawValue)
+            hasher.combine(optionalModifierFlags.rawValue)
+        }
+
+        func with(optionalModifierFlags: NSEvent.ModifierFlags) -> Self {
+            .init(key: key, displayString: displayString, modifierFlags: modifierFlags, optionalModifierFlags: optionalModifierFlags)
+        }
     }
 
     let action: Action
@@ -200,12 +226,6 @@ struct KeyBinding: Identifiable {
             "action": action.stringValue,
             "inputs": inputs.map { $0.encode() },
         ]
-    }
-
-    var localizedAction: String {
-        // CodingKeyのstringValueを使う
-        // String#capitalizedは先頭以外の大文字を小文字に変換するのでLocalized.stringsでのキーに注意
-        String(localized: LocalizedStringResource(stringLiteral: "KeyBindingAction\(action.stringValue.capitalized)"))
     }
 
     var localizedInputs: String {

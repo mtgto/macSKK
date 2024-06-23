@@ -74,6 +74,7 @@
 "Response Encoding" = "Response Encoding";
 "Rename" = "Rename";
 "Duplicate" = "Duplicate";
+"Name" = "Name";
 "Are you sure you want to delete %@?" = "Are you sure you want to delete %@?";
 
 "KeyBindingActionHiragana" = "Hiragana Mode";
