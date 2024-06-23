@@ -98,6 +98,46 @@ struct KeyBinding: Identifiable {
                 return keyCode
             }
         }
+
+        var displayString: String {
+            switch self {
+            case .character(let character):
+                if character.isAlphabet {
+                    return character.uppercased()
+                } else {
+                    return String(character)
+                }
+            case .code(let keyCode):
+                switch keyCode {
+                case 0x24:
+                    return "Enter"
+                case 0x30:
+                    return "Tab"
+                case 0x31:
+                    return "Space"
+                case 0x33:
+                    return "Backspace"
+                case 0x35:
+                    return "ESC"
+                case 0x66:
+                    return String(localized: "KeyEisu")
+                case 0x68:
+                    return String(localized: "KeyKana")
+                case 0x75:
+                    return "Delete"
+                case 0x7b:
+                    return "←"
+                case 0x7c:
+                    return "→"
+                case 0x7d:
+                    return "↓"
+                case 0x7e:
+                    return "↑"
+                default:
+                    return "\(keyCode)"
+                }
+            }
+        }
     }
 
     struct Input: Equatable, Identifiable, Hashable {
@@ -156,6 +196,9 @@ struct KeyBinding: Identifiable {
             var result: [String] = []
             if modifierFlags.contains(.control) {
                 result.append("⌃")
+            }
+            if modifierFlags.contains(.option) {
+                result.append("⌥")
             }
             if modifierFlags.contains(.shift) {
                 result.append("⇧")

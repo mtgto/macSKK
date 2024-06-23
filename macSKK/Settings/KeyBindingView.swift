@@ -7,12 +7,16 @@ struct KeyBindingView: View {
     @StateObject var settingsViewModel: SettingsViewModel
     @State var editingKeyBindingSetMode: KeyBindingSetView.Mode? = nil
     @State var isShowingConfirmDeleteAlert: Bool = false
+    @State var isEditingKeyBindingInputs: Bool = false
+    @State var editingKeyBindingAction: KeyBinding.Action = .abbrev
+    @State var editingKeyBindingInputs: [KeyBindingInput] = []
 
     var body: some View {
         HStack {
             Picker("設定", selection: $settingsViewModel.selectedKeyBindingSet) {
                 ForEach(settingsViewModel.keyBindingSets) { keyBindingSet in
-                    Text(keyBindingSet.id).tag(keyBindingSet)
+                    Text(keyBindingSet.id)
+                        .tag(keyBindingSet)
                 }
             }
             Button {
@@ -49,6 +53,17 @@ struct KeyBindingView: View {
         Table(settingsViewModel.keyBingings) {
             TableColumn("Action", value: \.action.localizedAction)
             TableColumn("Key", value: \.localizedInputs)
+            TableColumn("Edit") { keyBinding in
+                Button("Edit") {
+                    editingKeyBindingAction = keyBinding.action
+                    editingKeyBindingInputs = keyBinding.inputs.map { KeyBindingInput(input: $0) }
+                    isEditingKeyBindingInputs = true
+                }
+                .disabled(!settingsViewModel.selectedKeyBindingSet.canDelete)
+            }
+        }
+        .sheet(isPresented: $isEditingKeyBindingInputs) {
+            KeyBindingInputsView(action: $editingKeyBindingAction, inputs: $editingKeyBindingInputs)
         }
     }
 }

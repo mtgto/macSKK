@@ -204,8 +204,8 @@ final class SettingsViewModel: ObservableObject {
 
         // TODO: 設定化。いまはとりあえず固定でデフォルト設定を表示
         self.keyBingings = KeyBinding.defaultKeyBindingSettings
-        self.keyBindingSets = [KeyBindingSet.defaultKeyBindingSet]
-        self.selectedKeyBindingSet = KeyBindingSet.defaultKeyBindingSet
+        self.keyBindingSets = [KeyBindingSet.defaultKeyBindingSet, KeyBindingSet.defaultKeyBindingSet.copy(id: "mtgto")]
+        self.selectedKeyBindingSet = KeyBindingSet.defaultKeyBindingSet.copy(id: "mtgto")
 
         selectCandidateKeys = UserDefaults.standard.string(forKey: UserDefaultsKeys.selectCandidateKeys)!
         Global.selectCandidateKeys = selectCandidateKeys.lowercased().map { $0 }
