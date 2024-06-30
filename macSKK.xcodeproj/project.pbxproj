@@ -313,6 +313,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		CE00FCCD2C30E99300AC6EEB /* KeyBinding */ = {
+			isa = PBXGroup;
+			children = (
+				CE11C7BC2BE47D5D00A35F3D /* KeyBindingView.swift */,
+				CE49A2792C245F6400D53CFE /* KeyBindingSetView.swift */,
+				CE49A27B2C26F61700D53CFE /* KeyBindingInputsView.swift */,
+			);
+			path = KeyBinding;
+			sourceTree = "<group>";
+		};
 		CE1B00602BA4285A00C830FD /* Network */ = {
 			isa = PBXGroup;
 			children = (
@@ -481,9 +491,7 @@
 				CE496C8B2B43968A001C623C /* LogView.swift */,
 				CEC376EA2965211200D9C432 /* KeyEventView.swift */,
 				CE40D9A02A6D0C2F00D44799 /* SystemDictView.swift */,
-				CE11C7BC2BE47D5D00A35F3D /* KeyBindingView.swift */,
-				CE49A2792C245F6400D53CFE /* KeyBindingSetView.swift */,
-				CE49A27B2C26F61700D53CFE /* KeyBindingInputsView.swift */,
+				CE00FCCD2C30E99300AC6EEB /* KeyBinding */,
 				CE2157652B2EA985006E4C41 /* UserDefaultsKeys.swift */,
 			);
 			path = Settings;

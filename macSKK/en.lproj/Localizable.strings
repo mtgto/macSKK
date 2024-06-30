@@ -76,6 +76,8 @@
 "Duplicate" = "Duplicate";
 "Name" = "Name";
 "Are you sure you want to delete %@?" = "Are you sure you want to delete %@?";
+"Modifier Flags (Required)" = "Modifier Flags (Required)";
+"Modifier Flags (Optional)" = "Modifier Flags (Optional)";
 
 "KeyBindingActionHiragana" = "Hiragana Mode";
 "KeyBindingActionTogglekana" = "Toggle Kana";
