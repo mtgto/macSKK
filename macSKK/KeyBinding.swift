@@ -78,7 +78,7 @@ struct KeyBinding: Identifiable {
         /// 例えば設定でDvorak配列を選んだ状態でoを入力してもkeyCodeはQwerty配列のsのキーと同じになる。
         case code(UInt16)
         /// macSKKでkeyCodeベースでなく印字されている文字で取り扱うキーの集合。
-        static let characters: [Character] = "abcdefghijklmnopqrstuvwxyz1234567890,./;".map { $0 }
+        static let characters: [Character] = "abcdefghijklmnopqrstuvwxyz1234567890,./;-=`'\\".map { $0 }
 
         init?(rawValue: Any) {
             if let character = rawValue as? String, Self.characters.contains(character) {
@@ -123,8 +123,16 @@ struct KeyBinding: Identifiable {
                     return String(localized: "KeyEisu")
                 case 0x68:
                     return String(localized: "KeyKana")
+                case 0x73:
+                    return "Home"
+                case 0x74:
+                    return "PageUp"
                 case 0x75:
                     return "Delete"
+                case 0x77:
+                    return "End"
+                case 0x79:
+                    return "PageDown"
                 case 0x7b:
                     return "←"
                 case 0x7c:
