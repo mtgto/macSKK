@@ -162,8 +162,6 @@ final class SettingsViewModel: ObservableObject {
     @Published var workaroundApplications: [WorkaroundApplication]
     /// skkserv辞書設定
     @Published var skkservDictSetting: SKKServDictSetting
-    /// キーバインディング
-    @Published var keyBingings: [KeyBinding]
     /// 変換候補パネルで表示されている候補を決定するキーの集合
     @Published var selectCandidateKeys: String
     /// 利用可能なキーバインディングのセットの種類
@@ -203,7 +201,6 @@ final class SettingsViewModel: ObservableObject {
         self.skkservDictSetting = skkservDictSetting
 
         // TODO: 設定化。いまはとりあえず固定でデフォルト設定を表示
-        self.keyBingings = KeyBinding.defaultKeyBindingSettings
         self.keyBindingSets = [KeyBindingSet.defaultKeyBindingSet, KeyBindingSet.defaultKeyBindingSet.copy(id: "mtgto")]
         self.selectedKeyBindingSet = KeyBindingSet.defaultKeyBindingSet.copy(id: "mtgto")
 
@@ -377,7 +374,6 @@ final class SettingsViewModel: ObservableObject {
         candidatesFontSize = 13
         annotationFontSize = 13
         skkservDictSetting = SKKServDictSetting(enabled: true, address: "127.0.0.1", port: 1178, encoding: .japaneseEUC)
-        keyBingings = []
         selectCandidateKeys = "123456789"
         keyBindingSets = [KeyBindingSet.defaultKeyBindingSet]
         selectedKeyBindingSet = KeyBindingSet.defaultKeyBindingSet
@@ -416,7 +412,9 @@ final class SettingsViewModel: ObservableObject {
     // KeyBindingViewのPreviewProvider用
     internal convenience init(keyBindings: [KeyBinding]) throws {
         try self.init()
-        self.keyBingings = keyBindings
+        let keyBindingSet = KeyBindingSet(id: "preview", values: keyBindings)
+        keyBindingSets = [keyBindingSet]
+        selectedKeyBindingSet = keyBindingSet
     }
 
     // KeyBindingSetViewのPreviewProvider用
@@ -483,6 +481,14 @@ final class SettingsViewModel: ObservableObject {
     func updateWorkaroundApplication(index: Int, displayName: String, icon: NSImage) {
         workaroundApplications[index].displayName = displayName
         workaroundApplications[index].icon = icon
+    }
+
+    /// 選択中のKeyBindingSetのキーバインドを更新する
+    func updateKeyBindingInputs(action: KeyBinding.Action, inputs: [KeyBinding.Input]) {
+        if let index = keyBindingSets.firstIndex(of: selectedKeyBindingSet) {
+            keyBindingSets[index] = selectedKeyBindingSet.update(for: action, inputs: inputs)
+            selectedKeyBindingSet = keyBindingSets[index]
+        }
     }
 
     /// 利用可能なキー配列を読み込む

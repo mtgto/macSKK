@@ -13,6 +13,14 @@ struct KeyBindingSet: Identifiable, Hashable {
      */
     let sorted: [(KeyBinding.Input, KeyBinding.Action)]
 
+    // KeyBinding.Actionの順に並べたキーバインディングの配列
+    var values: [KeyBinding] {
+        let dict = Dictionary(grouping: sorted, by: { $0.1 }).mapValues { $0.map { $0.0 } }
+        return KeyBinding.Action.allCases.map { action in
+            KeyBinding(action, dict[action] ?? [])
+        }
+    }
+
     static let defaultKeyBindingSet = KeyBindingSet(id: Self.defaultId, values: KeyBinding.defaultKeyBindingSettings)
 
     init(id: String, values: [KeyBinding]) {
@@ -53,6 +61,12 @@ struct KeyBindingSet: Identifiable, Hashable {
 
     func copy(id: String) -> Self {
         return Self(id: id, sorted: sorted)
+    }
+
+    // 指定したactionにひもづく入力をinputsに置き換えて返す
+    func update(for action: KeyBinding.Action, inputs: [KeyBinding.Input]) -> Self {
+        let keyBindings = values.filter { $0.action != action }
+        return KeyBindingSet(id: id, values: keyBindings + [KeyBinding(action, inputs)])
     }
 
     // MARK: Hashable

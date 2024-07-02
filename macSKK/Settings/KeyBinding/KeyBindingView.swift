@@ -50,7 +50,7 @@ struct KeyBindingView: View {
         } message: {
             Text("Are you sure you want to delete \(settingsViewModel.selectedKeyBindingSet.id)?")
         }
-        Table(settingsViewModel.keyBingings) {
+        Table(settingsViewModel.selectedKeyBindingSet.values) {
             TableColumn("Action", value: \.action.localizedAction)
             TableColumn("Key", value: \.localizedInputs)
             TableColumn("Edit") { keyBinding in
@@ -63,7 +63,9 @@ struct KeyBindingView: View {
             }
         }
         .sheet(isPresented: $isEditingKeyBindingInputs) {
-            KeyBindingInputsView(action: $editingKeyBindingAction, inputs: $editingKeyBindingInputs)
+            KeyBindingInputsView(settingsViewModel: settingsViewModel,
+                                 action: $editingKeyBindingAction,
+                                 inputs: $editingKeyBindingInputs)
         }
     }
 }

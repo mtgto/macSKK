@@ -65,6 +65,7 @@ final class KeyBindingInput: ObservableObject, Identifiable, Hashable {
 
 // あるキーバインドを変更するビュー。
 struct KeyBindingInputsView: View {
+    @StateObject var settingsViewModel: SettingsViewModel
     @Environment (\.dismiss) var dismiss
     @Binding var action: KeyBinding.Action
     @Binding var inputs: [KeyBindingInput]
@@ -202,12 +203,23 @@ struct KeyBindingInputsView: View {
                     dismiss()
                 }
                 Button {
+                    let inputs = inputs.compactMap { input in
+                        if let keyWithModifierFlags = input.keyWithModifierFlags {
+                            return KeyBinding.Input(key: keyWithModifierFlags.key,
+                                                    displayString: input.displayString,
+                                                    modifierFlags: keyWithModifierFlags.modifierFlags,
+                                                    optionalModifierFlags: input.optionalModifierFlags)
+                        } else {
+                            return nil
+                        }
+                    }
+                    settingsViewModel.updateKeyBindingInputs(action: action, inputs: inputs)
                     dismiss()
                 } label: {
                     Text("Done")
                         .padding([.leading, .trailing])
                 }
-                .disabled(inputs.isEmpty)
+                .disabled(inputs.allSatisfy({ $0.keyWithModifierFlags == nil }))
                 .keyboardShortcut(.defaultAction)
                 .padding([.trailing, .bottom, .top])
             }
@@ -218,7 +230,8 @@ struct KeyBindingInputsView: View {
 }
 
 #Preview {
-    KeyBindingInputsView(action: .constant(.toggleKana),
+    KeyBindingInputsView(settingsViewModel: try! SettingsViewModel(),
+                         action: .constant(.toggleKana),
                          inputs: .constant([
                             KeyBindingInput(key: .character("j"), modifierFlags: [.control]),
                             KeyBindingInput(key: .character("l"), modifierFlags: []),

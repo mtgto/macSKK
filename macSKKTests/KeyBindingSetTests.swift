@@ -6,7 +6,7 @@ import XCTest
 @testable import macSKK
 
 final class KeyBindingSetTests: XCTestCase {
-    func testInit() throws {
+    func testInit() {
         let set = KeyBindingSet(id: "test", values: [
             KeyBinding(.toggleKana, [.init(key: .character("q"), displayString: "Q", modifierFlags: [])]),
             KeyBinding(.japanese, [.init(key: .character("q"), displayString: "Q", modifierFlags: .shift)]),
@@ -20,5 +20,16 @@ final class KeyBindingSetTests: XCTestCase {
         // まず修飾キー以外のキーの順でソートして、同じキーのときは修飾キーが多い方が前に来るようにソートされる
         // キーの順のソートはcodeが前、characterが後で、同じcodeやcharacterなら小さい方が前に来るようにソートされる
         XCTAssertEqual(set.sorted.map { $0.1 }, [.enter, .left, .left, .hiragana, .direct, .japanese, .toggleKana, .unregister])
+    }
+
+    func testUpdate() {
+        let set = KeyBindingSet(id: "test", values: [
+            KeyBinding(.toggleKana, [.init(key: .character("q"), displayString: "Q", modifierFlags: [])]),
+        ])
+        var updated = set.update(for: .japanese, inputs: [.init(key: .character("q"), displayString: "Q", modifierFlags: .shift)])
+        // Shift-QのほうがQより前にくる
+        XCTAssertEqual(updated.sorted.map { $0.1 }, [.japanese, .toggleKana])
+        updated = updated.update(for: .toggleKana, inputs: [.init(key: .character("a"), displayString: "A", modifierFlags: [])])
+        XCTAssertEqual(updated.sorted.map { $0.1 }, [.toggleKana, .japanese])
     }
 }
