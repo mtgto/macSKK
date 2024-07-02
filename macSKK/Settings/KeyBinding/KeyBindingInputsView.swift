@@ -174,28 +174,25 @@ struct KeyBindingInputsView: View {
                         }
                     }
                 }
-                if let selectedInput {
-                    Section("Modifier Flags (Required)") {
-                        HStack {
-                            Toggle("Control", isOn: .constant(selectedInput.keyWithModifierFlags?.modifierFlags.contains(.control) ?? false))
-                                .disabled(true)
-                            Toggle("Option", isOn: .constant(selectedInput.keyWithModifierFlags?.modifierFlags.contains(.option) ?? false))
-                                .disabled(true)
-                            Toggle("Shift", isOn: .constant(selectedInput.keyWithModifierFlags?.modifierFlags.contains(.shift) ?? false))
-                                .disabled(true)
-                            Toggle("Function", isOn: .constant(selectedInput.keyWithModifierFlags?.modifierFlags.contains(.function) ?? false))
-                                .disabled(true)
-                        }
-                    }
-                    Section("Modifier Flags (Optional)") {
-                        HStack {
-                            Toggle("Control", isOn: optionalModifierFlag(.control))
-                            Toggle("Option", isOn: optionalModifierFlag(.option))
-                            Toggle("Shift", isOn: optionalModifierFlag(.shift))
-                            Toggle("Function", isOn: optionalModifierFlag(.function))
-                        }
+                Section("Modifier Flags (Required)") {
+                    let modifierFlags = selectedInput?.keyWithModifierFlags?.modifierFlags ?? []
+                    HStack {
+                        Toggle("Control", isOn: .constant(modifierFlags.contains(.control)))
+                        Toggle("Option", isOn: .constant(modifierFlags.contains(.option)))
+                        Toggle("Shift", isOn: .constant(modifierFlags.contains(.shift)))
+                        Toggle("Function", isOn: .constant(modifierFlags.contains(.function)))
                     }
                 }
+                .disabled(true)
+                Section("Modifier Flags (Optional)") {
+                    HStack {
+                        Toggle("Control", isOn: optionalModifierFlag(.control))
+                        Toggle("Option", isOn: optionalModifierFlag(.option))
+                        Toggle("Shift", isOn: optionalModifierFlag(.shift))
+                        Toggle("Function", isOn: optionalModifierFlag(.function))
+                    }
+                }
+                .disabled(selectedInput == nil)
             }
             .formStyle(.grouped)
             .toggleStyle(.checkbox)
