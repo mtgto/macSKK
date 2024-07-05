@@ -8,7 +8,7 @@ struct KeyWithModifierFlags: Hashable {
     let modifierFlags: NSEvent.ModifierFlags
 
     var displayString: String {
-        KeyBinding.Input(key: key, displayString: key.displayString, modifierFlags: modifierFlags).localized
+        KeyBinding.Input(key: key, modifierFlags: modifierFlags).localized
     }
 
     init(_ key: KeyBinding.Key, _ modifierFlags: NSEvent.ModifierFlags) {
@@ -206,7 +206,6 @@ struct KeyBindingInputsView: View {
                     let inputs = inputs.compactMap { input in
                         if let keyWithModifierFlags = input.keyWithModifierFlags {
                             return KeyBinding.Input(key: keyWithModifierFlags.key,
-                                                    displayString: input.displayString,
                                                     modifierFlags: keyWithModifierFlags.modifierFlags,
                                                     optionalModifierFlags: input.optionalModifierFlags)
                         } else {

@@ -161,11 +161,6 @@ struct KeyBinding: Identifiable {
         /// Inputで管理する修飾キーの集合。ここに含まれてない修飾キーは無視する
         static let allowedModifierFlags: NSEvent.ModifierFlags = [.shift, .control, .function, .option, .command]
 
-        /**
-         * 設定画面の表示用文字
-         */
-        let displayString: String
-
         // MARK: Identifiable
         var id: String {
             switch key {
@@ -176,9 +171,8 @@ struct KeyBinding: Identifiable {
             }
         }
 
-        init(key: KeyBinding.Key, displayString: String, modifierFlags: NSEvent.ModifierFlags, optionalModifierFlags: NSEvent.ModifierFlags = []) {
+        init(key: KeyBinding.Key, modifierFlags: NSEvent.ModifierFlags, optionalModifierFlags: NSEvent.ModifierFlags = []) {
             self.key = key
-            self.displayString = displayString
             self.modifierFlags = modifierFlags.intersection(Self.allowedModifierFlags)
             self.optionalModifierFlags = optionalModifierFlags.intersection(Self.allowedModifierFlags)
         }
@@ -186,14 +180,12 @@ struct KeyBinding: Identifiable {
         init?(dict: [String: Any]) {
             guard let keyValue = dict["key"], let key = Key(rawValue: keyValue),
             let modifierFlagsValue = dict["modifierFlags"] as? UInt,
-            let optionalModifierFlagsValue = dict["optionalModifierFlags"] as? UInt,
-            let displayString = dict["displayString"] as? String else {
+            let optionalModifierFlagsValue = dict["optionalModifierFlags"] as? UInt else {
                 return nil
             }
             self.key = key
             self.modifierFlags = NSEvent.ModifierFlags(rawValue: modifierFlagsValue).intersection(Self.allowedModifierFlags)
             self.optionalModifierFlags = NSEvent.ModifierFlags(rawValue: optionalModifierFlagsValue).intersection(Self.allowedModifierFlags)
-            self.displayString = displayString
         }
 
         static func == (lhs: Self, rhs: Self) -> Bool {
@@ -211,7 +203,7 @@ struct KeyBinding: Identifiable {
             if modifierFlags.contains(.shift) {
                 result.append("⇧")
             }
-            result.append(displayString)
+            result.append(key.displayString)
             return result.joined(separator: " ")
         }
 
@@ -220,7 +212,6 @@ struct KeyBinding: Identifiable {
                 "key": key.encode(),
                 "modifierFlags": modifierFlags.rawValue,
                 "optionalModifierFlags": optionalModifierFlags.rawValue,
-                "displayString": displayString,
             ]
         }
 
@@ -245,7 +236,7 @@ struct KeyBinding: Identifiable {
         }
 
         func with(optionalModifierFlags: NSEvent.ModifierFlags) -> Self {
-            .init(key: key, displayString: displayString, modifierFlags: modifierFlags, optionalModifierFlags: optionalModifierFlags)
+            .init(key: key, modifierFlags: modifierFlags, optionalModifierFlags: optionalModifierFlags)
         }
     }
 
@@ -288,60 +279,60 @@ struct KeyBinding: Identifiable {
         return Action.allCases.map { action in
             switch action {
             case .hiragana:
-                return KeyBinding(action, [Input(key: .character("j"), displayString: "J", modifierFlags: .control)])
+                return KeyBinding(action, [Input(key: .character("j"), modifierFlags: .control)])
             case .toggleKana:
-                return KeyBinding(action, [Input(key: .character("q"), displayString: "Q", modifierFlags: [])])
+                return KeyBinding(action, [Input(key: .character("q"), modifierFlags: [])])
             case .hankakuKana:
-                return KeyBinding(action, [Input(key: .character("q"), displayString: "Q", modifierFlags: .control)])
+                return KeyBinding(action, [Input(key: .character("q"), modifierFlags: .control)])
             case .direct:
-                return KeyBinding(action, [Input(key: .character("l"), displayString: "L", modifierFlags: [])])
+                return KeyBinding(action, [Input(key: .character("l"), modifierFlags: [])])
             case .zenkaku:
-                return KeyBinding(action, [Input(key: .character("l"), displayString: "L", modifierFlags: .shift)])
+                return KeyBinding(action, [Input(key: .character("l"), modifierFlags: .shift)])
             case .abbrev:
-                return KeyBinding(action, [Input(key: .character("/"), displayString: "/", modifierFlags: [])])
+                return KeyBinding(action, [Input(key: .character("/"), modifierFlags: [])])
             case .japanese:
-                return KeyBinding(action, [Input(key: .character("q"), displayString: "Q", modifierFlags: .shift)])
+                return KeyBinding(action, [Input(key: .character("q"), modifierFlags: .shift)])
             case .stickyShift:
-                return KeyBinding(action, [Input(key: .character(";"), displayString: ";", modifierFlags: [])])
+                return KeyBinding(action, [Input(key: .character(";"), modifierFlags: [])])
             case .enter:
-                return KeyBinding(action, [Input(key: .code(0x24), displayString: "Enter", modifierFlags: [], optionalModifierFlags: [.shift, .option])])
+                return KeyBinding(action, [Input(key: .code(0x24), modifierFlags: [], optionalModifierFlags: [.shift, .option])])
             case .space:
-                return KeyBinding(action, [Input(key: .code(0x31), displayString: "Space", modifierFlags: [])])
+                return KeyBinding(action, [Input(key: .code(0x31), modifierFlags: [])])
             case .tab:
-                return KeyBinding(action, [Input(key: .code(0x30), displayString: "Tab", modifierFlags: [], optionalModifierFlags: .shift)])
+                return KeyBinding(action, [Input(key: .code(0x30), modifierFlags: [], optionalModifierFlags: .shift)])
             case .backspace:
-                return KeyBinding(action, [Input(key: .code(0x33), displayString: "Backspace", modifierFlags: [], optionalModifierFlags: .shift),
-                                           Input(key: .character("h"), displayString: "H", modifierFlags: .control)])
+                return KeyBinding(action, [Input(key: .code(0x33), modifierFlags: [], optionalModifierFlags: .shift),
+                                           Input(key: .character("h"), modifierFlags: .control)])
             case .delete:
-                return KeyBinding(action, [Input(key: .code(0x75), displayString: "Delete", modifierFlags: .function),
-                                           Input(key: .character("d"), displayString: "D", modifierFlags: .control)])
+                return KeyBinding(action, [Input(key: .code(0x75), modifierFlags: .function),
+                                           Input(key: .character("d"), modifierFlags: .control)])
             case .cancel:
-                return KeyBinding(action, [Input(key: .code(0x35), displayString: "ESC", modifierFlags: []),
-                                           Input(key: .character("g"), displayString: "G", modifierFlags: .control)])
+                return KeyBinding(action, [Input(key: .code(0x35), modifierFlags: []),
+                                           Input(key: .character("g"), modifierFlags: .control)])
             case .left:
-                return KeyBinding(action, [Input(key: .code(0x7b), displayString: "←", modifierFlags: .function, optionalModifierFlags: [.shift]),
-                                           Input(key: .character("b"), displayString: "B", modifierFlags: .control)])
+                return KeyBinding(action, [Input(key: .code(0x7b), modifierFlags: .function, optionalModifierFlags: [.shift]),
+                                           Input(key: .character("b"), modifierFlags: .control)])
             case .right:
-                return KeyBinding(action, [Input(key: .code(0x7c), displayString: "→", modifierFlags: .function, optionalModifierFlags: [.shift]),
-                                           Input(key: .character("f"), displayString: "F", modifierFlags: .control)])
+                return KeyBinding(action, [Input(key: .code(0x7c), modifierFlags: .function, optionalModifierFlags: [.shift]),
+                                           Input(key: .character("f"), modifierFlags: .control)])
             case .down:
-                return KeyBinding(action, [Input(key: .code(0x7d), displayString: "↓", modifierFlags: .function, optionalModifierFlags: [.shift]),
-                                           Input(key: .character("n"), displayString: "N", modifierFlags: .control)])
+                return KeyBinding(action, [Input(key: .code(0x7d), modifierFlags: .function, optionalModifierFlags: [.shift]),
+                                           Input(key: .character("n"), modifierFlags: .control)])
             case .up:
-                return KeyBinding(action, [Input(key: .code(0x7e), displayString: "↑", modifierFlags: .function, optionalModifierFlags: [.shift]),
-                                           Input(key: .character("p"), displayString: "P", modifierFlags: .control)])
+                return KeyBinding(action, [Input(key: .code(0x7e), modifierFlags: .function, optionalModifierFlags: [.shift]),
+                                           Input(key: .character("p"), modifierFlags: .control)])
             case .startOfLine:
-                return KeyBinding(action, [Input(key: .character("a"), displayString: "A", modifierFlags: .control)])
+                return KeyBinding(action, [Input(key: .character("a"), modifierFlags: .control)])
             case .endOfLine:
-                return KeyBinding(action, [Input(key: .character("e"), displayString: "E", modifierFlags: .control)])
+                return KeyBinding(action, [Input(key: .character("e"), modifierFlags: .control)])
             case .unregister:
-                return KeyBinding(action, [Input(key: .character("x"), displayString: "X", modifierFlags: .shift)])
+                return KeyBinding(action, [Input(key: .character("x"), modifierFlags: .shift)])
             case .registerPaste:
-                return KeyBinding(action, [Input(key: .character("y"), displayString: "Y", modifierFlags: .control)])
+                return KeyBinding(action, [Input(key: .character("y"), modifierFlags: .control)])
             case .eisu:
-                return KeyBinding(action, [Input(key: .code(0x66), displayString: String(localized: "KeyEisu"), modifierFlags: [])])
+                return KeyBinding(action, [Input(key: .code(0x66), modifierFlags: [])])
             case .kana:
-                return KeyBinding(action, [Input(key: .code(0x68), displayString: String(localized: "KeyKana"), modifierFlags: [])])
+                return KeyBinding(action, [Input(key: .code(0x68), modifierFlags: [])])
             }
         }
     }

@@ -7,16 +7,16 @@ import XCTest
 
 final class KeyBindingTests: XCTestCase {
     func testInput() {
-        let inputQ = KeyBinding.Input(key: .character("q"), displayString: "Q", modifierFlags: [])
-        let inputShiftQ = KeyBinding.Input(key: .character("q"), displayString: "Q", modifierFlags: .shift)
+        let inputQ = KeyBinding.Input(key: .character("q"), modifierFlags: [])
+        let inputShiftQ = KeyBinding.Input(key: .character("q"), modifierFlags: .shift)
         XCTAssertNotEqual(inputQ, inputShiftQ, "印字キーはmodifierFlagsが違うと別のキーとして扱う")
-        let inputJ = KeyBinding.Input(key: .character("j"), displayString: "J", modifierFlags: [])
-        let inputCtrlJ = KeyBinding.Input(key: .character("j"), displayString: "J", modifierFlags: .control)
+        let inputJ = KeyBinding.Input(key: .character("j"), modifierFlags: [])
+        let inputCtrlJ = KeyBinding.Input(key: .character("j"), modifierFlags: .control)
         XCTAssertNotEqual(inputJ, inputCtrlJ)
-        let right = KeyBinding.Input(key: .code(0x7c), displayString: "→", modifierFlags: .function)
-        let shiftRight = KeyBinding.Input(key: right.key, displayString: right.displayString, modifierFlags: right.modifierFlags.union(.shift))
+        let right = KeyBinding.Input(key: .code(0x7c), modifierFlags: .function)
+        let shiftRight = KeyBinding.Input(key: right.key, modifierFlags: right.modifierFlags.union(.shift))
         XCTAssertNotEqual(right, shiftRight)
-        let shiftCtrlRight = KeyBinding.Input(key: right.key, displayString: right.displayString, modifierFlags: right.modifierFlags.union(.control))
+        let shiftCtrlRight = KeyBinding.Input(key: right.key, modifierFlags: right.modifierFlags.union(.control))
         XCTAssertNotEqual(right, shiftCtrlRight)
         XCTAssertNotEqual(shiftRight, shiftCtrlRight)
     }
@@ -31,11 +31,11 @@ final class KeyBindingTests: XCTestCase {
     }
 
     func testInputEncodeAndDecode() {
-        let input1 = KeyBinding.Input(key: .character("l"), displayString: "L", modifierFlags: [])
+        let input1 = KeyBinding.Input(key: .character("l"), modifierFlags: [])
         XCTAssertEqual(input1, KeyBinding.Input(dict: input1.encode()))
-        let input2 = KeyBinding.Input(key: .character("j"), displayString: "J", modifierFlags: .control)
+        let input2 = KeyBinding.Input(key: .character("j"), modifierFlags: .control)
         XCTAssertEqual(input2, KeyBinding.Input(dict: input2.encode()))
-        let input3 = KeyBinding.Input(key: .code(0x7e), displayString: "↑", modifierFlags: .function, optionalModifierFlags: .shift)
+        let input3 = KeyBinding.Input(key: .code(0x7e), modifierFlags: .function, optionalModifierFlags: .shift)
         XCTAssertEqual(input3, KeyBinding.Input(dict: input3.encode()))
         XCTAssertNil(KeyBinding.Input(dict: [:]), "key, modifierFlags, optionalModifierFlags, displayStringキーが必要")
         XCTAssertNil(KeyBinding.Input(dict: ["key": "q", "modifierFlags": 0]))
@@ -46,7 +46,7 @@ final class KeyBindingTests: XCTestCase {
     }
 
     func testEncodeAndDecode() {
-        let binding1 = KeyBinding(.abbrev, [KeyBinding.Input(key: .character("/"), displayString: "/", modifierFlags: [])])
+        let binding1 = KeyBinding(.abbrev, [KeyBinding.Input(key: .character("/"), modifierFlags: [])])
         let binding2 = KeyBinding(dict: binding1.encode())
         XCTAssertEqual(binding1.action, binding2!.action)
         XCTAssertEqual(binding1.inputs, binding2!.inputs)
@@ -69,21 +69,21 @@ final class KeyBindingTests: XCTestCase {
                              isARepeat: false,
                              keyCode: keyCode)!
         }
-        let inputQ = KeyBinding.Input(key: .character("q"), displayString: "Q", modifierFlags: [])
-        let inputShiftQ = KeyBinding.Input(key: .character("q"), displayString: "Q", modifierFlags: .shift)
+        let inputQ = KeyBinding.Input(key: .character("q"), modifierFlags: [])
+        let inputShiftQ = KeyBinding.Input(key: .character("q"), modifierFlags: .shift)
         let eventQ = generateKeyEvent(modifierFlags: [], characters: "q")
         let eventShiftQ = generateKeyEvent(modifierFlags: .shift, characters: "q")
         XCTAssertTrue(inputQ.accepts(event: eventQ))
         XCTAssertFalse(inputShiftQ.accepts(event: eventQ))
         XCTAssertFalse(inputQ.accepts(event: eventShiftQ))
         XCTAssertTrue(inputShiftQ.accepts(event: eventShiftQ))
-        let inputLeft = KeyBinding.Input(key: .code(0x7b), displayString: "←", modifierFlags: .function, optionalModifierFlags: .shift)
+        let inputLeft = KeyBinding.Input(key: .code(0x7b), modifierFlags: .function, optionalModifierFlags: .shift)
         let eventLeft = generateKeyEvent(modifierFlags: [.function], characters: "\u{63234}", keyCode: 0x7b)
         let eventShiftLeft = generateKeyEvent(modifierFlags: [.function, .shift], characters: "\u{63234}", keyCode: 0x7b)
         XCTAssertTrue(inputLeft.accepts(event: eventLeft))
         XCTAssertTrue(inputLeft.accepts(event: eventShiftLeft))
         XCTAssertFalse(inputLeft.accepts(event: eventQ))
-        let inputEnter = KeyBinding.Input(key: .code(0x24), displayString: "Enter", modifierFlags: [], optionalModifierFlags: .option)
+        let inputEnter = KeyBinding.Input(key: .code(0x24), modifierFlags: [], optionalModifierFlags: .option)
         let eventEnter = generateKeyEvent(modifierFlags: [], characters: "\r", keyCode: 0x24)
         let eventOptionEnter = generateKeyEvent(modifierFlags: .option, characters: "\r", keyCode: 0x24)
         XCTAssertTrue(inputEnter.accepts(event: eventEnter))
