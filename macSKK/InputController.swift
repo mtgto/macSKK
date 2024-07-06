@@ -187,6 +187,12 @@ class InputController: IMKInputController {
                     Global.candidatesPanel.setAnnotationFontSize(annotationFontSize)
                 }
             }.store(in: &cancellables)
+        NotificationCenter.default.publisher(for: notificationNameFindCompletionFromNonUserDict)
+            .sink { notification in
+                if let findCompletionFromNonUserDict = notification.object as? Bool {
+                    Global.findCompletionFromNonUserDict.send(findCompletionFromNonUserDict)
+                }
+            }.store(in: &cancellables)
     }
 
     override func handle(_ event: NSEvent!, client sender: Any!) -> Bool {

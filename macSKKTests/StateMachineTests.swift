@@ -2553,9 +2553,10 @@ final class StateMachineTests: XCTestCase {
 
     @MainActor func testPrivateMode() throws {
         let privateMode = CurrentValueSubject<Bool, Never>(false)
+        let findCompletionFromNonUserDict = CurrentValueSubject<Bool, Never>(false)
         // プライベートモードが有効ならユーザー辞書を参照はするが保存はしない
         let dict = MemoryDict(entries: ["と": [Word("都")]], readonly: true)
-        Global.dictionary = try UserDict(dicts: [dict], userDictEntries: [:], privateMode: privateMode)
+        Global.dictionary = try UserDict(dicts: [dict], userDictEntries: [:], privateMode: privateMode, findCompletionFromNonUserDict: findCompletionFromNonUserDict)
 
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()

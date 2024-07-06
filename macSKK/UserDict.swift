@@ -31,14 +31,17 @@ class UserDict: NSObject, DictProtocol {
     private let savePublisher = PassthroughSubject<Void, Never>()
     private let privateMode: CurrentValueSubject<Bool, Never>
     private var cancellables: Set<AnyCancellable> = []
+    // 一般辞書を保管で検索するか？
+    private let findCompletionFromNonUserDict: CurrentValueSubject<Bool, Never>
 
     // MARK: NSFilePresenter
     let presentedItemURL: URL?
     let presentedItemOperationQueue: OperationQueue = OperationQueue()
 
-    init(dicts: [any DictProtocol], userDictEntries: [String: [Word]]? = nil, privateMode: CurrentValueSubject<Bool, Never>) throws {
+    init(dicts: [any DictProtocol], userDictEntries: [String: [Word]]? = nil, privateMode: CurrentValueSubject<Bool, Never>, findCompletionFromNonUserDict: CurrentValueSubject<Bool, Never>) throws {
         self.dicts = dicts
         self.privateMode = privateMode
+        self.findCompletionFromNonUserDict = findCompletionFromNonUserDict
         dictionariesDirectoryURL = try FileManager.default.url(
             for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false
         ).appending(path: "Dictionaries")
@@ -250,9 +253,11 @@ class UserDict: NSObject, DictProtocol {
                 return completion
             }
         }
-        for dict in dicts {
-            if let completion = dict.findCompletion(prefix: prefix) {
-                return completion
+        if findCompletionFromNonUserDict.value {
+            for dict in dicts {
+                if let completion = dict.findCompletion(prefix: prefix) {
+                    return completion
+                }
             }
         }
         return nil

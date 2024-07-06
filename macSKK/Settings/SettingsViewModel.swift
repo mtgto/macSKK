@@ -166,6 +166,8 @@ final class SettingsViewModel: ObservableObject {
     @Published var keyBingings: [KeyBinding]
     /// 変換候補パネルで表示されている候補を決定するキーの集合
     @Published var selectCandidateKeys: String
+    /// 一般辞書を保管で検索するか？
+    @Published var findCompletionFromNonUserDict: Bool
 
     // 辞書ディレクトリ
     let dictionariesDirectoryUrl: URL
@@ -185,6 +187,7 @@ final class SettingsViewModel: ObservableObject {
         inlineCandidateCount = UserDefaults.standard.integer(forKey: UserDefaultsKeys.inlineCandidateCount)
         candidatesFontSize = UserDefaults.standard.integer(forKey: UserDefaultsKeys.candidatesFontSize)
         annotationFontSize = UserDefaults.standard.integer(forKey: UserDefaultsKeys.annotationFontSize)
+        findCompletionFromNonUserDict = UserDefaults.standard.bool(forKey: UserDefaultsKeys.findCompletionFromNonUserDict)
         workaroundApplications = UserDefaults.standard.array(forKey: UserDefaultsKeys.workarounds)?.compactMap { workaround in
             if let workaround = workaround as? Dictionary<String, Any>, let bundleIdentifier = workaround["bundleIdentifier"] as? String, let insertBlankString = workaround["insertBlankString"] as? Bool {
                 WorkaroundApplication(bundleIdentifier: bundleIdentifier, insertBlankString: insertBlankString)
@@ -339,6 +342,12 @@ final class SettingsViewModel: ObservableObject {
             logger.log("変換候補決定のキーを\"\(selectCandidateKeys, privacy: .public)\"に変更しました")
         }.store(in: &cancellables)
 
+        $findCompletionFromNonUserDict.dropFirst().sink { findCompletionFromNonUserDict in
+            UserDefaults.standard.set(findCompletionFromNonUserDict, forKey: UserDefaultsKeys.findCompletionFromNonUserDict)
+            NotificationCenter.default.post(name: notificationNameFindCompletionFromNonUserDict, object: findCompletionFromNonUserDict)
+            logger.log("一般辞書を保管で検索するかを\(findCompletionFromNonUserDict)に変更しました")
+        }
+
         NotificationCenter.default.publisher(for: notificationNameDictLoad).receive(on: RunLoop.main).sink { [weak self] notification in
             if let loadEvent = notification.object as? DictLoadEvent, let self {
                 if let userDict = Global.dictionary.userDict as? FileDict, userDict.id == loadEvent.id {
@@ -373,6 +382,7 @@ final class SettingsViewModel: ObservableObject {
         skkservDictSetting = SKKServDictSetting(enabled: true, address: "127.0.0.1", port: 1178, encoding: .japaneseEUC)
         keyBingings = []
         selectCandidateKeys = "123456789"
+        findCompletionFromNonUserDict = false
     }
 
     // DictionaryViewのPreviewProvider用

@@ -41,6 +41,11 @@ struct GeneralView: View {
                         }
                     }
                 }
+                Section {
+                    Toggle(isOn: $settingsViewModel.findCompletionFromNonUserDict, label: {
+                        Text("Find completion from non user dictionaries")
+                    })
+                }
             }
             .formStyle(.grouped)
         }.onAppear {

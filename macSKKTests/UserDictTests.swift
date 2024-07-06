@@ -9,17 +9,19 @@ import Combine
 final class UserDictTests: XCTestCase {
     func testRefer() throws {
         let privateMode = CurrentValueSubject<Bool, Never>(false)
+        let findCompletionFromNonUserDict = CurrentValueSubject<Bool, Never>(false)
         let dict1 = MemoryDict(entries: ["い": [Word("胃"), Word("伊")]], readonly: true)
         let dict2 = MemoryDict(entries: ["い": [Word("胃"), Word("意")]], readonly: true)
-        let userDict = try UserDict(dicts: [dict1, dict2], userDictEntries: ["い": [Word("井"), Word("伊")]], privateMode: privateMode)
+        let userDict = try UserDict(dicts: [dict1, dict2], userDictEntries: ["い": [Word("井"), Word("伊")]], privateMode: privateMode, findCompletionFromNonUserDict: findCompletionFromNonUserDict)
         XCTAssertEqual(userDict.refer("い").map { $0.word }, ["井", "伊", "胃", "意"])
     }
 
     @MainActor func testReferMergeAnnotation() throws {
         let privateMode = CurrentValueSubject<Bool, Never>(false)
+        let findCompletionFromNonUserDict = CurrentValueSubject<Bool, Never>(false)
         let dict1 = MemoryDict(entries: ["い": [Word("胃", annotation: Annotation(dictId: "dict1", text: "d1ann")), Word("伊")]], readonly: true)
         let dict2 = MemoryDict(entries: ["い": [Word("胃", annotation: Annotation(dictId: "dict2", text: "d2ann")), Word("意")]], readonly: true)
-        let userDict = try UserDict(dicts: [dict1, dict2], userDictEntries: [:], privateMode: privateMode)
+        let userDict = try UserDict(dicts: [dict1, dict2], userDictEntries: [:], privateMode: privateMode, findCompletionFromNonUserDict: findCompletionFromNonUserDict)
         XCTAssertEqual(userDict.refer("い").map({ $0.word }), ["胃", "伊", "胃", "意"], "dict1, dict2に胃が1つずつある")
         XCTAssertEqual(userDict.refer("い").compactMap({ $0.annotation?.dictId }), ["dict1", "dict2"])
         XCTAssertEqual(userDict.referDicts("い").map({ $0.word }), ["胃", "伊", "意"])
@@ -28,6 +30,7 @@ final class UserDictTests: XCTestCase {
 
     func testReferWithOption() throws {
         let privateMode = CurrentValueSubject<Bool, Never>(false)
+        let findCompletionFromNonUserDict = CurrentValueSubject<Bool, Never>(false)
         let dict = MemoryDict(entries: ["あき>": [Word("空き")],
                                         "あき": [Word("秋")],
                                         ">し": [Word("氏")],
@@ -38,7 +41,7 @@ final class UserDictTests: XCTestCase {
                                                       "あき": [Word("安芸")],
                                                       ">し": [Word("詞")],
                                                       "し": [Word("士")]],
-                                    privateMode: privateMode)
+                                    privateMode: privateMode, findCompletionFromNonUserDict: findCompletionFromNonUserDict)
         XCTAssertEqual(userDict.refer("あき", option: nil), [Word("安芸"), Word("秋")])
         XCTAssertEqual(userDict.refer("あき", option: .prefix), [Word("飽き"), Word("空き")])
         XCTAssertEqual(userDict.refer("あき", option: .suffix), [])
@@ -49,7 +52,8 @@ final class UserDictTests: XCTestCase {
 
     func testPrivateMode() throws {
         let privateMode = CurrentValueSubject<Bool, Never>(true)
-        let userDict = try UserDict(dicts: [], userDictEntries: [:], privateMode: privateMode)
+        let findCompletionFromNonUserDict = CurrentValueSubject<Bool, Never>(false)
+        let userDict = try UserDict(dicts: [], userDictEntries: [:], privateMode: privateMode, findCompletionFromNonUserDict: findCompletionFromNonUserDict)
         let word1 = Word("井")
         let word2 = Word("伊")
         // addのテスト
@@ -68,11 +72,17 @@ final class UserDictTests: XCTestCase {
         privateMode.send(false)
         XCTAssertTrue(userDict.privateUserDict.entries.isEmpty)
     }
-    func testFindCompletion() throws {
+    func testFindCompletionFromNonUserDict() throws {
         let privateMode = CurrentValueSubject<Bool, Never>(false)
+        let findCompletionFromNonUserDict = CurrentValueSubject<Bool, Never>(false)
         let dict1 = MemoryDict(entries: ["にほん": [Word("日本")], "にほ": [Word("2歩")]], readonly: false)
         let dict2 = MemoryDict(entries: ["にほんご": [Word("日本語")]], readonly: false)
-        let userDict = try UserDict(dicts: [dict1, dict2], userDictEntries: ["にふ": [Word("二歩")]], privateMode: privateMode)
+        let userDict = try UserDict(dicts: [dict1, dict2], userDictEntries: ["にふ": [Word("二歩")]], privateMode: privateMode, findCompletionFromNonUserDict: findCompletionFromNonUserDict)
+        XCTAssertEqual(userDict.findCompletion(prefix: "に"), .some("にふ"))
+        XCTAssertEqual(userDict.findCompletion(prefix: "にほ"), .none)
+        XCTAssertEqual(userDict.findCompletion(prefix: "にほん"), .none)
+        XCTAssertEqual(userDict.findCompletion(prefix: "にほんご"), .none)
+        findCompletionFromNonUserDict.send(true)
         XCTAssertEqual(userDict.findCompletion(prefix: "に"), .some("にふ"))
         XCTAssertEqual(userDict.findCompletion(prefix: "にほ"), .some("にほん"))
         XCTAssertEqual(userDict.findCompletion(prefix: "にほん"), .some("にほんご"))
