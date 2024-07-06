@@ -68,4 +68,14 @@ final class UserDictTests: XCTestCase {
         privateMode.send(false)
         XCTAssertTrue(userDict.privateUserDict.entries.isEmpty)
     }
+    func testFindCompletion() throws {
+        let privateMode = CurrentValueSubject<Bool, Never>(false)
+        let dict1 = MemoryDict(entries: ["にほん": [Word("日本")], "にほ": [Word("2歩")]], readonly: false)
+        let dict2 = MemoryDict(entries: ["にほんご": [Word("日本語")]], readonly: false)
+        let userDict = try UserDict(dicts: [dict1, dict2], userDictEntries: ["にふ": [Word("二歩")]], privateMode: privateMode)
+        XCTAssertEqual(userDict.findCompletion(prefix: "に"), .some("にふ"))
+        XCTAssertEqual(userDict.findCompletion(prefix: "にほ"), .some("にほん"))
+        XCTAssertEqual(userDict.findCompletion(prefix: "にほん"), .some("にほんご"))
+        XCTAssertEqual(userDict.findCompletion(prefix: "にほんご"), .none)
+    }
 }
