@@ -62,7 +62,7 @@
 "Number of inline candidates" = "インラインで表示する変換候補の数";
 "Candidates font size" = "変換候補のフォントサイズ";
 "Annotation font size" = "注釈のフォントサイズ";
-"Find completion from non user dictionaries" = "一般の辞書を使って補完する";
+"Find completion from all dictionaries" = "ユーザー辞書だけでなくすべての辞書から補完を探す";
 "Insert Blank String" = "空文字挿入";
 "Enabled" = "有効";
 "Disabled" = "無効";

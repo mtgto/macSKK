@@ -187,10 +187,10 @@ class InputController: IMKInputController {
                     Global.candidatesPanel.setAnnotationFontSize(annotationFontSize)
                 }
             }.store(in: &cancellables)
-        NotificationCenter.default.publisher(for: notificationNameFindCompletionFromNonUserDict)
+        NotificationCenter.default.publisher(for: notificationNameFindCompletionFromAllDicts)
             .sink { notification in
-                if let findCompletionFromNonUserDict = notification.object as? Bool {
-                    Global.findCompletionFromNonUserDict.send(findCompletionFromNonUserDict)
+                if let findCompletionFromAllDicts = notification.object as? Bool {
+                    Global.findCompletionFromAllDicts.send(findCompletionFromAllDicts)
                 }
             }.store(in: &cancellables)
     }

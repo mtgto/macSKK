@@ -42,8 +42,8 @@ struct GeneralView: View {
                     }
                 }
                 Section {
-                    Toggle(isOn: $settingsViewModel.findCompletionFromNonUserDict, label: {
-                        Text("Find completion from non user dictionaries")
+                    Toggle(isOn: $settingsViewModel.findCompletionFromAllDicts, label: {
+                        Text("Find completion from all dictionaries")
                     })
                 }
             }
