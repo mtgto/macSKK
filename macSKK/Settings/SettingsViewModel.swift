@@ -345,8 +345,8 @@ final class SettingsViewModel: ObservableObject {
         $findCompletionFromNonUserDict.dropFirst().sink { findCompletionFromNonUserDict in
             UserDefaults.standard.set(findCompletionFromNonUserDict, forKey: UserDefaultsKeys.findCompletionFromNonUserDict)
             NotificationCenter.default.post(name: notificationNameFindCompletionFromNonUserDict, object: findCompletionFromNonUserDict)
-            logger.log("一般辞書を保管で検索するかを\(findCompletionFromNonUserDict)に変更しました")
-        }
+            logger.log("一般の辞書を使って補完するかを\(findCompletionFromNonUserDict)に変更しました")
+        }.store(in: &cancellables)
 
         NotificationCenter.default.publisher(for: notificationNameDictLoad).receive(on: RunLoop.main).sink { [weak self] notification in
             if let loadEvent = notification.object as? DictLoadEvent, let self {
