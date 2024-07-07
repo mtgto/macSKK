@@ -31,7 +31,7 @@ class UserDict: NSObject, DictProtocol {
     private let savePublisher = PassthroughSubject<Void, Never>()
     private let privateMode: CurrentValueSubject<Bool, Never>
     private var cancellables: Set<AnyCancellable> = []
-    // 一般辞書を保管で検索するか？
+    // 一般辞書を補完で検索するか？
     private let findCompletionFromNonUserDict: CurrentValueSubject<Bool, Never>
 
     // MARK: NSFilePresenter

@@ -34,7 +34,7 @@ import Combine
     private let candidatesPanel: CandidatesPanel
     // 補完候補を表示するパネル
     private let completionPanel: CompletionPanel
-    /// 一般辞書を保管で検索するか？
+    /// 一般辞書を補完で検索するか？
     static let findCompletionFromNonUserDict = CurrentValueSubject<Bool, Never>(false)
 
     init() {

@@ -20,7 +20,7 @@ let notificationNameInlineCandidateCount = Notification.Name("inlineCandidateCou
 let notificationNameCandidatesFontSize = Notification.Name("candidatesFontSize")
 // 注釈のフォントサイズが変更されたときに通知される通知の名前
 let notificationNameAnnotationFontSize = Notification.Name("annotationFontSize")
-// 一般辞書を保管で検索するかが変更されたときに通知される通知の名前
+// 一般辞書を補完で検索するかが変更されたときに通知される通知の名前
 let notificationNameFindCompletionFromNonUserDict =  Notification.Name("findCompletionFromNonUserDict")
 
 func isTest() -> Bool {

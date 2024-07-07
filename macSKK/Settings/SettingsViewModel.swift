@@ -166,7 +166,7 @@ final class SettingsViewModel: ObservableObject {
     @Published var keyBingings: [KeyBinding]
     /// 変換候補パネルで表示されている候補を決定するキーの集合
     @Published var selectCandidateKeys: String
-    /// 一般辞書を保管で検索するか？
+    /// 一般辞書を補完で検索するか？
     @Published var findCompletionFromNonUserDict: Bool
 
     // 辞書ディレクトリ
