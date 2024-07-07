@@ -76,8 +76,7 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[2], .fixedText("ー"))
             XCTAssertEqual(events[3], .markedText(MarkedText([.plain("n")])))
             XCTAssertEqual(events[4], .fixedText("ん"))
-            // AquaSKKみたいに "1" のようにローマ字として成立しない文字は確定文字として入力したほうがうれしいかも?
-            XCTAssertEqual(events[5], .markedText(MarkedText([.plain("1")])))
+            XCTAssertEqual(events[5], .fixedText("1"))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n")))
