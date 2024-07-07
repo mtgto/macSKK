@@ -193,6 +193,7 @@ struct macSKKApp: App {
                 address: "127.0.0.1",
                 port: 1178,
                 encoding: .japaneseEUC).encode(),
+            UserDefaultsKeys.findCompletionFromNonUserDict: false,
         ])
     }
 
