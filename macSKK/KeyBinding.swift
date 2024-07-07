@@ -78,8 +78,13 @@ struct KeyBinding: Identifiable {
         /// 例えば設定でDvorak配列を選んだ状態でoを入力してもkeyCodeはQwerty配列のsのキーと同じになる。
         case code(UInt16)
         /// macSKKでkeyCodeベースでなく印字されている文字で取り扱うキーの集合。
-        static let characters: [Character] = "abcdefghijklmnopqrstuvwxyz1234567890,./;-=`'\\".map { $0 }
+        /// キーバインド設定画面で使用しているNSEvent#charactersIngoringModifiersはIMKInputControllerへ入力されるNSEventと違い
+        /// Shiftを押しながら入力する記号の場合 (!とか) は記号の方が渡ってくる
+        /// (IMKInputControllerのNSEvent#charactersIgnoringModifiersは1)
+        /// Shiftを押しながら入力する記号も含まれている。
+        static let characters: [Character] = "abcdefghijklmnopqrstuvwxyz1234567890,./;-=`'\\!@#$%^&*()|:<>?\"~".map { $0 }
 
+        // UserDefaultsからのデコード用
         init?(rawValue: Any) {
             if let character = rawValue as? String, Self.characters.contains(character) {
                 self = .character(Character(character))
@@ -90,6 +95,7 @@ struct KeyBinding: Identifiable {
             }
         }
 
+        // UserDefaultsへのエンコード用
         func encode() -> Any {
             switch self {
             case .character(let character):
@@ -217,7 +223,14 @@ struct KeyBinding: Identifiable {
 
         /// このキーバインド設定がキーイベントをこのキーバインドの入力として受理するかどうかを返す。
         func accepts(event: NSEvent) -> Bool {
-            if let character = event.charactersIgnoringModifiers?.lowercased().first, Key.characters.contains(character) {
+            if modifierFlags.contains(.shift), let character = event.characters?.lowercased().first, Key.characters.contains(character) {
+                // Shiftを押しながら入力されたキーはキーバインド設定から登録した場合は (NSEvent#charactersIgnoringModifiersが記号のほうを返すため)
+                // .character("!") のように記号のほうをもっているが、IMKInputController#handleに渡されるNSEventの
+                // charactersIgnoringModifiersは記号のほうではない ("!"なら"1"になっている) ため、charactersのほうを見る
+                if key != .character(character) {
+                    return false
+                }
+            } else if let character = event.charactersIgnoringModifiers?.lowercased().first, Key.characters.contains(character) {
                 if key != .character(character) {
                     return false
                 }
