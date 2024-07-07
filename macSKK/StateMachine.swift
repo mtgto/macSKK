@@ -815,8 +815,17 @@ final class StateMachine {
                         }
                     } else {
                         addFixedText(moji.string(for: state.inputMode))
-                        state.inputMethod = .composing(
-                            ComposingState(isShift: false, text: [], okuri: nil, romaji: converted.input))
+                        if let inputConverted = useKanaRuleIfPresent(inputMode: state.inputMode, romaji: converted.input, input: "") {
+                            return handleComposingPrintable(input: inputConverted.input,
+                                                            converted: inputConverted,
+                                                            action: action,
+                                                            composing: ComposingState(isShift: false, text: [], okuri: nil, romaji: ""),
+                                                            specialState: specialState)
+                        } else {
+                            state.inputMethod = .composing(
+                                ComposingState(isShift: false, text: [], okuri: nil, romaji: converted.input))
+
+                        }
                     }
                 }
                 updateMarkedText()

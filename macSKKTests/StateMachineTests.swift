@@ -67,6 +67,26 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    @MainActor func testHandleNormalNAndHyphen() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(6).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.plain("n")])))
+            XCTAssertEqual(events[1], .fixedText("ん"))
+            XCTAssertEqual(events[2], .fixedText("ー"))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.plain("n")])))
+            XCTAssertEqual(events[4], .fixedText("ん"))
+            // AquaSKKみたいに "1" のようにローマ字として成立しない文字は確定文字として入力したほうがうれしいかも?
+            XCTAssertEqual(events[5], .markedText(MarkedText([.plain("1")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "-")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "1")))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     @MainActor func testHandleNormalRomajiKanaRuleQ() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         Global.kanaRule = try! Romaji(source: "tq,たん")
