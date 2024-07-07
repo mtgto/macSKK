@@ -1113,6 +1113,25 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    @MainActor func testHandleComposingNAndHyphen() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(5).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("あ")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("あn")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("あんー")])))
+            XCTAssertEqual(events[4], .markedText(MarkedText([.markerCompose, .plain("あんー*d")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ";")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "-")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "d", withShift: true)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     @MainActor func testHandleComposingOkuriQ() {
         Global.dictionary.setEntries(["おu": [Word("追")]])
 

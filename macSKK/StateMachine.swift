@@ -790,22 +790,28 @@ final class StateMachine {
                         return handleComposingStartConvert(action, composing: newComposing, specialState: specialState)
                     }
                 } else {  // !converted.input.isEmpty
-                    // n + 子音入力したときや同一の子音を連続入力して促音が確定したときなど
-                    if (isShift || action.shiftIsPressed()) && input.isAlphabet {
+                    // n + 母音以外を入力して「ん」が確定したときや同一の子音を連続入力して促音が確定したときなど
+                    if (isShift || action.shiftIsPressed()) {
+                        let newComposingState: ComposingState
                         if let okuri {
-                            state.inputMethod = .composing(
-                                ComposingState(
-                                    isShift: true,
-                                    text: text,
-                                    okuri: okuri + [moji],
-                                    romaji: converted.input))
+                            newComposingState = ComposingState(isShift: true,
+                                                               text: text,
+                                                               okuri: okuri + [moji],
+                                                               romaji: converted.input)
                         } else {
-                            state.inputMethod = .composing(
-                                ComposingState(
-                                    isShift: true,
-                                    text: text + [moji.kana],
-                                    okuri: action.shiftIsPressed() ? [] : nil,
-                                    romaji: converted.input))
+                            newComposingState = ComposingState(isShift: true,
+                                                               text: text + [moji.kana],
+                                                               okuri: action.shiftIsPressed() ? [] : nil,
+                                                               romaji: converted.input)
+                        }
+                        if let inputConverted = useKanaRuleIfPresent(inputMode: state.inputMode, romaji: converted.input, input: "") {
+                            return handleComposingPrintable(input: inputConverted.input,
+                                                            converted: inputConverted,
+                                                            action: action,
+                                                            composing: newComposingState,
+                                                            specialState: specialState)
+                        } else {
+                            state.inputMethod = .composing(newComposingState)
                         }
                     } else {
                         addFixedText(moji.string(for: state.inputMode))
