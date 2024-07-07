@@ -19,4 +19,8 @@ struct UserDefaultsKeys {
     // 選択候補パネルから決定するショートカットキー。
     // 初期値は "123456789"。
     static let selectCandidateKeys = "selectCandidateKeys"
+    // 選択中のキーバインド設定ID
+    static let selectedKeyBindingSetId = "selectedKeyBindingSetId"
+    // キーバインド設定の配列
+    static let keyBindingSets = "keyBindingSets"
 }

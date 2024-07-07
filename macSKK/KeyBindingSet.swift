@@ -6,7 +6,8 @@ import AppKit
 struct KeyBindingSet: Identifiable, Hashable {
     /// 設定の名称。
     let id: String
-    static let defaultId: ID = "default"
+    static let defaultId: ID = "macSKK"
+    static let serializeVersion: Int = 1
     /**
      * 修飾キーを除いたキー入力が同じ場合は修飾キーが多いものが前に来るように並べた配列。
      * 入力に一番合致するキー入力を返すために最初にソートしてもっておく。
@@ -46,11 +47,38 @@ struct KeyBindingSet: Identifiable, Hashable {
         })
     }
 
+    // UserDefaultsからのデコード用
+    init?(dict: [String: Any]) {
+        guard let id = dict["id"] as? String, let keyBindings = dict["keyBindings"] as? [[String: Any]], let version = dict["version"] as? Int else {
+            return nil
+        }
+        if version != Self.serializeVersion {
+            logger.error("シリアライズバージョンが合わないためキーバインド \(id, privacy: .public) が読み込めません。(現在: \(Self.serializeVersion), 環境設定: \(version)")
+            return nil
+        }
+        var values: [KeyBinding] = []
+        for dict in keyBindings {
+            guard let keyBinding = KeyBinding(dict: dict) else {
+                logger.warning("キーバインド \(id, privacy: .public) の読み込みに失敗しました")
+                return nil
+            }
+            values.append(keyBinding)
+        }
+        self.init(id: id, values: values)
+    }
+
+    // UserDefaultsへのエンコード用
+    func encode() -> [String: Any] {
+        ["id": id, "version": Self.serializeVersion, "keyBindings": values.map { $0.encode() }]
+    }
+
     private init(id: String, sorted: [(KeyBinding.Input, KeyBinding.Action)]) {
         self.id = id
         self.sorted = sorted
     }
 
+    /// 現在のキーバインドに割り当てられているアクションを返す。
+    /// 入力はIMKInputController#handleの引数のNSEventなので、charactersIgnoreingModifiersがシフトキーの影響を受けない。
     func action(event: NSEvent) -> KeyBinding.Action? {
         sorted.first(where: { $0.0.accepts(event: event) })?.1
     }

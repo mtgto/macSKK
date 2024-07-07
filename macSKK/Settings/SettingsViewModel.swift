@@ -200,9 +200,17 @@ final class SettingsViewModel: ObservableObject {
         }
         self.skkservDictSetting = skkservDictSetting
 
-        // TODO: 設定化。いまはとりあえず固定でデフォルト設定を表示
-        self.keyBindingSets = [KeyBindingSet.defaultKeyBindingSet, KeyBindingSet.defaultKeyBindingSet.copy(id: "mtgto")]
-        self.selectedKeyBindingSet = KeyBindingSet.defaultKeyBindingSet.copy(id: "mtgto")
+        let customizedKeyBindingSets = UserDefaults.standard.array(forKey: UserDefaultsKeys.keyBindingSets)?.compactMap {
+            if let dict = $0 as? [String: Any] {
+                KeyBindingSet(dict: $0 as! [String : Any])
+            } else {
+                nil
+            }
+        }
+        let keyBindingSets = [KeyBindingSet.defaultKeyBindingSet] + (customizedKeyBindingSets ?? [])
+        let selectedKeyBindingSetId = UserDefaults.standard.string(forKey: UserDefaultsKeys.selectedKeyBindingSetId) ?? KeyBindingSet.defaultId
+        self.keyBindingSets = keyBindingSets
+        self.selectedKeyBindingSet = keyBindingSets.first(where: { $0.id == selectedKeyBindingSetId }) ?? KeyBindingSet.defaultKeyBindingSet
 
         selectCandidateKeys = UserDefaults.standard.string(forKey: UserDefaultsKeys.selectCandidateKeys)!
         Global.selectCandidateKeys = selectCandidateKeys.lowercased().map { $0 }
@@ -340,6 +348,21 @@ final class SettingsViewModel: ObservableObject {
             UserDefaults.standard.set(selectCandidateKeys, forKey: UserDefaultsKeys.selectCandidateKeys)
             Global.selectCandidateKeys = selectCandidateKeys.lowercased().map { $0 }
             logger.log("変換候補決定のキーを\"\(selectCandidateKeys, privacy: .public)\"に変更しました")
+        }.store(in: &cancellables)
+
+        $keyBindingSets.dropFirst().sink { keyBindingSets in
+            // デフォルトのキーバインド以外をUserDefaultsに保存する
+            UserDefaults.standard.set(keyBindingSets.filter({ $0.id != KeyBindingSet.defaultId }).map { $0.encode() },
+                                      forKey: UserDefaultsKeys.keyBindingSets)
+            Global.keyBinding = keyBindingSets.first { $0.id == selectedKeyBindingSetId } ?? KeyBindingSet.defaultKeyBindingSet
+        }.store(in: &cancellables)
+
+        $selectedKeyBindingSet.sink { selectedKeyBindingSet in
+            if Global.keyBinding.id != selectedKeyBindingSet.id {
+                logger.log("キーバインドのセットが \(selectedKeyBindingSet.id, privacy: .public) に変更されました。")
+                UserDefaults.standard.set(selectedKeyBindingSet.id, forKey: UserDefaultsKeys.selectedKeyBindingSetId)
+                Global.keyBinding = selectedKeyBindingSet
+            }
         }.store(in: &cancellables)
 
         NotificationCenter.default.publisher(for: notificationNameDictLoad).receive(on: RunLoop.main).sink { [weak self] notification in
