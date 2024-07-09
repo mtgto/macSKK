@@ -20,6 +20,8 @@ let notificationNameInlineCandidateCount = Notification.Name("inlineCandidateCou
 let notificationNameCandidatesFontSize = Notification.Name("candidatesFontSize")
 // 注釈のフォントサイズが変更されたときに通知される通知の名前
 let notificationNameAnnotationFontSize = Notification.Name("annotationFontSize")
+// 一般辞書を補完で検索するかが変更されたときに通知される通知の名前
+let notificationNameFindCompletionFromAllDicts =  Notification.Name("findCompletionFromAllDicts")
 
 func isTest() -> Bool {
     return ProcessInfo.processInfo.environment["MACSKK_IS_TEST"] == "1"
@@ -57,7 +59,7 @@ struct macSKKApp: App {
             let settingsWindow = SettingsWindow(settingsViewModel: settingsViewModel)
             
             // SettingsViewModelの初期化が終わったあとにユーザー辞書を読み込まないと辞書のロード状態が設定されない
-            Global.dictionary = try UserDict(dicts: [], privateMode: Global.privateMode)
+            Global.dictionary = try UserDict(dicts: [], privateMode: Global.privateMode, findCompletionFromAllDicts: Global.findCompletionFromAllDicts)
             settingsWindowController = NSWindowController(window: settingsWindow)
             self.settingsViewModel = settingsViewModel
             settingsWindowController.windowFrameAutosaveName = "Settings"
@@ -191,6 +193,7 @@ struct macSKKApp: App {
                 address: "127.0.0.1",
                 port: 1178,
                 encoding: .japaneseEUC).encode(),
+            UserDefaultsKeys.findCompletionFromAllDicts: false,
         ])
     }
 

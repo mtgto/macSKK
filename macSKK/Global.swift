@@ -20,6 +20,8 @@ import Combine
     static let directModeBundleIdentifiers = CurrentValueSubject<[String], Never>([])
     // モード変更時に空白文字を一瞬追加するワークアラウンドを適用するBundle Identifierの集合
     static let insertBlankStringBundleIdentifiers = CurrentValueSubject<[String], Never>([])
+    /// ユーザー辞書だけでなくすべての辞書から補完候補を検索するか？
+    static let findCompletionFromAllDicts = CurrentValueSubject<Bool, Never>(false)
     /// 現在のローマ字かな変換ルール
     static var kanaRule: Romaji!
     /// デフォルトでもってるローマ字かな変換ルール

@@ -11,7 +11,7 @@ final class UserDictTests: XCTestCase {
         let privateMode = CurrentValueSubject<Bool, Never>(false)
         let dict1 = MemoryDict(entries: ["い": [Word("胃"), Word("伊")]], readonly: true)
         let dict2 = MemoryDict(entries: ["い": [Word("胃"), Word("意")]], readonly: true)
-        let userDict = try UserDict(dicts: [dict1, dict2], userDictEntries: ["い": [Word("井"), Word("伊")]], privateMode: privateMode)
+        let userDict = try UserDict(dicts: [dict1, dict2], userDictEntries: ["い": [Word("井"), Word("伊")]], privateMode: privateMode, findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false))
         XCTAssertEqual(userDict.refer("い").map { $0.word }, ["井", "伊", "胃", "意"])
     }
 
@@ -19,7 +19,7 @@ final class UserDictTests: XCTestCase {
         let privateMode = CurrentValueSubject<Bool, Never>(false)
         let dict1 = MemoryDict(entries: ["い": [Word("胃", annotation: Annotation(dictId: "dict1", text: "d1ann")), Word("伊")]], readonly: true)
         let dict2 = MemoryDict(entries: ["い": [Word("胃", annotation: Annotation(dictId: "dict2", text: "d2ann")), Word("意")]], readonly: true)
-        let userDict = try UserDict(dicts: [dict1, dict2], userDictEntries: [:], privateMode: privateMode)
+        let userDict = try UserDict(dicts: [dict1, dict2], userDictEntries: [:], privateMode: privateMode, findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false))
         XCTAssertEqual(userDict.refer("い").map({ $0.word }), ["胃", "伊", "胃", "意"], "dict1, dict2に胃が1つずつある")
         XCTAssertEqual(userDict.refer("い").compactMap({ $0.annotation?.dictId }), ["dict1", "dict2"])
         XCTAssertEqual(userDict.referDicts("い").map({ $0.word }), ["胃", "伊", "意"])
@@ -38,7 +38,8 @@ final class UserDictTests: XCTestCase {
                                                       "あき": [Word("安芸")],
                                                       ">し": [Word("詞")],
                                                       "し": [Word("士")]],
-                                    privateMode: privateMode)
+                                    privateMode: privateMode,
+                                    findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false))
         XCTAssertEqual(userDict.refer("あき", option: nil), [Word("安芸"), Word("秋")])
         XCTAssertEqual(userDict.refer("あき", option: .prefix), [Word("飽き"), Word("空き")])
         XCTAssertEqual(userDict.refer("あき", option: .suffix), [])
@@ -49,7 +50,8 @@ final class UserDictTests: XCTestCase {
 
     func testPrivateMode() throws {
         let privateMode = CurrentValueSubject<Bool, Never>(true)
-        let userDict = try UserDict(dicts: [], userDictEntries: [:], privateMode: privateMode)
+        let findCompletionFromAllDicts = CurrentValueSubject<Bool, Never>(false)
+        let userDict = try UserDict(dicts: [], userDictEntries: [:], privateMode: privateMode, findCompletionFromAllDicts: findCompletionFromAllDicts)
         let word1 = Word("井")
         let word2 = Word("伊")
         // addのテスト
@@ -67,5 +69,21 @@ final class UserDictTests: XCTestCase {
         // プライベートモードが解除されるとプライベートモードでのエントリがリセットされる
         privateMode.send(false)
         XCTAssertTrue(userDict.privateUserDict.entries.isEmpty)
+    }
+    func testFindCompletionFromAllDicts() throws {
+        let privateMode = CurrentValueSubject<Bool, Never>(false)
+        let findCompletionFromAllDicts = CurrentValueSubject<Bool, Never>(false)
+        let dict1 = MemoryDict(entries: ["にほん": [Word("日本")], "にほ": [Word("2歩")]], readonly: false)
+        let dict2 = MemoryDict(entries: ["にほんご": [Word("日本語")]], readonly: false)
+        let userDict = try UserDict(dicts: [dict1, dict2], userDictEntries: ["にふ": [Word("二歩")]], privateMode: privateMode, findCompletionFromAllDicts: findCompletionFromAllDicts)
+        XCTAssertEqual(userDict.findCompletion(prefix: "に"), "にふ")
+        XCTAssertNil(userDict.findCompletion(prefix: "にほ"))
+        XCTAssertNil(userDict.findCompletion(prefix: "にほん"))
+        XCTAssertNil(userDict.findCompletion(prefix: "にほんご"))
+        findCompletionFromAllDicts.send(true)
+        XCTAssertEqual(userDict.findCompletion(prefix: "に"), "にふ")
+        XCTAssertEqual(userDict.findCompletion(prefix: "にほ"), "にほん")
+        XCTAssertEqual(userDict.findCompletion(prefix: "にほん"), "にほんご")
+        XCTAssertNil(userDict.findCompletion(prefix: "にほんご"))
     }
 }
