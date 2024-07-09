@@ -791,7 +791,7 @@ final class StateMachine {
                     }
                 } else {  // !converted.input.isEmpty
                     // n + 母音以外を入力して「ん」が確定したときや同一の子音を連続入力して促音が確定したときなど
-                    if (isShift || action.shiftIsPressed()) {
+                    if isShift {
                         let newComposingState: ComposingState
                         if let okuri {
                             newComposingState = ComposingState(isShift: true,
@@ -815,8 +815,8 @@ final class StateMachine {
                         }
                     } else {
                         addFixedText(moji.string(for: state.inputMode))
-                        state.inputMethod = .composing(
-                            ComposingState(isShift: false, text: [], okuri: nil, romaji: converted.input))
+                        state.inputMethod = .normal
+                        return handleNormalPrintable(input: converted.input, action: action, specialState: specialState)
                     }
                 }
                 updateMarkedText()
