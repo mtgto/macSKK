@@ -31,14 +31,17 @@ class UserDict: NSObject, DictProtocol {
     private let savePublisher = PassthroughSubject<Void, Never>()
     private let privateMode: CurrentValueSubject<Bool, Never>
     private var cancellables: Set<AnyCancellable> = []
+    // ユーザー辞書だけでなくすべての辞書から補完候補を検索するか？
+    private let findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>
 
     // MARK: NSFilePresenter
     let presentedItemURL: URL?
     let presentedItemOperationQueue: OperationQueue = OperationQueue()
 
-    init(dicts: [any DictProtocol], userDictEntries: [String: [Word]]? = nil, privateMode: CurrentValueSubject<Bool, Never>) throws {
+    init(dicts: [any DictProtocol], userDictEntries: [String: [Word]]? = nil, privateMode: CurrentValueSubject<Bool, Never>, findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>) throws {
         self.dicts = dicts
         self.privateMode = privateMode
+        self.findCompletionFromAllDicts = findCompletionFromAllDicts
         dictionariesDirectoryURL = try FileManager.default.url(
             for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false
         ).appending(path: "Dictionaries")
@@ -235,6 +238,7 @@ class UserDict: NSObject, DictProtocol {
      *
      * - prefixが空文字列ならnilを返す
      * - ユーザー辞書の送りなしの読みのうち、最近変換したものから選択する。
+     *   - ユーザー辞書に存在しない場合は、有効になっている辞書から優先度順に検索する
      * - prefixと読みが完全に一致する場合は補完候補とはしない
      * - 数値変換用の読みは補完候補としない
      */
@@ -245,10 +249,18 @@ class UserDict: NSObject, DictProtocol {
             }
         }
         if let userDict {
-            return userDict.findCompletion(prefix: prefix)
-        } else {
-            return nil
+            if let completion = userDict.findCompletion(prefix: prefix) {
+                return completion
+            }
         }
+        if findCompletionFromAllDicts.value {
+            for dict in dicts {
+                if let completion = dict.findCompletion(prefix: prefix) {
+                    return completion
+                }
+            }
+        }
+        return nil
     }
 
     /// ユーザー辞書を永続化する

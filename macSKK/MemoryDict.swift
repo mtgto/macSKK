@@ -68,13 +68,11 @@ struct MemoryDict: DictProtocol {
         self.readonly = readonly
         self.entries = entries
         failedEntryCount = 0
-        if !readonly {
-            for yomi in entries.keys {
-                if yomi.isOkuriAri {
-                    okuriAriYomis.append(yomi)
-                } else {
-                    okuriNashiYomis.append(yomi)
-                }
+        for yomi in entries.keys {
+            if yomi.isOkuriAri {
+                okuriAriYomis.append(yomi)
+            } else {
+                okuriNashiYomis.append(yomi)
             }
         }
     }

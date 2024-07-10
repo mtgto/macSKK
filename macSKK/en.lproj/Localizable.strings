@@ -62,6 +62,7 @@
 "Number of inline candidates" = "Number of inline candidates";
 "Candidates font size" = "Candidates font size";
 "Annotation font size" = "Annotation font size";
+"Find completion from all dictionaries" = "Find completion from all dictionaries";
 "Insert Blank String" = "Insert Blank String";
 "Enabled" = "Enabled";
 "Disabled" = "Disabled";

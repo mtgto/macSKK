@@ -67,6 +67,30 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    @MainActor func testHandleNormalNAndHyphen() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(9).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.plain("n")])))
+            XCTAssertEqual(events[1], .fixedText("ん"))
+            XCTAssertEqual(events[2], .fixedText("ー"))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.plain("n")])))
+            XCTAssertEqual(events[4], .fixedText("ん"))
+            XCTAssertEqual(events[5], .fixedText("1"))
+            XCTAssertEqual(events[6], .markedText(MarkedText([.plain("n")])))
+            XCTAssertEqual(events[7], .fixedText("ん"))
+            XCTAssertEqual(events[8], .fixedText("!"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "-")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "1")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "!", characterIgnoringModifier: "1", withShift: true)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     @MainActor func testHandleNormalRomajiKanaRuleQ() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         Global.kanaRule = try! Romaji(source: "tq,たん")
@@ -1110,6 +1134,25 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ";")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "d")))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    @MainActor func testHandleComposingNAndHyphen() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(5).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("あ")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("あn")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("あんー")])))
+            XCTAssertEqual(events[4], .markedText(MarkedText([.markerCompose, .plain("あんー*d")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ";")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "-")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "d", withShift: true)))
         wait(for: [expectation], timeout: 1.0)
     }
 
@@ -2555,7 +2598,7 @@ final class StateMachineTests: XCTestCase {
         let privateMode = CurrentValueSubject<Bool, Never>(false)
         // プライベートモードが有効ならユーザー辞書を参照はするが保存はしない
         let dict = MemoryDict(entries: ["と": [Word("都")]], readonly: true)
-        Global.dictionary = try UserDict(dicts: [dict], userDictEntries: [:], privateMode: privateMode)
+        Global.dictionary = try UserDict(dicts: [dict], userDictEntries: [:], privateMode: privateMode, findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false))
 
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()

@@ -164,6 +164,8 @@ final class SettingsViewModel: ObservableObject {
     @Published var skkservDictSetting: SKKServDictSetting
     /// 変換候補パネルで表示されている候補を決定するキーの集合
     @Published var selectCandidateKeys: String
+    /// 一般辞書を補完で検索するか？
+    @Published var findCompletionFromAllDicts: Bool
     /// 利用可能なキーバインディングのセットの種類
     @Published var keyBindingSets: [KeyBindingSet]
     /// 現在選択中のキーバインディングのセット
@@ -187,6 +189,7 @@ final class SettingsViewModel: ObservableObject {
         inlineCandidateCount = UserDefaults.standard.integer(forKey: UserDefaultsKeys.inlineCandidateCount)
         candidatesFontSize = UserDefaults.standard.integer(forKey: UserDefaultsKeys.candidatesFontSize)
         annotationFontSize = UserDefaults.standard.integer(forKey: UserDefaultsKeys.annotationFontSize)
+        findCompletionFromAllDicts = UserDefaults.standard.bool(forKey: UserDefaultsKeys.findCompletionFromAllDicts)
         workaroundApplications = UserDefaults.standard.array(forKey: UserDefaultsKeys.workarounds)?.compactMap { workaround in
             if let workaround = workaround as? Dictionary<String, Any>, let bundleIdentifier = workaround["bundleIdentifier"] as? String, let insertBlankString = workaround["insertBlankString"] as? Bool {
                 WorkaroundApplication(bundleIdentifier: bundleIdentifier, insertBlankString: insertBlankString)
@@ -350,6 +353,12 @@ final class SettingsViewModel: ObservableObject {
             logger.log("変換候補決定のキーを\"\(selectCandidateKeys, privacy: .public)\"に変更しました")
         }.store(in: &cancellables)
 
+        $findCompletionFromAllDicts.dropFirst().sink { findCompletionFromAllDicts in
+            UserDefaults.standard.set(findCompletionFromAllDicts, forKey: UserDefaultsKeys.findCompletionFromAllDicts)
+            NotificationCenter.default.post(name: notificationNameFindCompletionFromAllDicts, object: findCompletionFromAllDicts)
+            logger.log("一般の辞書を使って補完するかを\(findCompletionFromAllDicts)に変更しました")
+        }.store(in: &cancellables)
+
         $keyBindingSets.dropFirst().sink { keyBindingSets in
             // デフォルトのキーバインド以外をUserDefaultsに保存する
             UserDefaults.standard.set(keyBindingSets.filter({ $0.id != KeyBindingSet.defaultId }).map { $0.encode() },
@@ -398,6 +407,7 @@ final class SettingsViewModel: ObservableObject {
         annotationFontSize = 13
         skkservDictSetting = SKKServDictSetting(enabled: true, address: "127.0.0.1", port: 1178, encoding: .japaneseEUC)
         selectCandidateKeys = "123456789"
+        findCompletionFromAllDicts = false
         keyBindingSets = [KeyBindingSet.defaultKeyBindingSet]
         selectedKeyBindingSet = KeyBindingSet.defaultKeyBindingSet
     }
