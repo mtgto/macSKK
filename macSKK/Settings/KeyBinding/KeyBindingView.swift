@@ -19,24 +19,29 @@ struct KeyBindingView: View {
                         .tag(keyBindingSet)
                 }
             }
-            Button {
-                editingKeyBindingSetMode = .rename(settingsViewModel.selectedKeyBindingSet)
+            Menu {
+                Button {
+                    editingKeyBindingSetMode = .rename(settingsViewModel.selectedKeyBindingSet)
+                } label: {
+                    Text("Rename")
+                }.disabled(!settingsViewModel.selectedKeyBindingSet.canDelete)
+                Button {
+                    editingKeyBindingSetMode = .duplicate(settingsViewModel.selectedKeyBindingSet)
+                } label: {
+                    Text("Duplicate")
+                }
+                Button {
+                    // アラート出してから消す
+                    isShowingConfirmDeleteAlert = true
+                } label: {
+                    Text("Delete")
+                }.disabled(!settingsViewModel.selectedKeyBindingSet.canDelete)
             } label: {
-                Label("Rename", systemImage: "pencil")
-            }.disabled(!settingsViewModel.selectedKeyBindingSet.canDelete)
-            Button {
-                editingKeyBindingSetMode = .duplicate(settingsViewModel.selectedKeyBindingSet)
-            } label: {
-                Label("Duplicate", systemImage: "doc.on.doc.fill")
+                Image(systemName: "ellipsis")
             }
-            Button {
-                // アラート出してから消す
-                isShowingConfirmDeleteAlert = true
-            } label: {
-                Label("Delete", systemImage: "trash")
-            }.disabled(!settingsViewModel.selectedKeyBindingSet.canDelete)
+            .buttonStyle(.borderless)
         }
-        .padding(.all)
+        .padding([.top, .leading, .trailing])
         .sheet(item: $editingKeyBindingSetMode) { mode in
             KeyBindingSetView(settingsViewModel: settingsViewModel, mode: $editingKeyBindingSetMode, id: settingsViewModel.selectedKeyBindingSet.id)
         }
@@ -50,23 +55,26 @@ struct KeyBindingView: View {
         } message: {
             Text("Are you sure you want to delete \(settingsViewModel.selectedKeyBindingSet.id)?")
         }
-        Table(settingsViewModel.selectedKeyBindingSet.values) {
-            TableColumn("Action", value: \.action.localizedAction)
-            TableColumn("Key", value: \.localizedInputs)
-            TableColumn("Edit") { keyBinding in
-                Button("Edit") {
-                    editingKeyBindingAction = keyBinding.action
-                    editingKeyBindingInputs = keyBinding.inputs.map { KeyBindingInput(input: $0) }
-                    isEditingKeyBindingInputs = true
+        Form {
+            Table(settingsViewModel.selectedKeyBindingSet.values) {
+                TableColumn("Action", value: \.action.localizedAction)
+                TableColumn("Key", value: \.localizedInputs)
+                TableColumn("Edit") { keyBinding in
+                    Button("Edit") {
+                        editingKeyBindingAction = keyBinding.action
+                        editingKeyBindingInputs = keyBinding.inputs.map { KeyBindingInput(input: $0) }
+                        isEditingKeyBindingInputs = true
+                    }
+                    .disabled(!settingsViewModel.selectedKeyBindingSet.canDelete)
                 }
-                .disabled(!settingsViewModel.selectedKeyBindingSet.canDelete)
+            }
+            .sheet(isPresented: $isEditingKeyBindingInputs) {
+                KeyBindingInputsView(settingsViewModel: settingsViewModel,
+                                     action: $editingKeyBindingAction,
+                                     inputs: $editingKeyBindingInputs)
             }
         }
-        .sheet(isPresented: $isEditingKeyBindingInputs) {
-            KeyBindingInputsView(settingsViewModel: settingsViewModel,
-                                 action: $editingKeyBindingAction,
-                                 inputs: $editingKeyBindingInputs)
-        }
+        .formStyle(.grouped)
     }
 }
 
