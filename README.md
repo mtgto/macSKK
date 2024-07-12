@@ -71,6 +71,7 @@ macSKKが入力メソッドとして選択されているときに入力メニ�
 | annotationFontSize          | Number     | 注釈のフォントサイズ (デフォルト13)     |
 | skkserv                     | Dictionary | skkservサーバーへの接続設定             |
 | selectCandidateKeys         | String     | 変換候補から確定するキー配列            |
+| findCompletionFromAllDicts  | Boolean    | "ユーザー辞書だけでなくすべての辞書から補完を探すか |
 
 ## 機能
 
