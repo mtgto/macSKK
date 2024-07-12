@@ -210,7 +210,7 @@ struct KeyBinding: Identifiable {
                 result.append("⇧")
             }
             result.append(key.displayString)
-            return result.joined(separator: " ")
+            return result.joined()
         }
 
         func encode() -> [String: Any] {
