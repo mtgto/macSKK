@@ -85,17 +85,22 @@ struct Entry: Sendable {
                 if array.count != 2 || array[1].first != "/" {
                     return nil
                 }
-                guard let index = array[0].firstIndex(of: "/") else { return nil }
-                if index == array[0].startIndex || index == array[0].endIndex {
-                    return nil
+                if let index = array[0].firstIndex(of: "/") {
+                    if index == array[0].startIndex || index == array[0].endIndex {
+                        return nil
+                    }
+                    let yomi = array[0].prefix(upTo: index)
+                    let words = parseWords(array[0].suffix(from: index).dropFirst(), dictId: dictId)?.map { word in
+                        Word(word.word, okuri: String(yomi), annotation: word.annotation)
+                    }
+                    guard let words else { return nil }
+                    result.append(contentsOf: words)
+                    wordsText = array[1].dropFirst()
+                } else {
+                    // スラッシュが含まれないときは送り仮名ブロックではない
+                    result.append(parseWord(wordsText.dropLast(), dictId: dictId))
+                    wordsText = array[1].dropFirst()
                 }
-                let yomi = array[0].prefix(upTo: index)
-                let words = parseWords(array[0].suffix(from: index).dropFirst(), dictId: dictId)?.map { word in
-                    Word(word.word, okuri: String(yomi), annotation: word.annotation)
-                }
-                guard let words else { return nil }
-                result.append(contentsOf: words)
-                wordsText = array[1].dropFirst()
             } else {
                 let array = wordsText.split(separator: "/", maxSplits: 1)
                 switch array.count {

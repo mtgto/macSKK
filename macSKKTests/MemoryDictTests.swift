@@ -49,6 +49,15 @@ class MemoryDictTests: XCTestCase {
         XCTAssertEqual(dict.okuriNashiYomis, ["しゅたいんずげーと", "GPL", "ao"], "abbrev辞書の読みは末尾がアルファベットだが送り無し扱い")
     }
 
+    func testParseOkurikanaBlockAndExcpetions() throws {
+        let source = """
+            あれきさんどろす /[Alexandros]/
+
+            """
+        let dict = MemoryDict(dictId: "testDict", source: source, readonly: false)
+        XCTAssertEqual(dict.entries["あれきさんどろす"]?.map { $0.word }, ["[Alexandros]"])
+    }
+
     func testParseDuplicatedYomi() throws {
         let source = """
             あお /青/

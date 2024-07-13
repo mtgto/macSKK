@@ -28,6 +28,8 @@ final class EntryTests: XCTestCase {
         XCTAssertEqual(Entry(line: "おおk /大/多/[く/多/]/[き/大/]/", dictId: "")?.candidates.map { $0.word }, ["大", "多", "多", "大"])
         XCTAssertEqual(Entry(line: "いt /[った/行/言/]/", dictId: "")?.candidates.map { $0.word }, ["行", "言"])
         XCTAssertEqual(Entry(line: "いt /[った/行/]/[った/言/]/", dictId: "")?.candidates.map { $0.okuri }, ["った", "った"])
+        // 変換候補にスラッシュを含まない場合は送りありブロックではないと解釈する
+        XCTAssertEqual(Entry(line: "ぶろっく /[ぶろっく]/", dictId: "")?.candidates.map { $0.word }, ["[ぶろっく]"])
     }
 
     func testInvalidLine() {
