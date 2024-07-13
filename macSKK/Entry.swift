@@ -164,7 +164,7 @@ struct Entry: Sendable {
 
     static func decode(_ word: String) -> String {
         if word.hasPrefix(#"(concat ""#) && word.hasSuffix(#"")"#) {
-            return String(word.dropFirst(9).dropLast(2).replacingOccurrences(of: "\\057", with: "/"))
+            return String(word.dropFirst(9).dropLast(2).replacingOccurrences(of: "\\057", with: "/").replacingOccurrences(of: "\\073", with: ";"))
         } else {
             return word
         }

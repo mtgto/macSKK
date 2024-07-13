@@ -14,6 +14,7 @@ final class EntryTests: XCTestCase {
 
     func testDecode() {
         XCTAssertEqual(Entry(line: #"ao /(concat "and\057or")/"#, dictId: "")?.candidates.first?.word, "and/or")
+        XCTAssertEqual(Entry(line: #"ao /(concat "and\073or")/"#, dictId: "")?.candidates.first?.word, "and;or")
     }
 
     func testAnnotation() throws {

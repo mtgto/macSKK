@@ -33,18 +33,20 @@ class MemoryDictTests: XCTestCase {
     }
 
     func testParseSpecialSource() throws {
-        // Sampling from SKK-JISYO.L
+        // スラッシュの使用例はSKK-JISYO.Lから。
         let source = """
             わi /湧;(spring) 泉が湧く/沸;(boil) お湯が沸く/涌;≒湧く/
             ao /(concat "and\\057or")/
             GPL /GNU General Public License;(concat "http:\\057\\057www.gnu.org\\057licenses\\057gpl.ja.html")/
+            しゅたいんずげーと /(concat "Steins\\073Gate")/
 
             """
         let dict = MemoryDict(dictId: "testDict", source: source, readonly: false)
         XCTAssertEqual(dict.entries["わi"]?.map { $0.word }, ["湧", "沸", "涌"])
         XCTAssertEqual(dict.entries["ao"]?.map { $0.word }, ["and/or"])
         XCTAssertEqual(dict.entries["GPL"]?.map { $0.annotation?.text }, ["http://www.gnu.org/licenses/gpl.ja.html"])
-        XCTAssertEqual(dict.okuriNashiYomis, ["GPL", "ao"], "abbrev辞書の読みは末尾がアルファベットだが送り無し扱い")
+        XCTAssertEqual(dict.entries["しゅたいんずげーと"]?.map { $0.word }, ["Steins;Gate"])
+        XCTAssertEqual(dict.okuriNashiYomis, ["しゅたいんずげーと", "GPL", "ao"], "abbrev辞書の読みは末尾がアルファベットだが送り無し扱い")
     }
 
     func testParseDuplicatedYomi() throws {
