@@ -55,6 +55,9 @@ final class EntryTests: XCTestCase {
             "おおk /大/多/[く/多/]/[き/大/]/",
             "いt /[った/行/言/]/入/",
             "ふくm /含/[め/含/]/[む/含/]/[ま/含/]/[み/含/]/[も/含/]/",
+            "すらっしゅ /(concat \"a\\057b\")/",
+            "せみころん /(concat \"a\\073b\")/",
+            "すらっしゅとせみころんがふくすう /(concat \"a\\073b\\057c\\073d\\057\\073e\")/",
         ].forEach { line in
             XCTAssertEqual(Entry(line: line, dictId: "")?.serialize(), line)
         }

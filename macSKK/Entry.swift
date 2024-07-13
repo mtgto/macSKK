@@ -59,10 +59,18 @@ struct Entry: Sendable {
 
     private func serializeWord(_ word: Word) -> String {
         if let annotation = word.annotation {
-            return word.word + ";" + annotation.text
+            return serializeSpecialCharacters(word.word) + ";" + serializeSpecialCharacters(annotation.text)
         } else {
-            return word.word
+            return serializeSpecialCharacters(word.word)
         }
+    }
+
+    /// "/" と ";" は辞書の変換候補内では使用できないので `(concat "...\057...")` `(concat "...\073...")` のように変換する
+    private func serializeSpecialCharacters(_ string: String) -> String {
+        if string.contains("/") || string.contains(";") {
+            return "(concat \"" + string.replacingOccurrences(of: "/", with: "\\057").replacingOccurrences(of: ";", with: "\\073") + "\")"
+        }
+        return string
     }
 
     /**
