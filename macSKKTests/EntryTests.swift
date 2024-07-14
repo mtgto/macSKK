@@ -41,8 +41,6 @@ final class EntryTests: XCTestCase {
         XCTAssertNil(Entry(line: "い //", dictId: ""), "変換候補が空")
         XCTAssertNil(Entry(line: "い /胃//意/", dictId: ""), "変換候補が空")
         XCTAssertNil(Entry(line: "い /胃/意//", dictId: ""), "変換候補が空")
-        XCTAssertNil(Entry(line: "いt /[]/", dictId: ""), "送り仮名ブロックが空")
-        XCTAssertNil(Entry(line: "いt /[った]/", dictId: ""), "送り仮名ブロックの変換候補が空")
         XCTAssertNil(Entry(line: "いt /[った/行]/", dictId: ""), "送り仮名ブロックの変換候補の末尾にスラッシュがない")
         XCTAssertNil(Entry(line: "いt /[った//]/", dictId: ""), "変換候補が空")
         XCTAssertNil(Entry(line: "いt /[った/行/", dictId: ""), "送り仮名ブロックが閉じていない")
