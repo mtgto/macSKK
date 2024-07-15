@@ -27,7 +27,7 @@ struct KeyBindingSetView: View {
     var body: some View {
         VStack {
             Form {
-                TextField("Name", text: $id)
+                TextField("Name of KeyBinding Set", text: $id)
             }
             .formStyle(.grouped)
             Divider()

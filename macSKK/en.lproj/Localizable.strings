@@ -75,7 +75,7 @@
 "Response Encoding" = "Response Encoding";
 "Rename" = "Rename";
 "Duplicate" = "Duplicate";
-"Name" = "Name";
+"Name of KeyBinding Set" = "KeyBinding Set Name";
 "Are you sure you want to delete %@?" = "Are you sure you want to delete %@?";
 "Modifier Flags (Required)" = "Modifier Flags (Required)";
 "Modifier Flags (Optional)" = "Modifier Flags (Optional)";
@@ -105,5 +105,5 @@
 "KeyBindingActionEisu" = "Eisu Key";
 "KeyBindingActionKana" = "Kana Key";
 
-"KeyEisu" = "英数";
-"KeyKana" = "かな";
+"KeyEisu" = "Eisu";
+"KeyKana" = "Kana";

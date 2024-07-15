@@ -75,7 +75,7 @@
 "Response Encoding" = "応答エンコーディング";
 "Rename" = "リネーム";
 "Duplicate" = "複製";
-"Name" = "名前";
+"Name of KeyBinding Set" = "キーバインド設定の名前";
 "Are you sure you want to delete %@?" = "%@を本当に削除しますか?";
 "Modifier Flags (Required)" = "修飾キー (必須)";
 "Modifier Flags (Optional)" = "修飾キー (任意)";
