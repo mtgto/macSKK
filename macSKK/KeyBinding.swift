@@ -8,7 +8,7 @@ import AppKit
  *
  * アクションとそのアクションに割り当てられているキー入力の集合のペアからなる。
  */
-struct KeyBinding: Identifiable {
+struct KeyBinding: Identifiable, Hashable {
     enum Action: CaseIterable, CodingKey, Comparable {
         /// ひらがな入力に切り替える。デフォルトはCtrl-jキー
         case hiragana
@@ -274,6 +274,11 @@ struct KeyBinding: Identifiable {
         }
         self.action = action
         self.inputs = inputs
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(action)
+        hasher.combine(inputs)
     }
 
     func encode() -> [String: Any] {

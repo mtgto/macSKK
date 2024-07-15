@@ -10,6 +10,7 @@ struct KeyBindingView: View {
     @State var isEditingKeyBindingInputs: Bool = false
     @State var editingKeyBindingAction: KeyBinding.Action = .abbrev
     @State var editingKeyBindingInputs: [KeyBindingInput] = []
+    @State var selectingKeyBindingAction: KeyBinding.Action? = nil
 
     var body: some View {
         HStack {
@@ -56,16 +57,17 @@ struct KeyBindingView: View {
             Text("Are you sure you want to delete \(settingsViewModel.selectedKeyBindingSet.id)?")
         }
         Form {
-            Table(settingsViewModel.selectedKeyBindingSet.values) {
+            Table(settingsViewModel.selectedKeyBindingSet.values, selection: $selectingKeyBindingAction) {
                 TableColumn("Action", value: \.action.localizedAction)
                 TableColumn("Key", value: \.localizedInputs)
-                TableColumn("Edit") { keyBinding in
-                    Button("Edit") {
-                        editingKeyBindingAction = keyBinding.action
-                        editingKeyBindingInputs = keyBinding.inputs.map { KeyBindingInput(input: $0) }
-                        isEditingKeyBindingInputs = true
-                    }
-                    .disabled(!settingsViewModel.selectedKeyBindingSet.canDelete)
+            }
+            .contextMenu(forSelectionType: KeyBinding.ID.self) { keyBindingActions in
+                // do nothing
+            } primaryAction: { keyBindingActions in
+                if let action = keyBindingActions.first, let keyBinding = settingsViewModel.selectedKeyBindingSet.values.first(where: { $0.action == action }) {
+                    editingKeyBindingAction = action
+                    editingKeyBindingInputs = keyBinding.inputs.map { KeyBindingInput(input: $0) }
+                    isEditingKeyBindingInputs = true
                 }
             }
             .sheet(isPresented: $isEditingKeyBindingInputs) {
