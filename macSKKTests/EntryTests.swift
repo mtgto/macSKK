@@ -14,6 +14,7 @@ final class EntryTests: XCTestCase {
 
     func testDecode() {
         XCTAssertEqual(Entry(line: #"ao /(concat "and\057or")/"#, dictId: "")?.candidates.first?.word, "and/or")
+        XCTAssertEqual(Entry(line: #"ao /(concat "and\073or")/"#, dictId: "")?.candidates.first?.word, "and;or")
     }
 
     func testAnnotation() throws {
@@ -27,6 +28,8 @@ final class EntryTests: XCTestCase {
         XCTAssertEqual(Entry(line: "おおk /大/多/[く/多/]/[き/大/]/", dictId: "")?.candidates.map { $0.word }, ["大", "多", "多", "大"])
         XCTAssertEqual(Entry(line: "いt /[った/行/言/]/", dictId: "")?.candidates.map { $0.word }, ["行", "言"])
         XCTAssertEqual(Entry(line: "いt /[った/行/]/[った/言/]/", dictId: "")?.candidates.map { $0.okuri }, ["った", "った"])
+        // 変換候補にスラッシュを含まない場合は送りありブロックではないと解釈する
+        XCTAssertEqual(Entry(line: "ぶろっく /[ぶろっく]/", dictId: "")?.candidates.map { $0.word }, ["[ぶろっく]"])
     }
 
     func testInvalidLine() {
@@ -38,8 +41,6 @@ final class EntryTests: XCTestCase {
         XCTAssertNil(Entry(line: "い //", dictId: ""), "変換候補が空")
         XCTAssertNil(Entry(line: "い /胃//意/", dictId: ""), "変換候補が空")
         XCTAssertNil(Entry(line: "い /胃/意//", dictId: ""), "変換候補が空")
-        XCTAssertNil(Entry(line: "いt /[]/", dictId: ""), "送り仮名ブロックが空")
-        XCTAssertNil(Entry(line: "いt /[った]/", dictId: ""), "送り仮名ブロックの変換候補が空")
         XCTAssertNil(Entry(line: "いt /[った/行]/", dictId: ""), "送り仮名ブロックの変換候補の末尾にスラッシュがない")
         XCTAssertNil(Entry(line: "いt /[った//]/", dictId: ""), "変換候補が空")
         XCTAssertNil(Entry(line: "いt /[った/行/", dictId: ""), "送り仮名ブロックが閉じていない")
@@ -52,6 +53,9 @@ final class EntryTests: XCTestCase {
             "おおk /大/多/[く/多/]/[き/大/]/",
             "いt /[った/行/言/]/入/",
             "ふくm /含/[め/含/]/[む/含/]/[ま/含/]/[み/含/]/[も/含/]/",
+            "すらっしゅ /(concat \"a\\057b\")/",
+            "せみころん /(concat \"a\\073b\")/",
+            "すらっしゅとせみころんがふくすう /(concat \"a\\073b\\057c\\073d\\057\\073e\")/",
         ].forEach { line in
             XCTAssertEqual(Entry(line: line, dictId: "")?.serialize(), line)
         }
