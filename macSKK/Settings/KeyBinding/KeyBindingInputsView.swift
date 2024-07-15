@@ -218,7 +218,7 @@ struct KeyBindingInputsView: View {
                     Text("Done")
                         .padding([.leading, .trailing])
                 }
-                .disabled(inputs.allSatisfy({ $0.keyWithModifierFlags == nil }))
+                .disabled(inputs.contains(where: { $0.keyWithModifierFlags == nil }))
                 .keyboardShortcut(.defaultAction)
                 .padding([.trailing, .bottom, .top])
             }
