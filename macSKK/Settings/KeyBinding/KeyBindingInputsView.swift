@@ -13,7 +13,7 @@ struct KeyWithModifierFlags: Hashable {
 
     init(_ key: KeyBinding.Key, _ modifierFlags: NSEvent.ModifierFlags) {
         self.key = key
-        self.modifierFlags = modifierFlags
+        self.modifierFlags = modifierFlags.intersection(KeyBinding.Input.allowedModifierFlags)
     }
 
     // Equatable
@@ -156,8 +156,13 @@ struct KeyBindingInputsView: View {
                                 key = .code(event.keyCode)
                             }
                             let modifierFlags = event.modifierFlags
+                            let keyWithModifierFlags = KeyWithModifierFlags(key, modifierFlags)
+                            // すでに同じ入力が登録されていたらその項目を削除する
+                            if inputs.contains(where: { $0.keyWithModifierFlags == keyWithModifierFlags }) {
+                                editingInput = nil
+                                return nil
+                            }
                             if let editingInput {
-                                let keyWithModifierFlags = KeyWithModifierFlags(key, modifierFlags)
                                 editingInput.keyWithModifierFlags = keyWithModifierFlags
                                 editingInput.displayString = keyWithModifierFlags.displayString
                             }
