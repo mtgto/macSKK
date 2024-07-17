@@ -518,6 +518,10 @@ final class SettingsViewModel: ObservableObject {
 
     /// 選択中のKeyBindingSetのキーバインドを更新する
     func updateKeyBindingInputs(action: KeyBinding.Action, inputs: [KeyBinding.Input]) {
+        guard selectedKeyBindingSet.id != KeyBindingSet.defaultId else {
+            logger.error("デフォルトのキーバインドは変更できません")
+            return
+        }
         if let index = keyBindingSets.firstIndex(of: selectedKeyBindingSet) {
             keyBindingSets[index] = selectedKeyBindingSet.update(for: action, inputs: inputs)
             selectedKeyBindingSet = keyBindingSets[index]
