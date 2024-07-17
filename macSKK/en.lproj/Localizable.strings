@@ -75,6 +75,7 @@
 "Response Encoding" = "Response Encoding";
 "Rename" = "Rename";
 "Duplicate" = "Duplicate";
+"Edit" = "Edit";
 "Name of KeyBinding Set" = "KeyBinding Set Name";
 "Are you sure you want to delete %@?" = "Are you sure you want to delete %@?";
 "Modifier Flags (Required)" = "Modifier Flags (Required)";

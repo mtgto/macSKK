@@ -87,6 +87,10 @@ struct KeyBindingSet: Identifiable, Hashable {
         id != Self.defaultId
     }
 
+    var canEdit: Bool {
+        id != Self.defaultId
+    }
+
     func copy(id: String) -> Self {
         return Self(id: id, sorted: sorted)
     }

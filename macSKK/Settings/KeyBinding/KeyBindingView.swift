@@ -25,7 +25,7 @@ struct KeyBindingView: View {
                     editingKeyBindingSetMode = .rename(settingsViewModel.selectedKeyBindingSet)
                 } label: {
                     Text("Rename")
-                }.disabled(!settingsViewModel.selectedKeyBindingSet.canDelete)
+                }.disabled(!settingsViewModel.selectedKeyBindingSet.canEdit)
                 Button {
                     editingKeyBindingSetMode = .duplicate(settingsViewModel.selectedKeyBindingSet)
                 } label: {
@@ -62,12 +62,21 @@ struct KeyBindingView: View {
                 TableColumn("Key", value: \.localizedInputs)
             }
             .contextMenu(forSelectionType: KeyBinding.ID.self) { keyBindingActions in
-                // do nothing
+                Button("Edit") {
+                    if let action = keyBindingActions.first, let keyBinding = settingsViewModel.selectedKeyBindingSet.values.first(where: { $0.action == action }) {
+                        editingKeyBindingAction = action
+                        editingKeyBindingInputs = keyBinding.inputs.map { KeyBindingInput(input: $0) }
+                        isEditingKeyBindingInputs = true
+                    }
+                }
+                .disabled(!settingsViewModel.selectedKeyBindingSet.canEdit)
             } primaryAction: { keyBindingActions in
-                if let action = keyBindingActions.first, let keyBinding = settingsViewModel.selectedKeyBindingSet.values.first(where: { $0.action == action }) {
-                    editingKeyBindingAction = action
-                    editingKeyBindingInputs = keyBinding.inputs.map { KeyBindingInput(input: $0) }
-                    isEditingKeyBindingInputs = true
+                if settingsViewModel.selectedKeyBindingSet.canEdit {
+                    if let action = keyBindingActions.first, let keyBinding = settingsViewModel.selectedKeyBindingSet.values.first(where: { $0.action == action }) {
+                        editingKeyBindingAction = action
+                        editingKeyBindingInputs = keyBinding.inputs.map { KeyBindingInput(input: $0) }
+                        isEditingKeyBindingInputs = true
+                    }
                 }
             }
             .sheet(isPresented: $isEditingKeyBindingInputs) {
