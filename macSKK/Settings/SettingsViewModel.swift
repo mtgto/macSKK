@@ -162,12 +162,14 @@ final class SettingsViewModel: ObservableObject {
     @Published var workaroundApplications: [WorkaroundApplication]
     /// skkserv辞書設定
     @Published var skkservDictSetting: SKKServDictSetting
-    /// キーバインディング
-    @Published var keyBingings: [KeyBinding]
     /// 変換候補パネルで表示されている候補を決定するキーの集合
     @Published var selectCandidateKeys: String
     /// 一般辞書を補完で検索するか？
     @Published var findCompletionFromAllDicts: Bool
+    /// 利用可能なキーバインディングのセットの種類
+    @Published var keyBindingSets: [KeyBindingSet]
+    /// 現在選択中のキーバインディングのセット
+    @Published var selectedKeyBindingSet: KeyBindingSet
 
     // 辞書ディレクトリ
     let dictionariesDirectoryUrl: URL
@@ -201,8 +203,17 @@ final class SettingsViewModel: ObservableObject {
         }
         self.skkservDictSetting = skkservDictSetting
 
-        // TODO: 設定化。いまはとりあえず固定でデフォルト設定を表示
-        self.keyBingings = KeyBinding.defaultKeyBindingSettings
+        let customizedKeyBindingSets = UserDefaults.standard.array(forKey: UserDefaultsKeys.keyBindingSets)?.compactMap {
+            if let dict = $0 as? [String: Any] {
+                KeyBindingSet(dict: $0 as! [String : Any])
+            } else {
+                nil
+            }
+        }
+        let keyBindingSets = [KeyBindingSet.defaultKeyBindingSet] + (customizedKeyBindingSets ?? [])
+        let selectedKeyBindingSetId = UserDefaults.standard.string(forKey: UserDefaultsKeys.selectedKeyBindingSetId) ?? KeyBindingSet.defaultId
+        self.keyBindingSets = keyBindingSets
+        self.selectedKeyBindingSet = keyBindingSets.first(where: { $0.id == selectedKeyBindingSetId }) ?? KeyBindingSet.defaultKeyBindingSet
 
         selectCandidateKeys = UserDefaults.standard.string(forKey: UserDefaultsKeys.selectCandidateKeys)!
         Global.selectCandidateKeys = selectCandidateKeys.lowercased().map { $0 }
@@ -348,6 +359,21 @@ final class SettingsViewModel: ObservableObject {
             logger.log("一般の辞書を使って補完するかを\(findCompletionFromAllDicts)に変更しました")
         }.store(in: &cancellables)
 
+        $keyBindingSets.dropFirst().sink { keyBindingSets in
+            // デフォルトのキーバインド以外をUserDefaultsに保存する
+            UserDefaults.standard.set(keyBindingSets.filter({ $0.id != KeyBindingSet.defaultId }).map { $0.encode() },
+                                      forKey: UserDefaultsKeys.keyBindingSets)
+            Global.keyBinding = keyBindingSets.first { $0.id == selectedKeyBindingSetId } ?? KeyBindingSet.defaultKeyBindingSet
+        }.store(in: &cancellables)
+
+        $selectedKeyBindingSet.sink { selectedKeyBindingSet in
+            if Global.keyBinding.id != selectedKeyBindingSet.id {
+                logger.log("キーバインドのセットが \(selectedKeyBindingSet.id, privacy: .public) に変更されました。")
+                UserDefaults.standard.set(selectedKeyBindingSet.id, forKey: UserDefaultsKeys.selectedKeyBindingSetId)
+                Global.keyBinding = selectedKeyBindingSet
+            }
+        }.store(in: &cancellables)
+
         NotificationCenter.default.publisher(for: notificationNameDictLoad).receive(on: RunLoop.main).sink { [weak self] notification in
             if let loadEvent = notification.object as? DictLoadEvent, let self {
                 if let userDict = Global.dictionary.userDict as? FileDict, userDict.id == loadEvent.id {
@@ -380,9 +406,10 @@ final class SettingsViewModel: ObservableObject {
         candidatesFontSize = 13
         annotationFontSize = 13
         skkservDictSetting = SKKServDictSetting(enabled: true, address: "127.0.0.1", port: 1178, encoding: .japaneseEUC)
-        keyBingings = []
         selectCandidateKeys = "123456789"
         findCompletionFromAllDicts = false
+        keyBindingSets = [KeyBindingSet.defaultKeyBindingSet]
+        selectedKeyBindingSet = KeyBindingSet.defaultKeyBindingSet
     }
 
     // DictionaryViewのPreviewProvider用
@@ -418,7 +445,15 @@ final class SettingsViewModel: ObservableObject {
     // KeyBindingViewのPreviewProvider用
     internal convenience init(keyBindings: [KeyBinding]) throws {
         try self.init()
-        self.keyBingings = keyBindings
+        let keyBindingSet = KeyBindingSet(id: "preview", values: keyBindings)
+        keyBindingSets = [keyBindingSet]
+        selectedKeyBindingSet = keyBindingSet
+    }
+
+    // KeyBindingSetViewのPreviewProvider用
+    internal convenience init(selectedKeyBindingSet: KeyBindingSet?) throws {
+        try self.init()
+        self.selectedKeyBindingSet = selectedKeyBindingSet ?? KeyBindingSet.defaultKeyBindingSet
     }
 
     /**
@@ -479,6 +514,18 @@ final class SettingsViewModel: ObservableObject {
     func updateWorkaroundApplication(index: Int, displayName: String, icon: NSImage) {
         workaroundApplications[index].displayName = displayName
         workaroundApplications[index].icon = icon
+    }
+
+    /// 選択中のKeyBindingSetのキーバインドを更新する
+    func updateKeyBindingInputs(action: KeyBinding.Action, inputs: [KeyBinding.Input]) {
+        guard selectedKeyBindingSet.id != KeyBindingSet.defaultId else {
+            logger.error("デフォルトのキーバインドは変更できません")
+            return
+        }
+        if let index = keyBindingSets.firstIndex(of: selectedKeyBindingSet) {
+            keyBindingSets[index] = selectedKeyBindingSet.update(for: action, inputs: inputs)
+            selectedKeyBindingSet = keyBindingSets[index]
+        }
     }
 
     /// 利用可能なキー配列を読み込む

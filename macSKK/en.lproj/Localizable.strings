@@ -73,6 +73,13 @@
 "Address" = "Address";
 "TCP Port" = "TCP Port No.";
 "Response Encoding" = "Response Encoding";
+"Rename" = "Rename";
+"Duplicate" = "Duplicate";
+"Edit" = "Edit";
+"Name of KeyBinding Set" = "KeyBinding Set Name";
+"Are you sure you want to delete %@?" = "Are you sure you want to delete %@?";
+"Modifier Flags (Required)" = "Modifier Flags (Required)";
+"Modifier Flags (Optional)" = "Modifier Flags (Optional)";
 
 "KeyBindingActionHiragana" = "Hiragana Mode";
 "KeyBindingActionTogglekana" = "Toggle Kana";
@@ -99,5 +106,5 @@
 "KeyBindingActionEisu" = "Eisu Key";
 "KeyBindingActionKana" = "Kana Key";
 
-"KeyEisu" = "英数";
-"KeyKana" = "かな";
+"KeyEisu" = "Eisu";
+"KeyKana" = "Kana";

@@ -194,6 +194,8 @@ struct macSKKApp: App {
                 port: 1178,
                 encoding: .japaneseEUC).encode(),
             UserDefaultsKeys.findCompletionFromAllDicts: false,
+            UserDefaultsKeys.keyBindingSets: [],
+            UserDefaultsKeys.selectedKeyBindingSetId: KeyBindingSet.defaultKeyBindingSet.id,
         ])
     }
 
