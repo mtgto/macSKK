@@ -59,6 +59,7 @@ $(APP_PKG): $(APP)
 
 $(INSTALLER_PKG): $(APP_PKG) $(DICT_PKG)
 	mkdir -p $(WORKDIR)/pkg
+	sed -e "s/%TITLE%/macSKK $(VERSION)/" script/distribution.xml.template > script/distribution.xml
 	productbuild --distribution script/distribution.xml --resources script --package-path $(WORKDIR) $(UNSIGNED_PKG)
 	productsign --sign $(PRODUCT_SIGN_ID) $(UNSIGNED_PKG) $(INSTALLER_PKG)
 	# store-credentialsしてある場合はキーチェーンの情報を使うのでAPPLE_IDは不要。
