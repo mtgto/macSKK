@@ -51,6 +51,14 @@ struct KeyBindingView: View {
                 isShowingConfirmDeleteAlert = false
             }
             Button("Delete", role: .destructive) {
+                let index = settingsViewModel.keyBindingSets.firstIndex { keyBindingSet in
+                    keyBindingSet.id == settingsViewModel.selectedKeyBindingSet.id
+                }
+                if let index {
+                    logger.log("キーバインドのセット \(settingsViewModel.selectedKeyBindingSet.id, privacy: .public) を削除しました")
+                    settingsViewModel.selectedKeyBindingSet = settingsViewModel.keyBindingSets[index - 1]
+                    settingsViewModel.keyBindingSets.remove(at: index)
+                }
                 isShowingConfirmDeleteAlert = false
             }
         } message: {
