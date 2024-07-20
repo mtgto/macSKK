@@ -368,7 +368,7 @@ final class SettingsViewModel: ObservableObject {
 
         $selectedKeyBindingSet.sink { selectedKeyBindingSet in
             if Global.keyBinding.id != selectedKeyBindingSet.id {
-                logger.log("キーバインドのセットが \(Global.keyBinding.id, privacy: .public) から \(selectedKeyBindingSet.id, privacy: .public) に変更されました。")
+                logger.log("キーバインドのセットを \(Global.keyBinding.id, privacy: .public) から \(selectedKeyBindingSet.id, privacy: .public) に変更しました")
                 UserDefaults.standard.set(selectedKeyBindingSet.id, forKey: UserDefaultsKeys.selectedKeyBindingSetId)
                 Global.keyBinding = selectedKeyBindingSet
             }
