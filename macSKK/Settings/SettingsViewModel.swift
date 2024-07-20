@@ -368,7 +368,7 @@ final class SettingsViewModel: ObservableObject {
 
         $selectedKeyBindingSet.sink { selectedKeyBindingSet in
             if Global.keyBinding.id != selectedKeyBindingSet.id {
-                logger.log("キーバインドのセットが \(selectedKeyBindingSet.id, privacy: .public) に変更されました。")
+                logger.log("キーバインドのセットが \(Global.keyBinding.id, privacy: .public) から \(selectedKeyBindingSet.id, privacy: .public) に変更されました。")
                 UserDefaults.standard.set(selectedKeyBindingSet.id, forKey: UserDefaultsKeys.selectedKeyBindingSetId)
                 Global.keyBinding = selectedKeyBindingSet
             }
@@ -525,6 +525,9 @@ final class SettingsViewModel: ObservableObject {
         if let index = keyBindingSets.firstIndex(of: selectedKeyBindingSet) {
             keyBindingSets[index] = selectedKeyBindingSet.update(for: action, inputs: inputs)
             selectedKeyBindingSet = keyBindingSets[index]
+            logger.log("キーバインドのセット \"\(self.selectedKeyBindingSet.id, privacy: .public)\" の \"\(action.localizedAction, privacy: .public)\" のキーバインドが更新されました")
+        } else {
+            logger.error("キーバインドのセット \"\(self.selectedKeyBindingSet.id, privacy: .public)\" が見つかりません")
         }
     }
 
