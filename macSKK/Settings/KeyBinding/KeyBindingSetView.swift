@@ -40,9 +40,12 @@ struct KeyBindingSetView: View {
                     if case .duplicate(let keyBindingSet) = mode {
                         settingsViewModel.keyBindingSets.append(keyBindingSet.copy(id: id))
                         settingsViewModel.selectedKeyBindingSet = settingsViewModel.keyBindingSets.last!
+                        logger.log("キーバインドのセット \(keyBindingSet.id, privacy: .public) から \(id, privacy: .public) を複製しました")
                     } else if case .rename(let keyBindingSet) = mode {
                         if let index = settingsViewModel.keyBindingSets.firstIndex(of: keyBindingSet) {
                             settingsViewModel.keyBindingSets[index] = keyBindingSet.copy(id: id)
+                            settingsViewModel.selectedKeyBindingSet = settingsViewModel.keyBindingSets[index]
+                            logger.log("キーバインドのセット \(keyBindingSet.id, privacy: .public) の名前を \(id, privacy: .public) に変更しました")
                         }
                     }
                     mode = nil
