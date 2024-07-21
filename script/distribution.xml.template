@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <installer-gui-script minSpecVersion="2">
     <allowed-os-versions>
-      <os-version min="13.3"/>
+        <os-version min="13.3"/>
     </allowed-os-versions>
-    <title>macSKK</title>
+    <title>%TITLE%</title>
     <welcome file="welcome.rtf"/>
     <license file="license.rtf"/>
     <domains enable_localSystem="false" enable_anywhere="false" enable_currentUserHome="true"/>
