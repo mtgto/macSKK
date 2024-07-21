@@ -22,6 +22,7 @@ final class StateMachineTests: XCTestCase {
         // こうしないとテストの中でGlobal.kanaRuleを書き換えるテストと一緒に走らせると違うかな変換ルールのままに実行されてしまう
         Global.kanaRule = Self.defaultKanaRule
         Global.selectCandidateKeys = "123456789".map { $0 }
+        Global.enterNewLine = false
     }
 
     @MainActor func testHandleNormalSimple() {
@@ -729,6 +730,29 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
         XCTAssertTrue(stateMachine.handle(enterAction))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    @MainActor func testHandleComposingEnterNewLine() {
+        Global.enterNewLine = true
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(6).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.plain("k")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.plain("n")])))
+            XCTAssertEqual(events[3], .fixedText("ん"))
+            XCTAssertEqual(events[4], .markedText(MarkedText([.markerCompose, .plain("s")])))
+            XCTAssertEqual(events[5], .markedText(MarkedText([.markerCompose, .plain("さ")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "k")))
+        XCTAssertFalse(stateMachine.handle(enterAction))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n")))
+        XCTAssertFalse(stateMachine.handle(enterAction))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "s", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
+        XCTAssertFalse(stateMachine.handle(enterAction))
         wait(for: [expectation], timeout: 1.0)
     }
 
@@ -2185,6 +2209,26 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    @MainActor func testHandleSelectingEnterNewLine() {
+        Global.dictionary.setEntries(["と": [Word("戸")]])
+        Global.enterNewLine = true
+
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(4).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("t")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("と")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerSelect, .emphasized("戸")])))
+            XCTAssertEqual(events[3], .fixedText("戸"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertFalse(stateMachine.handle(enterAction))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     @MainActor func testHandleSelectingPrintableRemain() {
         Global.dictionary.setEntries(["あい": [Word("愛")]])
 
@@ -2207,6 +2251,32 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(leftKeyAction))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e")))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    @MainActor func testHandleSelectingPrintableRemainEnterNewLine() {
+        Global.dictionary.setEntries(["あい": [Word("愛")]])
+        Global.enterNewLine = true
+
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(8).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("あい")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("あいう")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("あい"), .cursor, .plain("う")])))
+            XCTAssertEqual(events[4], .markedText(MarkedText([.markerSelect, .emphasized("愛"), .cursor, .plain("う")])))
+            XCTAssertEqual(events[5], .fixedText("愛"))
+            XCTAssertEqual(events[6], .markedText(MarkedText([.markerCompose, .plain("う")])))
+            XCTAssertEqual(events[7], .fixedText("う"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u")))
+        XCTAssertTrue(stateMachine.handle(leftKeyAction))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertFalse(stateMachine.handle(enterAction), "カーソルの右に未確定文字列が残っていても確定される")
         wait(for: [expectation], timeout: 1.0)
     }
 

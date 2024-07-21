@@ -170,6 +170,8 @@ final class SettingsViewModel: ObservableObject {
     @Published var keyBindingSets: [KeyBindingSet]
     /// 現在選択中のキーバインディングのセット
     @Published var selectedKeyBindingSet: KeyBindingSet
+    /// Enterキーで変換候補の確定だけでなく改行も行うかどうか
+    @Published var enterNewLine: Bool
 
     // 辞書ディレクトリ
     let dictionariesDirectoryUrl: URL
@@ -205,7 +207,7 @@ final class SettingsViewModel: ObservableObject {
 
         let customizedKeyBindingSets = UserDefaults.standard.array(forKey: UserDefaultsKeys.keyBindingSets)?.compactMap {
             if let dict = $0 as? [String: Any] {
-                KeyBindingSet(dict: $0 as! [String : Any])
+                KeyBindingSet(dict: dict)
             } else {
                 nil
             }
@@ -216,6 +218,7 @@ final class SettingsViewModel: ObservableObject {
         self.selectedKeyBindingSet = keyBindingSets.first(where: { $0.id == selectedKeyBindingSetId }) ?? KeyBindingSet.defaultKeyBindingSet
 
         selectCandidateKeys = UserDefaults.standard.string(forKey: UserDefaultsKeys.selectCandidateKeys)!
+        enterNewLine = UserDefaults.standard.bool(forKey: UserDefaultsKeys.enterNewLine)
         Global.selectCandidateKeys = selectCandidateKeys.lowercased().map { $0 }
 
         // SKK-JISYO.Lのようなファイルの読み込みが遅いのでバックグラウンドで処理
@@ -374,6 +377,10 @@ final class SettingsViewModel: ObservableObject {
             }
         }.store(in: &cancellables)
 
+        $enterNewLine.sink { enterNewLine in
+            Global.enterNewLine = enterNewLine
+        }.store(in: &cancellables)
+
         NotificationCenter.default.publisher(for: notificationNameDictLoad).receive(on: RunLoop.main).sink { [weak self] notification in
             if let loadEvent = notification.object as? DictLoadEvent, let self {
                 if let userDict = Global.dictionary.userDict as? FileDict, userDict.id == loadEvent.id {
@@ -410,6 +417,7 @@ final class SettingsViewModel: ObservableObject {
         findCompletionFromAllDicts = false
         keyBindingSets = [KeyBindingSet.defaultKeyBindingSet]
         selectedKeyBindingSet = KeyBindingSet.defaultKeyBindingSet
+        enterNewLine = false
     }
 
     // DictionaryViewのPreviewProvider用

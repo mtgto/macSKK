@@ -30,6 +30,8 @@ import Combine
     static var keyBinding: KeyBindingSet = KeyBindingSet.defaultKeyBindingSet
     /// 変換候補パネルから選択するときに使用するキーの配列。英字の場合は小文字にしておくこと。
     static var selectCandidateKeys: [Character] = ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
+    // Enterキーで変換候補の確定だけでなく改行も行うかどうか
+    static var enterNewLine: Bool!
     // 現在のモードを表示するパネル
     private let inputModePanel: InputModePanel
     // 変換候補を表示するパネル

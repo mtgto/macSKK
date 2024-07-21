@@ -63,6 +63,7 @@
 "Candidates font size" = "Candidates font size";
 "Annotation font size" = "Annotation font size";
 "Find completion from all dictionaries" = "Find completion from all dictionaries";
+"Enter Key confirms a candidate & send a newline" = "Enter Key confirms a candidate & send a newline";
 "Insert Blank String" = "Insert Blank String";
 "Enabled" = "Enabled";
 "Disabled" = "Disabled";

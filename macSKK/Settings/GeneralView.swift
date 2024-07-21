@@ -9,6 +9,9 @@ struct GeneralView: View {
     var body: some View {
         VStack {
             Form {
+                Toggle(isOn: $settingsViewModel.enterNewLine, label: {
+                    Text("Enter Key confirms a candidate & send a newline")
+                })
                 Picker("Keyboard Layout", selection: $settingsViewModel.selectedInputSourceId) {
                     ForEach(settingsViewModel.inputSources) { inputSource in
                         Text(inputSource.localizedName)
