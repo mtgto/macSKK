@@ -433,8 +433,8 @@ final class StateMachine {
                 break
             }
             // 入力中文字列を確定させてひらがなモードにする
-            addFixedText(composing.string(for: state.inputMode, convertHatsuon: true))
             state.inputMethod = .normal
+            addFixedText(composing.string(for: state.inputMode, convertHatsuon: true))
             state.inputMode = .hiragana
             inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
             return true

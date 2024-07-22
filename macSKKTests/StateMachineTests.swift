@@ -2099,6 +2099,25 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    @MainActor func testHandleRegisteringCtrlJ() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(5).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
+            XCTAssertEqual(events[1], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.plain("[登録：あ]")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.plain("[登録：あ]"), .markerCompose, .plain("い")])))
+            XCTAssertEqual(events[4], .markedText(MarkedText([.plain("[登録：あ]"), .plain("い")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(hiraganaAction))
+        Pasteboard.stringForTest = nil
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     @MainActor func testHandleSelectingEnter() {
         Global.dictionary.setEntries(["と": [Word("戸")]])
 
