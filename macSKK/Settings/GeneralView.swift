@@ -10,7 +10,7 @@ struct GeneralView: View {
         VStack {
             Form {
                 Toggle(isOn: $settingsViewModel.enterNewLine, label: {
-                    Text("Enter Key confirms a candidate & send a newline")
+                    Text("Enter Key confirms a candidate and sends a newline")
                 })
                 Picker("Keyboard Layout", selection: $settingsViewModel.selectedInputSourceId) {
                     ForEach(settingsViewModel.inputSources) { inputSource in
