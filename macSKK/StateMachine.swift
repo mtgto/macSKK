@@ -803,9 +803,10 @@ final class StateMachine {
                                                                romaji: converted.input)
                         } else {
                             newComposingState = ComposingState(isShift: true,
-                                                               text: text + [moji.kana],
+                                                               text: composing.subText() + [moji.kana] + (composing.remain() ?? []),
                                                                okuri: action.shiftIsPressed() ? [] : nil,
-                                                               romaji: converted.input)
+                                                               romaji: converted.input,
+                                                               cursor: composing.cursor.map { $0 + 1 })
                         }
                         if let inputConverted = useKanaRuleIfPresent(inputMode: state.inputMode, romaji: converted.input, input: "") {
                             return handleComposingPrintable(input: inputConverted.input,

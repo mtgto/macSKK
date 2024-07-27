@@ -1601,6 +1601,27 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    @MainActor func testHandleComposingCursorSokuon() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(6).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("あい")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("あ"), .cursor, .plain("い")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("あk"), .cursor, .plain("い")])))
+            XCTAssertEqual(events[4], .markedText(MarkedText([.markerCompose, .plain("あっk"), .cursor, .plain("い")])))
+            XCTAssertEqual(events[5], .markedText(MarkedText([.markerCompose, .plain("あっく"), .cursor, .plain("い")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
+        XCTAssertTrue(stateMachine.handle(leftKeyAction))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "k")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "k")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u")))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     @MainActor func testHandleComposingCursorFirst() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
