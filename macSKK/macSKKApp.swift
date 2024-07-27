@@ -196,6 +196,7 @@ struct macSKKApp: App {
             UserDefaultsKeys.findCompletionFromAllDicts: false,
             UserDefaultsKeys.keyBindingSets: [],
             UserDefaultsKeys.selectedKeyBindingSetId: KeyBindingSet.defaultKeyBindingSet.id,
+            UserDefaultsKeys.enterNewLine: false,
         ])
     }
 

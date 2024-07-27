@@ -18,7 +18,7 @@ import Combine
     // マスターはSettingsViewModelがもっているが、InputControllerからAppが参照できないのでグローバル変数にコピーしている。
     // FIXME: NotificationCenter経由で設定画面で変更したことを各InputControllerに通知するようにしてこの変数は消すかも。
     static let directModeBundleIdentifiers = CurrentValueSubject<[String], Never>([])
-    // モード変更時に空白文字を一瞬追加するワークアラウンドを適用するBundle Identifierの集合
+    /// モード変更時に空白文字を一瞬追加するワークアラウンドを適用するBundle Identifierの集合
     static let insertBlankStringBundleIdentifiers = CurrentValueSubject<[String], Never>([])
     /// ユーザー辞書だけでなくすべての辞書から補完候補を検索するか？
     static let findCompletionFromAllDicts = CurrentValueSubject<Bool, Never>(false)
@@ -30,11 +30,14 @@ import Combine
     static var keyBinding: KeyBindingSet = KeyBindingSet.defaultKeyBindingSet
     /// 変換候補パネルから選択するときに使用するキーの配列。英字の場合は小文字にしておくこと。
     static var selectCandidateKeys: [Character] = ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
-    // 現在のモードを表示するパネル
+    /// Enterキーで変換候補の確定だけでなく改行も行うかどうか
+    /// ddskkの `skk-egg-like-newline` やAquaSKKの `suppress_newline_on_commit` がfalseのときと同じ
+    static var enterNewLine: Bool = false
+    /// 現在のモードを表示するパネル
     private let inputModePanel: InputModePanel
-    // 変換候補を表示するパネル
+    /// 変換候補を表示するパネル
     private let candidatesPanel: CandidatesPanel
-    // 補完候補を表示するパネル
+    /// 補完候補を表示するパネル
     private let completionPanel: CompletionPanel
 
     init() {

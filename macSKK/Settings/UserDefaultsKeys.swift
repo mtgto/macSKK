@@ -24,4 +24,6 @@ struct UserDefaultsKeys {
     static let selectedKeyBindingSetId = "selectedKeyBindingSetId"
     // キーバインド設定の配列
     static let keyBindingSets = "keyBindingSets"
+    // Enterキーで変換候補の確定 + 改行も行う
+    static let enterNewLine = "enterNewLine"
 }

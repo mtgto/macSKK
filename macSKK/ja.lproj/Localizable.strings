@@ -63,6 +63,7 @@
 "Candidates font size" = "変換候補のフォントサイズ";
 "Annotation font size" = "注釈のフォントサイズ";
 "Find completion from all dictionaries" = "ユーザー辞書だけでなくすべての辞書から補完を探す";
+"Enter Key confirms a candidate and sends a newline" = "Enterキーで変換候補確定後に改行を入力";
 "Insert Blank String" = "空文字挿入";
 "Enabled" = "有効";
 "Disabled" = "無効";

@@ -539,6 +539,9 @@ final class StateMachine {
             state.inputMethod = .normal
             addFixedText(fixedText)
             updateModeIfPrevModeExists()
+            if Global.enterNewLine {
+                return handle(action)
+            }
             return true
         case .backspace:
             if let newComposingState = composing.dropLast() {
@@ -957,6 +960,9 @@ final class StateMachine {
         case .enter:
             // 選択中の変換候補で確定
             fixCurrentSelect()
+            if Global.enterNewLine {
+                return handle(action)
+            }
             return true
         case .backspace:
             let diff: Int
