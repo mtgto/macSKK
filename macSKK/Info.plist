@@ -10,6 +10,8 @@
 	<string>net.mtgto.inputmethod.macSKK</string>
 	<key>TISIntendedLanguage</key>
 	<string>ja</string>
+	<key>TISIconIsTemplate</key>
+	<true/>
 	<key>net.mtgto.inputmethod.macSKK.ascii</key>
 	<string>ABC (macSKK)</string>
 	<key>net.mtgto.inputmethod.macSKK.hiragana</key>
@@ -30,8 +32,6 @@
 				<string>net.mtgto.inputmethod.macSKK.ascii</string>
 				<key>TISIntendedLanguage</key>
 				<string>en</string>
-				<key>tsInputModeAlternateMenuIconFileKey</key>
-				<string>icon-direct.png</string>
 				<key>tsInputModeDefaultStateKey</key>
 				<true/>
 				<key>tsInputModeIsVisibleKey</key>
@@ -39,9 +39,9 @@
 				<key>tsInputModeJISKeyboardShortcutKey</key>
 				<integer>3</integer>
 				<key>tsInputModeMenuIconFileKey</key>
-				<string>icon-direct.png</string>
+				<string>direct.tiff</string>
 				<key>tsInputModePaletteIconFileKey</key>
-				<string>icon-direct.png</string>
+				<string>direct.tiff</string>
 				<key>tsInputModePrimaryInScriptKey</key>
 				<true/>
 				<key>tsInputModeScriptKey</key>
@@ -53,8 +53,6 @@
 				<string>net.mtgto.inputmethod.macSKK.hiragana</string>
 				<key>TISIntendedLanguage</key>
 				<string>ja</string>
-				<key>tsInputModeAlternateMenuIconFileKey</key>
-				<string>icon-hiragana.png</string>
 				<key>tsInputModeDefaultStateKey</key>
 				<true/>
 				<key>tsInputModeIsVisibleKey</key>
@@ -62,9 +60,9 @@
 				<key>tsInputModeJISKeyboardShortcutKey</key>
 				<integer>1</integer>
 				<key>tsInputModeMenuIconFileKey</key>
-				<string>icon-hiragana.png</string>
+				<string>hiragana.tiff</string>
 				<key>tsInputModePaletteIconFileKey</key>
-				<string>icon-hiragana.png</string>
+				<string>hiragana.tiff</string>
 				<key>tsInputModePrimaryInScriptKey</key>
 				<true/>
 				<key>tsInputModeScriptKey</key>
@@ -76,8 +74,6 @@
 				<string>net.mtgto.inputmethod.macSKK.katakana</string>
 				<key>TISIntendedLanguage</key>
 				<string>ja</string>
-				<key>tsInputModeAlternateMenuIconFileKey</key>
-				<string>icon-katakana.png</string>
 				<key>tsInputModeDefaultStateKey</key>
 				<true/>
 				<key>tsInputModeIsVisibleKey</key>
@@ -85,9 +81,9 @@
 				<key>tsInputModeJISKeyboardShortcutKey</key>
 				<integer>2</integer>
 				<key>tsInputModeMenuIconFileKey</key>
-				<string>icon-katakana.png</string>
+				<string>katakana.tiff</string>
 				<key>tsInputModePaletteIconFileKey</key>
-				<string>icon-katakana.png</string>
+				<string>katakana.tiff</string>
 				<key>tsInputModePrimaryInScriptKey</key>
 				<false/>
 				<key>tsInputModeScriptKey</key>
@@ -99,8 +95,6 @@
 				<string>net.mtgto.inputmethod.macSKK.hankaku</string>
 				<key>TISIntendedLanguage</key>
 				<string>ja</string>
-				<key>tsInputModeAlternateMenuIconFileKey</key>
-				<string>icon-hankaku.png</string>
 				<key>tsInputModeDefaultStateKey</key>
 				<true/>
 				<key>tsInputModeIsVisibleKey</key>
@@ -108,9 +102,9 @@
 				<key>tsInputModeJISKeyboardShortcutKey</key>
 				<integer>0</integer>
 				<key>tsInputModeMenuIconFileKey</key>
-				<string>icon-hankaku.png</string>
+				<string>hankaku.tiff</string>
 				<key>tsInputModePaletteIconFileKey</key>
-				<string>icon-hankaku.png</string>
+				<string>hankaku.tiff</string>
 				<key>tsInputModePrimaryInScriptKey</key>
 				<false/>
 				<key>tsInputModeScriptKey</key>
@@ -122,8 +116,6 @@
 				<string>net.mtgto.inputmethod.macSKK.eisu</string>
 				<key>TISIntendedLanguage</key>
 				<string>ja</string>
-				<key>tsInputModeAlternateMenuIconFileKey</key>
-				<string>icon-katakana.png</string>
 				<key>tsInputModeDefaultStateKey</key>
 				<true/>
 				<key>tsInputModeIsVisibleKey</key>
@@ -131,9 +123,9 @@
 				<key>tsInputModeJISKeyboardShortcutKey</key>
 				<integer>0</integer>
 				<key>tsInputModeMenuIconFileKey</key>
-				<string>icon-eisu.png</string>
+				<string>eisu.tiff</string>
 				<key>tsInputModePaletteIconFileKey</key>
-				<string>icon-eisu.png</string>
+				<string>eisu.tiff</string>
 				<key>tsInputModePrimaryInScriptKey</key>
 				<false/>
 				<key>tsInputModeScriptKey</key>
