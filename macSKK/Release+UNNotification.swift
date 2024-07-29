@@ -15,8 +15,8 @@ extension Release {
      */
     func userNotificationRequest() -> UNNotificationRequest {
         let content = UNMutableNotificationContent()
-        content.title = NSLocalizedString("UNNewVersionTitle", comment: "新しいバージョンがあります")
-        content.body = String(format: NSLocalizedString("UNNewVersionBody", comment: ""), version.description)
+        content.title = String(localized: "UNNewVersionTitle", comment: "新しいバージョンがあります")
+        content.body = String(format: String(localized: "UNNewVersionBody"), version.description)
         content.userInfo[Self.userNotificationUserInfoKey] = [Self.userNotificationUserInfoNameUrl: url.absoluteString]
 
         let request = UNNotificationRequest(identifier: Self.userNotificationIdentifier, content: content, trigger: nil)

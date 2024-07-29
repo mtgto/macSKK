@@ -78,7 +78,7 @@ struct SettingsView: View {
                 WorkaroundView(settingsViewModel: settingsViewModel)
                     .navigationTitle(selectedSection.localizedStringKey)
             case .log:
-                LogView(log: NSLocalizedString("LoadingStatusLoading", comment: "Loading…"))
+                LogView(log: String(localized: "LoadingStatusLoading", comment: "Loading…"))
                     .navigationTitle(selectedSection.localizedStringKey)
             #if DEBUG
             case .keyEvent:
