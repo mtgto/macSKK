@@ -159,7 +159,7 @@ class InputController: IMKInputController {
                     Global.completionPanel.viewModel.completion = completion
                     // 下線分1ピクセル下に余白を設ける
                     let cursorPosition = self.cursorPosition.offsetBy(dx: 0, dy: -1)
-                    Global.completionPanel.show(at: cursorPosition.origin)
+                    Global.completionPanel.show(at: cursorPosition.origin, windowLevel: self.windowLevel)
                 } else {
                     self.stateMachine.completion = nil
                     Global.completionPanel.orderOut(nil)
