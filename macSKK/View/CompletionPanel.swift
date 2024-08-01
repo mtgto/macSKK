@@ -13,10 +13,10 @@ class CompletionPanel: NSPanel {
         let viewController = NSHostingController(rootView: rootView)
         super.init(contentRect: .zero, styleMask: [.nonactivatingPanel], backing: .buffered, defer: true)
         contentViewController = viewController
-        level = .floating
     }
 
-    func show(at point: NSPoint) {
+    func show(at point: NSPoint, windowLevel: NSWindow.Level) {
+        level = windowLevel
         setFrameTopLeftPoint(point)
         orderFrontRegardless()
     }
