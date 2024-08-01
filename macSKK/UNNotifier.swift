@@ -13,8 +13,8 @@ struct UNNotifier {
 
     static func sendNotificationForUserDict(readError: any Error) {
         let content = UNMutableNotificationContent()
-        content.title = NSLocalizedString("UNUserDictReadErrorTitle", comment: "エラー")
-        content.body = NSLocalizedString("UNUserDictReadErrorBody", comment: "ユーザー辞書の読み込みに失敗しました")
+        content.title = String(localized: "UNUserDictReadErrorTitle", comment: "エラー")
+        content.body = String(localized: "UNUserDictReadErrorBody", comment: "ユーザー辞書の読み込みに失敗しました")
 
         let request = UNNotificationRequest(identifier: Self.userNotificationReadErrorIdentifier, content: content, trigger: nil)
         sendUserNotification(request: request)
@@ -22,8 +22,8 @@ struct UNNotifier {
 
     static func sendNotificationForUserDict(failureEntryCount: Int) {
         let content = UNMutableNotificationContent()
-        content.title = NSLocalizedString("UNUserDictReadFailureEntryTitle", comment: "エラー")
-        content.body = String(format: NSLocalizedString("UNUserDictReadFailureEntryBody", comment: ""), failureEntryCount)
+        content.title = String(localized: "UNUserDictReadFailureEntryTitle", comment: "エラー")
+        content.body = String(format: String(localized: "UNUserDictReadFailureEntryBody"), failureEntryCount)
 
         let request = UNNotificationRequest(identifier: Self.userNotificationReadErrorIdentifier, content: content, trigger: nil)
         sendUserNotification(request: request)
@@ -31,8 +31,8 @@ struct UNNotifier {
 
     static func sendNotificationForUserDict(writeError: any Error) {
         let content = UNMutableNotificationContent()
-        content.title = NSLocalizedString("UNUserDictWriteErrorTitle", comment: "エラー")
-        content.body = NSLocalizedString("UNUserDictWriteErrorBody", comment: "ユーザー辞書の永続化に失敗しました")
+        content.title = String(localized: "UNUserDictWriteErrorTitle", comment: "エラー")
+        content.body = String(localized: "UNUserDictWriteErrorBody", comment: "ユーザー辞書の永続化に失敗しました")
 
         let request = UNNotificationRequest(identifier: Self.userNotificationWriteErrorIdentifier, content: content, trigger: nil)
         sendUserNotification(request: request)
