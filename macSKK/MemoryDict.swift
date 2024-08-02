@@ -77,6 +77,14 @@ struct MemoryDict: DictProtocol {
         }
     }
 
+    init(okuriAriEntries: [String: [Word]], okuriNashiEntries: [String: [Word]], readonly: Bool) {
+        self.readonly = readonly
+        self.entries = okuriAriEntries.merging(okuriNashiEntries) { current, _  in current }
+        failedEntryCount = 0
+        okuriAriYomis = Array(okuriAriEntries.keys)
+        okuriNashiYomis = Array(okuriNashiEntries.keys)
+    }
+
     var entryCount: Int { return entries.count }
 
     // MARK: DictProtocol

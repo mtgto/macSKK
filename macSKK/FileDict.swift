@@ -43,6 +43,16 @@ class FileDict: NSObject, DictProtocol, Identifiable {
         case decode
     }
 
+    /// JSON形式
+    struct JsonJisyo: Codable {
+        // "0.0.0" 固定。JSONSchemaでは必須ではないらしい
+        let version: String
+        let copyright: String
+        let license: String
+        let okuriAri: [String: [String]]
+        let okuriNasi: [String: [String]]
+    }
+
     // MARK: NSFilePresenter
     var presentedItemURL: URL? { fileURL }
     let presentedItemOperationQueue: OperationQueue = {
@@ -75,13 +85,31 @@ class FileDict: NSObject, DictProtocol, Identifiable {
             fileCoordinator.coordinate(readingItemAt: self.fileURL, error: &coordinationError) { [weak self] url in
                 if let self {
                     do {
-                        let source = try self.loadString(url)
-                        if source.isEmpty {
-                            // 辞書ファイルを書き込み中に読み込んでしまった?
-                            logger.warning("辞書 \(self.id) を読み込んだところ0バイトだったため更新を無視します")
+                        if url.pathExtension == "json" {
+                            let decoder = JSONDecoder()
+                            decoder.keyDecodingStrategy = .convertFromSnakeCase
+                            let jisyo = try decoder.decode(JsonJisyo.self, from: try Data(contentsOf: url))
+                            if jisyo.version != "0.0.0" {
+                                logger.warning("JSON辞書のバージョンが未対応のバージョンのため無視します")
+                                throw FileDictError.decode
+                            }
+                            let okuriAriEntries = jisyo.okuriAri.mapValues({
+                                $0.map { Word($0) }
+                            })
+                            let okuriNashiEntries = jisyo.okuriNasi.mapValues({
+                                $0.map { Word($0) }
+                            })
+                            let memoryDict = MemoryDict(okuriAriEntries: okuriAriEntries, okuriNashiEntries: okuriNashiEntries, readonly: readonly)
+                            self.dict = memoryDict
+                        } else {
+                            let source = try self.loadString(url)
+                            if source.isEmpty {
+                                // 辞書ファイルを書き込み中に読み込んでしまった?
+                                logger.warning("辞書 \(self.id) を読み込んだところ0バイトだったため更新を無視します")
+                            }
+                            let memoryDict = MemoryDict(dictId: self.id, source: source, readonly: readonly)
+                            self.dict = memoryDict
                         }
-                        let memoryDict = MemoryDict(dictId: self.id, source: source, readonly: readonly)
-                        self.dict = memoryDict
                         self.version = NSFileVersion.currentVersionOfItem(at: url)
                         logger.log("辞書 \(self.id, privacy: .public) から \(self.dict.entries.count) エントリ読み込みました")
                         NotificationCenter.default.post(name: notificationNameDictLoad,
