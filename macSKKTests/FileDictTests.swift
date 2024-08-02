@@ -14,6 +14,13 @@ final class FileDictTests: XCTestCase {
         XCTAssertEqual(dict.dict.entries, ["ゆにこーど": [Word("ユニコード")]])
     }
 
+    func testLoadJson() throws {
+        let fileURL = Bundle(for: Self.self).url(forResource: "SKK-JISYO.test", withExtension: "json")!
+        let dict = try FileDict(contentsOf: fileURL, encoding: .utf8, readonly: true)
+        XCTAssertEqual(dict.dict.refer("い", option: nil).map({ $0.word }).sorted(), ["伊", "胃"])
+        XCTAssertEqual(dict.dict.refer("あr", option: nil).map({ $0.word }).sorted(), ["在", "有"])
+    }
+
     func testAdd() throws {
         let dict = try FileDict(contentsOf: fileURL, encoding: .utf8, readonly: true)
         XCTAssertEqual(dict.entryCount, 0)

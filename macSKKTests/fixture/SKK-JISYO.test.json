@@ -1,0 +1,21 @@
+{
+    "version": "0.0.0",
+    "copyright": "macSKK Test",
+    "license": "",
+    "okuri_ari": {
+        "あr": [
+            "有",
+            "在"
+        ],
+        "あk": [
+            "開",
+            "空"
+        ]
+    },
+    "okuri_nasi": {
+        "い": [
+            "胃",
+            "伊"
+        ]
+    }
+}
