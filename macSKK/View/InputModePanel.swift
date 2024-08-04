@@ -10,7 +10,7 @@ class InputModePanel: NSPanel {
     private let imageSize: CGSize
 
     init() {
-        imageSize = CGSize(width: 32, height: 32)
+        imageSize = CGSize(width: 33, height: 24)
         imageView = NSImageView(frame: .zero)
         super.init(contentRect: .zero, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: true)
         imageView.imageScaling = .scaleProportionallyUpOrDown
