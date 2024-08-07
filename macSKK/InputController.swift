@@ -57,7 +57,7 @@ class InputController: IMKInputController {
             if let self {
                 switch event {
                 case .fixedText(let text):
-                    if textInput.bundleIdentifier() == "com.jetbrains.intellij" {
+                    if stateMachine.state.inputMode != .direct && textInput.bundleIdentifier() == "com.jetbrains.intellij" {
                         // AquaSKKと同様に、非確定文字列に確定予定文字列を先に表示する
                         textInput.setMarkedText(
                             text,
