@@ -196,6 +196,10 @@ class InputController: IMKInputController {
     }
 
     override func handle(_ event: NSEvent!, client sender: Any!) -> Bool {
+        // 文字ビューアで入力した場合など、eventがnilの場合がありえる
+        if event == nil {
+            return false
+        }
         let keyBind = Global.keyBinding.action(event: event)
         if directMode {
             if let keyBind, keyBind == .kana || keyBind == .eisu {
