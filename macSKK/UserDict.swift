@@ -73,7 +73,7 @@ class UserDict: NSObject, DictProtocol {
             .debounce(for: .seconds(60), scheduler: DispatchQueue.global(qos: .background))
             .sink { [weak self] _ in
                 if let fileDict = self?.userDict as? FileDict {
-                    logger.log("ユーザー辞書を永続化します")
+                    logger.log("ユーザー辞書を永続化します。現在のエントリ数は \(fileDict.dict.entries.count)")
                     do {
                         try fileDict.save()
                     } catch {

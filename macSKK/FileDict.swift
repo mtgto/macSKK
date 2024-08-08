@@ -133,6 +133,7 @@ class FileDict: NSObject, DictProtocol, Identifiable {
                 do {
                     try data.write(to: newURL)
                     self.hasUnsavedChanges = false
+                    logger.log("辞書を永続化しました (\(data.count)バイト)")
                 } catch {
                     logger.error("辞書 \(self.id, privacy: .public) の書き込みに失敗しました: \(error)")
                     writingError = error as NSError
@@ -237,7 +238,11 @@ extension FileDict: NSFilePresenter {
     // どちらも同じ辞書ファイルを監視しているので、Aが保存してもAのpresentedItemDidChangeは呼び出されないが、
     // BのpresentedItemDidChangeは呼び出される。
     func presentedItemDidChange() {
-        if let version = NSFileVersion.currentVersionOfItem(at: fileURL), version == self.version {
+        guard let version = NSFileVersion.currentVersionOfItem(at: fileURL) else {
+            logger.error("辞書 \(self.id, privacy: .public) のバージョンが存在しません")
+            return
+        }
+        if version == self.version {
             logger.log("辞書 \(self.id, privacy: .public) がアプリ外で変更されたため読み込みます")
         } else {
             logger.log("辞書 \(self.id, privacy: .public) が変更されたので読み込みます")
