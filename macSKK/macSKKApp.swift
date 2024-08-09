@@ -121,11 +121,7 @@ struct macSKKApp: App {
                     NotificationCenter.default.post(name: notificationNameOpenSettings, object: nil)
                 }
                 Button("Save User Directory") {
-                    do {
-                        try Global.dictionary.save()
-                    } catch {
-                        print(error)
-                    }
+                    Global.dictionary.save()
                 }.keyboardShortcut("S")
                 #if DEBUG
                 Button("AnnotationsPanel") {
