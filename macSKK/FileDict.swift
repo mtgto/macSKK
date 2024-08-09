@@ -39,7 +39,11 @@ class FileDict: NSObject, DictProtocol, Identifiable {
 
     // MARK: NSFilePresenter
     var presentedItemURL: URL? { fileURL }
-    let presentedItemOperationQueue: OperationQueue = OperationQueue()
+    let presentedItemOperationQueue: OperationQueue = {
+        let queue = OperationQueue()
+        queue.maxConcurrentOperationCount = 1
+        return queue
+    }()
 
     init(contentsOf fileURL: URL, encoding: String.Encoding, readonly: Bool) throws {
         // iCloud Documents使うときには辞書フォルダが複数になりうるけど、それまではひとまずファイル名をIDとして使う
@@ -120,7 +124,7 @@ class FileDict: NSObject, DictProtocol, Identifiable {
         var coordinationError: NSError?
         var writingError: NSError?
         let fileCoordinator = NSFileCoordinator(filePresenter: self)
-        fileCoordinator.coordinate(writingItemAt: fileURL, options: .forReplacing, error: &coordinationError) { [weak self] newURL in
+        fileCoordinator.coordinate(writingItemAt: fileURL, error: &coordinationError) { [weak self] newURL in
             if let self {
                 do {
                     self.version = try NSFileVersion.addOfItem(at: newURL, withContentsOf: newURL)
@@ -133,7 +137,7 @@ class FileDict: NSObject, DictProtocol, Identifiable {
                 do {
                     try data.write(to: newURL)
                     self.hasUnsavedChanges = false
-                    logger.log("辞書を永続化しました (\(data.count)バイト)")
+                    logger.log("辞書を永続化しました。現在のエントリ数は \(dict.entries.count)、シリアライズ後のファイルサイズは\(data.count)バイトです")
                 } catch {
                     logger.error("辞書 \(self.id, privacy: .public) の書き込みに失敗しました: \(error)")
                     writingError = error as NSError
