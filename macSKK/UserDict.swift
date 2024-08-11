@@ -73,7 +73,7 @@ class UserDict: NSObject, DictProtocol {
             .debounce(for: .seconds(60), scheduler: DispatchQueue.global(qos: .background))
             .sink { [weak self] _ in
                 if let fileDict = self?.userDict as? FileDict {
-                    logger.log("ユーザー辞書を永続化します")
+                    logger.log("ユーザー辞書を永続化します。現在のエントリ数は \(fileDict.dict.entries.count)")
                     do {
                         try fileDict.save()
                     } catch {
@@ -264,7 +264,7 @@ class UserDict: NSObject, DictProtocol {
     }
 
     /// ユーザー辞書を永続化する
-    func save() throws {
+    func save() {
         // XcodeのEdit Scheme…でRun時とTest時の環境変数で設定しています。
         // 普段利用しているmacSKKプロセスの書き込みと競合するのを回避するのが目的です。
         if ProcessInfo.processInfo.environment["DISABLE_USER_DICT_SAVE"] == "1" {
@@ -273,7 +273,7 @@ class UserDict: NSObject, DictProtocol {
         }
         if let userDict {
             if let dict = userDict as? FileDict {
-                try dict.save()
+                dict.save()
             } else {
                 // ユニットテストなど特殊な場合のみ
                 logger.info("永続化が要求されましたが、ユーザー辞書がファイル形式でないため無視されます")
@@ -318,6 +318,9 @@ extension UserDict: NSFilePresenter {
             logger.log("変更されたファイル \(url.lastPathComponent, privacy: .public) が見つからないため削除されたと扱います")
             NotificationCenter.default.post(name: notificationNameDictFileDidMove, object: url)
             return
+        } else if url.lastPathComponent == Self.userDictFilename {
+            // ユーザー辞書ファイル自体はFileDictで監視しているため無視する
+            return
         }
 
         var relationship: FileManager.URLRelationship = .same
@@ -332,7 +335,6 @@ extension UserDict: NSFilePresenter {
                     // 辞書ファイルが別フォルダに移動したときにはpresentedSubitem:at:didMoveToも呼ばれる
                     logger.log("ファイル \(url.lastPathComponent, privacy: .public) が更新されましたが辞書フォルダ外なので無視します")
                 }
-
             } else {
                 logger.log("辞書フォルダで \(url.lastPathComponent, privacy: .public) が更新されました (無視)")
             }
@@ -356,9 +358,6 @@ extension UserDict: NSFilePresenter {
 
     // 辞書ファイルとして問題があるファイルでないかを判定する
     private func isValidFile(_ fileURL: URL) throws -> Bool {
-        if fileURL.lastPathComponent == Self.userDictFilename {
-            return false
-        }
         return try fileURL.isReadable()
     }
 }

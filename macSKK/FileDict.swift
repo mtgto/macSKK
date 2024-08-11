@@ -19,7 +19,13 @@ class FileDict: NSObject, DictProtocol, Identifiable {
     let id: String
     let fileURL: URL
     let encoding: String.Encoding
-    var version: NSFileVersion?
+    private var version: NSFileVersion?
+    /// ファイルの書き込み・読み込みを直列で実行するためのキュー
+    private let fileOperationQueue = {
+        let queue = OperationQueue()
+        queue.maxConcurrentOperationCount = 1
+        return queue
+    }()
     /// 保存してない変更があるかどうか (UIDocumentのパクり)
     private(set) var hasUnsavedChanges: Bool = false
     private(set) var dict: MemoryDict
@@ -39,7 +45,11 @@ class FileDict: NSObject, DictProtocol, Identifiable {
 
     // MARK: NSFilePresenter
     var presentedItemURL: URL? { fileURL }
-    let presentedItemOperationQueue: OperationQueue = OperationQueue()
+    let presentedItemOperationQueue: OperationQueue = {
+        let queue = OperationQueue()
+        queue.maxConcurrentOperationCount = 1
+        return queue
+    }()
 
     init(contentsOf fileURL: URL, encoding: String.Encoding, readonly: Bool) throws {
         // iCloud Documents使うときには辞書フォルダが複数になりうるけど、それまではひとまずファイル名をIDとして使う
@@ -50,40 +60,48 @@ class FileDict: NSObject, DictProtocol, Identifiable {
         self.version = NSFileVersion.currentVersionOfItem(at: fileURL)
         self.readonly = readonly
         super.init()
-        try load()
+        load()
         NSFileCoordinator.addFilePresenter(self)
     }
 
-    func load() throws {
-        var coordinationError: NSError?
-        var readingError: NSError?
-        let fileCoordinator = NSFileCoordinator(filePresenter: self)
-        NotificationCenter.default.post(name: notificationNameDictLoad,
-                                        object: DictLoadEvent(id: self.id,
-                                                              status: .loading))
-        fileCoordinator.coordinate(readingItemAt: fileURL, error: &coordinationError) { [weak self] url in
-            if let self {
-                do {
-                    let source = try self.loadString(url)
-                    let memoryDict = MemoryDict(dictId: self.id, source: source, readonly: readonly)
-                    self.dict = memoryDict
-                    self.version = NSFileVersion.currentVersionOfItem(at: url)
-                    logger.log("辞書 \(self.id, privacy: .public) から \(self.dict.entries.count) エントリ読み込みました")
-                    NotificationCenter.default.post(name: notificationNameDictLoad,
-                                                    object: DictLoadEvent(id: self.id,
-                                                                          status: .loaded(success: dict.entryCount, failure: dict.failedEntryCount)))
-                } catch {
-                    logger.error("辞書 \(self.id, privacy: .public) の読み込みでエラーが発生しました: \(error)")
-                    NotificationCenter.default.post(name: notificationNameDictLoad,
-                                                    object: DictLoadEvent(id: self.id,
-                                                                          status: .fail(error)))
-                    readingError = error as NSError
+    func load() {
+        let operation = BlockOperation {
+            var coordinationError: NSError?
+            var readingError: NSError?
+            let fileCoordinator = NSFileCoordinator(filePresenter: self)
+            NotificationCenter.default.post(name: notificationNameDictLoad,
+                                            object: DictLoadEvent(id: self.id,
+                                                                  status: .loading))
+            fileCoordinator.coordinate(readingItemAt: self.fileURL, error: &coordinationError) { [weak self] url in
+                if let self {
+                    do {
+                        let source = try self.loadString(url)
+                        if source.isEmpty {
+                            // 辞書ファイルを書き込み中に読み込んでしまった?
+                            logger.warning("辞書 \(self.id) を読み込んだところ0バイトだったため更新を無視します")
+                        }
+                        let memoryDict = MemoryDict(dictId: self.id, source: source, readonly: readonly)
+                        self.dict = memoryDict
+                        self.version = NSFileVersion.currentVersionOfItem(at: url)
+                        logger.log("辞書 \(self.id, privacy: .public) から \(self.dict.entries.count) エントリ読み込みました")
+                        NotificationCenter.default.post(name: notificationNameDictLoad,
+                                                        object: DictLoadEvent(id: self.id,
+                                                                              status: .loaded(success: dict.entryCount, failure: dict.failedEntryCount)))
+                    } catch {
+                        logger.error("辞書 \(self.id, privacy: .public) の読み込みでエラーが発生しました: \(error)")
+                        NotificationCenter.default.post(name: notificationNameDictLoad,
+                                                        object: DictLoadEvent(id: self.id,
+                                                                              status: .fail(error)))
+                        readingError = error as NSError
+                    }
                 }
             }
+            if let error = coordinationError ?? readingError {
+                logger.error("辞書 \(self.id, privacy: .public) の読み込み中にエラーが発生しました: \(error)")
+            }
         }
-        if let error = coordinationError ?? readingError {
-            throw error
-        }
+        fileOperationQueue.addOperation(operation)
+        operation.waitUntilFinished()
     }
 
     private func loadString(_ url: URL) throws -> String {
@@ -109,39 +127,44 @@ class FileDict: NSObject, DictProtocol, Identifiable {
         return try String(contentsOf: url, encoding: encoding)
     }
 
-    func save() throws {
+    func save() {
         if !hasUnsavedChanges {
             logger.log("辞書 \(self.id, privacy: .public) は変更されていないため保存は行いません")
             return
         }
-        guard let data = serialize().data(using: encoding) else {
-            fatalError("辞書 \(self.id) のシリアライズに失敗しました")
-        }
-        var coordinationError: NSError?
-        var writingError: NSError?
-        let fileCoordinator = NSFileCoordinator(filePresenter: self)
-        fileCoordinator.coordinate(writingItemAt: fileURL, options: .forReplacing, error: &coordinationError) { [weak self] newURL in
-            if let self {
-                do {
-                    self.version = try NSFileVersion.addOfItem(at: newURL, withContentsOf: newURL)
-                    logger.log("辞書のバージョンを作成しました")
-                } catch {
-                    logger.error("辞書のバージョン作成でエラーが発生しました: \(error)")
-                    writingError = error as NSError
-                    return
-                }
-                do {
-                    try data.write(to: newURL)
-                    self.hasUnsavedChanges = false
-                } catch {
-                    logger.error("辞書 \(self.id, privacy: .public) の書き込みに失敗しました: \(error)")
-                    writingError = error as NSError
+        let operation = BlockOperation {
+            guard let data = self.serialize().data(using: self.encoding) else {
+                fatalError("辞書 \(self.id) のシリアライズに失敗しました")
+            }
+            var coordinationError: NSError?
+            var writingError: NSError?
+            let fileCoordinator = NSFileCoordinator(filePresenter: self)
+            fileCoordinator.coordinate(writingItemAt: self.fileURL, error: &coordinationError) { [weak self] newURL in
+                if let self {
+                    do {
+                        self.version = try NSFileVersion.addOfItem(at: newURL, withContentsOf: newURL)
+                        logger.log("辞書のバージョンを作成しました")
+                    } catch {
+                        logger.error("辞書のバージョン作成でエラーが発生しました: \(error)")
+                        writingError = error as NSError
+                        return
+                    }
+                    do {
+                        try data.write(to: newURL)
+                        self.hasUnsavedChanges = false
+                        logger.log("辞書を永続化しました。現在のエントリ数は \(dict.entries.count)、シリアライズ後のファイルサイズは\(data.count)バイトです")
+                    } catch {
+                        logger.error("辞書 \(self.id, privacy: .public) の書き込みに失敗しました: \(error)")
+                        writingError = error as NSError
+                    }
                 }
             }
+            if let error = coordinationError ?? writingError {
+                logger.error("辞書 \(self.id, privacy: .public) の読み込み中にエラーが発生しました: \(error)")
+            }
         }
-        if let error = coordinationError ?? writingError {
-            throw error
-        }
+        fileOperationQueue.addOperation(operation)
+        operation.waitUntilFinished()
     }
 
     deinit {
@@ -223,13 +246,13 @@ extension FileDict: NSFilePresenter {
             logger.log("辞書 \(self.id, privacy: .public) のバージョンが自分自身に更新されたため何もしません")
         } else {
             logger.log("辞書 \(self.id, privacy: .public) のバージョンが更新されたので読み込みます")
-            try? load()
+            load()
         }
     }
 
     func presentedItemDidLose(_ version: NSFileVersion) {
         logger.log("辞書 \(self.id, privacy: .public) が更新されたので読み込みます (バージョン情報が消失)")
-        try? load()
+        load()
     }
 
     // NOTE: save() で保存した場合はバージョンが必ず更新されるのでこのメソッドは呼ばれない
@@ -237,11 +260,15 @@ extension FileDict: NSFilePresenter {
     // どちらも同じ辞書ファイルを監視しているので、Aが保存してもAのpresentedItemDidChangeは呼び出されないが、
     // BのpresentedItemDidChangeは呼び出される。
     func presentedItemDidChange() {
-        if let version = NSFileVersion.currentVersionOfItem(at: fileURL), version == self.version {
+        guard let version = NSFileVersion.currentVersionOfItem(at: fileURL) else {
+            logger.error("辞書 \(self.id, privacy: .public) のバージョンが存在しません")
+            return
+        }
+        if version == self.version {
             logger.log("辞書 \(self.id, privacy: .public) がアプリ外で変更されたため読み込みます")
         } else {
             logger.log("辞書 \(self.id, privacy: .public) が変更されたので読み込みます")
         }
-        try? load()
+        load()
     }
 }
