@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## v1.0.1 (2024-08-11)
+
+- build_restart.shではデバッグ版を使う (#202)
+- 半角英数入力時はIntelliJ用の特殊処理をしない (#200)
+- macOSの文字ビューアで入力するとクラッシュするバグを修正 (#201)
+- 辞書ファイル操作をOperationQueueを使って直列化する (#204)
+
 ## v1.0.0 (2024-08-04)
 
 - NSLocalizedStringをString(localized:)を使うように変更 (#194)
