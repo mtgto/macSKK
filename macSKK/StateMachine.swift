@@ -84,6 +84,9 @@ final class StateMachine {
             } else {
                 state.inputMode = .hiragana
                 inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
+                if specialState != nil {
+                    updateMarkedText()
+                }
                 return true
             }
         case .japanese:
@@ -101,10 +104,16 @@ final class StateMachine {
             case .hiragana:
                 state.inputMode = .katakana
                 inputMethodEventSubject.send(.modeChanged(.katakana, action.cursorPosition))
+                if specialState != nil {
+                    inputMethodEventSubject.send(.markedText(state.displayText()))
+                }
                 return true
             case .katakana, .hankaku:
                 state.inputMode = .hiragana
                 inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
+                if specialState != nil {
+                    inputMethodEventSubject.send(.markedText(state.displayText()))
+                }
                 return true
             case .eisu, .direct:
                 break
@@ -114,10 +123,16 @@ final class StateMachine {
             case .hiragana, .katakana:
                 state.inputMode = .hankaku
                 inputMethodEventSubject.send(.modeChanged(.hankaku, action.cursorPosition))
+                if specialState != nil {
+                    inputMethodEventSubject.send(.markedText(state.displayText()))
+                }
                 return true
             case .hankaku:
                 state.inputMode = .hiragana
                 inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
+                if specialState != nil {
+                    inputMethodEventSubject.send(.markedText(state.displayText()))
+                }
                 return true
             default:
                 break
@@ -127,6 +142,9 @@ final class StateMachine {
             case .hiragana, .katakana, .hankaku:
                 state.inputMode = .direct
                 inputMethodEventSubject.send(.modeChanged(.direct, action.cursorPosition))
+                if specialState != nil {
+                    inputMethodEventSubject.send(.markedText(state.displayText()))
+                }
                 return true
             case .eisu, .direct:
                 break
@@ -136,6 +154,9 @@ final class StateMachine {
             case .hiragana, .katakana, .hankaku:
                 state.inputMode = .eisu
                 inputMethodEventSubject.send(.modeChanged(.eisu, action.cursorPosition))
+                if specialState != nil {
+                    inputMethodEventSubject.send(.markedText(state.displayText()))
+                }
                 return true
             case .eisu, .direct:
                 break
@@ -146,7 +167,7 @@ final class StateMachine {
                 state.inputMethod = .composing(ComposingState(isShift: true, text: [], okuri: nil, romaji: "", prevMode: state.inputMode))
                 state.inputMode = .direct
                 inputMethodEventSubject.send(.modeChanged(.direct, action.cursorPosition))
-                updateMarkedText()
+                inputMethodEventSubject.send(.markedText(state.displayText()))
                 return true
             case .eisu, .direct:
                 break
