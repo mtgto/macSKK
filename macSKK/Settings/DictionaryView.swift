@@ -27,7 +27,7 @@ struct DictionaryView: View {
                         // 上書きされて文字コードが異なって読み込みエラーとなる可能性がある。
                         // 従ってファイル名が`SKK-JISYO.L`な場合は文字コードの変更を禁止する。
                         // （文字コードを変更したい場合は、SKK-JISYO.Lをdisableにして別名で辞書ディレクトリーに設置するべきと思われる）
-                        filename == "SKK-JISYO.L"
+                        filename == "SKK-JISYO.L" || dictSetting?.type == .json
                     )
                     if filename == "SKK-JISYO.L" {
                         HStack {
@@ -42,7 +42,11 @@ struct DictionaryView: View {
             HStack {
                 Spacer()
                 Button {
-                    dictSetting?.encoding = encoding
+                    if let dictSetting {
+                        if case .traditional = dictSetting.type {
+                            dictSetting.type = .traditional(encoding)
+                        }
+                    }
                     // このビューを閉じる
                     dictSetting = nil
                 } label: {

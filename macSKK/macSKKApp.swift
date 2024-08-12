@@ -169,7 +169,7 @@ struct macSKKApp: App {
     private static func setupUserDefaults() {
         UserDefaults.standard.register(defaults: [
             UserDefaultsKeys.dictionaries: [
-                DictSetting(filename: "SKK-JISYO.L", enabled: true, encoding: .japaneseEUC).encode()
+                DictSetting(filename: "SKK-JISYO.L", enabled: true, type: .traditional(.japaneseEUC)).encode()
             ],
             UserDefaultsKeys.directModeBundleIdentifiers: [String](),
             UserDefaultsKeys.selectedInputSource: InputSource.defaultInputSourceId,

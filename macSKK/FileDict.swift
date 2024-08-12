@@ -11,6 +11,23 @@ let notificationNameDictFileDidMove = Notification.Name("dictFileDidMove")
 // 辞書を読み込んだ結果を通知する通知の名前。objectはDictLoadEvent
 let notificationNameDictLoad = Notification.Name("dictLoad")
 
+// 辞書形式
+enum FileDictType: Equatable {
+    // 1行 = 1エントリの従来の形式
+    case traditional(String.Encoding)
+    // JSON形式
+    case json
+
+    var encoding: String.Encoding {
+        switch self {
+        case .traditional(let encoding):
+            return encoding
+        case .json:
+            return .utf8
+        }
+    }
+}
+
 /// 実ファイルをもつSKK辞書
 class FileDict: NSObject, DictProtocol, Identifiable {
     // FIXME: URLResourceのfileResourceIdentifierKeyをidとして使ってもいいかもしれない。
@@ -18,7 +35,7 @@ class FileDict: NSObject, DictProtocol, Identifiable {
     // FIXME: iCloud Documentsとかでてくるとディレクトリが複数になるけど、ひとまずファイル名だけもっておけばよさそう。
     let id: String
     let fileURL: URL
-    let encoding: String.Encoding
+    let type: FileDictType
     private var version: NSFileVersion?
     /// ファイルの書き込み・読み込みを直列で実行するためのキュー
     private let fileOperationQueue = {
@@ -61,11 +78,11 @@ class FileDict: NSObject, DictProtocol, Identifiable {
         return queue
     }()
 
-    init(contentsOf fileURL: URL, encoding: String.Encoding, readonly: Bool) throws {
+    init(contentsOf fileURL: URL, type: FileDictType, readonly: Bool) throws {
         // iCloud Documents使うときには辞書フォルダが複数になりうるけど、それまではひとまずファイル名をIDとして使う
         self.id = fileURL.lastPathComponent
         self.fileURL = fileURL
-        self.encoding = encoding
+        self.type = type
         self.dict = MemoryDict(entries: [:], readonly: readonly)
         self.version = NSFileVersion.currentVersionOfItem(at: fileURL)
         self.readonly = readonly
@@ -85,7 +102,7 @@ class FileDict: NSObject, DictProtocol, Identifiable {
             fileCoordinator.coordinate(readingItemAt: self.fileURL, error: &coordinationError) { [weak self] url in
                 if let self {
                     do {
-                        if url.pathExtension == "json" {
+                        if case .json = self.type {
                             let decoder = JSONDecoder()
                             decoder.keyDecodingStrategy = .convertFromSnakeCase
                             let jisyo = try decoder.decode(JsonJisyo.self, from: try Data(contentsOf: url))
@@ -101,8 +118,8 @@ class FileDict: NSObject, DictProtocol, Identifiable {
                             })
                             let memoryDict = MemoryDict(okuriAriEntries: okuriAriEntries, okuriNashiEntries: okuriNashiEntries, readonly: readonly)
                             self.dict = memoryDict
-                        } else {
-                            let source = try self.loadString(url)
+                        } else if case .traditional(let encoding) = self.type {
+                            let source = try self.loadString(url, encoding: encoding)
                             if source.isEmpty {
                                 // 辞書ファイルを書き込み中に読み込んでしまった?
                                 logger.warning("辞書 \(self.id) を読み込んだところ0バイトだったため更新を無視します")
@@ -132,7 +149,7 @@ class FileDict: NSObject, DictProtocol, Identifiable {
         operation.waitUntilFinished()
     }
 
-    private func loadString(_ url: URL) throws -> String {
+    private func loadString(_ url: URL, encoding: String.Encoding) throws -> String {
         if encoding == .japaneseEUC {
             let data = try Data(contentsOf: url)
             return try data.eucJis2004String()
@@ -161,7 +178,7 @@ class FileDict: NSObject, DictProtocol, Identifiable {
             return
         }
         let operation = BlockOperation {
-            guard let data = self.serialize().data(using: self.encoding) else {
+            guard let data = self.serialize() else {
                 fatalError("辞書 \(self.id) のシリアライズに失敗しました")
             }
             var coordinationError: NSError?
@@ -201,26 +218,37 @@ class FileDict: NSObject, DictProtocol, Identifiable {
     }
 
     /// ユーザー辞書をSKK辞書形式に変換する
-    func serialize() -> String {
-        if readonly {
-            return dict.entries.map { entry in
-                Entry(yomi: entry.key, candidates: entry.value).serialize()
-            }.joined(separator: "\n")
-        }
-        var result: [String] = Self.headers + [Self.okuriAriHeader]
-        for yomi in dict.okuriAriYomis.reversed() {
-            if let words = dict.entries[yomi] {
-                result.append(Entry(yomi: yomi, candidates: words).serialize())
+    func serialize() -> Data? {
+        switch type {
+        case .json:
+            let encoder = JSONEncoder()
+            let jisyo = JsonJisyo(version: "0.0.0",
+                                  copyright: "",
+                                  license: "",
+                                  okuriAri: Dictionary(uniqueKeysWithValues: self.dict.okuriAriYomis.compactMap { ($0, self.dict.entries[$0]?.map { $0.word as String } ?? []) }),
+                                  okuriNasi: Dictionary(uniqueKeysWithValues: self.dict.okuriNashiYomis.compactMap { ($0, self.dict.entries[$0]?.map { $0.word as String } ?? []) }))
+            return try? encoder.encode(jisyo)
+        case .traditional(let encoding):
+            if readonly {
+                return dict.entries.map { entry in
+                    Entry(yomi: entry.key, candidates: entry.value).serialize()
+                }.joined(separator: "\n").data(using: encoding)
             }
-        }
-        result.append(Self.okuriNashiHeader)
-        for yomi in dict.okuriNashiYomis.reversed() {
-            if let words = dict.entries[yomi] {
-                result.append(Entry(yomi: yomi, candidates: words).serialize())
+            var result: [String] = Self.headers + [Self.okuriAriHeader]
+            for yomi in dict.okuriAriYomis.reversed() {
+                if let words = dict.entries[yomi] {
+                    result.append(Entry(yomi: yomi, candidates: words).serialize())
+                }
             }
+            result.append(Self.okuriNashiHeader)
+            for yomi in dict.okuriNashiYomis.reversed() {
+                if let words = dict.entries[yomi] {
+                    result.append(Entry(yomi: yomi, candidates: words).serialize())
+                }
+            }
+            result.append("")
+            return result.joined(separator: "\n").data(using: encoding)
         }
-        result.append("")
-        return result.joined(separator: "\n")
     }
 
     /**

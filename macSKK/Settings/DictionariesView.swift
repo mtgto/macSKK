@@ -85,7 +85,7 @@ struct DictionariesView: View {
                 DictionaryView(
                     dictSetting: $selectedDictSetting,
                     filename: dictSetting.filename,
-                    encoding: dictSetting.encoding
+                    encoding: dictSetting.type.encoding
                 )
             }
             .sheet(isPresented: $isShowingSkkservSheet) {
@@ -134,10 +134,10 @@ struct DictionariesView_Previews: PreviewProvider {
 
     static var previews: some View {
         let dictSettings = [
-            DictSetting(filename: "SKK-JISYO.L", enabled: true, encoding: .japaneseEUC),
-            DictSetting(filename: "SKK-JISYO.sample.utf-8", enabled: false, encoding: .utf8),
-            DictSetting(filename: "SKK-JISYO.dummy", enabled: true, encoding: .utf8),
-            DictSetting(filename: "SKK-JISYO.error", enabled: true, encoding: .utf8),
+            DictSetting(filename: "SKK-JISYO.L", enabled: true, type: .traditional(.japaneseEUC)),
+            DictSetting(filename: "SKK-JISYO.sample.utf-8", enabled: false, type: .traditional(.utf8)),
+            DictSetting(filename: "SKK-JISYO.dummy", enabled: true, type: .traditional(.utf8)),
+            DictSetting(filename: "SKK-JISYO.error", enabled: true, type: .traditional(.utf8)),
         ]
         let settings = try! SettingsViewModel(dictSettings: dictSettings)
         settings.dictLoadingStatuses = [
