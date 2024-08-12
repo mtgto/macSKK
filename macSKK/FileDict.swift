@@ -61,7 +61,7 @@ class FileDict: NSObject, DictProtocol, Identifiable {
     }
 
     /// JSON形式
-    struct JsonJisyo: Codable {
+    struct JsonJisyo: Decodable {
         // "0.0.0" 固定。JSONSchemaでは必須ではないらしい
         let version: String
         let copyright: String
@@ -178,7 +178,7 @@ class FileDict: NSObject, DictProtocol, Identifiable {
             return
         }
         let operation = BlockOperation {
-            guard let data = self.serialize() else {
+            guard let data = self.serialize().data(using: self.type.encoding) else {
                 fatalError("辞書 \(self.id) のシリアライズに失敗しました")
             }
             var coordinationError: NSError?
@@ -218,37 +218,26 @@ class FileDict: NSObject, DictProtocol, Identifiable {
     }
 
     /// ユーザー辞書をSKK辞書形式に変換する
-    func serialize() -> Data? {
-        switch type {
-        case .json:
-            let encoder = JSONEncoder()
-            let jisyo = JsonJisyo(version: "0.0.0",
-                                  copyright: "",
-                                  license: "",
-                                  okuriAri: Dictionary(uniqueKeysWithValues: self.dict.okuriAriYomis.compactMap { ($0, self.dict.entries[$0]?.map { $0.word as String } ?? []) }),
-                                  okuriNasi: Dictionary(uniqueKeysWithValues: self.dict.okuriNashiYomis.compactMap { ($0, self.dict.entries[$0]?.map { $0.word as String } ?? []) }))
-            return try? encoder.encode(jisyo)
-        case .traditional(let encoding):
-            if readonly {
-                return dict.entries.map { entry in
-                    Entry(yomi: entry.key, candidates: entry.value).serialize()
-                }.joined(separator: "\n").data(using: encoding)
-            }
-            var result: [String] = Self.headers + [Self.okuriAriHeader]
-            for yomi in dict.okuriAriYomis.reversed() {
-                if let words = dict.entries[yomi] {
-                    result.append(Entry(yomi: yomi, candidates: words).serialize())
-                }
-            }
-            result.append(Self.okuriNashiHeader)
-            for yomi in dict.okuriNashiYomis.reversed() {
-                if let words = dict.entries[yomi] {
-                    result.append(Entry(yomi: yomi, candidates: words).serialize())
-                }
-            }
-            result.append("")
-            return result.joined(separator: "\n").data(using: encoding)
+    func serialize() -> String {
+        if readonly {
+            return dict.entries.map { entry in
+                Entry(yomi: entry.key, candidates: entry.value).serialize()
+            }.joined(separator: "\n")
         }
+        var result: [String] = Self.headers + [Self.okuriAriHeader]
+        for yomi in dict.okuriAriYomis.reversed() {
+            if let words = dict.entries[yomi] {
+                result.append(Entry(yomi: yomi, candidates: words).serialize())
+            }
+        }
+        result.append(Self.okuriNashiHeader)
+        for yomi in dict.okuriNashiYomis.reversed() {
+            if let words = dict.entries[yomi] {
+                result.append(Entry(yomi: yomi, candidates: words).serialize())
+            }
+        }
+        result.append("")
+        return result.joined(separator: "\n")
     }
 
     /**
