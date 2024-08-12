@@ -114,6 +114,7 @@
 		CEE2D9772A99FE1B00A4CD76 /* Word.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEE2D9762A99FE1B00A4CD76 /* Word.swift */; };
 		CEE2D9792A99FEC700A4CD76 /* CandidateTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEE2D9782A99FEC700A4CD76 /* CandidateTest.swift */; };
 		CEE3717529653112000DB2C3 /* SoftwareUpdateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEE3717429653112000DB2C3 /* SoftwareUpdateView.swift */; };
+		CEF03F7F2C69AA8F009B05B2 /* SKK-JISYO.broken.json in Resources */ = {isa = PBXBuildFile; fileRef = CEF03F7E2C69AA8F009B05B2 /* SKK-JISYO.broken.json */; };
 		CEF0823629685C0800646366 /* StateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF0823529685C0800646366 /* StateTests.swift */; };
 		CEF0823A296BCDB000646366 /* InputModePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF08239296BCDB000646366 /* InputModePanel.swift */; };
 		CEF08257296D8CBD00646366 /* CandidatesPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF08256296D8CBD00646366 /* CandidatesPanel.swift */; };
@@ -277,6 +278,7 @@
 		CEE2D9762A99FE1B00A4CD76 /* Word.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Word.swift; sourceTree = "<group>"; };
 		CEE2D9782A99FEC700A4CD76 /* CandidateTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CandidateTest.swift; sourceTree = "<group>"; };
 		CEE3717429653112000DB2C3 /* SoftwareUpdateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoftwareUpdateView.swift; sourceTree = "<group>"; };
+		CEF03F7E2C69AA8F009B05B2 /* SKK-JISYO.broken.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "SKK-JISYO.broken.json"; sourceTree = "<group>"; };
 		CEF0823529685C0800646366 /* StateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateTests.swift; sourceTree = "<group>"; };
 		CEF08239296BCDB000646366 /* InputModePanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputModePanel.swift; sourceTree = "<group>"; };
 		CEF08256296D8CBD00646366 /* CandidatesPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CandidatesPanel.swift; sourceTree = "<group>"; };
@@ -534,6 +536,7 @@
 				CED7CA582A83CD67004EF988 /* releases.atom */,
 				CEB1416F2A8773DB005E7252 /* SKK-JISYO.test.utf8 */,
 				CE03269F2C5D1DD6000FF691 /* SKK-JISYO.test.json */,
+				CEF03F7E2C69AA8F009B05B2 /* SKK-JISYO.broken.json */,
 				CE496C922B440B9B001C623C /* euc-jis-2004.txt */,
 				CE3E44A82B52C89800105798 /* kana-rule-for-test.conf */,
 			);
@@ -711,6 +714,7 @@
 				CED7CA592A83CD67004EF988 /* releases.atom in Resources */,
 				CE06CA2D2AAC172F00E80E5E /* empty.txt in Resources */,
 				CE0326A02C5D1DD6000FF691 /* SKK-JISYO.test.json in Resources */,
+				CEF03F7F2C69AA8F009B05B2 /* SKK-JISYO.broken.json in Resources */,
 				CE3E44AB2B536F8300105798 /* kana-rule.conf in Resources */,
 				CE3E44A52B4ED2D700105798 /* utf8-bom.txt in Resources */,
 			);
