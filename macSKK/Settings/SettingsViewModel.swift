@@ -172,6 +172,7 @@ final class SettingsViewModel: ObservableObject {
     @Published var selectedKeyBindingSet: KeyBindingSet
     /// Enterキーで変換候補の確定だけでなく改行も行うかどうか
     @Published var enterNewLine: Bool
+    @Published var systemDict: SystemDict.Kind
 
     // 辞書ディレクトリ
     let dictionariesDirectoryUrl: URL
@@ -216,6 +217,11 @@ final class SettingsViewModel: ObservableObject {
         let selectedKeyBindingSetId = UserDefaults.standard.string(forKey: UserDefaultsKeys.selectedKeyBindingSetId) ?? KeyBindingSet.defaultId
         self.keyBindingSets = keyBindingSets
         self.selectedKeyBindingSet = keyBindingSets.first(where: { $0.id == selectedKeyBindingSetId }) ?? KeyBindingSet.defaultKeyBindingSet
+        if let systemDictId = UserDefaults.standard.string(forKey: UserDefaultsKeys.systemDict), let systemDict = SystemDict.Kind(rawValue: systemDictId) {
+            self.systemDict = systemDict
+        } else {
+            self.systemDict = .daijirin
+        }
 
         selectCandidateKeys = UserDefaults.standard.string(forKey: UserDefaultsKeys.selectCandidateKeys)!
         enterNewLine = UserDefaults.standard.bool(forKey: UserDefaultsKeys.enterNewLine)
@@ -419,6 +425,7 @@ final class SettingsViewModel: ObservableObject {
         keyBindingSets = [KeyBindingSet.defaultKeyBindingSet]
         selectedKeyBindingSet = KeyBindingSet.defaultKeyBindingSet
         enterNewLine = false
+        systemDict = .daijirin
     }
 
     // DictionaryViewのPreviewProvider用
