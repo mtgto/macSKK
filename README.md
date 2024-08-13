@@ -282,6 +282,11 @@ v0.20.0ではKitty, LINE, Alacrittyについて「空文字挿入」というワ
 空文字挿入の設定は、アプリが最前面にあるときに入力メニューから設定可能です。
 またmacSKKの設定内の「互換性の設定」からも可能です。
 
+### Q. OS標準の入力ソース ( `日本語` や `ABC` ) を削除してmacSKKだけにしたい
+
+`日本語` の設定で入力モードの英字を有効にしてから `ABC`,  `日本語` の順に削除するとmacSKKだけにしたりできるようです。
+参考: https://zenn.dev/yoshiyoshifujii/articles/78798db6472bf4
+
 ## 開発
 
 コントリビュートのガイドを [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md) に用意しています。
