@@ -136,7 +136,7 @@ class InputController: IMKInputController {
         }.store(in: &cancellables)
         selectedWord.removeDuplicates().compactMap({ $0 }).sink { [weak self] word in
             if UserDefaults.standard.bool(forKey: UserDefaultsKeys.showAnnotation) {
-                if let self, let systemAnnotation = SystemDict.lookup(word, for: .daijirin), !systemAnnotation.isEmpty {
+                if let self, let systemAnnotation = SystemDict.lookup(word, for: Global.systemDict), !systemAnnotation.isEmpty {
                     Global.candidatesPanel.setSystemAnnotation(systemAnnotation, for: word)
                     Global.candidatesPanel.show(windowLevel: self.windowLevel)
                 }

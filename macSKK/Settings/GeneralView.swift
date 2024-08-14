@@ -20,6 +20,10 @@ struct GeneralView: View {
                 Toggle(isOn: $settingsViewModel.showAnnotation, label: {
                     Text("Show Annotation")
                 })
+                Picker("System Dictionary for annotation", selection: $settingsViewModel.systemDict) {
+                    Text("SystemDictDaijirin").tag(SystemDict.Kind.daijirin)
+                    Text("SystemDictWisdom").tag(SystemDict.Kind.wisdom)
+                }.disabled(!settingsViewModel.showAnnotation)
                 Picker("Keys of selecting candidates", selection: $settingsViewModel.selectCandidateKeys) {
                     Text("123456789").tag("123456789")
                     Text("ASDFGHJKL").tag("ASDFGHJKL")

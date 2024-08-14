@@ -226,6 +226,7 @@ final class SettingsViewModel: ObservableObject {
         selectCandidateKeys = UserDefaults.standard.string(forKey: UserDefaultsKeys.selectCandidateKeys)!
         enterNewLine = UserDefaults.standard.bool(forKey: UserDefaultsKeys.enterNewLine)
         Global.selectCandidateKeys = selectCandidateKeys.lowercased().map { $0 }
+        Global.systemDict = systemDict
 
         // SKK-JISYO.Lのようなファイルの読み込みが遅いのでバックグラウンドで処理
         $dictSettings.filter({ !$0.isEmpty }).receive(on: DispatchQueue.global()).sink { dictSettings in
@@ -386,6 +387,12 @@ final class SettingsViewModel: ObservableObject {
         $enterNewLine.sink { enterNewLine in
             logger.log("Enterキーで変換確定と一緒に改行する設定を\(enterNewLine ? "有効" : "無効")にしました")
             Global.enterNewLine = enterNewLine
+        }.store(in: &cancellables)
+
+        $systemDict.dropFirst().sink { systemDict in
+            logger.log("注釈で使用するシステム辞書を \(systemDict.rawValue, privacy: .public) に変更しました")
+            UserDefaults.standard.set(systemDict.rawValue, forKey: UserDefaultsKeys.systemDict)
+            Global.systemDict = systemDict
         }.store(in: &cancellables)
 
         NotificationCenter.default.publisher(for: notificationNameDictLoad).receive(on: RunLoop.main).sink { [weak self] notification in

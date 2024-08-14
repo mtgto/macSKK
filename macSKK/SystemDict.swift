@@ -10,6 +10,7 @@ import Foundation
         case wisdom = "com.apple.dictionary.ja-en.WISDOM"
         var id: Self { self }
     }
+
     private static let dictionaries: [Kind: DCSDictionary] = {
         return Dictionary(Kind.allCases.compactMap { kind in
             if let dictionary = findSystemDict(identifier: kind.rawValue) {
@@ -43,4 +44,3 @@ import Foundation
         }
     }
 }
-
