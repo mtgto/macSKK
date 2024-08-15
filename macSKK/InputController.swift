@@ -80,7 +80,7 @@ class InputController: IMKInputController {
                     // KittyやAlacrittyなど、q/lによるモード切り替えでq/lが入力されたり、C-jで改行が入力されるのを回避するワークアラウンド
                     // AquaSKKの空文字列挿入を参考にしています。
                     // https://github.com/codefirst/aquaskk/blob/4.7.5/platform/mac/src/server/SKKInputController.mm#L405-L412
-                    if self.insertBlankString {
+                    if self.stateMachine.state.specialState == nil && self.insertBlankString {
                         textInput.setMarkedText(String(format: "%c", 0x0c), selectionRange: Self.notFoundRange, replacementRange: Self.notFoundRange)
                         textInput.setMarkedText("", selectionRange: Self.notFoundRange, replacementRange: Self.notFoundRange)
                     }

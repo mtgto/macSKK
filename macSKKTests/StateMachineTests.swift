@@ -1822,14 +1822,15 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleRegisteringStickyShift() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(7).sink { events in
+        stateMachine.inputMethodEvent.collect(8).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
             XCTAssertEqual(events[1], .modeChanged(.hiragana, .zero))
             XCTAssertEqual(events[2], .markedText(MarkedText([.plain("[登録：あ]")])))
             XCTAssertEqual(events[3], .markedText(MarkedText([.plain("[登録：あ]"), .markerCompose])))
             XCTAssertEqual(events[4], .markedText(MarkedText([.plain("[登録：あ]")])))
             XCTAssertEqual(events[5], .modeChanged(.direct, .zero))
-            XCTAssertEqual(events[6], .markedText(MarkedText([.plain("[登録：あ]"), .plain(";")])))
+            XCTAssertEqual(events[6], .markedText(MarkedText([.plain("[登録：あ]")])))
+            XCTAssertEqual(events[7], .markedText(MarkedText([.plain("[登録：あ]"), .plain(";")])))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
