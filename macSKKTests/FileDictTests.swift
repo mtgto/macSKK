@@ -2,20 +2,54 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import XCTest
+import Combine
 
 @testable import macSKK
 
 final class FileDictTests: XCTestCase {
     let fileURL = Bundle(for: FileDictTests.self).url(forResource: "empty", withExtension: "txt")!
+    var cancellables: Set<AnyCancellable> = []
 
     func testLoadContainsBom() throws {
         let fileURL = Bundle(for: Self.self).url(forResource: "utf8-bom", withExtension: "txt")!
-        let dict = try FileDict(contentsOf: fileURL, encoding: .utf8, readonly: true)
+        let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: true)
         XCTAssertEqual(dict.dict.entries, ["ゆにこーど": [Word("ユニコード")]])
     }
 
+    func testLoadJson() throws {
+        let expectation = XCTestExpectation()
+        NotificationCenter.default.publisher(for: notificationNameDictLoad).sink { notification in
+            if let loadEvent = notification.object as? DictLoadEvent {
+                if case .loaded(let loadCount, let failureCount) = loadEvent.status {
+                    if loadCount == 3 && failureCount == 0 {
+                        expectation.fulfill()
+                    }
+                }
+            }
+        }.store(in: &cancellables)
+        let fileURL = Bundle(for: Self.self).url(forResource: "SKK-JISYO.test", withExtension: "json")!
+        let dict = try FileDict(contentsOf: fileURL, type: .json, readonly: true)
+        XCTAssertEqual(dict.dict.refer("い", option: nil).map({ $0.word }).sorted(), ["伊", "胃"])
+        XCTAssertEqual(dict.dict.refer("あr", option: nil).map({ $0.word }).sorted(), ["在;注釈として解釈されない", "有"])
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    func testLoadJsonBroken() throws {
+        let expectation = XCTestExpectation()
+        NotificationCenter.default.publisher(for: notificationNameDictLoad).sink { notification in
+            if let loadEvent = notification.object as? DictLoadEvent {
+                if case .fail = loadEvent.status {
+                    expectation.fulfill()
+                }
+            }
+        }.store(in: &cancellables)
+        let fileURL = Bundle(for: Self.self).url(forResource: "SKK-JISYO.broken", withExtension: "json")!
+        _ = try FileDict(contentsOf: fileURL, type: .json, readonly: true)
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     func testAdd() throws {
-        let dict = try FileDict(contentsOf: fileURL, encoding: .utf8, readonly: true)
+        let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: true)
         XCTAssertEqual(dict.entryCount, 0)
         let word = Word("井")
         XCTAssertFalse(dict.hasUnsavedChanges)
@@ -25,7 +59,7 @@ final class FileDictTests: XCTestCase {
     }
 
     func testDelete() throws {
-        let dict = try FileDict(contentsOf: fileURL, encoding: .utf8, readonly: true)
+        let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: true)
         dict.setEntries(["あr": [Word("有"), Word("在")]], readonly: true)
         XCTAssertFalse(dict.delete(yomi: "あr", word: "或"))
         XCTAssertFalse(dict.hasUnsavedChanges)
@@ -34,9 +68,9 @@ final class FileDictTests: XCTestCase {
     }
 
     func testSerialize() throws {
-        let dict = try FileDict(contentsOf: fileURL, encoding: .utf8, readonly: false)
+        let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: false)
         XCTAssertEqual(dict.serialize(),
-                       [FileDict.headers[0], FileDict.okuriAriHeader, FileDict.okuriNashiHeader, ""].joined(separator: "\n"))
+                       [FileDict.headers[0], FileDict.okuriAriHeader, FileDict.okuriNashiHeader, ""].joined(separator: "\n").data(using: .utf8))
         dict.add(yomi: "あ", word: Word("亜", annotation: Annotation(dictId: "testDict", text: "亜の注釈")))
         dict.add(yomi: "あ", word: Word("阿", annotation: Annotation(dictId: "testDict", text: "阿の注釈")))
         dict.add(yomi: "あr", word: Word("有", annotation: Annotation(dictId: "testDict", text: "有の注釈")))
@@ -49,7 +83,7 @@ final class FileDictTests: XCTestCase {
             "あ /阿;阿の注釈/亜;亜の注釈/",
             "",
         ].joined(separator: "\n")
-        XCTAssertEqual(dict.serialize(), expected)
+        XCTAssertEqual(dict.serialize(), expected.data(using: .utf8))
         // 追加したエントリはシリアライズ時は先頭に付く
         dict.add(yomi: "い", word: Word("伊"))
         dict.add(yomi: "いr", word: Word("射"))
@@ -63,7 +97,7 @@ final class FileDictTests: XCTestCase {
             "あ /阿;阿の注釈/亜;亜の注釈/",
             "",
         ].joined(separator: "\n")
-        XCTAssertEqual(dict.serialize(), expected)
+        XCTAssertEqual(dict.serialize(), expected.data(using: .utf8))
         // 追加更新した場合は順序を変更する。削除更新した場合は順序を変更しない
         XCTAssertTrue(dict.delete(yomi: "あ", word: "亜"))
         dict.add(yomi: "あr", word: Word("或"))
@@ -76,6 +110,6 @@ final class FileDictTests: XCTestCase {
             "い /伊/",
             "",
         ].joined(separator: "\n")
-        XCTAssertEqual(dict.serialize(), expected)
+        XCTAssertEqual(dict.serialize(), expected.data(using: .utf8))
     }
 }

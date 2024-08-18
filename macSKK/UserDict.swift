@@ -59,7 +59,7 @@ class UserDict: NSObject, DictProtocol {
                 try Data().write(to: userDictFileURL, options: .withoutOverwriting)
             }
             do {
-                let userDict = try FileDict(contentsOf: userDictFileURL, encoding: .utf8, readonly: false)
+                let userDict = try FileDict(contentsOf: userDictFileURL, type: .traditional(.utf8), readonly: false)
                 self.userDict = userDict
             } catch {
                 self.userDict = nil

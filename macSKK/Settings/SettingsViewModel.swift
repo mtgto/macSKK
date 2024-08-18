@@ -9,14 +9,14 @@ final class DictSetting: ObservableObject, Identifiable {
     typealias ID = FileDict.ID
     @Published var filename: String
     @Published var enabled: Bool
-    @Published var encoding: String.Encoding
+    @Published var type: FileDictType
 
     var id: String { filename }
     
-    init(filename: String, enabled: Bool, encoding: String.Encoding) {
+    init(filename: String, enabled: Bool, type: FileDictType) {
         self.filename = filename
         self.enabled = enabled
-        self.encoding = encoding
+        self.type = type
     }
 
     // UserDefaultsのDictionaryを受け取る
@@ -26,12 +26,37 @@ final class DictSetting: ObservableObject, Identifiable {
         guard let enabled = dictionary["enabled"] as? Bool else { return nil }
         self.enabled = enabled
         guard let encoding = dictionary["encoding"] as? UInt else { return nil }
-        self.encoding = String.Encoding(rawValue: encoding)
+        if let type = dictionary["type"] as? String {
+            if type == "json" {
+                self.type = .json
+            } else if type == "traditional" {
+                self.type = .traditional(String.Encoding(rawValue: encoding))
+            } else {
+                logger.error("不明な辞書設定 \(type) があります。")
+                return nil
+            }
+        } else {
+            // v1.0.1まではJSON形式がなかったので従来形式として扱う
+            self.type = .traditional(String.Encoding(rawValue: encoding))
+        }
     }
 
     // UserDefaults用にDictionaryにシリアライズ
     func encode() -> [String: Any] {
-        ["filename": filename, "enabled": enabled, "encoding": encoding.rawValue]
+        let typeValue: String
+        if case .traditional = type {
+            typeValue = "traditional"
+        } else if case .json = type {
+            typeValue = "json"
+        } else {
+            fatalError()
+        }
+        return [
+            "filename": filename,
+            "enabled": enabled,
+            "encoding": type.encoding.rawValue,
+            "type": typeValue
+        ]
     }
 }
 
@@ -227,11 +252,11 @@ final class SettingsViewModel: ObservableObject {
                 let dict = Global.dictionary.fileDict(id: dictSetting.id)
                 if dictSetting.enabled {
                     // 無効だった辞書が有効化された、もしくは辞書のエンコーディング設定が変わったら読み込む
-                    if dictSetting.encoding != dict?.encoding {
+                    if dictSetting.type.encoding != dict?.type.encoding {
                         let fileURL = dictionariesDirectoryUrl.appendingPathComponent(dictSetting.filename)
                         do {
                             logger.log("SKK辞書 \(dictSetting.filename, privacy: .public) を読み込みます")
-                            let fileDict = try FileDict(contentsOf: fileURL, encoding: dictSetting.encoding, readonly: true)
+                            let fileDict = try FileDict(contentsOf: fileURL, type: dictSetting.type, readonly: true)
                             logger.log("SKK辞書 \(dictSetting.filename, privacy: .public) から \(fileDict.entryCount) エントリ読み込みました")
                             return fileDict
                         } catch {
@@ -480,9 +505,14 @@ final class SettingsViewModel: ObservableObject {
                 if let url = notification.object as? URL {
                     await MainActor.run {
                         if self.dictSettings.allSatisfy({ $0.filename != url.lastPathComponent }) {
+                            let type: FileDictType = if url.pathExtension == "json" {
+                                .json
+                            } else {
+                                .traditional(.japaneseEUC)
+                            }
                             self.dictSettings.append(DictSetting(filename: url.lastPathComponent,
                                                                  enabled: false,
-                                                                 encoding: .japaneseEUC))
+                                                                 type: type))
                         }
                     }
                 }
