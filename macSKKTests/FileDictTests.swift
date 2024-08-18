@@ -70,7 +70,7 @@ final class FileDictTests: XCTestCase {
     func testSerialize() throws {
         let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: false)
         XCTAssertEqual(dict.serialize(),
-                       [FileDict.headers[0], FileDict.okuriAriHeader, FileDict.okuriNashiHeader, ""].joined(separator: "\n").data(using: .utf8))
+                       [FileDict.headers[0], FileDict.okuriAriHeader, FileDict.okuriNashiHeader, ""].joined(separator: "\n"))
         dict.add(yomi: "あ", word: Word("亜", annotation: Annotation(dictId: "testDict", text: "亜の注釈")))
         dict.add(yomi: "あ", word: Word("阿", annotation: Annotation(dictId: "testDict", text: "阿の注釈")))
         dict.add(yomi: "あr", word: Word("有", annotation: Annotation(dictId: "testDict", text: "有の注釈")))
@@ -83,7 +83,7 @@ final class FileDictTests: XCTestCase {
             "あ /阿;阿の注釈/亜;亜の注釈/",
             "",
         ].joined(separator: "\n")
-        XCTAssertEqual(dict.serialize(), expected.data(using: .utf8))
+        XCTAssertEqual(dict.serialize(), expected)
         // 追加したエントリはシリアライズ時は先頭に付く
         dict.add(yomi: "い", word: Word("伊"))
         dict.add(yomi: "いr", word: Word("射"))
@@ -97,7 +97,7 @@ final class FileDictTests: XCTestCase {
             "あ /阿;阿の注釈/亜;亜の注釈/",
             "",
         ].joined(separator: "\n")
-        XCTAssertEqual(dict.serialize(), expected.data(using: .utf8))
+        XCTAssertEqual(dict.serialize(), expected)
         // 追加更新した場合は順序を変更する。削除更新した場合は順序を変更しない
         XCTAssertTrue(dict.delete(yomi: "あ", word: "亜"))
         dict.add(yomi: "あr", word: Word("或"))
@@ -110,6 +110,6 @@ final class FileDictTests: XCTestCase {
             "い /伊/",
             "",
         ].joined(separator: "\n")
-        XCTAssertEqual(dict.serialize(), expected.data(using: .utf8))
+        XCTAssertEqual(dict.serialize(), expected)
     }
 }
