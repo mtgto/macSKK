@@ -35,6 +35,7 @@ Universal Binary (Apple Silicon & Intel Mac) でビルドしていますが、�
 
 - [x] [自動更新確認](#バージョンの自動チェック)
   - Network Outgoingが可能なXPCプロセスを作成し、GitHub Releasesから情報を定期的に取得して新しいバージョンが見つかったらNotification Centerに表示する
+- [x] 辞書のJSON形式への対応
 - [ ] iCloudにマイ辞書を保存して他環境と共有できるようにする
 - [ ] マイ辞書の暗号化
   - 編集したい場合は生データでのエクスポート & インポートできるようにする
