@@ -99,11 +99,10 @@ struct DictionariesView: View {
     }
 
     private func loadingStatus(setting: DictSetting) -> String {
-        if let status = settingsViewModel.dictLoadingStatuses[setting.id] {
-            return loadingStatus(of: status)
-        } else if !setting.enabled {
-            // 元々無効になっていて、設定を今回の起動で切り替えてない辞書
+        if !setting.enabled {
             return String(localized: "LoadingStatusDisabled")
+        } else if let status = settingsViewModel.dictLoadingStatuses[setting.id] {
+            return loadingStatus(of: status)
         } else {
             return String(localized: "LoadingStatusUnknown")
         }
