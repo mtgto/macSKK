@@ -3,7 +3,10 @@
 
 import Foundation
 
-// UserDefaultsのキー。camelCaseでの命名を採用しています。
+/**
+ * UserDefaultsのキー。camelCaseでの命名を採用しています。
+ * キーを追加するときは macSKKApp#setupUserDefaults で初期設定を設定するようにしてください。
+ */
 struct UserDefaultsKeys {
     static let dictionaries = "dictionaries"
     static let directModeBundleIdentifiers = "directModeBundleIdentifiers"
@@ -26,4 +29,6 @@ struct UserDefaultsKeys {
     static let keyBindingSets = "keyBindingSets"
     // Enterキーで変換候補の確定 + 改行も行う
     static let enterNewLine = "enterNewLine"
+    // 注釈に使用するシステム辞書のID。SystemDict.Kindで定義。
+    static let systemDict = "systemDict"
 }

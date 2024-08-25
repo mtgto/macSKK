@@ -197,6 +197,7 @@ final class SettingsViewModel: ObservableObject {
     @Published var selectedKeyBindingSet: KeyBindingSet
     /// Enterキーで変換候補の確定だけでなく改行も行うかどうか
     @Published var enterNewLine: Bool
+    @Published var systemDict: SystemDict.Kind
 
     // 辞書ディレクトリ
     let dictionariesDirectoryUrl: URL
@@ -241,10 +242,16 @@ final class SettingsViewModel: ObservableObject {
         let selectedKeyBindingSetId = UserDefaults.standard.string(forKey: UserDefaultsKeys.selectedKeyBindingSetId) ?? KeyBindingSet.defaultId
         self.keyBindingSets = keyBindingSets
         self.selectedKeyBindingSet = keyBindingSets.first(where: { $0.id == selectedKeyBindingSetId }) ?? KeyBindingSet.defaultKeyBindingSet
+        if let systemDictId = UserDefaults.standard.string(forKey: UserDefaultsKeys.systemDict), let systemDict = SystemDict.Kind(rawValue: systemDictId) {
+            self.systemDict = systemDict
+        } else {
+            self.systemDict = .daijirin
+        }
 
         selectCandidateKeys = UserDefaults.standard.string(forKey: UserDefaultsKeys.selectCandidateKeys)!
         enterNewLine = UserDefaults.standard.bool(forKey: UserDefaultsKeys.enterNewLine)
         Global.selectCandidateKeys = selectCandidateKeys.lowercased().map { $0 }
+        Global.systemDict = systemDict
 
         // SKK-JISYO.Lのようなファイルの読み込みが遅いのでバックグラウンドで処理
         $dictSettings.filter({ !$0.isEmpty }).receive(on: DispatchQueue.global()).sink { dictSettings in
@@ -407,6 +414,12 @@ final class SettingsViewModel: ObservableObject {
             Global.enterNewLine = enterNewLine
         }.store(in: &cancellables)
 
+        $systemDict.dropFirst().sink { systemDict in
+            logger.log("注釈で使用するシステム辞書を \(systemDict.rawValue, privacy: .public) に変更しました")
+            UserDefaults.standard.set(systemDict.rawValue, forKey: UserDefaultsKeys.systemDict)
+            Global.systemDict = systemDict
+        }.store(in: &cancellables)
+
         NotificationCenter.default.publisher(for: notificationNameDictLoad).receive(on: RunLoop.main).sink { [weak self] notification in
             if let loadEvent = notification.object as? DictLoadEvent, let self {
                 if let userDict = Global.dictionary.userDict as? FileDict, userDict.id == loadEvent.id {
@@ -444,6 +457,7 @@ final class SettingsViewModel: ObservableObject {
         keyBindingSets = [KeyBindingSet.defaultKeyBindingSet]
         selectedKeyBindingSet = KeyBindingSet.defaultKeyBindingSet
         enterNewLine = false
+        systemDict = .daijirin
     }
 
     // DictionaryViewのPreviewProvider用

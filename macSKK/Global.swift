@@ -33,6 +33,8 @@ import Combine
     /// Enterキーで変換候補の確定だけでなく改行も行うかどうか
     /// ddskkの `skk-egg-like-newline` やAquaSKKの `suppress_newline_on_commit` がfalseのときと同じ
     static var enterNewLine: Bool = false
+    /// 注釈で使用するシステム辞書
+    static var systemDict: SystemDict.Kind = .daijirin
     /// 現在のモードを表示するパネル
     private let inputModePanel: InputModePanel
     /// 変換候補を表示するパネル
