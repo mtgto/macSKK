@@ -74,12 +74,7 @@ final class UserDict: NSObject, DictProtocol {
             .sink { [weak self] _ in
                 if let fileDict = self?.userDict as? FileDict {
                     logger.log("ユーザー辞書を永続化します。現在のエントリ数は \(fileDict.dict.entries.count)")
-                    do {
-                        try fileDict.save()
-                    } catch {
-                        logger.error("ユーザー辞書の永続化でエラーが発生しました")
-                        UNNotifier.sendNotificationForUserDict(writeError: error)
-                    }
+                    fileDict.save()
                 }
             }
             .store(in: &cancellables)
