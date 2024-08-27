@@ -10,7 +10,7 @@ let logger: Logger = Logger(subsystem: "net.mtgto.inputmethod.macSKK", category:
 /**
  * skkservに接続するクライアント。同時に1サーバーへの接続のみ可能
  */
-class SKKServClient: NSObject, SKKServClientProtocol {
+final class SKKServClient: NSObject, SKKServClientProtocol {
     var connection: NWConnection? = nil
     static let queue = DispatchQueue(label: "net.mtgto.inputmethod.macSKK.SKKServClient", qos: .default)
 

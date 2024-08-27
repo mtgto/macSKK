@@ -8,7 +8,7 @@ import Foundation
 /// v0.22.0以降はskkservサーバーを辞書としても利用することが可能。
 ///
 /// TODO: ファイル辞書にしかない単語を削除しようとしたときにどうやってそれを記録するか。NG登録?
-class UserDict: NSObject, DictProtocol {
+final class UserDict: NSObject, DictProtocol {
     static let userDictFilename = "skk-jisyo.utf8"
     let dictionariesDirectoryURL: URL
     let userDictFileURL: URL

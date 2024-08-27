@@ -32,7 +32,7 @@ struct LogView: View {
         .task {
             loading = true
             do {
-                self.log = try await load()
+                self.log = try load()
             } catch {
                 self.log = "アプリケーションログが取得できません: \(error)"
                 logger.error("アプリケーションログが取得できません: \(error)")
@@ -41,7 +41,7 @@ struct LogView: View {
         }
     }
 
-    private func load() async throws -> String {
+    private func load() throws -> String {
         func levelDescription(level: OSLogEntryLog.Level) -> String {
             switch level {
             case .undefined:

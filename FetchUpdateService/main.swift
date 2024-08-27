@@ -3,7 +3,7 @@
 
 import Foundation
 
-class ServiceDelegate: NSObject, NSXPCListenerDelegate {
+final class ServiceDelegate: NSObject, NSXPCListenerDelegate {
     
     /// This method is where the NSXPCListener configures, accepts, and resumes a new incoming NSXPCConnection.
     func listener(_ listener: NSXPCListener, shouldAcceptNewConnection newConnection: NSXPCConnection) -> Bool {

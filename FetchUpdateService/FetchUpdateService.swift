@@ -7,7 +7,7 @@ import os
 // Console.appで見るときにまとめて見れるようにsubsystemはアプリと同じのほうがよいかも? (categoryを変えるとか)
 let logger: Logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "main")
 
-class FetchUpdateService: NSObject, FetchUpdateServiceProtocol {
+final class FetchUpdateService: NSObject, FetchUpdateServiceProtocol {
     @objc func fetch() async throws -> Data {
         let request = URLRequest(url: URL(string: "https://github.com/mtgto/macSKK/releases.atom")!)
         URLSession.shared.dataTask(with: request)
