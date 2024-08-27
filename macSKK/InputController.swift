@@ -308,12 +308,7 @@ class InputController: IMKInputController {
     }
 
     @objc func saveDict() {
-        do {
-            try Global.dictionary.save()
-        } catch {
-            // TODO: NotificationCenterでユーザーに通知する
-            logger.error("ユーザー辞書保存中にエラーが発生しました")
-        }
+        Global.dictionary.save()
     }
 
     @objc func togglePrivateMode() {
