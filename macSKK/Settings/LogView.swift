@@ -4,6 +4,7 @@
 import OSLog
 import SwiftUI
 
+@MainActor
 struct LogView: View {
     @State var log: String
     @State private var loading: Bool = false
@@ -32,7 +33,7 @@ struct LogView: View {
         .task {
             loading = true
             do {
-                self.log = try load()
+                self.log = try await load()
             } catch {
                 self.log = "アプリケーションログが取得できません: \(error)"
                 logger.error("アプリケーションログが取得できません: \(error)")
@@ -41,7 +42,7 @@ struct LogView: View {
         }
     }
 
-    private func load() throws -> String {
+    nonisolated private func load() async throws -> String {
         func levelDescription(level: OSLogEntryLog.Level) -> String {
             switch level {
             case .undefined:
