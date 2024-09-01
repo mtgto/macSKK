@@ -44,7 +44,7 @@ Universal Binary (Apple Silicon & Intel Mac) でビルドしていますが、�
 
 2023年現在、Mac App Storeでは日本語入力システムを配布することができないため、[Appleのソフトウェア公証](https://support.apple.com/ja-jp/guide/security/sec3ad8e6e53/1/web/1)を受けたアプリケーションバイナリを[GitHub Releases](https://github.com/mtgto/macSKK/releases/latest)で配布しています。dmgファイルをダウンロードしマウントした中にあるpkgファイルからインストールしてください。
 
-macSKKのインストール後に、システム設定→キーボード→入力ソースから「ひらがな (macSKK)」と「ABC (macSKK)」を追加してください。カタカナ、全角英数、半角カナは追加しなくても問題ありません。
+macSKKのインストール後に、システム設定→キーボード→入力ソースから「ひらがな」(アイコンは`▼あ`)と「ABC」(アイコンは`▼A`)を追加してください。カタカナ、全角英数、半角カナは追加しても追加しなくても問題ありません。
 もしインストール直後に表示されなかったり、バージョンアップしても反映されない場合はログアウト & ログインを試してみてください。
 
 SKK辞書は `~/Library/Containers/net.mtgto.inputmethod.macSKK/Data/Documents/Dictionaries` に配置してください。
@@ -215,7 +215,7 @@ skkservサーバーをSKK辞書として使用することができます (macSK
 現在アンインストールする手順は用意していないためお手数ですが手動でお願いします。
 今後、dmg内にアンインストーラを同梱予定です。
 
-手動で行うには、システム設定→キーボード→入力ソースから「ひらがな (macSKK)」「ABC (macSKK)」を削除後、以下のファイルを削除してください。
+手動で行うには、システム設定→キーボード→入力ソースから「ひらがな」「ABC」を削除後、以下のファイルを削除してください。
 
 - `~/Library/Input Methods/macSKK.app`
 - `~/Library/Containers/net.mtgto.inputmethod.macSKK`
