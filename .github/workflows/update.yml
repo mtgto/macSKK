@@ -1,0 +1,28 @@
+name: update
+
+on:
+  release:
+    types: [released]
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: sha256
+        run: |
+          for asset in "${{ github.event.release.assets[@] }}"
+          do
+            if [[ "${asset.name}" =~ \.dmg$ ]]; then
+              SHA256=$(curl -L "${asset.browser_download_url}" | sha256sum | cut -d ' ' -f 1)
+              echo "sha256=${SHA256}" >> $GITHUB_OUTPUT
+            fi
+          done
+      - name: dispatch
+        env:
+          GITHUB_TOKEN=${{ secrets.HOMEBREW_MACSKK_TOKEN }}
+        run: |
+          curl \
+          -H "Authorization token $GITHUB_TOKEN" \
+          -H "Accept: application/vnd.github.v3+json" \
+          https://api.github.com/repos/mtgto/homebrew-macSKK/dispatches \
+          -d '{"event_type":"update","client_payload":{"version":"${{ github.event.release.tag_name }}","sha256":"${{ steps.sha256.outputs.sha256 }}"}}'
