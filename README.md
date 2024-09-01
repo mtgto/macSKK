@@ -77,6 +77,7 @@ macSKKが入力メソッドとして選択されているときに入力メニ�
 | selectedKeyBindingSetId     | String     | 選択しているキーバインドのセットのID    |
 | keyBindingSets              | Array      | キーバインドのセットの配列              |
 | enterNewLine                | Boolean    | Enterキーで変換候補の確定 + 改行も行う  |
+| systemDict                  | String     | 注釈に使用するシステム辞書              |
 
 ## 機能
 
