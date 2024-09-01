@@ -10,13 +10,8 @@ jobs:
     steps:
       - name: sha256
         run: |
-          for asset in "${{ github.event.release.assets[@] }}"
-          do
-            if [[ "${asset.name}" =~ \.dmg$ ]]; then
-              SHA256=$(curl -L "${asset.browser_download_url}" | sha256sum | cut -d ' ' -f 1)
-              echo "sha256=${SHA256}" >> $GITHUB_OUTPUT
-            fi
-          done
+          browser_download_url=$(echo '${{ toJSON(github.event.release.assets) }}' | jq -r '.[] | select(.name | endswith(".dmg")) | .browser_download_url)
+          SHA256=$(curl -L "${browser_download_url}" | sha256sum | cut -d ' ' -f 1)
       - name: dispatch
         env:
           GITHUB_TOKEN=${{ secrets.HOMEBREW_MACSKK_TOKEN }}
