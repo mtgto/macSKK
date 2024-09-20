@@ -961,16 +961,21 @@ final class StateMachine {
 
     @MainActor func handleSelecting(_ action: Action, selecting: SelectingState, specialState: SpecialState?) -> Bool {
         // 選択中の変換候補で確定
-        func fixCurrentSelect(yomi: String = selecting.yomi, okuri: String? = selecting.okuri, selecting: SelectingState = selecting) {
-            addWordToUserDict(yomi: yomi, okuri: okuri, candidate: selecting.candidates[selecting.candidateIndex])
+        func fixCurrentSelect(yomi: String = selecting.yomi, okuri: String? = selecting.okuri, selecting: SelectingState = selecting, fixedText: String = selecting.fixedText) {
+            // 一文字の変換でバックスペースで確定した場合など、利用者が変換をキャンセルする意図と思われるときは辞書登録しない
+            // 二文字以上の変換でバックスペースで確定した場合などは、削除された一文字を含む変換候補として辞書登録する
+            // (ddskkと同様)
+            if !fixedText.isEmpty {
+                addWordToUserDict(yomi: yomi, okuri: okuri, candidate: selecting.candidates[selecting.candidateIndex])
+            }
             updateCandidates(selecting: nil)
             if let remain = selecting.remain {
-                addFixedText(selecting.fixedText)
+                addFixedText(fixedText)
                 state.inputMethod = .composing(ComposingState(isShift: true, text: remain, romaji: ""))
                 updateMarkedText()
             } else {
                 state.inputMethod = .normal
-                addFixedText(selecting.fixedText)
+                addFixedText(fixedText)
                 if let prevMode = selecting.prev.composing.prevMode {
                     state.inputMode = prevMode
                     inputMethodEventSubject.send(.modeChanged(prevMode, action.cursorPosition))
@@ -987,15 +992,16 @@ final class StateMachine {
             }
             return true
         case .backspace:
-            let diff: Int
-            if selecting.candidateIndex >= inlineCandidateCount {
-                // 前ページの先頭
-                diff =
-                    -((selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount) - displayCandidateCount
+            if selecting.candidateIndex < inlineCandidateCount {
+                // インライン選択中は変換候補の末尾を一字消して確定
+                // (AquaSKKは選択候補を1つ戻す挙動だったが、ddskk, skkeleton, libskkなどに挙動を合わせています)
+                fixCurrentSelect(fixedText: String(selecting.fixedText.dropLast()))
+                return true
             } else {
-                diff = -1
+                // 前ページの先頭
+               let diff = -((selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount) - displayCandidateCount
+                return handleSelectingPrevious(diff: diff, selecting: selecting)
             }
-            return handleSelectingPrevious(diff: diff, selecting: selecting)
         case .up:
             return handleSelectingPrevious(diff: -1, selecting: selecting)
         case .space, .down:
@@ -1118,7 +1124,7 @@ final class StateMachine {
                     let diff = index - (selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount
                     if selecting.candidateIndex + diff < selecting.candidates.count {
                         let newSelecting = selecting.addCandidateIndex(diff: diff)
-                        fixCurrentSelect(selecting: newSelecting)
+                        fixCurrentSelect(selecting: newSelecting, fixedText: newSelecting.fixedText)
                         return true
                     }
                 }

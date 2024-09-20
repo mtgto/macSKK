@@ -285,7 +285,6 @@ final class StateTests: XCTestCase {
             remain: nil
         )
         XCTAssertNil(selectingState.okuri)
-
     }
 
     func testRegisterStateAppendText() throws {
