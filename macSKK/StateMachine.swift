@@ -960,11 +960,14 @@ final class StateMachine {
     }
 
     @MainActor func handleSelecting(_ action: Action, selecting: SelectingState, specialState: SpecialState?) -> Bool {
-        // 選択中の変換候補で確定
-        func fixCurrentSelect(yomi: String = selecting.yomi, okuri: String? = selecting.okuri, selecting: SelectingState = selecting, fixedText: String = selecting.fixedText) {
+        /**
+         * 選択中の変換候補で確定
+         */
+        func fixCurrentSelect(yomi: String = selecting.yomi, okuri: String? = selecting.okuri, selecting: SelectingState = selecting, dropLast: Bool = false) {
             // 一文字の変換でバックスペースで確定した場合など、利用者が変換をキャンセルする意図と思われるときは辞書登録しない
             // 二文字以上の変換でバックスペースで確定した場合などは、削除された一文字を含む変換候補として辞書登録する
             // (ddskkと同様)
+            let fixedText = selecting.fixedText(dropLast: dropLast)
             if !fixedText.isEmpty {
                 addWordToUserDict(yomi: yomi, okuri: okuri, candidate: selecting.candidates[selecting.candidateIndex])
             }
@@ -995,7 +998,7 @@ final class StateMachine {
             if selecting.candidateIndex < inlineCandidateCount {
                 // インライン選択中は変換候補の末尾を一字消して確定
                 // (AquaSKKは選択候補を1つ戻す挙動だったが、ddskk, skkeleton, libskkなどに挙動を合わせています)
-                fixCurrentSelect(fixedText: String(selecting.fixedText.dropLast()))
+                fixCurrentSelect(dropLast: true)
                 return true
             } else {
                 // 前ページの先頭
@@ -1111,7 +1114,7 @@ final class StateMachine {
                 // カーソル位置より右に文字列がある場合は接頭辞入力として扱う (無視してもいいかも)
                 addWordToUserDict(yomi: selecting.yomi, okuri: selecting.okuri, candidate: selecting.candidates[selecting.candidateIndex])
                 updateCandidates(selecting: nil)
-                addFixedText(selecting.fixedText)
+                addFixedText(selecting.fixedText(dropLast: false))
                 if let remain = selecting.remain {
                     state.inputMethod = .composing(ComposingState(isShift: true, text: remain, romaji: ""))
                     updateMarkedText()
@@ -1124,7 +1127,7 @@ final class StateMachine {
                     let diff = index - (selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount
                     if selecting.candidateIndex + diff < selecting.candidates.count {
                         let newSelecting = selecting.addCandidateIndex(diff: diff)
-                        fixCurrentSelect(selecting: newSelecting, fixedText: newSelecting.fixedText)
+                        fixCurrentSelect(selecting: newSelecting)
                         return true
                     }
                 }
@@ -1186,7 +1189,7 @@ final class StateMachine {
                 // エンター押したときと違って辞書登録はスキップ (仮)
                 updateCandidates(selecting: nil)
                 state.inputMethod = .normal
-                addFixedText(selecting.fixedText)
+                addFixedText(selecting.fixedText(dropLast: false))
             }
         }
     }
