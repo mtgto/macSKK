@@ -66,7 +66,7 @@ final class KeyBindingInput: ObservableObject, Identifiable, Hashable {
 // あるキーバインドを変更するビュー。
 struct KeyBindingInputsView: View {
     @StateObject var settingsViewModel: SettingsViewModel
-    @Environment (\.dismiss) var dismiss
+    @Environment(\.dismiss) var dismiss
     @Binding var action: KeyBinding.Action
     @Binding var inputs: [KeyBindingInput]
     @State var selectedInput: KeyBindingInput?

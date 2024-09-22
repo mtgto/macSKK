@@ -584,6 +584,19 @@ final class SettingsViewModel: ObservableObject {
         }
     }
 
+    // 選択中のKeyBindingSetのactionへの割り当てをデフォルトのものにリセットする
+    func resetKeyBindingInputs(action: KeyBinding.Action) {
+        if let index = keyBindingSets.firstIndex(of: selectedKeyBindingSet) {
+            if let defaultKeyBinding = KeyBindingSet.defaultKeyBindingSet.values.first(where: { $0.action == action }) {
+                logger.log("キーバインドのセット \"\(self.selectedKeyBindingSet.id, privacy: .public)\" の \"\(action.localizedAction, privacy: .public)\" のキーバインドをリセットしました")
+                keyBindingSets[index] = selectedKeyBindingSet.update(for: action, inputs: defaultKeyBinding.inputs)
+                selectedKeyBindingSet = keyBindingSets[index]
+            } else {
+                logger.error("キーバインドのセット \"\(self.selectedKeyBindingSet.id, privacy: .public)\" が見つかりません")
+            }
+        }
+    }
+
     /// 利用可能なキー配列を読み込む
     func loadInputSources() {
         if let inputSources = InputSource.fetch() {
