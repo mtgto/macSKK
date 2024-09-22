@@ -2456,8 +2456,8 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(downKeyAction))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
         XCTAssertTrue(stateMachine.handle(downKeyAction))
-        XCTAssertTrue(stateMachine.handle(backspaceAction)) // 選択候補が表示中は前ページ移動
-        XCTAssertTrue(stateMachine.handle(backspaceAction))
+        XCTAssertTrue(stateMachine.handle(leftKeyAction)) // 前ページ移動
+        XCTAssertTrue(stateMachine.handle(leftKeyAction))
         wait(for: [expectation], timeout: 1.0)
     }
 

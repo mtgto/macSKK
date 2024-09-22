@@ -995,16 +995,10 @@ final class StateMachine {
             }
             return true
         case .backspace:
-            if selecting.candidateIndex < inlineCandidateCount {
-                // インライン選択中は変換候補の末尾を一字消して確定
-                // (AquaSKKは選択候補を1つ戻す挙動だったが、ddskk, skkeleton, libskkなどに挙動を合わせています)
-                fixCurrentSelect(dropLast: true)
-                return true
-            } else {
-                // 前ページの先頭
-               let diff = -((selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount) - displayCandidateCount
-                return handleSelectingPrevious(diff: diff, selecting: selecting)
-            }
+            // インライン選択中は変換候補の末尾を一字消して確定
+            // (AquaSKKは選択候補を1つ戻す挙動だったが、ddskk, skkeleton, libskkなどに挙動を合わせています)
+            fixCurrentSelect(dropLast: true)
+            return true
         case .up:
             return handleSelectingPrevious(diff: -1, selecting: selecting)
         case .space, .down:
@@ -1057,9 +1051,24 @@ final class StateMachine {
             updateCandidates(selecting: nil)
             updateMarkedText()
             return true
-        case .left, .right:
-            // AquaSKKと同様に何もしない (IMKCandidates表示時はそちらの移動に使われる)
-            return true
+        case .left:
+            if selecting.candidateIndex >= inlineCandidateCount {
+                // 前ページの先頭
+                let diff = -((selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount) - displayCandidateCount
+                return handleSelectingPrevious(diff: diff, selecting: selecting)
+            } else {
+                // AquaSKKと同様に何もしない (IMKCandidates表示時はそちらの移動に使われる)
+                return true
+            }
+        case .right:
+            if selecting.candidateIndex >= inlineCandidateCount {
+                // 次ページの先頭
+                let diff = displayCandidateCount - (selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount
+                return handleSelectingPrevious(diff: diff, selecting: selecting)
+            } else {
+                // AquaSKKと同様に何もしない (IMKCandidates表示時はそちらの移動に使われる)
+                return true
+            }
         case .startOfLine:
             // 現ページの先頭
             let diff = -(selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount
