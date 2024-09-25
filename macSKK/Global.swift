@@ -35,6 +35,8 @@ import Combine
     static var enterNewLine: Bool = false
     /// 注釈で使用するシステム辞書
     static var systemDict: SystemDict.Kind = .daijirin
+    /// 変換候補選択中のバックスペースの挙動
+    static var selectingBackspace: SelectingBackspace = .default
     /// 現在のモードを表示するパネル
     private let inputModePanel: InputModePanel
     /// 変換候補を表示するパネル
