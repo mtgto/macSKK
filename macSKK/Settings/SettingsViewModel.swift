@@ -158,7 +158,9 @@ struct WorkaroundApplication: Identifiable, Equatable {
 }
 
 /// 変換候補選択中のバックスペースの挙動の列挙
-enum SelectingBackspace: Int {
+enum SelectingBackspace: Int, CaseIterable, Identifiable {
+    typealias ID = Int
+    var id: ID { rawValue }
     /// インラインでの変換候補の選択時もしくは変換候補リストの1ページの時、
     /// 変換候補の選択状態をキャンセルし、変換開始前に戻す。
     /// 変換候補リストの2ページ目以降のときは1ページ前に戻す。
@@ -174,6 +176,17 @@ enum SelectingBackspace: Int {
 
     // v1.2.0までの挙動
     static let `default` = cancel
+
+    var description: String {
+        switch self {
+        case .cancel:
+            return String(localized: "SelectingBackspaceCancel")
+        case .dropLastInlineOnly:
+            return String(localized: "SelectingBackspaceDropLastInlineOnly")
+        case .dropLastAlways:
+            return String(localized: "SelectingBackspaceDropLastAlways")
+        }
+    }
 }
 
 @MainActor
