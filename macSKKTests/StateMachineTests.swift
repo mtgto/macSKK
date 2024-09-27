@@ -23,6 +23,7 @@ final class StateMachineTests: XCTestCase {
         Global.kanaRule = Self.defaultKanaRule
         Global.selectCandidateKeys = "123456789".map { $0 }
         Global.enterNewLine = false
+        Global.selectingBackspace = SelectingBackspace.default
     }
 
     @MainActor func testHandleNormalSimple() {
@@ -2321,7 +2322,57 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    @MainActor func testHandleSelectingBackspace() throws {
+    @MainActor func testHandleSelectingBackspaceCancel() throws {
+        Global.selectingBackspace = .cancel
+        let dict = MemoryDict(entries: ["あu": [Word("会"), Word("合")]], readonly: true)
+        Global.dictionary = try UserDict(dicts: [dict],
+                                         privateMode: CurrentValueSubject<Bool, Never>(false),
+                                         findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false))
+        Global.dictionary.setEntries([:])
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(4).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerSelect, .emphasized("会う")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerSelect, .emphasized("合う")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerSelect, .emphasized("会う")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(backspaceAction))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    @MainActor func testHandleSelectingBackspaceDropLastInlineOnly() throws {
+        Global.selectingBackspace = .dropLastInlineOnly
+        let dict = MemoryDict(entries: ["あu": [Word("会"), Word("合")]], readonly: true)
+        Global.dictionary = try UserDict(dicts: [dict],
+                                         privateMode: CurrentValueSubject<Bool, Never>(false),
+                                         findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false))
+        Global.dictionary.setEntries([:])
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(4).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerSelect, .emphasized("会う")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerSelect, .emphasized("合う")])))
+            XCTAssertEqual(events[3], .fixedText("合"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(backspaceAction))
+        // バックスペースで確定した場合も送り仮名ありでユーザー辞書に登録される (ddskkと同様)
+        XCTAssertEqual(Global.dictionary.userDict?.refer("あu", option: nil), [Word("合", okuri: "う")])
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    @MainActor func testHandleSelectingBackspaceDropLastAlways() throws {
+        // この行以外 testHandleSelectingBackspaceDropLastInlineOnly と全く同じ
+        Global.selectingBackspace = .dropLastAlways
         let dict = MemoryDict(entries: ["あu": [Word("会"), Word("合")]], readonly: true)
         Global.dictionary = try UserDict(dicts: [dict],
                                          privateMode: CurrentValueSubject<Bool, Never>(false),
@@ -2457,7 +2508,8 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
         XCTAssertTrue(stateMachine.handle(downKeyAction))
         XCTAssertTrue(stateMachine.handle(leftKeyAction)) // 前ページ移動
-        XCTAssertTrue(stateMachine.handle(leftKeyAction))
+        Global.selectingBackspace = .dropLastInlineOnly
+        XCTAssertTrue(stateMachine.handle(backspaceAction)) // selectingBackspaceがdropLastAlwaysじゃないときは前ページ遷移として機能する
         wait(for: [expectation], timeout: 1.0)
     }
 

@@ -995,10 +995,33 @@ final class StateMachine {
             }
             return true
         case .backspace:
-            // インライン選択中は変換候補の末尾を一字消して確定
-            // (AquaSKKは選択候補を1つ戻す挙動だったが、ddskk, skkeleton, libskkなどに挙動を合わせています)
-            fixCurrentSelect(dropLast: true)
-            return true
+            switch Global.selectingBackspace {
+            case .cancel:
+                let diff: Int
+                if selecting.candidateIndex >= inlineCandidateCount {
+                    // 前ページの先頭
+                    diff =
+                        -((selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount) - displayCandidateCount
+                } else {
+                    diff = -1
+                }
+                return handleSelectingPrevious(diff: diff, selecting: selecting)
+            case .dropLastInlineOnly:
+                if selecting.candidateIndex >= inlineCandidateCount {
+                    // 前ページの先頭
+                    let diff =
+                        -((selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount) - displayCandidateCount
+                    return handleSelectingPrevious(diff: diff, selecting: selecting)
+                } else {
+                    // インライン選択中は変換候補の末尾を一字消して確定
+                    fixCurrentSelect(dropLast: true)
+                    return true
+                }
+            case .dropLastAlways:
+                // 変換候補の末尾を一字消して確定
+                fixCurrentSelect(dropLast: true)
+                return true
+            }
         case .up:
             return handleSelectingPrevious(diff: -1, selecting: selecting)
         case .space, .down:
