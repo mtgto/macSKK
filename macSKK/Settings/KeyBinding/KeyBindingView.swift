@@ -66,7 +66,9 @@ struct KeyBindingView: View {
         }
         Form {
             Table(settingsViewModel.selectedKeyBindingSet.values, selection: $selectingKeyBindingAction) {
-                TableColumn("Action", value: \.action.localizedAction)
+                TableColumn("Action") { keyBinding in
+                    Text(keyBinding.action.localizedAction).fontWeight(keyBinding.isDefault ? nil : .bold)
+                }
                 TableColumn("Key", value: \.localizedInputs)
             }
             .contextMenu(forSelectionType: KeyBinding.ID.self) { keyBindingActions in
