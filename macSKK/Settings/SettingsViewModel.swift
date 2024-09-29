@@ -349,10 +349,6 @@ final class SettingsViewModel: ObservableObject {
             Global.insertBlankStringBundleIdentifiers.send(applications.filter { $0.insertBlankString }.map { $0.bundleIdentifier })
         }.store(in: &cancellables)
 
-        $selectingBackspace.sink { selectingBackspace in
-            Global.selectingBackspace = selectingBackspace
-        }.store(in: &cancellables)
-
         NotificationCenter.default.publisher(for: notificationNameToggleDirectMode)
             .sink { [weak self] notification in
                 if let bundleIdentifier = notification.object as? String {
@@ -457,6 +453,12 @@ final class SettingsViewModel: ObservableObject {
             logger.log("注釈で使用するシステム辞書を \(systemDict.rawValue, privacy: .public) に変更しました")
             UserDefaults.standard.set(systemDict.rawValue, forKey: UserDefaultsKeys.systemDict)
             Global.systemDict = systemDict
+        }.store(in: &cancellables)
+
+        $selectingBackspace.dropFirst().sink { selectingBackspace in
+            logger.log("変換候補選択時のバックスペースの挙動を \(selectingBackspace.description, privacy: .public) に変更しました")
+            UserDefaults.standard.set(selectingBackspace.rawValue, forKey: UserDefaultsKeys.selectingBackspace)
+            Global.selectingBackspace = selectingBackspace
         }.store(in: &cancellables)
 
         NotificationCenter.default.publisher(for: notificationNameDictLoad).receive(on: RunLoop.main).sink { [weak self] notification in
