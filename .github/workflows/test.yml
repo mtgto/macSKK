@@ -3,7 +3,7 @@ name: test
 on:
   push:
     branches: [main]
-  pull_request_target:
+  pull_request:
     branches: [main]
 
 jobs:
@@ -15,13 +15,7 @@ jobs:
     # https://github.com/actions/runner-images/blob/main/images/macos/macos-14-Readme.md#xcode
     - name: Select Xcode version
       run: sudo xcode-select -s '/Applications/Xcode_16.app/Contents/Developer'
-    # NOTE: pull_request_targetで実行したときはPull RequestがマージされたリビジョンではなくBaseのリビジョンで実行されます。
     - uses: actions/checkout@v4
     - name: test
       run: |
-        xcodebuild -target macSKKTests -scheme macSKK -resultBundlePath TestResults DEVELOPMENT_TEAM= test | xcpretty
-    - uses: kishikawakatsumi/xcresulttool@v1
-      with:
-        path: TestResults.xcresult
-        show-passed-tests: false
-      if: success() || failure()
+        xcodebuild -target macSKKTests -scheme macSKK DEVELOPMENT_TEAM= test | xcpretty
