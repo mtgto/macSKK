@@ -85,6 +85,7 @@
 "Are you sure you want to delete %@?" = "Are you sure you want to delete %@?";
 "Modifier Flags (Required)" = "Modifier Flags (Required)";
 "Modifier Flags (Optional)" = "Modifier Flags (Optional)";
+"Reset" = "Reset";
 
 "KeyBindingActionHiragana" = "Hiragana Mode";
 "KeyBindingActionTogglekana" = "Toggle Kana";

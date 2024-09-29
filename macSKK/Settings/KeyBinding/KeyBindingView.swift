@@ -78,6 +78,11 @@ struct KeyBindingView: View {
                     }
                 }
                 .disabled(!settingsViewModel.selectedKeyBindingSet.canEdit)
+                Button("Reset") {
+                    if let action = keyBindingActions.first {
+                        settingsViewModel.resetKeyBindingInputs(action: action)
+                    }
+                }
             } primaryAction: { keyBindingActions in
                 if settingsViewModel.selectedKeyBindingSet.canEdit {
                     if let action = keyBindingActions.first, let keyBinding = settingsViewModel.selectedKeyBindingSet.values.first(where: { $0.action == action }) {
