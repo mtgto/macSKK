@@ -31,4 +31,6 @@ struct UserDefaultsKeys {
     static let enterNewLine = "enterNewLine"
     // 注釈に使用するシステム辞書のID。SystemDict.Kindで定義。
     static let systemDict = "systemDict"
+    // 変換候補選択中のバックスペースの挙動
+    static let selectingBackspace = "selectingBackspace"
 }

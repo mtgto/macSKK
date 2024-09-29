@@ -960,17 +960,25 @@ final class StateMachine {
     }
 
     @MainActor func handleSelecting(_ action: Action, selecting: SelectingState, specialState: SpecialState?) -> Bool {
-        // 選択中の変換候補で確定
-        func fixCurrentSelect(yomi: String = selecting.yomi, okuri: String? = selecting.okuri, selecting: SelectingState = selecting) {
-            addWordToUserDict(yomi: yomi, okuri: okuri, candidate: selecting.candidates[selecting.candidateIndex])
+        /**
+         * 選択中の変換候補で確定
+         */
+        func fixCurrentSelect(yomi: String = selecting.yomi, okuri: String? = selecting.okuri, selecting: SelectingState = selecting, dropLast: Bool = false) {
+            // 一文字の変換でバックスペースで確定した場合など、利用者が変換をキャンセルする意図と思われるときは辞書登録しない
+            // 二文字以上の変換でバックスペースで確定した場合などは、削除された一文字を含む変換候補として辞書登録する
+            // (ddskkと同様)
+            let fixedText = selecting.fixedText(dropLast: dropLast)
+            if !fixedText.isEmpty {
+                addWordToUserDict(yomi: yomi, okuri: okuri, candidate: selecting.candidates[selecting.candidateIndex])
+            }
             updateCandidates(selecting: nil)
             if let remain = selecting.remain {
-                addFixedText(selecting.fixedText)
+                addFixedText(fixedText)
                 state.inputMethod = .composing(ComposingState(isShift: true, text: remain, romaji: ""))
                 updateMarkedText()
             } else {
                 state.inputMethod = .normal
-                addFixedText(selecting.fixedText)
+                addFixedText(fixedText)
                 if let prevMode = selecting.prev.composing.prevMode {
                     state.inputMode = prevMode
                     inputMethodEventSubject.send(.modeChanged(prevMode, action.cursorPosition))
@@ -987,15 +995,33 @@ final class StateMachine {
             }
             return true
         case .backspace:
-            let diff: Int
-            if selecting.candidateIndex >= inlineCandidateCount {
-                // 前ページの先頭
-                diff =
-                    -((selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount) - displayCandidateCount
-            } else {
-                diff = -1
+            switch Global.selectingBackspace {
+            case .cancel:
+                let diff: Int
+                if selecting.candidateIndex >= inlineCandidateCount {
+                    // 前ページの先頭
+                    diff =
+                        -((selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount) - displayCandidateCount
+                } else {
+                    diff = -1
+                }
+                return handleSelectingPrevious(diff: diff, selecting: selecting)
+            case .dropLastInlineOnly:
+                if selecting.candidateIndex >= inlineCandidateCount {
+                    // 前ページの先頭
+                    let diff =
+                        -((selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount) - displayCandidateCount
+                    return handleSelectingPrevious(diff: diff, selecting: selecting)
+                } else {
+                    // インライン選択中は変換候補の末尾を一字消して確定
+                    fixCurrentSelect(dropLast: true)
+                    return true
+                }
+            case .dropLastAlways:
+                // 変換候補の末尾を一字消して確定
+                fixCurrentSelect(dropLast: true)
+                return true
             }
-            return handleSelectingPrevious(diff: diff, selecting: selecting)
         case .up:
             return handleSelectingPrevious(diff: -1, selecting: selecting)
         case .space, .down:
@@ -1048,9 +1074,24 @@ final class StateMachine {
             updateCandidates(selecting: nil)
             updateMarkedText()
             return true
-        case .left, .right:
-            // AquaSKKと同様に何もしない (IMKCandidates表示時はそちらの移動に使われる)
-            return true
+        case .left:
+            if selecting.candidateIndex >= inlineCandidateCount {
+                // 前ページの先頭
+                let diff = -((selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount) - displayCandidateCount
+                return handleSelectingPrevious(diff: diff, selecting: selecting)
+            } else {
+                // AquaSKKと同様に何もしない (IMKCandidates表示時はそちらの移動に使われる)
+                return true
+            }
+        case .right:
+            if selecting.candidateIndex >= inlineCandidateCount {
+                // 次ページの先頭
+                let diff = displayCandidateCount - (selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount
+                return handleSelectingPrevious(diff: diff, selecting: selecting)
+            } else {
+                // AquaSKKと同様に何もしない (IMKCandidates表示時はそちらの移動に使われる)
+                return true
+            }
         case .startOfLine:
             // 現ページの先頭
             let diff = -(selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount
@@ -1105,7 +1146,7 @@ final class StateMachine {
                 // カーソル位置より右に文字列がある場合は接頭辞入力として扱う (無視してもいいかも)
                 addWordToUserDict(yomi: selecting.yomi, okuri: selecting.okuri, candidate: selecting.candidates[selecting.candidateIndex])
                 updateCandidates(selecting: nil)
-                addFixedText(selecting.fixedText)
+                addFixedText(selecting.fixedText(dropLast: false))
                 if let remain = selecting.remain {
                     state.inputMethod = .composing(ComposingState(isShift: true, text: remain, romaji: ""))
                     updateMarkedText()
@@ -1180,7 +1221,7 @@ final class StateMachine {
                 // エンター押したときと違って辞書登録はスキップ (仮)
                 updateCandidates(selecting: nil)
                 state.inputMethod = .normal
-                addFixedText(selecting.fixedText)
+                addFixedText(selecting.fixedText(dropLast: false))
             }
         }
     }

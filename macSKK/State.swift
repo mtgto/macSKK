@@ -378,13 +378,18 @@ struct SelectingState: Equatable, MarkedTextProtocol {
     }
 
     /// 現在選択されている変換候補を文字列を返す
-    var fixedText: String {
+    func fixedText(dropLast: Bool) -> String {
         let text = candidates[candidateIndex].word
         let okuri = prev.composing.okuri?.map { $0.string(for: prev.mode) }
-        if let okuri {
-            return text + okuri.joined()
+        let joined: String = if let okuri {
+            text + okuri.joined()
         } else {
-            return text
+            text
+        }
+        if dropLast {
+            return String(joined.dropLast())
+        } else {
+            return joined
         }
     }
 

@@ -191,7 +191,8 @@ final class StateTests: XCTestCase {
             cursorPosition: .zero,
             remain: nil
         )
-        XCTAssertEqual(selectingState.fixedText, "亜")
+        XCTAssertEqual(selectingState.fixedText(dropLast: false), "亜")
+        XCTAssertEqual(selectingState.fixedText(dropLast: true), "")
     }
 
     func testSelectingStateFixedTextOkuriari() throws {
@@ -211,7 +212,8 @@ final class StateTests: XCTestCase {
             cursorPosition: .zero,
             remain: nil
         )
-        XCTAssertEqual(selectingState.fixedText, "有る")
+        XCTAssertEqual(selectingState.fixedText(dropLast: false), "有る")
+        XCTAssertEqual(selectingState.fixedText(dropLast: true), "有")
     }
 
     func testSelectingStateMarkedTextElements() {
@@ -285,7 +287,6 @@ final class StateTests: XCTestCase {
             remain: nil
         )
         XCTAssertNil(selectingState.okuri)
-
     }
 
     func testRegisterStateAppendText() throws {

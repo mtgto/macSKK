@@ -157,6 +157,38 @@ struct WorkaroundApplication: Identifiable, Equatable {
     }
 }
 
+/// 変換候補選択中のバックスペースの挙動の列挙
+enum SelectingBackspace: Int, CaseIterable, Identifiable {
+    typealias ID = Int
+    var id: ID { rawValue }
+    /// インラインでの変換候補の選択時もしくは変換候補リストの1ページの時、
+    /// 変換候補の選択状態をキャンセルし、変換開始前に戻す。
+    /// 変換候補リストの2ページ目以降のときは1ページ前に戻す。
+    /// AquaSKKの「インライン変換: 後退で確定する」がオフのときの挙動。
+    case cancel = 0
+    /// インライン時は変換候補の末尾一字を削除して確定し、
+    /// 変換候補リストの表示時は前ページへ戻るキーとして機能する。
+    /// ddskkやAquaSKKの「インライン変換: 後退で確定する」がオンのときの挙動。
+    case dropLastInlineOnly = 1
+    /// インライン時、変換候補リスト表示時を問わず変換候補の末尾一字を削除して確定する。
+    /// skkeletonのデフォルトの挙動。
+    case dropLastAlways = 2
+
+    // v1.2.0までの挙動
+    static let `default` = cancel
+
+    var description: String {
+        switch self {
+        case .cancel:
+            return String(localized: "SelectingBackspaceCancel")
+        case .dropLastInlineOnly:
+            return String(localized: "SelectingBackspaceDropLastInlineOnly")
+        case .dropLastAlways:
+            return String(localized: "SelectingBackspaceDropLastAlways")
+        }
+    }
+}
+
 @MainActor
 final class SettingsViewModel: ObservableObject {
     /// CheckUpdaterで取得した最新のリリース。取得前はnil
@@ -198,6 +230,7 @@ final class SettingsViewModel: ObservableObject {
     /// Enterキーで変換候補の確定だけでなく改行も行うかどうか
     @Published var enterNewLine: Bool
     @Published var systemDict: SystemDict.Kind
+    @Published var selectingBackspace: SelectingBackspace
 
     // 辞書ディレクトリ
     let dictionariesDirectoryUrl: URL
@@ -250,8 +283,10 @@ final class SettingsViewModel: ObservableObject {
 
         selectCandidateKeys = UserDefaults.standard.string(forKey: UserDefaultsKeys.selectCandidateKeys)!
         enterNewLine = UserDefaults.standard.bool(forKey: UserDefaultsKeys.enterNewLine)
+        selectingBackspace = SelectingBackspace(rawValue: UserDefaults.standard.integer(forKey: UserDefaultsKeys.selectingBackspace)) ?? SelectingBackspace.default
         Global.selectCandidateKeys = selectCandidateKeys.lowercased().map { $0 }
         Global.systemDict = systemDict
+        Global.selectingBackspace = selectingBackspace
 
         // SKK-JISYO.Lのようなファイルの読み込みが遅いのでバックグラウンドで処理
         $dictSettings.filter({ !$0.isEmpty }).receive(on: DispatchQueue.global()).sink { dictSettings in
@@ -312,6 +347,10 @@ final class SettingsViewModel: ObservableObject {
 
         $workaroundApplications.sink { applications in
             Global.insertBlankStringBundleIdentifiers.send(applications.filter { $0.insertBlankString }.map { $0.bundleIdentifier })
+        }.store(in: &cancellables)
+
+        $selectingBackspace.sink { selectingBackspace in
+            Global.selectingBackspace = selectingBackspace
         }.store(in: &cancellables)
 
         NotificationCenter.default.publisher(for: notificationNameToggleDirectMode)
@@ -458,6 +497,7 @@ final class SettingsViewModel: ObservableObject {
         selectedKeyBindingSet = KeyBindingSet.defaultKeyBindingSet
         enterNewLine = false
         systemDict = .daijirin
+        selectingBackspace = SelectingBackspace.default
     }
 
     // DictionaryViewのPreviewProvider用

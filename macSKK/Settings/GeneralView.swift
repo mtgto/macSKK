@@ -35,6 +35,11 @@ struct GeneralView: View {
                             Text("\(count)")
                         }
                     }
+                    Picker("Backspace in selecting candidates", selection: $settingsViewModel.selectingBackspace) {
+                        ForEach(SelectingBackspace.allCases, id: \.id) { selectingBackspace in
+                            Text(selectingBackspace.description).tag(selectingBackspace)
+                        }
+                    }
                 }
                 Section {
                     Picker("Candidates font size", selection: $settingsViewModel.candidatesFontSize) {

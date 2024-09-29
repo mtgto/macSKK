@@ -194,6 +194,7 @@ struct macSKKApp: App {
             UserDefaultsKeys.selectedKeyBindingSetId: KeyBindingSet.defaultKeyBindingSet.id,
             UserDefaultsKeys.enterNewLine: false,
             UserDefaultsKeys.systemDict: SystemDict.Kind.daijirin.rawValue,
+            UserDefaultsKeys.selectingBackspace: SelectingBackspace.default.rawValue,
         ])
     }
 

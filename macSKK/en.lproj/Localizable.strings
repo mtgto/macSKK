@@ -63,6 +63,7 @@
 "Keys of selecting candidates" = "Keys of selecting candidates";
 "Copy" = "Copy";
 "Number of inline candidates" = "Number of inline candidates";
+"Backspace in selecting candidates" = "Backspace in selecting candidates";
 "Candidates font size" = "Candidates font size";
 "Annotation font size" = "Annotation font size";
 "Find completion from all dictionaries" = "Find completion from all dictionaries";
@@ -112,3 +113,7 @@
 
 "KeyEisu" = "Eisu";
 "KeyKana" = "Kana";
+
+"SelectingBackspaceCancel" = "Go back one step";
+"SelectingBackspaceDropLastInlineOnly" = "Delete a last character & commit in Inline";
+"SelectingBackspaceDropLastAlways" = "Delete a last character & commit always";
