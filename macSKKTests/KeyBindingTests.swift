@@ -90,4 +90,11 @@ final class KeyBindingTests: XCTestCase {
         XCTAssertTrue(inputEnter.accepts(event: eventOptionEnter))
         XCTAssertFalse(inputEnter.accepts(event: eventLeft))
     }
+
+    func testIsDefault() {
+        XCTAssertFalse(KeyBinding(.toggleKana, []).isDefault)
+        XCTAssertTrue(KeyBinding(.toggleKana, [KeyBinding.Input(key: .character("q"), modifierFlags: [])]).isDefault)
+        XCTAssertFalse(KeyBinding(.toggleKana, [KeyBinding.Input(key: .character("q"), modifierFlags: [.shift])]).isDefault)
+        XCTAssertFalse(KeyBinding(.toggleKana, [KeyBinding.Input(key: .character("l"), modifierFlags: [])]).isDefault)
+    }
 }

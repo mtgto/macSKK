@@ -354,4 +354,9 @@ struct KeyBinding: Identifiable, Hashable {
             }
         }
     }
+
+    // デフォルトのキーバインディングと同じキー入力かどうかを返す
+    var isDefault: Bool {
+        inputs == Self.defaultKeyBindingSettings.first(where: { $0.action == action })?.inputs
+    }
 }
