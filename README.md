@@ -78,6 +78,7 @@ macSKKが入力メソッドとして選択されているときに入力メニ�
 | keyBindingSets              | Array      | キーバインドのセットの配列              |
 | enterNewLine                | Boolean    | Enterキーで変換候補の確定 + 改行も行う  |
 | systemDict                  | String     | 注釈に使用するシステム辞書              |
+| selectingBackspace          | Number     | 変換候補選択時のバックスペースの挙動    |
 
 ## 機能
 
