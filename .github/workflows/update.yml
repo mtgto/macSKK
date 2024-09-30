@@ -14,7 +14,7 @@ jobs:
           SHA256=$(curl -L "${browser_download_url}" | sha256sum | cut -d ' ' -f 1)
       - name: dispatch
         env:
-          GITHUB_TOKEN=${{ secrets.HOMEBREW_MACSKK_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.HOMEBREW_MACSKK_TOKEN }}
         run: |
           curl \
           -H "Authorization token $GITHUB_TOKEN" \
