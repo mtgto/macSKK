@@ -4,7 +4,7 @@
 import Cocoa
 import SwiftUI
 
-class SettingsWindow: NSWindow {
+final class SettingsWindow: NSWindow {
     init(settingsViewModel: SettingsViewModel) {
         let rootView = SettingsView(settingsViewModel: settingsViewModel)
         let viewController = NSHostingController(rootView: rootView)

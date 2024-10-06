@@ -4,6 +4,7 @@
 import OSLog
 import SwiftUI
 
+@MainActor
 struct LogView: View {
     @State var log: String
     @State private var loading: Bool = false
@@ -41,7 +42,7 @@ struct LogView: View {
         }
     }
 
-    private func load() async throws -> String {
+    nonisolated private func load() async throws -> String {
         func levelDescription(level: OSLogEntryLog.Level) -> String {
             switch level {
             case .undefined:

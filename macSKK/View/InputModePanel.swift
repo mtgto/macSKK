@@ -5,7 +5,7 @@ import Cocoa
 
 /// 入力モードをフローティングモーダルで表示するパネル
 @MainActor
-class InputModePanel: NSPanel {
+final class InputModePanel: NSPanel {
     private let imageView: NSImageView
     private let imageSize: CGSize
 

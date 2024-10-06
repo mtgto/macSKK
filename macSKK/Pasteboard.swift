@@ -5,7 +5,7 @@ import AppKit
 
 /// クリップボード関係の処理。ユニットテスト実行時に実際のNSPasteboardを更新しなくていいようにしてある。
 struct Pasteboard {
-    static var stringForTest: String? = nil
+   nonisolated(unsafe) static var stringForTest: String? = nil
 
     static func getString() -> String? {
         if isTest() {

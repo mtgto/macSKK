@@ -4,7 +4,7 @@
 import Cocoa
 import SwiftUI
 
-class CompletionPanel: NSPanel {
+final class CompletionPanel: NSPanel {
     let viewModel: CompletionViewModel
 
     init() {

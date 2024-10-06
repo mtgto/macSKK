@@ -4,7 +4,7 @@
 import AppKit
 import UserNotifications
 
-class UserNotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
+final class UserNotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
         if response.notification.request.identifier == Release.userNotificationIdentifier {
             if let userInfo = response.notification.request.content.userInfo[Release.userNotificationUserInfoKey] as? [String: Any],

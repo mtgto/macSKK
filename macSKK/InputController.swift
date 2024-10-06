@@ -9,7 +9,7 @@ import InputMethodKit
 // 問題があるようだったらDispatchQueue.main.(a)syncを使うように修正すること。
 @MainActor
 @objc(InputController)
-class InputController: IMKInputController {
+final class InputController: IMKInputController {
     /// 入力元のアプリケーション情報
     struct TargetApplication {
         // Android StudioのAndroidエミュレータのようにbundle identifierをもたないGUIアプリケーションはnil

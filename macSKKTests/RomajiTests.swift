@@ -5,7 +5,7 @@ import XCTest
 
 @testable import macSKK
 
-class RomajiTests: XCTestCase {
+final class RomajiTests: XCTestCase {
     func testInit() {
         XCTAssertNoThrow(try Romaji(source: "# hoge"), "#で始まる行はコメント")
         XCTAssertThrowsError(try Romaji(source: ",あ"), "1要素目が空")
