@@ -760,6 +760,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleComposingBackspace() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
+        expectation.expectedFulfillmentCount = 2
         stateMachine.inputMethodEvent.collect(10).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose])))
             XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("s")])))
@@ -773,8 +774,12 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[9], .markedText(MarkedText([])))
             expectation.fulfill()
         }.store(in: &cancellables)
-        stateMachine.yomiEvent.collect(1).sink { events in
-
+        stateMachine.yomiEvent.collect(4).sink { events in
+            XCTAssertEqual(events[0], "")
+            XCTAssertEqual(events[1], "しゅ")
+            XCTAssertEqual(events[2], "し")
+            XCTAssertEqual(events[3], "")
+            expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ";")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "s", withShift: true)))
