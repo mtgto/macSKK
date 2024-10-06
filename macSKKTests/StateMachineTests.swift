@@ -633,7 +633,7 @@ final class StateMachineTests: XCTestCase {
         stateMachine.yomiEvent.collect(5).sink { events in
             XCTAssertEqual(events[0], "")
             XCTAssertEqual(events[1], "そ", "カタカナモードでも読みにはひらがなが流れる")
-            XCTAssertEqual(events[2], "", "おnのように2文字目がローマ字の場合は空文字列が送信される")
+            XCTAssertEqual(events[2], "そっ", "tのように未確定のローマ字が入力中の場合はローマ字の前までが送信される")
             XCTAssertEqual(events[3], "そっと", "「そっt」の状態ではローマ字を含むので送信しない")
             XCTAssertEqual(events[4], "")
             expectation.fulfill()
@@ -1395,14 +1395,13 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[7], .markedText(MarkedText([.markerCompose, .plain("ー、<。?")])))
             expectation.fulfill()
         }.store(in: &cancellables)
-        stateMachine.yomiEvent.collect(7).sink { events in
+        stateMachine.yomiEvent.collect(6).sink { events in
             XCTAssertEqual(events[0], "")
             XCTAssertEqual(events[1], "ー")
-            XCTAssertEqual(events[2], "", "確定前のローマ字 (t) が入力されたので一度空文字列が送信される")
-            XCTAssertEqual(events[3], "ー、")
-            XCTAssertEqual(events[4], "ー、<")
-            XCTAssertEqual(events[5], "ー、<。")
-            XCTAssertEqual(events[6], "ー、<。?")
+            XCTAssertEqual(events[2], "ー、")
+            XCTAssertEqual(events[3], "ー、<")
+            XCTAssertEqual(events[4], "ー、<。")
+            XCTAssertEqual(events[5], "ー、<。?")
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "s", withShift: true)))

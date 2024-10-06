@@ -218,7 +218,7 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
         return ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: "", cursor: cursor, prevMode: prevMode)
     }
 
-    /// カーソルより左のtext部分を返す。
+    /// カーソルより左のtext部分を返す。未確定のローマ字部分は含まない。
     func subText() -> [String] {
         if let cursor {
             return Array(text[0..<cursor])
