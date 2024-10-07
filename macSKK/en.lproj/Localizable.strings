@@ -97,6 +97,7 @@
 "KeyBindingActionStickyshift" = "Sticky Shift";
 "KeyBindingActionEnter" = "Enter";
 "KeyBindingActionSpace" = "Space";
+"KeyBindingActionBackwardcandidate" = "Select backward candidate";
 "KeyBindingActionTab" = "Tab";
 "KeyBindingActionBackspace" = "Backspace";
 "KeyBindingActionDelete" = "Delete";

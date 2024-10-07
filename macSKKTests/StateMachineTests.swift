@@ -234,16 +234,19 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleNormalPrintable() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .direct))
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(3).sink { events in
+        stateMachine.inputMethodEvent.collect(4).sink { events in
             XCTAssertEqual(events[0], .fixedText("c"))
             XCTAssertEqual(events[1], .fixedText("C"))
             XCTAssertEqual(events[2], .fixedText("X"))
+            XCTAssertEqual(events[3], .fixedText("x"))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "c")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "c", withShift: true)))
         // 変換候補選択画面で登録解除へ遷移するキー。Normalではなにも起きない
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "x", withShift: true)))
+        // 変換候補選択画面で前の候補へ遷移するキー。Normalではなにも起きない
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "x")))
         wait(for: [expectation], timeout: 1.0)
     }
 
@@ -2979,7 +2982,7 @@ final class StateMachineTests: XCTestCase {
         case "q":
             return withShift ? .japanese : .toggleKana
         case "x":
-            return withShift ? .unregister : nil
+            return withShift ? .unregister : .backwardCandidate
         case ";":
             return withShift ? nil : .stickyShift
         case "/":
