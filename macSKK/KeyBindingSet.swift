@@ -7,13 +7,7 @@ struct KeyBindingSet: Identifiable, Hashable {
     /// 設定の名称。
     let id: String
     static let defaultId: ID = "macSKK"
-    /**
-     * バージョン履歴
-     *
-     * 1: 初期バージョン
-     * 2: backwardCandidateが追加
-     */
-    static let serializeVersion: Int = 2
+    static let serializeVersion: Int = 1
     /**
      * 修飾キーを除いたキー入力が同じ場合は修飾キーが多いものが前に来るように並べた配列。
      * 入力に一番合致するキー入力を返すために最初にソートしてもっておく。
@@ -60,17 +54,8 @@ struct KeyBindingSet: Identifiable, Hashable {
         }
         var values: [KeyBinding] = []
         if version != Self.serializeVersion {
-            if version == 1 {
-                logger.log("キーバインド \(id, privacy: .public) はバージョン1のため互換性の解決を行います")
-                // backwardCandidateの初期値をセット
-                guard let keyBinding = KeyBinding.defaultKeyBindingSettings.first(where: { $0.action == .backwardCandidate }) else {
-                    return nil
-                }
-                values.append(keyBinding)
-            } else {
-                logger.error("シリアライズバージョンが合わないためキーバインド \(id, privacy: .public) が読み込めません。(現在: \(Self.serializeVersion), 環境設定: \(version)")
-                return nil
-            }
+            logger.error("シリアライズバージョンが合わないためキーバインド \(id, privacy: .public) が読み込めません。(現在: \(Self.serializeVersion), 環境設定: \(version))")
+            return nil
         }
         for dict in keyBindings {
             guard let keyBinding = KeyBinding(dict: dict) else {
@@ -78,6 +63,12 @@ struct KeyBindingSet: Identifiable, Hashable {
                 return nil
             }
             values.append(keyBinding)
+        }
+        // 不足しているキーバインドがあればデフォルト値を設定する
+        KeyBinding.defaultKeyBindingSettings.forEach { keyBinding in
+            if values.allSatisfy({ $0.action != keyBinding.action }) {
+                values.append(keyBinding)
+            }
         }
         self.init(id: id, values: values)
     }
