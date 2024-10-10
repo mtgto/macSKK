@@ -340,7 +340,7 @@ final class StateMachine {
         case .eisu:
             // 何もしない (OSがIMEの切り替えはしてくれる)
             return true
-        case .unregister, nil:
+        case .unregister, .backwardCandidate, nil:
             break
         }
 
@@ -738,7 +738,7 @@ final class StateMachine {
             return true
         case .abbrev, .up, .down, .registerPaste, .eisu, .kana:
             return true
-        case .unregister, .none:
+        case .unregister, .backwardCandidate, .none:
             break
         }
 
@@ -1063,6 +1063,8 @@ final class StateMachine {
             }
             updateMarkedText()
             return true
+        case .backwardCandidate:
+            return handleSelectingPrevious(diff: -1, selecting: selecting)
         case .tab:
             return true
         case .stickyShift, .hiragana, .hankakuKana:
@@ -1139,9 +1141,7 @@ final class StateMachine {
         }
 
         if let input = action.event.charactersIgnoringModifiers {
-            if input == "x" {
-                return handleSelectingPrevious(diff: -1, selecting: selecting)
-            } else if input == "." && action.shiftIsPressed() {
+            if input == "." && action.shiftIsPressed() {
                 // 選択中候補で確定し、接尾辞入力に移行。
                 // カーソル位置より右に文字列がある場合は接頭辞入力として扱う (無視してもいいかも)
                 addWordToUserDict(yomi: selecting.yomi, okuri: selecting.okuri, candidate: selecting.candidates[selecting.candidateIndex])

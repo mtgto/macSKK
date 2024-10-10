@@ -31,6 +31,8 @@ struct KeyBinding: Identifiable, Hashable {
         case enter
         /// デフォルトはSpaceキー
         case space
+        /// 前の変換候補に移動する。デフォルトはxキー。
+        case backwardCandidate
         /// 補完候補の確定用。デフォルトはTabキー
         case tab
         /// デフォルトはBackspaceキーとCtrl-hキー
@@ -316,6 +318,8 @@ struct KeyBinding: Identifiable, Hashable {
                 return KeyBinding(action, [Input(key: .code(0x24), modifierFlags: [], optionalModifierFlags: [.shift, .option])])
             case .space:
                 return KeyBinding(action, [Input(key: .code(0x31), modifierFlags: [])])
+            case .backwardCandidate:
+                return KeyBinding(action, [Input(key: .character("x"), modifierFlags: [])])
             case .tab:
                 return KeyBinding(action, [Input(key: .code(0x30), modifierFlags: [], optionalModifierFlags: .shift)])
             case .backspace:
