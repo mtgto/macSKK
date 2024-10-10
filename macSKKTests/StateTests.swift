@@ -82,6 +82,8 @@ final class StateTests: XCTestCase {
         XCTAssertEqual(state.subText(), ["あ"])
         state = state.with(cursor: nil)
         XCTAssertEqual(state.subText(), ["あ", "い"])
+        state = ComposingState(isShift: true, text: ["あ"], okuri: nil, romaji: "k", cursor: nil)
+        XCTAssertEqual(state.subText(), ["あ"], "未確定のローマ字部分は含まない")
     }
 
     func testComposingStateTrim() {

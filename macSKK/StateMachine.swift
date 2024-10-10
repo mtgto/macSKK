@@ -1247,8 +1247,8 @@ final class StateMachine {
     private func updateMarkedText() {
         inputMethodEventSubject.send(.markedText(state.displayText()))
         // 読み部分を取得してyomiEventに通知する
-        if case let .composing(composing) = state.inputMethod, composing.okuri == nil && composing.romaji.isEmpty {
-            // ComposingState#yomi(for:) との違いは未確定ローマ字が"n"のときに「ん」として扱うか否か
+        if case let .composing(composing) = state.inputMethod, composing.okuri == nil {
+            // ComposingState#yomi(for:) とComposingState#subText()の違いは未確定ローマ字が"n"のときに「ん」として扱うか否か
             yomiEventSubject.send(composing.subText().joined())
         } else {
             yomiEventSubject.send("")
