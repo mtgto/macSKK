@@ -52,17 +52,23 @@ struct KeyBindingSet: Identifiable, Hashable {
         guard let id = dict["id"] as? String, let keyBindings = dict["keyBindings"] as? [[String: Any]], let version = dict["version"] as? Int else {
             return nil
         }
+        var values: [KeyBinding] = []
         if version != Self.serializeVersion {
-            logger.error("シリアライズバージョンが合わないためキーバインド \(id, privacy: .public) が読み込めません。(現在: \(Self.serializeVersion), 環境設定: \(version)")
+            logger.error("シリアライズバージョンが合わないためキーバインド \(id, privacy: .public) が読み込めません。(現在: \(Self.serializeVersion), 環境設定: \(version))")
             return nil
         }
-        var values: [KeyBinding] = []
         for dict in keyBindings {
             guard let keyBinding = KeyBinding(dict: dict) else {
                 logger.warning("キーバインド \(id, privacy: .public) の読み込みに失敗しました")
                 return nil
             }
             values.append(keyBinding)
+        }
+        // 不足しているキーバインドがあればデフォルト値を設定する
+        KeyBinding.defaultKeyBindingSettings.forEach { keyBinding in
+            if values.allSatisfy({ $0.action != keyBinding.action }) {
+                values.append(keyBinding)
+            }
         }
         self.init(id: id, values: values)
     }
