@@ -14,8 +14,6 @@ struct ReleaseVersion: Comparable, CustomStringConvertible, Sendable {
         return "\(major).\(minor).\(patch)"
     }
 
-    static let pattern = /([0-9]+)\.([0-9]+)\.([0-9]+)/
-
     // Comparable
     static func < (lhs: Self, rhs: Self) -> Bool {
         if lhs.major != rhs.major {
@@ -34,7 +32,7 @@ struct ReleaseVersion: Comparable, CustomStringConvertible, Sendable {
     }
 
     init?(string: String) {
-        if let match = string.wholeMatch(of: Self.pattern) {
+        if let match = string.wholeMatch(of: /([0-9]+)\.([0-9]+)\.([0-9]+)/) {
             if let major = Int(match.1), let minor = Int(match.2), let patch = Int(match.3) {
                 self.major = major
                 self.minor = minor

@@ -7,7 +7,7 @@ import Foundation
  * 数値変換用のユーザーが入力した読み部分。"だい1" のような入力を受け取り、整数部分と非整数部分に分ける。
  */
 struct NumberYomi {
-    static let pattern = /#([01234589])/
+    nonisolated(unsafe) static let pattern = /#([01234589])/
 
     // TODO: Stringを作るコストをなくしyomiのSubstringでもっておく。Substringだとユニットテストが書きにくくなるしこれでもいいかも。
     enum Element: Equatable {
@@ -84,7 +84,7 @@ struct NumberYomi {
 
 // 数値入りの変換候補
 struct NumberCandidate {
-    static let pattern = /#([01234589])/
+    nonisolated(unsafe) static let pattern = /#([01234589])/
     static let kanjiFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
         formatter.locale = Locale(identifier: "ja-JP")
