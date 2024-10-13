@@ -7,7 +7,7 @@ import SwiftUI
 import UserNotifications
 import os
 
-nonisolated(unsafe) let logger: Logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "main")
+let logger: Logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "main")
 // 直接入力モードを切り替えたいときに通知される通知の名前。
 let notificationNameToggleDirectMode = Notification.Name("toggleDirectMode")
 // 空文字挿入のワークアラウンドの有効無効を切り替えたいときに通知される通知の名前。

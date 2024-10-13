@@ -33,7 +33,7 @@ class InputController: IMKInputController {
     /// 最後にイベントを受け取ったときのウィンドウレベル + 1
     private var windowLevel: NSWindow.Level = .floating
 
-    override init!(server: IMKServer!, delegate: Any!, client inputClient: Any!) {
+    @MainActor override init!(server: IMKServer!, delegate: Any!, client inputClient: Any!) {
         super.init(server: server, delegate: delegate, client: inputClient)
 
         guard let textInput = inputClient as? any IMKTextInput else {
@@ -195,7 +195,7 @@ class InputController: IMKInputController {
             }.store(in: &cancellables)
     }
 
-    override func handle(_ event: NSEvent!, client sender: Any!) -> Bool {
+    @MainActor override func handle(_ event: NSEvent!, client sender: Any!) -> Bool {
         // 文字ビューアで入力した場合など、eventがnilの場合がありえる
         if event == nil {
             return false
@@ -225,7 +225,7 @@ class InputController: IMKInputController {
         return stateMachine.handle(Action(keyBind: keyBind, event: event, cursorPosition: cursorPosition))
     }
 
-    override func menu() -> NSMenu! {
+    @MainActor override func menu() -> NSMenu! {
         let preferenceMenu = NSMenu()
         preferenceMenu.addItem(
             withTitle: String(localized: "MenuItemPreference", comment: "Preferences…"),
@@ -259,7 +259,7 @@ class InputController: IMKInputController {
     }
 
     // MARK: - IMKStateSetting
-    override func activateServer(_ sender: Any!) {
+    @MainActor override func activateServer(_ sender: Any!) {
         if let textInput = sender as? any IMKTextInput {
             setCustomInputSource(textInput: textInput)
         } else {
@@ -267,7 +267,7 @@ class InputController: IMKInputController {
         }
     }
 
-    override func deactivateServer(_ sender: Any!) {
+    @MainActor override func deactivateServer(_ sender: Any!) {
         // 他の入力に切り替わるときには入力候補や補完候補は消す + 現在表示中の候補を確定させる
         Global.candidatesPanel.orderOut(sender)
         Global.completionPanel.orderOut(sender)
@@ -275,12 +275,12 @@ class InputController: IMKInputController {
     }
 
     /// クライアントが入力中状態を即座に確定してほしいときに呼ばれる
-    override func commitComposition(_ sender: Any!) {
+    @MainActor override func commitComposition(_ sender: Any!) {
         // 現在未確定の入力を強制的に確定させて状態を入力前の状態にする
         stateMachine.commitComposition()
     }
 
-    override func setValue(_ value: Any!, forTag tag: Int, client sender: Any!) {
+    @MainActor override func setValue(_ value: Any!, forTag tag: Int, client sender: Any!) {
         guard let value = value as? String else { return }
         guard let inputMode = InputMode(rawValue: value) else { return }
         logger.debug("入力モードが変更されました \(inputMode.rawValue)")

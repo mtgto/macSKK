@@ -556,36 +556,30 @@ final class SettingsViewModel: ObservableObject {
     func setupNotification() {
         assert(dictSettings.isEmpty, "dictSettingsが空の状態でsetupNotificationしようとしました。バグと思われます。")
 
-        Task {
-            for await notification in NotificationCenter.default.notifications(named: notificationNameDictFileDidAppear) {
-                if let url = notification.object as? URL {
-                    await MainActor.run {
-                        if self.dictSettings.allSatisfy({ $0.filename != url.lastPathComponent }) {
-                            let type: FileDictType = if url.pathExtension == "json" {
-                                .json
-                            } else {
-                                .traditional(.japaneseEUC)
-                            }
-                            self.dictSettings.append(DictSetting(filename: url.lastPathComponent,
-                                                                 enabled: false,
-                                                                 type: type))
+        NotificationCenter.default.publisher(for: notificationNameDictFileDidAppear).receive(on: RunLoop.main)
+            .sink { [weak self] notification in
+                if let self, let url = notification.object as? URL {
+                    if self.dictSettings.allSatisfy({ $0.filename != url.lastPathComponent }) {
+                        let type: FileDictType = if url.pathExtension == "json" {
+                            .json
+                        } else {
+                            .traditional(.japaneseEUC)
                         }
+                        self.dictSettings.append(DictSetting(filename: url.lastPathComponent,
+                                                             enabled: false,
+                                                             type: type))
                     }
                 }
-            }
-        }
+            }.store(in: &cancellables)
 
-        Task {
-            for await notification in NotificationCenter.default.notifications(named: notificationNameDictFileDidMove) {
-                if let url = notification.object as? URL {
+        NotificationCenter.default.publisher(for: notificationNameDictFileDidMove).receive(on: RunLoop.main)
+            .sink { [weak self] notification in
+                if let self, let url = notification.object as? URL {
                     // 辞書設定から移動したファイルを削除する
                     // FIXME: 削除ではなくリネームなら追従する
-                    await MainActor.run {
-                        self.dictSettings = self.dictSettings.filter({ $0.filename != url.lastPathComponent })
-                    }
+                    self.dictSettings = self.dictSettings.filter({ $0.filename != url.lastPathComponent })
                 }
-            }
-        }
+            }.store(in: &cancellables)
     }
 
     /**
