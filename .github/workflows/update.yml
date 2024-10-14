@@ -2,7 +2,9 @@ name: update
 
 on:
   release:
-    types: [released]
+    types:
+      - released
+      - edited
 
 jobs:
   update:
@@ -11,7 +13,9 @@ jobs:
       - name: sha256
         run: |
           browser_download_url=$(echo '${{ toJSON(github.event.release.assets) }}' | jq -r '.[] | select(.name | endswith(".dmg")) | .browser_download_url)
+          echo $browser_download_url
           SHA256=$(curl -L "${browser_download_url}" | sha256sum | cut -d ' ' -f 1)
+          echo "sha256=${SHA256}" >> "GITHUB_OUTPUT"
       - name: dispatch
         env:
           GITHUB_TOKEN: ${{ secrets.HOMEBREW_MACSKK_TOKEN }}
