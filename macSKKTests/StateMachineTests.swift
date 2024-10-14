@@ -109,7 +109,7 @@ final class StateMachineTests: XCTestCase {
 
     @MainActor func testHandleNormalRomajiKanaRuleAzik() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .direct))
-        Global.kanaRule = try! Romaji(source: [":,っ"].joined(separator: "\n"))
+        Global.kanaRule = try! Romaji(source: [";,っ", ":,<shift>;"].joined(separator: "\n"))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(3).sink { events in
             XCTAssertEqual(events[0], .fixedText(":"))

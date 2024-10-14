@@ -383,8 +383,12 @@ final class StateMachine {
                 if let characters = action.characters() {
                     // シフトキーが押されていてlowercaseMapにエントリがある場合はエントリの方のキーが入力されたと見做す
                     if action.shiftIsPressed() {
-                        if let mapped = Global.kanaRule.lowercaseMap[characters] {
-                            return handleNormalPrintable(input: mapped, action: action, specialState: specialState)
+                        if let mappedEvent = Global.kanaRule.convertKeyEvent(action.event) {
+                            return handleNormal(
+                                Action(keyBind: Global.keyBinding.action(event: mappedEvent),
+                                       event: mappedEvent,
+                                       cursorPosition: action.cursorPosition),
+                                specialState: specialState)
                         }
                     }
                     let result = Global.kanaRule.convert(characters)
