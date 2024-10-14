@@ -121,7 +121,15 @@ struct Romaji: Equatable, Sendable {
             }
             // 第二要素だけがあり、第二要素が "<shift>" + 一文字 のような形式の場合、lowercaseMapの設定として扱う
             if elements.count == 2 && elements[1].hasPrefix("<shift>") && elements[1].count == 8 {
-                lowercaseMap[elements[0]] = String(elements[1].dropFirst(7))
+                let converted = String(elements[1].dropFirst(7))
+                // 簡単な無限ループになってないかの検査
+                guard elements[0] != converted else {
+                    logger.error("ローマ字変換定義ファイルの \(lineNumber) 行目のlowercaseMap記述が壊れているため読み込みできません")
+                    error = RomajiError.invalid
+                    stop = true
+                    return
+                }
+                lowercaseMap[elements[0]] = converted
                 return
             }
             let firstRomaji = elements.count == 5 ? elements[4] : String(Self.firstRomajis[elements[1].first!] ?? elements[0].first!)

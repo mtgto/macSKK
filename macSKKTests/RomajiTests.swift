@@ -11,6 +11,8 @@ class RomajiTests: XCTestCase {
         XCTAssertThrowsError(try Romaji(source: ",あ"), "1要素目が空")
         XCTAssertThrowsError(try Romaji(source: "a,"), "2要素目が空")
         XCTAssertNoThrow(try Romaji(source: "&comma;,あ"), "カンマを使いたい場合は &comma; と書く")
+        XCTAssertNoThrow(try Romaji(source: "+,<shift>っ"), "シフトキーを押しているときの記号のルール")
+        XCTAssertThrowsError(try Romaji(source: "+,<shift>+"), "シフトキーを押しているときの記号のルールで左辺と右辺が一致")
     }
 
     func testConvert() throws {
