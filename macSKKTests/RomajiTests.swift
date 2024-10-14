@@ -36,6 +36,8 @@ class RomajiTests: XCTestCase {
         XCTAssertEqual(kanaRule.convert("@"), Romaji.ConvertedMoji(input: "@", kakutei: nil), "ルールにない文字は変換されない")
         XCTAssertEqual(kanaRule.convert("a;"), Romaji.ConvertedMoji(input: "", kakutei: Romaji.Moji(firstRomaji: "a", kana:"あせみころん")), "システム用の文字を含むことができる")
         XCTAssertEqual(kanaRule.convert("ca"), Romaji.ConvertedMoji(input: "", kakutei: Romaji.Moji(firstRomaji: "k", kana:"か")), "実際に入力した一文字目(c)ではなく「か」からローマ字(k)に変換する")
+        XCTAssertEqual(kanaRule.lowercaseMap["+"], ";")
+        XCTAssertEqual(kanaRule.lowercaseMap[":"], ";")
     }
 
     func testVu() throws {

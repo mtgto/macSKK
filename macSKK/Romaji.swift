@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2022 mtgto <hogerappa@gmail.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import Foundation
+import AppKit
 
 /**
  * ローマ字かな（記号も可）変換ルール
@@ -78,6 +78,13 @@ struct Romaji: Equatable, Sendable {
     let table: [String: Moji]
 
     /**
+     * シフトキーで別の記号に変換される文字についてシフトを押しながら押したとするための対応表。
+     * 日本語配列で "+" (シフト + ;) を入力したときに "+" ではなく シフトを押しながら;として押したと扱うために使用する。
+     * AZIKで余っているキーに処理を割り当てたいときなどに使用する。
+     */
+    let lowercaseMap: [String: String]
+
+    /**
      * 未確定文字列のままになることができる文字列の集合。
      *
      * 例えば ["k", "ky", "t"] となっている場合、kt と連続して入力したときには
@@ -93,6 +100,7 @@ struct Romaji: Equatable, Sendable {
     init(source: String) throws {
         var table: [String: Moji] = [:]
         var undecidedInputs: Set<String> = []
+        var lowercaseMap: [String: String] = [:]
         var error: RomajiError? = nil
         var lineNumber = 0
         source.enumerateLines { line, stop in
@@ -109,6 +117,11 @@ struct Romaji: Equatable, Sendable {
                 logger.error("ローマ字変換定義ファイルの \(lineNumber) 行目の記述が壊れているため読み込みできません")
                 error = RomajiError.invalid
                 stop = true
+                return
+            }
+            // 第二要素だけがあり、第二要素が "<shift>" + 一文字 のような形式の場合、lowercaseMapの設定として扱う
+            if elements.count == 2 && elements[1].hasPrefix("<shift>") && elements[1].count == 8 {
+                lowercaseMap[elements[0]] = String(elements[1].dropFirst(7))
                 return
             }
             let firstRomaji = elements.count == 5 ? elements[4] : String(Self.firstRomajis[elements[1].first!] ?? elements[0].first!)
@@ -130,6 +143,7 @@ struct Romaji: Equatable, Sendable {
         }
         self.table = table
         self.undecidedInputs = undecidedInputs
+        self.lowercaseMap = lowercaseMap
     }
 
     /**
@@ -261,5 +275,30 @@ struct Romaji: Equatable, Sendable {
             return convert(String(c))
         }
         return ConvertedMoji(input: input, kakutei: nil)
+    }
+
+    /**
+     * キー入力を別のキーとして扱う設定があれば変換する
+     *
+     * 変換後もNSEvent.keyCodeは変更されないので、もし非印字キー (Backspace、英数キーなど) として扱うキーに変換したい場合は
+     * lowercaseMapの値の型を変更すること。
+     */
+    func convertKeyEvent(_ event: NSEvent) -> NSEvent? {
+        guard let characters = event.charactersIgnoringModifiers else {
+            return nil
+        }
+        if let entry = lowercaseMap.first(where: { $0.key == characters }) {
+            return NSEvent.keyEvent(with: event.type,
+                                    location: event.locationInWindow,
+                                    modifierFlags: event.modifierFlags,
+                                    timestamp: event.timestamp,
+                                    windowNumber: event.windowNumber,
+                                    context: nil,
+                                    characters: entry.value,
+                                    charactersIgnoringModifiers: entry.value,
+                                    isARepeat: event.isARepeat,
+                                    keyCode: event.keyCode)
+        }
+        return nil
     }
 }

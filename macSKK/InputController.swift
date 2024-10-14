@@ -200,7 +200,9 @@ class InputController: IMKInputController {
         if event == nil {
             return false
         }
-        let keyBind = Global.keyBinding.action(event: event)
+        // TODO: ここでlowercaseMapの判定もやってeventを変換する
+        let mappedEvent = event!
+        let keyBind = Global.keyBinding.action(event: mappedEvent)
         if directMode {
             if let keyBind, keyBind == .kana || keyBind == .eisu {
                 // 英数・かなキーは握り潰さないとエディタによって空白が入ってしまう
@@ -219,10 +221,10 @@ class InputController: IMKInputController {
             logger.log("IMKTextInputが取得できません")
         }
         if keyBind == nil && event.charactersIgnoringModifiers == nil {
-            return stateMachine.handleUnhandledEvent(event)
+            return stateMachine.handleUnhandledEvent(mappedEvent)
         }
 
-        return stateMachine.handle(Action(keyBind: keyBind, event: event, cursorPosition: cursorPosition))
+        return stateMachine.handle(Action(keyBind: keyBind, event: mappedEvent, cursorPosition: cursorPosition))
     }
 
     @MainActor override func menu() -> NSMenu! {
