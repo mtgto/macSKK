@@ -381,6 +381,12 @@ final class StateMachine {
             } else {
                 // Option-Shift-2のような入力のときには€が入力されるようにする
                 if let characters = action.characters() {
+                    // シフトキーが押されていてlowercaseMapにエントリがある場合はエントリの方のキーが入力されたと見做す
+                    if action.shiftIsPressed() {
+                        if let mapped = Global.kanaRule.lowercaseMap[characters] {
+                            return handleNormalPrintable(input: mapped, action: action, specialState: specialState)
+                        }
+                    }
                     let result = Global.kanaRule.convert(characters)
                     if let moji = result.kakutei {
                         if action.shiftIsPressed() {
@@ -800,7 +806,7 @@ final class StateMachine {
                     // まだ読み部分が空ならば常に送り仮名ではない
                     // シフトを押しながら入力した文字がアルファベットじゃないなら送り仮名ではない (記号なので)
                     // 未確定文字列の先頭にカーソルがあるときはシフト押していてもいなくても送り仮名ではない
-                    if text.isEmpty || (okuri == nil && !(action.shiftIsPressed() && input.isAlphabet)) || composing.cursor == 0 {
+                    if text.isEmpty || (okuri == nil && !(action.shiftIsPressed())) || composing.cursor == 0 {
                         if isShift || (action.shiftIsPressed() && input.isAlphabet) {
                             state.inputMethod = .composing(composing.appendText(moji).resetRomaji().with(isShift: true))
                         } else {

@@ -46,35 +46,4 @@ class RomajiTests: XCTestCase {
         kanaRule = try Romaji(source: "vu,ゔ")
         XCTAssertEqual(kanaRule.convert("vu").kakutei?.kana, "ゔ")
     }
-
-    func testConvertKeyEvent() throws {
-        let fileURL = Bundle(for: Self.self).url(forResource: "kana-rule-for-test", withExtension: "conf")!
-        let kanaRule = try Romaji(contentsOf: fileURL)
-        var event = NSEvent.keyEvent(
-            with: .keyDown,
-            location: .zero,
-            modifierFlags: [],
-            timestamp: 0,
-            windowNumber: 0,
-            context: nil,
-            characters: ";",
-            charactersIgnoringModifiers: ";",
-            isARepeat: false,
-            keyCode: 0)!
-        XCTAssertNil(kanaRule.convertKeyEvent(event))
-
-        // 英字配列でのShift + ;入力
-        event = NSEvent.keyEvent(
-            with: .keyDown,
-            location: .zero,
-            modifierFlags: .shift,
-            timestamp: 0,
-            windowNumber: 0,
-            context: nil,
-            characters: ":",
-            charactersIgnoringModifiers: ";",
-            isARepeat: false,
-            keyCode: 0)!
-        XCTAssertNotNil(kanaRule.convertKeyEvent(event))
-    }
 }
