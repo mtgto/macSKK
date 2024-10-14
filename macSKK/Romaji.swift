@@ -282,20 +282,30 @@ struct Romaji: Equatable, Sendable {
      *
      * 変換後もNSEvent.keyCodeは変更されないので、もし非印字キー (Backspace、英数キーなど) として扱うキーに変換したい場合は
      * lowercaseMapの値の型を変更すること。
+     *
+     * 今はシフトキーが押されているときのみに対応する
+     * https://github.com/mtgto/macSKK/issues/225
      */
     func convertKeyEvent(_ event: NSEvent) -> NSEvent? {
-        guard let characters = event.charactersIgnoringModifiers else {
+        // シフトキーが押されてなければ無視する
+        if !event.modifierFlags.contains(.shift) {
             return nil
         }
-        if let entry = lowercaseMap.first(where: { $0.key == characters }) {
+        guard let characters = event.characters else {
+            return nil
+        }
+        guard let charactersIgnoringCharacters = event.charactersIgnoringModifiers else {
+            return nil
+        }
+        if let mapped = lowercaseMap[characters] {
             return NSEvent.keyEvent(with: event.type,
                                     location: event.locationInWindow,
                                     modifierFlags: event.modifierFlags,
                                     timestamp: event.timestamp,
                                     windowNumber: event.windowNumber,
                                     context: nil,
-                                    characters: entry.value,
-                                    charactersIgnoringModifiers: entry.value,
+                                    characters: mapped,
+                                    charactersIgnoringModifiers: charactersIgnoringCharacters,
                                     isARepeat: event.isARepeat,
                                     keyCode: event.keyCode)
         }

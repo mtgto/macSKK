@@ -107,6 +107,18 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    @MainActor func testHandleNormalRomajiKanaRuleAzik() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        Global.kanaRule = try! Romaji(source: [":,っ"].joined(separator: "\n"))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(1).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("っ")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ":", characterIgnoringModifier: ";", withShift: true)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     @MainActor func testHandleNormalSpace() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
@@ -1320,7 +1332,7 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
         wait(for: [expectation], timeout: 1.0)
     }
-    
+
     @MainActor func testHandleComposingStickyShiftAfterPrintable() {
         Global.kanaRule = try! Romaji(source: "a;,あせみころん")
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
@@ -2957,8 +2969,8 @@ final class StateMachineTests: XCTestCase {
                 return Action(
                     keyBind: keyBind(character: characterIgnoringModifiers, withShift: withShift),
                     event: generateNSEvent(character: character,
-                                                   characterIgnoringModifiers: characterIgnoringModifier,
-                                                   modifierFlags: [.shift]),
+                                           characterIgnoringModifiers: characterIgnoringModifier,
+                                           modifierFlags: [.shift]),
                     cursorPosition: .zero
                 )
             } else {

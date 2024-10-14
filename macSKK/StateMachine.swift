@@ -383,7 +383,13 @@ final class StateMachine {
                 if let characters = action.characters() {
                     let result = Global.kanaRule.convert(characters)
                     if let moji = result.kakutei {
-                        addFixedText(moji.string(for: state.inputMode))
+                        if action.shiftIsPressed() {
+                            state.inputMethod = .composing(
+                                ComposingState(isShift: true, text: moji.kana.map { String($0) }, romaji: result.input))
+                            updateMarkedText()
+                        } else {
+                            addFixedText(moji.string(for: state.inputMode))
+                        }
                     } else {
                         addFixedText(characters)
                     }

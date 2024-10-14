@@ -200,8 +200,7 @@ class InputController: IMKInputController {
         if event == nil {
             return false
         }
-        // TODO: ここでlowercaseMapの判定もやってeventを変換する
-        let mappedEvent = event!
+        let mappedEvent = Global.kanaRule.convertKeyEvent(event) ?? event!
         let keyBind = Global.keyBinding.action(event: mappedEvent)
         if directMode {
             if let keyBind, keyBind == .kana || keyBind == .eisu {
@@ -220,7 +219,7 @@ class InputController: IMKInputController {
         } else {
             logger.log("IMKTextInputが取得できません")
         }
-        if keyBind == nil && event.charactersIgnoringModifiers == nil {
+        if keyBind == nil && mappedEvent.charactersIgnoringModifiers == nil {
             return stateMachine.handleUnhandledEvent(mappedEvent)
         }
 
