@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: sha256
         run: |
-          browser_download_url=$(echo '${{ toJSON(github.event.release.assets) }}' | jq -r '.[] | select(.name | endswith(".dmg")) | .browser_download_url)
+          browser_download_url=$(echo '${{ toJSON(github.event.release.assets) }}' | jq -r '.[] | select(.name | endswith(".dmg")) | .browser_download_url')
           echo $browser_download_url
           SHA256=$(curl -L "${browser_download_url}" | sha256sum | cut -d ' ' -f 1)
           echo "sha256=${SHA256}" >> "GITHUB_OUTPUT"
