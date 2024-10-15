@@ -117,7 +117,7 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("っ")])))
             expectation.fulfill()
         }.store(in: &cancellables)
-        // direct時はローマ字かな変換テーブルを無視して ":" が入力される
+        // direct時はローマ字かな変換テーブルは関係なく ":" が入力される
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ":", characterIgnoringModifier: ";", withShift: true)))
         XCTAssertTrue(stateMachine.handle(hiraganaAction))
         // ひらがなモード時はローマ字かな変換テーブルが参照され "っ" がシフトを押しながら入力されたとする
@@ -1371,7 +1371,7 @@ final class StateMachineTests: XCTestCase {
 
     @MainActor func testHandleComposingRomajiKanaRuleAzik() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-        Global.kanaRule = try! Romaji(source: ["a,あ", ":,っ"].joined(separator: "\n"))
+        Global.kanaRule = try! Romaji(source: ["a,あ", ";,っ", ":,<shift>;"].joined(separator: "\n"))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(3).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))

@@ -42,6 +42,13 @@ class RomajiTests: XCTestCase {
         XCTAssertEqual(kanaRule.lowercaseMap[":"], ";")
     }
 
+    func testConvertSpecialCharacters() throws {
+        // AZIKのセミコロンを促音(っ)として扱う設定
+        let kanaRule = try Romaji(source: ";,っ")
+        // 入力はセミコロンでもfirstRomajiは "t" になる
+        XCTAssertEqual(kanaRule.convert(";"), Romaji.ConvertedMoji(input: "", kakutei: Romaji.Moji(firstRomaji: "t", kana: "っ")))
+    }
+
     func testVu() throws {
         var kanaRule = try Romaji(source: "vu,う゛")
         XCTAssertEqual(kanaRule.convert("vu").kakutei?.kana, "う゛")

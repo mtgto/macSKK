@@ -78,6 +78,7 @@
 		CE84A3E9295DA504009394C4 /* RomajiTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE84A3E8295DA504009394C4 /* RomajiTests.swift */; };
 		CE84A3EB295DA715009394C4 /* Dict.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE84A3EA295DA715009394C4 /* Dict.swift */; };
 		CE84A3ED295DA818009394C4 /* MemoryDictTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE84A3EC295DA818009394C4 /* MemoryDictTests.swift */; };
+		CE8DFE092CBEAA2900A24230 /* Character+AdditionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE8DFE082CBEAA1F00A24230 /* Character+AdditionsTests.swift */; };
 		CE97887B2A9B93EB00F9B196 /* DirectModeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE97887A2A9B93EB00F9B196 /* DirectModeView.swift */; };
 		CEA78FAA295EBCAC00B67E25 /* StateMachineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA78FA9295EBCAC00B67E25 /* StateMachineTests.swift */; };
 		CEA78FAC2960401F00B67E25 /* String+Transform.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA78FAB2960401F00B67E25 /* String+Transform.swift */; };
@@ -239,6 +240,7 @@
 		CE84A3E8295DA504009394C4 /* RomajiTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RomajiTests.swift; sourceTree = "<group>"; };
 		CE84A3EA295DA715009394C4 /* Dict.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dict.swift; sourceTree = "<group>"; };
 		CE84A3EC295DA818009394C4 /* MemoryDictTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryDictTests.swift; sourceTree = "<group>"; };
+		CE8DFE082CBEAA1F00A24230 /* Character+AdditionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Character+AdditionsTests.swift"; sourceTree = "<group>"; };
 		CE97887A2A9B93EB00F9B196 /* DirectModeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectModeView.swift; sourceTree = "<group>"; };
 		CEA78FA9295EBCAC00B67E25 /* StateMachineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateMachineTests.swift; sourceTree = "<group>"; };
 		CEA78FAB2960401F00B67E25 /* String+Transform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Transform.swift"; sourceTree = "<group>"; };
@@ -470,6 +472,7 @@
 				CED7CA3D2A8397E4004EF988 /* UpdateCheckerTests.swift */,
 				CE6DBA902A846C1700F5A227 /* ReleaseVersionTests.swift */,
 				CEA78FAD2961BA1D00B67E25 /* String+TransformTests.swift */,
+				CE8DFE082CBEAA1F00A24230 /* Character+AdditionsTests.swift */,
 				CE496C942B440BBD001C623C /* Data+EucJis2004Tests.swift */,
 				CE06CA332AAC199500E80E5E /* UserDict+Utilities.swift */,
 				CE39FA942BEB942B00E293F0 /* Character+KeyCode.swift */,
@@ -845,6 +848,7 @@
 				CEE2D9792A99FEC700A4CD76 /* CandidateTest.swift in Sources */,
 				CEF0823629685C0800646366 /* StateTests.swift in Sources */,
 				CED7CA3E2A8397E4004EF988 /* UpdateCheckerTests.swift in Sources */,
+				CE8DFE092CBEAA2900A24230 /* Character+AdditionsTests.swift in Sources */,
 				CE2F3B132C030C9A00CE342B /* KeyBindingTests.swift in Sources */,
 				CEA78FB229646CA100B67E25 /* UserDictTests.swift in Sources */,
 				CE06CA2B2AAC171B00E80E5E /* FileDictTests.swift in Sources */,

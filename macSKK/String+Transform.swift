@@ -36,6 +36,11 @@ extension String {
     var isAlphabet: Bool { self.allSatisfy { $0.isAlphabet } }
 
     /**
+     * ひらがなだけで構成されているかを返す。
+     */
+    var isHiragana: Bool { self.allSatisfy { $0.isHiragana } }
+
+    /**
      * 自身が見出し語のとき、送り仮名ありの見出し語かどうかを返す。
      *
      * どちらかに決めないといけないので一文字もしくは空文字列はfalse
