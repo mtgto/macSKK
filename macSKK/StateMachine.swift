@@ -381,19 +381,17 @@ final class StateMachine {
             } else {
                 // Option-Shift-2のような入力のときには€が入力されるようにする
                 if let characters = action.characters() {
-                    // シフトキーが押されていてlowercaseMapにエントリがある場合はエントリの方のキーが入力されたと見做す
-                    if action.shiftIsPressed() {
-                        if let mappedEvent = Global.kanaRule.convertKeyEvent(action.event) {
-                            return handleNormal(
-                                Action(keyBind: Global.keyBinding.action(event: mappedEvent),
-                                       event: mappedEvent,
-                                       cursorPosition: action.cursorPosition),
-                                specialState: specialState)
-                        }
+                    // lowercaseMapにエントリがある場合はエントリの方のキーが入力されたと見做す
+                    if let mappedEvent = Global.kanaRule.convertKeyEvent(action.event) {
+                        return handleNormal(
+                            Action(keyBind: Global.keyBinding.action(event: mappedEvent),
+                                   event: mappedEvent,
+                                   cursorPosition: action.cursorPosition),
+                            specialState: specialState)
                     }
                     let result = Global.kanaRule.convert(characters)
                     if let moji = result.kakutei {
-                        if action.shiftIsPressed() {
+                        if moji.kana.isHiragana {
                             state.inputMethod = .composing(
                                 ComposingState(isShift: true, text: moji.kana.map { String($0) }, romaji: result.input))
                             updateMarkedText()
@@ -802,17 +800,15 @@ final class StateMachine {
         }
         switch state.inputMode {
         case .hiragana, .katakana, .hankaku:
-            // 非アルファベットでシフトキーが押されていてlowercaseMapにエントリがある場合はエントリの方のキーが入力されたと見做す
-            if !input.isAlphabet && action.shiftIsPressed() {
-                if let mappedEvent = Global.kanaRule.convertKeyEvent(action.event) {
-                    return handleComposing(
-                        Action(keyBind: Global.keyBinding.action(event: mappedEvent),
-                               event: mappedEvent,
-                               cursorPosition: action.cursorPosition),
-                        composing: composing,
-                        specialState: specialState
-                    )
-                }
+            // lowercaseMapにエントリがある場合はエントリの方のキーが入力されたと見做す
+            if let mappedEvent = Global.kanaRule.convertKeyEvent(action.event) {
+                return handleComposing(
+                    Action(keyBind: Global.keyBinding.action(event: mappedEvent),
+                           event: mappedEvent,
+                           cursorPosition: action.cursorPosition),
+                    composing: composing,
+                    specialState: specialState
+                )
             }
             // ローマ字が確定してresult.inputがない
             // StickyShiftでokuriが[]になっている、またはShift押しながら入力した
