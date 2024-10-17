@@ -11,6 +11,8 @@ class RomajiTests: XCTestCase {
         XCTAssertThrowsError(try Romaji(source: ",あ"), "1要素目が空")
         XCTAssertThrowsError(try Romaji(source: "a,"), "2要素目が空")
         XCTAssertNoThrow(try Romaji(source: "&comma;,あ"), "カンマを使いたい場合は &comma; と書く")
+        XCTAssertNoThrow(try Romaji(source: "+,<shift>っ"), "シフトキーを押しているときの記号のルール")
+        XCTAssertThrowsError(try Romaji(source: "+,<shift>+"), "シフトキーを押しているときの記号のルールで左辺と右辺が一致")
     }
 
     func testConvert() throws {
@@ -36,6 +38,15 @@ class RomajiTests: XCTestCase {
         XCTAssertEqual(kanaRule.convert("@"), Romaji.ConvertedMoji(input: "@", kakutei: nil), "ルールにない文字は変換されない")
         XCTAssertEqual(kanaRule.convert("a;"), Romaji.ConvertedMoji(input: "", kakutei: Romaji.Moji(firstRomaji: "a", kana:"あせみころん")), "システム用の文字を含むことができる")
         XCTAssertEqual(kanaRule.convert("ca"), Romaji.ConvertedMoji(input: "", kakutei: Romaji.Moji(firstRomaji: "k", kana:"か")), "実際に入力した一文字目(c)ではなく「か」からローマ字(k)に変換する")
+        XCTAssertEqual(kanaRule.lowercaseMap["+"], ";")
+        XCTAssertEqual(kanaRule.lowercaseMap[":"], ";")
+    }
+
+    func testConvertSpecialCharacters() throws {
+        // AZIKのセミコロンを促音(っ)として扱う設定
+        let kanaRule = try Romaji(source: ";,っ")
+        // 入力はセミコロンでもfirstRomajiは "t" になる
+        XCTAssertEqual(kanaRule.convert(";"), Romaji.ConvertedMoji(input: "", kakutei: Romaji.Moji(firstRomaji: "t", kana: "っ")))
     }
 
     func testVu() throws {

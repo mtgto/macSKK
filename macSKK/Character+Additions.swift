@@ -5,7 +5,7 @@ import Foundation
 
 extension Character {
     /**
-     * アルファベットだけで構成されているかを返す。
+     * アルファベットで構成されているかを返す。
      */
     var isAlphabet: Bool {
         "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".contains(self)
@@ -13,5 +13,13 @@ extension Character {
 
     var isNumber: Bool {
         "0123456789".contains(self)
+    }
+
+    /**
+     * ひらがなで構成されているかを返す。
+     */
+    var isHiragana: Bool {
+        guard let first = self.unicodeScalars.first else { return false }
+        return 0x3041 <= first.value && first.value <= 0x309f
     }
 }

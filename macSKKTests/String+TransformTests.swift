@@ -47,6 +47,12 @@ final class StringTransformTests: XCTestCase {
         XCTAssertFalse("あ".isAlphabet)
     }
 
+    func testIsHiragana() {
+        XCTAssertTrue("".isHiragana, "空文字列はtrue")
+        XCTAssertTrue("ひらけごま".isHiragana)
+        XCTAssertFalse("アイウエオ".isHiragana)
+    }
+
     func testIsOkuriAri() {
         XCTAssertFalse("".isOkuriAri, "空文字列はfalse")
         XCTAssertTrue("あr".isOkuriAri)
