@@ -41,7 +41,7 @@ struct LogView: View {
         }
     }
 
-    private func load() async throws -> String {
+    nonisolated private func load() async throws -> String {
         func levelDescription(level: OSLogEntryLog.Level) -> String {
             switch level {
             case .undefined:
