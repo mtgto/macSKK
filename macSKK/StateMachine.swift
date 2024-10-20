@@ -381,9 +381,23 @@ final class StateMachine {
             } else {
                 // Option-Shift-2のような入力のときには€が入力されるようにする
                 if let characters = action.characters() {
+                    // lowercaseMapにエントリがある場合はエントリの方のキーが入力されたと見做す
+                    if let mappedEvent = Global.kanaRule.convertKeyEvent(action.event) {
+                        return handleNormal(
+                            Action(keyBind: Global.keyBinding.action(event: mappedEvent),
+                                   event: mappedEvent,
+                                   cursorPosition: action.cursorPosition),
+                            specialState: specialState)
+                    }
                     let result = Global.kanaRule.convert(characters)
                     if let moji = result.kakutei {
-                        addFixedText(moji.string(for: state.inputMode))
+                        if moji.kana.isHiragana {
+                            state.inputMethod = .composing(
+                                ComposingState(isShift: true, text: moji.kana.map { String($0) }, romaji: result.input))
+                            updateMarkedText()
+                        } else {
+                            addFixedText(moji.string(for: state.inputMode))
+                        }
                     } else {
                         addFixedText(characters)
                     }
@@ -786,6 +800,16 @@ final class StateMachine {
         }
         switch state.inputMode {
         case .hiragana, .katakana, .hankaku:
+            // lowercaseMapにエントリがある場合はエントリの方のキーが入力されたと見做す
+            if let mappedEvent = Global.kanaRule.convertKeyEvent(action.event) {
+                return handleComposing(
+                    Action(keyBind: Global.keyBinding.action(event: mappedEvent),
+                           event: mappedEvent,
+                           cursorPosition: action.cursorPosition),
+                    composing: composing,
+                    specialState: specialState
+                )
+            }
             // ローマ字が確定してresult.inputがない
             // StickyShiftでokuriが[]になっている、またはShift押しながら入力した
             if let moji = converted.kakutei {
@@ -794,8 +818,8 @@ final class StateMachine {
                     // まだ読み部分が空ならば常に送り仮名ではない
                     // シフトを押しながら入力した文字がアルファベットじゃないなら送り仮名ではない (記号なので)
                     // 未確定文字列の先頭にカーソルがあるときはシフト押していてもいなくても送り仮名ではない
-                    if text.isEmpty || (okuri == nil && !(action.shiftIsPressed() && input.isAlphabet)) || composing.cursor == 0 {
-                        if isShift || (action.shiftIsPressed() && input.isAlphabet) {
+                    if text.isEmpty || (okuri == nil && !(action.shiftIsPressed() && moji.kana.isHiragana)) || composing.cursor == 0 {
+                        if isShift || (action.shiftIsPressed() && moji.kana.isHiragana) {
                             state.inputMethod = .composing(composing.appendText(moji).resetRomaji().with(isShift: true))
                         } else {
                             state.inputMethod = .normal
