@@ -391,7 +391,7 @@ final class StateMachine {
                     }
                     let result = Global.kanaRule.convert(characters)
                     if let moji = result.kakutei {
-                        if moji.kana.isHiragana {
+                        if action.shiftIsPressed() && moji.kana.isHiragana {
                             state.inputMethod = .composing(
                                 ComposingState(isShift: true, text: moji.kana.map { String($0) }, romaji: result.input))
                             updateMarkedText()

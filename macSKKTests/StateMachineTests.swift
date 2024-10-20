@@ -111,15 +111,18 @@ final class StateMachineTests: XCTestCase {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .direct))
         Global.kanaRule = try! Romaji(source: [";,っ", ":,<shift>;"].joined(separator: "\n"))
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(3).sink { events in
+        stateMachine.inputMethodEvent.collect(4).sink { events in
             XCTAssertEqual(events[0], .fixedText(":"))
             XCTAssertEqual(events[1], .modeChanged(.hiragana, .zero))
-            XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("っ")])))
+            XCTAssertEqual(events[2], .fixedText("っ"))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("っ")])))
             expectation.fulfill()
         }.store(in: &cancellables)
         // direct時はローマ字かな変換テーブルは関係なく ":" が入力される
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ":", characterIgnoringModifier: ";", withShift: true)))
         XCTAssertTrue(stateMachine.handle(hiraganaAction))
+        // 非StickyShiftでシフトなしで ";" 入力時は "っ" が入力される
+        XCTAssertTrue(stateMachine.handle(Action(keyBind: nil, event: generateNSEvent(character: ";", characterIgnoringModifiers: ";"), cursorPosition: .zero)))
         // ひらがなモード時はローマ字かな変換テーブルが参照され "っ" がシフトを押しながら入力されたとする
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ":", characterIgnoringModifier: ";", withShift: true)))
         wait(for: [expectation], timeout: 1.0)
