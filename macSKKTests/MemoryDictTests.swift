@@ -111,15 +111,23 @@ class MemoryDictTests: XCTestCase {
     }
 
     func testDelete() throws {
-        var dict = MemoryDict(entries: ["あr": [Word("有"), Word("在")]], readonly: false)
+        var dict = MemoryDict(entries: ["あr": [Word("有"), Word("在")], "え": [Word("絵"), Word("柄")]], readonly: false)
         XCTAssertEqual(dict.okuriAriYomis, ["あr"])
+        XCTAssertEqual(dict.okuriNashiYomis, ["え"])
         XCTAssertFalse(dict.delete(yomi: "あr", word: "或"))
+        XCTAssertFalse(dict.delete(yomi: "いr", word: "居"), "存在しないエントリを削除しようとする")
+        XCTAssertFalse(dict.delete(yomi: "お", word: "尾"), "存在しないエントリを削除しようとする")
         XCTAssertTrue(dict.delete(yomi: "あr", word: "在"))
+        XCTAssertTrue(dict.delete(yomi: "え", word: "絵"))
+        XCTAssertEqual(dict.okuriAriYomis, ["あr"], "「有」がまだ残っている")
+        XCTAssertEqual(dict.okuriNashiYomis, ["え"], "「柄」がまだ残っている")
         XCTAssertEqual(dict.refer("あr", option: nil), [Word("有")])
         XCTAssertFalse(dict.delete(yomi: "いいい", word: "いいい"))
-        XCTAssertFalse(dict.delete(yomi: "あr", word: "在"))
+        XCTAssertFalse(dict.delete(yomi: "あr", word: "在"), "削除済")
         XCTAssertTrue(dict.delete(yomi: "あr", word: "有"))
         XCTAssertEqual(dict.okuriAriYomis, [])
+        XCTAssertTrue(dict.delete(yomi: "え", word: "柄"))
+        XCTAssertEqual(dict.okuriNashiYomis, [])
     }
 
     func testDeleteOkuriBlock() throws {
