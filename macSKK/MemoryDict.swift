@@ -154,6 +154,7 @@ struct MemoryDict: DictProtocol {
     /// 辞書からエントリを削除する。
     ///
     /// 辞書にないエントリ (ファイル辞書) の削除は無視されます。
+    /// 読みの配列の順序は変更されません。
     ///
     /// - Parameters:
     ///   - yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
@@ -161,13 +162,15 @@ struct MemoryDict: DictProtocol {
     /// - Returns: エントリを削除できたかどうか
     mutating func delete(yomi: String, word: Word.Word) -> Bool {
         if let words = entries[yomi] {
-            if yomi.isOkuriAri {
-                if let index = okuriAriYomis.firstIndex(of: yomi) {
-                    okuriAriYomis.remove(at: index)
-                }
-            } else {
-                if let index = okuriNashiYomis.firstIndex(of: yomi) {
-                    okuriNashiYomis.remove(at: index)
+            if words.count == 1 {
+                if yomi.isOkuriAri {
+                    if let index = okuriAriYomis.firstIndex(of: yomi) {
+                        okuriAriYomis.remove(at: index)
+                    }
+                } else {
+                    if let index = okuriNashiYomis.firstIndex(of: yomi) {
+                        okuriNashiYomis.remove(at: index)
+                    }
                 }
             }
             let filtered = words.filter { $0.word != word }
