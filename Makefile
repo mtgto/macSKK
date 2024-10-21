@@ -71,9 +71,9 @@ $(INSTALLER_PKG): $(APP_PKG) $(DICT_PKG)
 $(TARGET_DMG): $(INSTALLER_PKG)
 	if [ -f $(TARGET_DMG) ]; then rm $(TARGET_DMG); fi
 	cp LICENSE $(WORKDIR)/pkg
-	hdiutil create -srcfolder $(WORKDIR)/pkg -volname macSKK -fs HFS+ $(TARGET_DMG)
+	hdiutil create -srcfolder $(WORKDIR)/pkg -volname macSKK-$(VERSION) $(TARGET_DMG)
 
-# zipが-rするときの作業ディレクトリを指定できないので雑な相対指定をしている
+# `zip -r` するときの作業ディレクトリを指定できないので雑な相対指定をしている
 $(TARGET_DSYM_ARCHIVE): $(APP)
 	rm -f $(TARGET_DSYM_ARCHIVE)
 	pushd $(XCARCHIVE)/dSYMs; zip ../../../../$(TARGET_DSYM_ARCHIVE) -r .; popd
