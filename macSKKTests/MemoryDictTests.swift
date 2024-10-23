@@ -112,6 +112,7 @@ class MemoryDictTests: XCTestCase {
 
     func testDelete() throws {
         var dict = MemoryDict(entries: ["あr": [Word("有"), Word("在")], "え": [Word("絵"), Word("柄")]], readonly: false)
+        XCTAssertFalse(dict.entries.isEmpty)
         XCTAssertEqual(dict.okuriAriYomis, ["あr"])
         XCTAssertEqual(dict.okuriNashiYomis, ["え"])
         XCTAssertFalse(dict.delete(yomi: "あr", word: "或"))
@@ -124,10 +125,14 @@ class MemoryDictTests: XCTestCase {
         XCTAssertEqual(dict.refer("あr", option: nil), [Word("有")])
         XCTAssertFalse(dict.delete(yomi: "いいい", word: "いいい"))
         XCTAssertFalse(dict.delete(yomi: "あr", word: "在"), "削除済")
+        XCTAssertEqual(dict.okuriAriYomis, ["あr"])
         XCTAssertTrue(dict.delete(yomi: "あr", word: "有"))
         XCTAssertEqual(dict.okuriAriYomis, [])
+        XCTAssertFalse(dict.delete(yomi: "え", word: "絵"), "削除済")
+        XCTAssertEqual(dict.okuriNashiYomis, ["え"])
         XCTAssertTrue(dict.delete(yomi: "え", word: "柄"))
         XCTAssertEqual(dict.okuriNashiYomis, [])
+        XCTAssertTrue(dict.entries.isEmpty)
     }
 
     func testDeleteOkuriBlock() throws {
