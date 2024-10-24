@@ -54,10 +54,10 @@
 "Tab Completion" = "Tab Completion";
 "System Dict" = "System Dict";
 "Current Version:" = "Current Version";
-"Latest Version: %@" = "(Latest Verssion: %@)";
+"Latest Version: %@" = "(Latest Version: %@)";
 "Check For Update" = "Check For Update…";
 "Open Release Page" = "Open Release Page";
-"Keyboard Layout" = "Keybaord Layout";
+"Keyboard Layout" = "Keyboard Layout";
 "Show Annotation" = "Show the annotation of the candidate in current";
 "System Dictionary for annotation" = "System Dictionary for annotation";
 "Keys of selecting candidates" = "Keys of selecting candidates";
