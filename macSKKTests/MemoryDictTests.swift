@@ -79,6 +79,16 @@ class MemoryDictTests: XCTestCase {
         XCTAssertEqual(dict.entries["いぬ"]?.first?.annotation, Annotation(dictId: "testDict", text: "かわいい"))
     }
 
+    func testParseEmptyCandidate() throws {
+        // TODO: いまは空の変換候補をスキップしているが扱えるようにしたい
+        let source = """
+            から //
+
+            """
+        let dict = MemoryDict(dictId: "testDict", source: source, readonly: false)
+        XCTAssertNil(dict.entries["から"])
+    }
+
     func testAdd() throws {
         var dict = MemoryDict(entries: [:], readonly: false)
         XCTAssertEqual(dict.entryCount, 0)

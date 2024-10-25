@@ -32,6 +32,13 @@ final class EntryTests: XCTestCase {
         XCTAssertEqual(Entry(line: "ぶろっく /[ぶろっく]/", dictId: "")?.candidates.map { $0.word }, ["[ぶろっく]"])
     }
 
+    func testSpecialCase() {
+        // TODO: いまは空の変換候補をスキップしているが扱えるようにしたい
+        XCTAssertNil(Entry(line: "から //", dictId: ""))
+        XCTAssertNil(Entry(line: "から /;/", dictId: ""))
+        XCTAssertNil(Entry(line: "から /;注釈/", dictId: ""))
+    }
+
     func testInvalidLine() {
         XCTAssertNil(Entry(line: "", dictId: ""))
         XCTAssertNil(Entry(line: ";こめんと /コメント/", dictId: ""))

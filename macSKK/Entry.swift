@@ -84,7 +84,7 @@ struct Entry: Sendable {
         while true {
             if wordsText.isEmpty {
                 return result
-            } else if wordsText.first == "/" || wordsText.last != "/" {
+            } else if wordsText.first == "/" || wordsText.first == ";" || wordsText.last != "/" {
                 return nil
             }
             if wordsText.first == "[" {

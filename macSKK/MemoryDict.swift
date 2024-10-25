@@ -43,6 +43,10 @@ struct MemoryDict: DictProtocol {
                 return
             }
             if let entry = Entry(line: line, dictId: dictId) {
+                if entry.candidates.isEmpty {
+                    // "<よみ> //" のような変換候補を持たないエントリは無視する
+                    return
+                }
                 if let candidates = dict[entry.yomi] {
                     dict[entry.yomi] = candidates + entry.candidates
                 } else {
