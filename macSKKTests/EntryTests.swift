@@ -33,10 +33,18 @@ final class EntryTests: XCTestCase {
     }
 
     func testSpecialCase() {
-        // TODO: いまは空の変換候補をスキップしているが扱えるようにしたい
-        XCTAssertNil(Entry(line: "から //", dictId: ""))
-        XCTAssertNil(Entry(line: "から /;/", dictId: ""))
-        XCTAssertNil(Entry(line: "から /;注釈/", dictId: ""))
+        var entry = Entry(line: "から //", dictId: "")
+        XCTAssertEqual(entry?.yomi, "から")
+        XCTAssertEqual(entry?.candidates, [])
+        entry = Entry(line: "から /空//殻/", dictId: "")
+        XCTAssertEqual(entry?.yomi, "から")
+        XCTAssertEqual(entry?.candidates, [Word("空"), Word("殻")])
+        entry = Entry(line: "から /;/", dictId: "")
+        XCTAssertEqual(entry?.yomi, "から")
+        XCTAssertEqual(entry?.candidates, [])
+        entry = Entry(line: "から /;注釈/", dictId: "")
+        XCTAssertEqual(entry?.yomi, "から")
+        XCTAssertEqual(entry?.candidates, [])
     }
 
     func testInvalidLine() {
@@ -45,11 +53,12 @@ final class EntryTests: XCTestCase {
         XCTAssertNil(Entry(line: "い/胃/", dictId: ""), "読みと変換候補の間にスペースがない")
         XCTAssertNil(Entry(line: "い  /胃/", dictId: ""), "読みと変換候補の間にスペースが2つある")
         XCTAssertNil(Entry(line: "い /胃/意", dictId: ""), "末尾がスラッシュで終わらない")
-        XCTAssertNil(Entry(line: "い //", dictId: ""), "変換候補が空")
-        XCTAssertNil(Entry(line: "い /胃//意/", dictId: ""), "変換候補が空")
-        XCTAssertNil(Entry(line: "い /胃/意//", dictId: ""), "変換候補が空")
+        // FIXME: 空文字列への変換候補をもつ行はエラーではない
+        //XCTAssertNil(Entry(line: "い //", dictId: ""), "変換候補が空")
+        //XCTAssertNil(Entry(line: "い /胃//意/", dictId: ""), "変換候補が空")
+        //XCTAssertNil(Entry(line: "い /胃/意//", dictId: ""), "変換候補が空")
+        //XCTAssertNil(Entry(line: "いt /[った//]/", dictId: ""), "送り仮名ブロックの変換候補が空")
         XCTAssertNil(Entry(line: "いt /[った/行]/", dictId: ""), "送り仮名ブロックの変換候補の末尾にスラッシュがない")
-        XCTAssertNil(Entry(line: "いt /[った//]/", dictId: ""), "変換候補が空")
         XCTAssertNil(Entry(line: "いt /[った/行/", dictId: ""), "送り仮名ブロックが閉じていない")
     }
 

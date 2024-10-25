@@ -10,6 +10,17 @@ struct Entry: Sendable {
     let yomi: String
     let candidates: [Word]
 
+    /**
+     * SKK辞書の一行を受け取り、パースする
+     *
+     * スラッシュで終わらないなど、変換候補エントリとして壊れている場合はnilを返す。
+     * 空文字列の変換候補を含む場合、現状の実装では除外して返す。
+     * 空文字列の変換候補には今後対応する予定。
+     *
+     * 例
+     * - "あ //": 空文字列の変換候補はフィルタされて candidates = [] となる
+     * - "あ /亜": セミコロンで終わってないのでnilを返す
+     */
     init?(line: String, dictId: FileDict.ID) {
         if line.first == ";" {
             // コメント行
@@ -21,7 +32,8 @@ struct Entry: Sendable {
         }
         yomi = String(words[0])
         guard let candidates = Self.parseWords(words[1], dictId: dictId) else { return nil }
-        self.candidates = candidates
+        // TODO: いまは空の変換候補をスキップしているが扱えるようにしたい
+        self.candidates = candidates.filter { !$0.word.isEmpty }
     }
 
     init(yomi: String, candidates: [Word]) {
@@ -84,7 +96,7 @@ struct Entry: Sendable {
         while true {
             if wordsText.isEmpty {
                 return result
-            } else if wordsText.first == "/" || wordsText.first == ";" || wordsText.last != "/" {
+            } else if wordsText.last != "/" {
                 return nil
             }
             if wordsText.first == "[" {
@@ -119,7 +131,8 @@ struct Entry: Sendable {
                     result.append(parseWord(array[0], dictId: dictId))
                     wordsText = array[1]
                 default:
-                    return nil
+                    result.append(Word(""))
+                    return result
                 }
             }
         }
@@ -165,14 +178,24 @@ struct Entry: Sendable {
     static func parseWord(_ wordText: Substring, dictId: FileDict.ID) -> Word {
         let words = wordText.split(separator: Character(";"), maxSplits: 1)
         let annotation: Annotation?
-        if words.count == 2 {
-            // 注釈の先頭に "*" がついていたらユーザー独自の注釈を表す
-            let annotationText = words[1].first == "*" ? words[1].dropFirst() : words[1]
-            annotation = Annotation(dictId: dictId, text: Self.decode(String(annotationText)))
+        if words.isEmpty {
+            return Word("", annotation: nil)
+        } else if words.count == 2 {
+            annotation = parseAnnotation(words[1], dictId: dictId)
+        } else if words.count == 1 && wordText.first == ";" {
+            // 変換候補が空文字列で注釈だけある場合
+            annotation = parseAnnotation(words[0], dictId: dictId)
+            return Word("", annotation: annotation)
         } else {
             annotation = nil
         }
         return Word(Self.decode(String(words[0])), annotation: annotation)
+    }
+
+    static func parseAnnotation(_ text: Substring, dictId: FileDict.ID) -> Annotation {
+        // 注釈の先頭に "*" がついていたらユーザー独自の注釈を表す
+        let annotationText = text.first == "*" ? text.dropFirst() : text
+        return Annotation(dictId: dictId, text: Self.decode(String(annotationText)))
     }
 
     static func decode(_ word: String) -> String {
