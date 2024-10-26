@@ -45,6 +45,9 @@ final class EntryTests: XCTestCase {
         entry = Entry(line: "から /;注釈/", dictId: "")
         XCTAssertEqual(entry?.yomi, "から")
         XCTAssertEqual(entry?.candidates, [])
+        entry = Entry(line: "かっこ /[/", dictId: "")
+        XCTAssertEqual(entry?.yomi, "かっこ")
+        XCTAssertEqual(entry?.candidates, [Word("[")])
     }
 
     func testInvalidLine() {

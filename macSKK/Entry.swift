@@ -101,39 +101,38 @@ struct Entry: Sendable {
             }
             if wordsText.first == "[" {
                 // 送り仮名ブロックのパース ややこしいからリファクタしたい
+                // 閉じカッコがない場合は送り仮名ブロックではなくただの開きカッコとして扱う
                 let array = wordsText.dropFirst().split(separator: "]", maxSplits: 1)
-                if array.count != 2 || array[1].first != "/" {
-                    return nil
-                }
-                if let index = array[0].firstIndex(of: "/") {
-                    if index == array[0].startIndex || index == array[0].endIndex {
-                        return nil
+                if array.count == 2 && array[1].first == "/" {
+                    if let index = array[0].firstIndex(of: "/") {
+                        if index == array[0].startIndex || index == array[0].endIndex {
+                            return nil
+                        }
+                        let yomi = array[0].prefix(upTo: index)
+                        let words = parseWords(array[0].suffix(from: index).dropFirst(), dictId: dictId)?.map { word in
+                            Word(word.word, okuri: String(yomi), annotation: word.annotation)
+                        }
+                        guard let words else { return nil }
+                        result.append(contentsOf: words)
+                        wordsText = array[1].dropFirst()
+                    } else {
+                        // スラッシュが含まれないときは送り仮名ブロックではない
+                        result.append(parseWord(wordsText.dropLast(), dictId: dictId))
+                        wordsText = array[1].dropFirst()
                     }
-                    let yomi = array[0].prefix(upTo: index)
-                    let words = parseWords(array[0].suffix(from: index).dropFirst(), dictId: dictId)?.map { word in
-                        Word(word.word, okuri: String(yomi), annotation: word.annotation)
-                    }
-                    guard let words else { return nil }
-                    result.append(contentsOf: words)
-                    wordsText = array[1].dropFirst()
-                } else {
-                    // スラッシュが含まれないときは送り仮名ブロックではない
-                    result.append(parseWord(wordsText.dropLast(), dictId: dictId))
-                    wordsText = array[1].dropFirst()
                 }
-            } else {
-                let array = wordsText.split(separator: "/", maxSplits: 1)
-                switch array.count {
-                case 1:
-                    result.append(parseWord(array[0], dictId: dictId))
-                    return result
-                case 2:
-                    result.append(parseWord(array[0], dictId: dictId))
-                    wordsText = array[1]
-                default:
-                    result.append(Word(""))
-                    return result
-                }
+            }
+            let array = wordsText.split(separator: "/", maxSplits: 1)
+            switch array.count {
+            case 1:
+                result.append(parseWord(array[0], dictId: dictId))
+                return result
+            case 2:
+                result.append(parseWord(array[0], dictId: dictId))
+                wordsText = array[1]
+            default:
+                result.append(Word(""))
+                return result
             }
         }
     }
