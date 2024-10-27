@@ -6,6 +6,12 @@ on:
   pull_request:
     branches: [main]
 
+# bashを使うようにしてpipefailを有効にする
+# https://docs.github.com/ja/actions/writing-workflows/workflow-syntax-for-github-actions#defaultsrunshell
+defaults:
+  run:
+    shell: bash
+
 jobs:
   test:
     runs-on: macos-14
