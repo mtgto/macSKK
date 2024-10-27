@@ -120,6 +120,7 @@ struct Entry: Sendable {
                         result.append(parseWord(wordsText.dropLast(), dictId: dictId))
                         wordsText = array[1].dropFirst()
                     }
+                    continue
                 }
             }
             let array = wordsText.split(separator: "/", maxSplits: 1)
