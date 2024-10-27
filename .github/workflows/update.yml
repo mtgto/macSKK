@@ -4,6 +4,12 @@ on:
   release:
     types: [released]
 
+# bashを使うようにしてpipefailを有効にする
+# https://docs.github.com/ja/actions/writing-workflows/workflow-syntax-for-github-actions#defaultsrunshell
+defaults:
+  run:
+    shell: bash
+
 jobs:
   update:
     runs-on: ubuntu-latest
@@ -12,14 +18,18 @@ jobs:
         id: sha256
         run: |
           browser_download_url=$(echo '${{ toJSON(github.event.release.assets) }}' | jq -r '.[] | select(.name | endswith(".dmg")) | .browser_download_url')
-          SHA256=$(curl -L "${browser_download_url}" | sha256sum | cut -d ' ' -f 1)
+          echo $browser_download_url
+          SHA256=$(curl --fail -L "${browser_download_url}" | sha256sum | cut -d ' ' -f 1)
+          echo "sha256=${SHA256}"
           echo "sha256=${SHA256}" >> "GITHUB_OUTPUT"
       - name: dispatch
         env:
           GITHUB_TOKEN: ${{ secrets.HOMEBREW_MACSKK_TOKEN }}
         run: |
           curl \
-          -H "Authorization token $GITHUB_TOKEN" \
+          --fail \
+          -H "Authorization: token $GITHUB_TOKEN" \
           -H "Accept: application/vnd.github.v3+json" \
+          -H "Content-Type: application/json" \
           https://api.github.com/repos/mtgto/homebrew-macSKK/dispatches \
           -d '{"event_type":"update","client_payload":{"version":"${{ github.event.release.tag_name }}","sha256":"${{ steps.sha256.outputs.sha256 }}"}}'
