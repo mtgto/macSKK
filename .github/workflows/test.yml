@@ -3,8 +3,12 @@ name: test
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - '*.md'
   pull_request:
     branches: [main]
+    paths-ignore:
+      - '*.md'
 
 # bashを使うようにしてpipefailを有効にする
 # https://docs.github.com/ja/actions/writing-workflows/workflow-syntax-for-github-actions#defaultsrunshell
