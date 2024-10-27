@@ -8,7 +8,8 @@ jobs:
   update:
     runs-on: ubuntu-latest
     steps:
-      - name: sha256
+      - name: calculate sha256
+        id: sha256
         run: |
           browser_download_url=$(echo '${{ toJSON(github.event.release.assets) }}' | jq -r '.[] | select(.name | endswith(".dmg")) | .browser_download_url')
           SHA256=$(curl -L "${browser_download_url}" | sha256sum | cut -d ' ' -f 1)
