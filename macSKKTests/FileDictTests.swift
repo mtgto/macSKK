@@ -108,6 +108,7 @@ final class FileDictTests: XCTestCase {
             "いr /射/",
             FileDict.okuriNashiHeader,
             "い /伊/",
+            "あ /阿;阿の注釈/",
             "",
         ].joined(separator: "\n")
         XCTAssertEqual(dict.serialize(), expected)
