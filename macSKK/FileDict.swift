@@ -29,14 +29,13 @@ enum FileDictType: Equatable {
 }
 
 /// 実ファイルをもつSKK辞書
-class FileDict: NSObject, DictProtocol, Identifiable {
+@MainActor class FileDict: NSObject, DictProtocol, Identifiable {
     // FIXME: URLResourceのfileResourceIdentifierKeyをidとして使ってもいいかもしれない。
     // FIXME: ただしこの値は再起動したら同一性が保証されなくなるのでIDとしての永続化はできない
     // FIXME: iCloud Documentsとかでてくるとディレクトリが複数になるけど、ひとまずファイル名だけもっておけばよさそう。
     let id: String
     let fileURL: URL
     let type: FileDictType
-    private var version: NSFileVersion?
     /// ファイルの書き込み・読み込みを直列で実行するためのキュー
     private let fileOperationQueue = {
         let queue = OperationQueue()
@@ -71,7 +70,7 @@ class FileDict: NSObject, DictProtocol, Identifiable {
     }
 
     // MARK: NSFilePresenter
-    var presentedItemURL: URL? { fileURL }
+    nonisolated var presentedItemURL: URL? { fileURL }
     let presentedItemOperationQueue: OperationQueue = {
         let queue = OperationQueue()
         queue.maxConcurrentOperationCount = 1
@@ -84,14 +83,13 @@ class FileDict: NSObject, DictProtocol, Identifiable {
         self.fileURL = fileURL
         self.type = type
         self.dict = MemoryDict(entries: [:], readonly: readonly)
-        self.version = NSFileVersion.currentVersionOfItem(at: fileURL)
         self.readonly = readonly
         super.init()
-        load()
+        load(fileURL: fileURL)
         NSFileCoordinator.addFilePresenter(self)
     }
 
-    func load() {
+    nonisolated func load(fileURL: URL) {
         let operation = BlockOperation {
             var coordinationError: NSError?
             var readingError: NSError?
@@ -99,9 +97,10 @@ class FileDict: NSObject, DictProtocol, Identifiable {
             NotificationCenter.default.post(name: notificationNameDictLoad,
                                             object: DictLoadEvent(id: self.id,
                                                                   status: .loading))
-            fileCoordinator.coordinate(readingItemAt: self.fileURL, error: &coordinationError) { [weak self] url in
+            fileCoordinator.coordinate(readingItemAt: fileURL, error: &coordinationError) { [weak self] url in
                 if let self {
                     do {
+                        let memoryDict: MemoryDict
                         if case .json = self.type {
                             let decoder = JSONDecoder()
                             decoder.keyDecodingStrategy = .convertFromSnakeCase
@@ -116,24 +115,24 @@ class FileDict: NSObject, DictProtocol, Identifiable {
                             let okuriNashiEntries = jisyo.okuriNasi.mapValues({
                                 $0.map { Word($0) }
                             })
-                            let memoryDict = MemoryDict(okuriAriEntries: okuriAriEntries, okuriNashiEntries: okuriNashiEntries, readonly: readonly)
-                            self.dict = memoryDict
+                            memoryDict = MemoryDict(okuriAriEntries: okuriAriEntries, okuriNashiEntries: okuriNashiEntries, readonly: readonly)
                         } else if case .traditional(let encoding) = self.type {
                             let source = try self.loadString(url, encoding: encoding)
                             if source.isEmpty {
                                 // 辞書ファイルを書き込み中に読み込んでしまった?
                                 logger.warning("辞書 \(self.id) を読み込んだところ0バイトだったため更新を無視します")
                             }
-                            let memoryDict = MemoryDict(dictId: self.id, source: source, readonly: readonly)
+                            memoryDict = MemoryDict(dictId: self.id, source: source, readonly: readonly)
+                        } else {
+                            fatalError()
+                        }
+                        Task { @MainActor in
                             self.dict = memoryDict
                         }
-                        self.version = NSFileVersion.currentVersionOfItem(at: url)
-                        logger.log("辞書 \(self.id, privacy: .public) から \(self.dict.entries.count) エントリ読み込みました")
                         NotificationCenter.default.post(name: notificationNameDictLoad,
                                                         object: DictLoadEvent(id: self.id,
-                                                                              status: .loaded(success: dict.entryCount, failure: dict.failedEntryCount)))
+                                                                              status: .loaded(success: memoryDict.entryCount,     failure: memoryDict.failedEntryCount)))
                     } catch {
-                        logger.error("辞書 \(self.id, privacy: .public) の読み込みでエラーが発生しました: \(error)")
                         NotificationCenter.default.post(name: notificationNameDictLoad,
                                                         object: DictLoadEvent(id: self.id,
                                                                               status: .fail(error)))
@@ -149,7 +148,7 @@ class FileDict: NSObject, DictProtocol, Identifiable {
         operation.waitUntilFinished()
     }
 
-    private func loadString(_ url: URL, encoding: String.Encoding) throws -> String {
+    nonisolated private func loadString(_ url: URL, encoding: String.Encoding) throws -> String {
         if encoding == .japaneseEUC {
             let data = try Data(contentsOf: url)
             return try data.eucJis2004String()
@@ -172,13 +171,13 @@ class FileDict: NSObject, DictProtocol, Identifiable {
         return try String(contentsOf: url, encoding: encoding)
     }
 
-    func save() {
+    func save(to url: URL, encoding: String.Encoding) {
         if !hasUnsavedChanges {
             logger.log("辞書 \(self.id, privacy: .public) は変更されていないため保存は行いません")
             return
         }
         let operation = BlockOperation {
-            guard let data = self.serialize().data(using: self.type.encoding) else {
+            guard let data = self.serialize().data(using: encoding) else {
                 fatalError("辞書 \(self.id) のシリアライズに失敗しました")
             }
             var coordinationError: NSError?
@@ -187,7 +186,6 @@ class FileDict: NSObject, DictProtocol, Identifiable {
             fileCoordinator.coordinate(writingItemAt: self.fileURL, error: &coordinationError) { [weak self] newURL in
                 if let self {
                     do {
-                        self.version = try NSFileVersion.addOfItem(at: newURL, withContentsOf: newURL)
                         logger.log("辞書のバージョンを作成しました")
                     } catch {
                         logger.error("辞書のバージョン作成でエラーが発生しました: \(error)")
@@ -285,35 +283,16 @@ class FileDict: NSObject, DictProtocol, Identifiable {
 }
 
 extension FileDict: NSFilePresenter {
-    // 他プログラムでの書き込みなどでは呼ばれないみたい
-    func presentedItemDidGain(_ version: NSFileVersion) {
-        if version == self.version {
-            logger.log("辞書 \(self.id, privacy: .public) のバージョンが自分自身に更新されたため何もしません")
-        } else {
-            logger.log("辞書 \(self.id, privacy: .public) のバージョンが更新されたので読み込みます")
-            load()
-        }
-    }
-
-    func presentedItemDidLose(_ version: NSFileVersion) {
-        logger.log("辞書 \(self.id, privacy: .public) が更新されたので読み込みます (バージョン情報が消失)")
-        load()
-    }
-
     // NOTE: save() で保存した場合はバージョンが必ず更新されるのでこのメソッドは呼ばれない
     // IMEとして動いているmacSKK (A) とXcodeからデバッグ起動しているmacSKK (B) の両方がいる場合、
     // どちらも同じ辞書ファイルを監視しているので、Aが保存してもAのpresentedItemDidChangeは呼び出されないが、
     // BのpresentedItemDidChangeは呼び出される。
-    func presentedItemDidChange() {
+    nonisolated func presentedItemDidChange() {
         guard let version = NSFileVersion.currentVersionOfItem(at: fileURL) else {
             logger.error("辞書 \(self.id, privacy: .public) のバージョンが存在しません")
             return
         }
-        if version == self.version {
-            logger.log("辞書 \(self.id, privacy: .public) がアプリ外で変更されたため読み込みます")
-        } else {
-            logger.log("辞書 \(self.id, privacy: .public) が変更されたので読み込みます")
-        }
-        load()
+        logger.log("辞書 \(self.id, privacy: .public) が変更されたので読み込みます")
+        load(fileURL: self.fileURL)
     }
 }

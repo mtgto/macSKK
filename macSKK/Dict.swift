@@ -29,7 +29,7 @@ struct DictLoadEvent {
     let status: DictLoadStatus
 }
 
-protocol DictProtocol {
+@MainActor protocol DictProtocol {
     /**
      * 辞書を引き変換候補順に返す
      *

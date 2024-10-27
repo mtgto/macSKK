@@ -488,8 +488,10 @@ final class SettingsViewModel: ObservableObject {
                 if let userDict = Global.dictionary.userDict as? FileDict, userDict.id == loadEvent.id {
                     self.userDictLoadingStatus = loadEvent.status
                     if case .fail(let error) = loadEvent.status {
+                        logger.error("辞書 \(loadEvent.id, privacy: .public) の読み込みでエラーが発生しました: \(error)")
                         UNNotifier.sendNotificationForUserDict(readError: error)
-                    } else if case .loaded(_, let failureCount) = loadEvent.status, failureCount > 0 {
+                    } else if case .loaded(let successCount, let failureCount) = loadEvent.status, failureCount > 0 {
+                        logger.log("辞書 \(loadEvent.id, privacy: .public) から \(successCount) エントリ読み込みました")
                         UNNotifier.sendNotificationForUserDict(failureEntryCount: failureCount)
                     }
                 } else {
