@@ -563,7 +563,11 @@ final class SettingsViewModel: ObservableObject {
                         let type: FileDictType = if url.pathExtension == "json" {
                             .json
                         } else {
-                            .traditional(.japaneseEUC)
+                            if url.lastPathComponent.contains("utf8") {
+                                .traditional(.utf8)
+                            } else {
+                                .traditional(.japaneseEUC)
+                            }
                         }
                         self.dictSettings.append(DictSetting(filename: url.lastPathComponent,
                                                              enabled: false,
