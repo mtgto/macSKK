@@ -43,15 +43,18 @@ struct MemoryDict: DictProtocol {
                 return
             }
             if let entry = Entry(line: line, dictId: dictId) {
-                if let candidates = dict[entry.yomi] {
-                    dict[entry.yomi] = candidates + entry.candidates
-                } else {
-                    dict[entry.yomi] = entry.candidates
-                }
-                if entry.yomi.isOkuriAri {
-                    okuriAriYomis.append(entry.yomi)
-                } else {
-                    okuriNashiYomis.append(entry.yomi)
+                // 空文字列への変換候補をもつ場合、entry.candidatesは空になっているのでスキップする
+                if !entry.candidates.isEmpty {
+                    if let candidates = dict[entry.yomi] {
+                        dict[entry.yomi] = candidates + entry.candidates
+                    } else {
+                        dict[entry.yomi] = entry.candidates
+                    }
+                    if entry.yomi.isOkuriAri {
+                        okuriAriYomis.append(entry.yomi)
+                    } else {
+                        okuriNashiYomis.append(entry.yomi)
+                    }
                 }
             } else {
                 failedEntryCount += 1
