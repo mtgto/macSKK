@@ -59,6 +59,9 @@ final class EntryTests: XCTestCase {
         // 送り仮名ブロックが閉じていない
         entry = Entry(line: "いt /[った/行/", dictId: "")
         XCTAssertEqual(entry?.candidates, [Word("[った"), Word("行")])
+        // 読みにある「う゛」は「ゔ」として扱う
+        entry = Entry(line: "しう゛ぁ /湿婆/", dictId: "")
+        XCTAssertEqual(entry?.yomi, "しゔぁ")
     }
 
     func testInvalidLine() {
