@@ -9,6 +9,7 @@ struct SKKServDictView: View {
     @Binding var isShowSheet: Bool
     @State var information: String = ""
     @State var testing: Bool = false
+    @State var yomi: String = ""
 
     var body: some View {
         VStack {
@@ -25,6 +26,35 @@ struct SKKServDictView: View {
                     .pickerStyle(.radioGroup)
                 } header: {
                     Text("SKKServDictTitle")
+                }
+                Section {
+                    TextField("Yomi", text: $yomi)
+                    HStack {
+                        Spacer()
+                        Button {
+                            let skkservService = SKKServService()
+                            let setting = settingsViewModel.skkservDictSetting
+                            let destination = SKKServDestination(host: setting.address,
+                                                                 port: setting.port,
+                                                                 encoding: setting.encoding)
+                            testing = true
+                            let result = Result {
+                                try skkservService.refer(yomi: yomi, destination: destination, timeout: 1.0)
+                            }
+                            switch result {
+                            case .success(let response):
+                                logger.log("skkservの応答: \(response, privacy: .public)")
+                                information = response
+                            case .failure(let error):
+                                showError(error)
+                            }
+                            testing = false
+                        } label: {
+                            Text("Refer")
+                        }.disabled(yomi.isEmpty || testing)
+                    }
+                } header: {
+                    Text("SKKServDictReferTestTitle")
                 } footer: {
                     if testing {
                         ProgressView().controlSize(.small)
@@ -51,32 +81,11 @@ struct SKKServDictView: View {
                         logger.log("skkservのバージョン: \(version, privacy: .public)")
                         information = String(localized: "SKKServClientConnected")
                     case .failure(let error):
-                        if let error = error as? SKKServClientError {
-                            switch error {
-                            case .unexpected:
-                                logger.error("SKKServClientへのXPC呼び出しで不明なエラーが発生しました")
-                                information = String(localized: "SKKServClientUnknownError")
-                            case .connectionRefused:
-                                logger.info("skkservへの通信ができませんでした")
-                                information = String(localized: "SKKServClientConnectionRefused")
-                            case .connectionTimeout:
-                                logger.info("skkservへの接続がタイムアウトしました")
-                                information = String(localized: "SKKServClientConnectionTimeout")
-                            case .timeout:
-                                logger.info("skkservへの通信がタイムアウトしました")
-                                information = String(localized: "SKKServClientTimeout")
-                            default:
-                                logger.error("SKKServClientへのXPC呼び出しで不明なエラーが発生しました")
-                                information = String(localized: "SKKServClientUnknownError")
-                            }
-                        } else {
-                            logger.error("SKKServClientへのXPC呼び出しで不明なエラーが発生しました")
-                            information = String(localized: "SKKServClientUnknownError")
-                        }
+                        showError(error)
                     }
                     testing = false
                 } label: {
-                    Text("Test")
+                    Text("Connection Test")
                         .padding([.leading, .trailing])
                 }
                 .disabled(testing)
@@ -98,7 +107,32 @@ struct SKKServDictView: View {
             .padding()
             Spacer()
         }
-        .frame(width: 480, height: 270)
+        .frame(width: 480, height: 400)
+    }
+
+    private func showError(_ error: any Error) {
+        if let error = error as? SKKServClientError {
+            switch error {
+            case .unexpected:
+                logger.error("SKKServClientへのXPC呼び出しで不明なエラーが発生しました")
+                information = String(localized: "SKKServClientUnknownError")
+            case .connectionRefused:
+                logger.info("skkservへの通信ができませんでした")
+                information = String(localized: "SKKServClientConnectionRefused")
+            case .connectionTimeout:
+                logger.info("skkservへの接続がタイムアウトしました")
+                information = String(localized: "SKKServClientConnectionTimeout")
+            case .timeout:
+                logger.info("skkservへの通信がタイムアウトしました")
+                information = String(localized: "SKKServClientTimeout")
+            default:
+                logger.error("SKKServClientへのXPC呼び出しで不明なエラーが発生しました")
+                information = String(localized: "SKKServClientUnknownError")
+            }
+        } else {
+            logger.error("SKKServClientへのXPC呼び出しで不明なエラーが発生しました")
+            information = String(localized: "SKKServClientUnknownError")
+        }
     }
 }
 

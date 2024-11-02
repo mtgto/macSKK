@@ -28,6 +28,7 @@
 "LoadingStatusUnknown" = "不明";
 "SKKServDictTitle" = "SKKServ辞書の設定";
 "SKKServDictTesting" = "SKKServへの接続テスト中…";
+"SKKServDictReferTestTitle" = "SKKServ辞書の参照テスト";
 "SKKServClientConnected" = "skkservへの接続に成功しました";
 "SKKServClientUnknownError" = "skkservへの接続中に不明なエラーが発生しました";
 "SKKServClientConnectionRefused" = "skkservに接続できませんでした";
@@ -74,10 +75,12 @@
 "Add…" = "追加…";
 "Cancel" = "キャンセル";
 "Add" = "追加";
-"Test" = "テスト";
+"Connection Test" = "接続テスト";
 "Address" = "アドレス";
 "TCP Port" = "TCPポート番号";
 "Response Encoding" = "応答エンコーディング";
+"Yomi" = "読み";
+"Refer" = "参照";
 "Rename" = "リネーム";
 "Duplicate" = "複製";
 "Edit" = "編集";
