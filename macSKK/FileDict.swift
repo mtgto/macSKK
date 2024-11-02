@@ -176,38 +176,27 @@ enum FileDictType: Equatable {
             logger.log("辞書 \(self.id, privacy: .public) は変更されていないため保存は行いません")
             return
         }
-        let operation = BlockOperation {
-            guard let data = self.serialize().data(using: encoding) else {
-                fatalError("辞書 \(self.id) のシリアライズに失敗しました")
-            }
-            var coordinationError: NSError?
-            var writingError: NSError?
-            let fileCoordinator = NSFileCoordinator(filePresenter: self)
-            fileCoordinator.coordinate(writingItemAt: self.fileURL, error: &coordinationError) { [weak self] newURL in
-                if let self {
-                    do {
-                        logger.log("辞書のバージョンを作成しました")
-                    } catch {
-                        logger.error("辞書のバージョン作成でエラーが発生しました: \(error)")
-                        writingError = error as NSError
-                        return
-                    }
-                    do {
-                        try data.write(to: newURL)
-                        self.hasUnsavedChanges = false
-                        logger.log("辞書を永続化しました。現在のエントリ数は \(dict.entries.count)、シリアライズ後のファイルサイズは\(data.count)バイトです")
-                    } catch {
-                        logger.error("辞書 \(self.id, privacy: .public) の書き込みに失敗しました: \(error)")
-                        writingError = error as NSError
-                    }
+        guard let data = self.serialize().data(using: encoding) else {
+            fatalError("辞書 \(self.id) のシリアライズに失敗しました")
+        }
+        var coordinationError: NSError?
+        var writingError: NSError?
+        let fileCoordinator = NSFileCoordinator(filePresenter: self)
+        fileCoordinator.coordinate(writingItemAt: self.fileURL, error: &coordinationError) { [weak self] newURL in
+            if let self {
+                do {
+                    try data.write(to: newURL)
+                    self.hasUnsavedChanges = false
+                    logger.log("辞書を永続化しました。現在のエントリ数は \(dict.entries.count)、シリアライズ後のファイルサイズは\(data.count)バイトです")
+                } catch {
+                    logger.error("辞書 \(self.id, privacy: .public) の書き込みに失敗しました: \(error)")
+                    writingError = error as NSError
                 }
             }
-            if let error = coordinationError ?? writingError {
-                logger.error("辞書 \(self.id, privacy: .public) の読み込み中にエラーが発生しました: \(error)")
-            }
         }
-        fileOperationQueue.addOperation(operation)
-        operation.waitUntilFinished()
+        if let error = coordinationError ?? writingError {
+            logger.error("辞書 \(self.id, privacy: .public) の読み込み中にエラーが発生しました: \(error)")
+        }
     }
 
     deinit {
