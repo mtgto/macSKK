@@ -28,6 +28,7 @@
 "LoadingStatusUnknown" = "Unknown";
 "SKKServDictTitle" = "SKKServ Dictionary Setting";
 "SKKServDictTesting" = "Testing to connect to skkserv…";
+"SKKServDictReferTestTitle" = "SKKServ Dictionary Referring Test";
 "SKKServClientConnected" = "Succeeded to connect to skkserv.";
 "SKKServClientUnknownError" = "Unknown error occurred while connecting to skkserv.";
 "SKKServClientConnectionRefused" = "Failed to connect to skkserv.";
@@ -74,10 +75,12 @@
 "Add…" = "Add…";
 "Cancel" = "Cancel";
 "Add" = "Add";
-"Test" = "Test";
+"Connection Test" = "Connection Test";
 "Address" = "Address";
 "TCP Port" = "TCP Port No.";
 "Response Encoding" = "Response Encoding";
+"Yomi" = "Yomi";
+"Refer" = "Refer";
 "Rename" = "Rename";
 "Duplicate" = "Duplicate";
 "Edit" = "Edit";
