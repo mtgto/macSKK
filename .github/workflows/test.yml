@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths-ignore:
       - '*.md'
+      - '.github/workflows/update.yml'
   pull_request:
     branches: [main]
     paths-ignore:
