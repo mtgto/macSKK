@@ -44,6 +44,9 @@ Universal Binary (Apple Silicon & Intel Mac) でビルドしていますが、�
 
 2023年現在、Mac App Storeでは日本語入力システムを配布することができないため、[Appleのソフトウェア公証](https://support.apple.com/ja-jp/guide/security/sec3ad8e6e53/1/web/1)を受けたアプリケーションバイナリを[GitHub Releases](https://github.com/mtgto/macSKK/releases/latest)で配布しています。dmgファイルをダウンロードしマウントした中にあるpkgファイルからインストールしてください。
 
+もしHomebrew Caskでインストールしたい場合は、 `brew install --cask mtgto/macskk/macskk` でもインストールできます。
+詳しくは https://github.com/mtgto/homebrew-macSKK を参照してください。
+
 macSKKのインストール後に、システム設定→キーボード→入力ソースから「ひらがな」(アイコンは`▼あ`)と「ABC」(アイコンは`▼A`)を追加してください。カタカナ、全角英数、半角カナは追加しても追加しなくても問題ありません。
 もしインストール直後に表示されなかったり、バージョンアップしても反映されない場合はログアウト & ログインを試してみてください。
 
