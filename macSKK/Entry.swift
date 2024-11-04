@@ -13,6 +13,7 @@ struct Entry: Sendable {
     /**
      * SKK辞書の一行を受け取り、パースする
      *
+     * 読みの「う゛」は「ゔ」に変換して返す。
      * スラッシュで終わらないなど、変換候補エントリとして壊れている場合はnilを返す。
      * 空文字列の変換候補を含む場合、現状の実装では除外して返す。
      * 空文字列の変換候補には今後対応する予定。
@@ -30,7 +31,7 @@ struct Entry: Sendable {
         if words.count != 2 || words[0].last == " " {
             return nil
         }
-        yomi = String(words[0])
+        yomi = String(words[0]).replacing("う゛", with: "ゔ")
         guard let candidates = Self.parseWords(words[1], dictId: dictId) else { return nil }
         // TODO: いまは空の変換候補をスキップしているが扱えるようにしたい
         self.candidates = candidates.filter { !$0.word.isEmpty }

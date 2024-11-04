@@ -617,7 +617,7 @@ final class StateMachineTests: XCTestCase {
         expectation.expectedFulfillmentCount = 2
         stateMachine.inputMethodEvent.collect(6).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("v")])))
-            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("う゛")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("ゔ")])))
             XCTAssertEqual(events[2], .fixedText("ヴ"))
             XCTAssertEqual(events[3], .modeChanged(.katakana, .zero))
             XCTAssertEqual(events[4], .markedText(MarkedText([.markerCompose, .plain("v")])))
@@ -626,9 +626,9 @@ final class StateMachineTests: XCTestCase {
         }.store(in: &cancellables)
         stateMachine.yomiEvent.collect(4).sink { events in
             XCTAssertEqual(events[0], "")
-            XCTAssertEqual(events[1], "う゛")
+            XCTAssertEqual(events[1], "ゔ")
             XCTAssertEqual(events[2], "")
-            XCTAssertEqual(events[3], "う゛")
+            XCTAssertEqual(events[3], "ゔ")
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "v", withShift: true)))

@@ -59,7 +59,10 @@ class SKKServClient: NSObject, SKKServClientProtocol {
                     logger.error("skkservへの接続ができていません")
                     return reply(nil, SKKServClientError.unexpected)
                 }
-                guard let encoded = yomi.data(using: .japaneseEUC) else {
+                // "ゔ" は Encoding.japaneseEUC では変換できないので「う゛」にしてから参照する。
+                // EUC-JIS-2004形式なら変換するのでそうしてもいいかも?
+                // ただSKK-JISYO.Lも「う゛」で登録されているので固定でいい気がする
+                guard let encoded = yomi.replacing("ゔ", with: "う゛").data(using: .japaneseEUC) else {
                     logger.error("見出しをDataに変換できませんでした")
                     return reply(nil, SKKServClientError.unexpected)
                 }
