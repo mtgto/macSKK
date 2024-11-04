@@ -21,7 +21,7 @@ jobs:
           echo $browser_download_url
           SHA256=$(curl --fail -L "${browser_download_url}" | sha256sum | cut -d ' ' -f 1)
           echo "sha256=${SHA256}"
-          echo "sha256=${SHA256}" >> "GITHUB_OUTPUT"
+          echo "sha256=${SHA256}" >> "$GITHUB_OUTPUT"
       - name: dispatch
         env:
           GITHUB_TOKEN: ${{ secrets.HOMEBREW_MACSKK_TOKEN }}
