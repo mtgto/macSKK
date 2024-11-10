@@ -4,7 +4,9 @@
 import AppKit
 
 /**
- * 修飾キーついて整理されたキー入力情報。
+ * 整理されたキー入力情報。
+ *
+ * NSEventからキーと修飾キーについてIMEの入力として必要な情報だけを取り出して所持しておく。
  */
 struct CurrentInput: Equatable {
     let key: Key
