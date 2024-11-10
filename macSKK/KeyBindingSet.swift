@@ -86,7 +86,9 @@ struct KeyBindingSet: Identifiable, Hashable {
     /// 現在のキーバインドに割り当てられているアクションを返す。
     /// 入力はIMKInputController#handleの引数のNSEventなので、charactersIgnoreingModifiersがシフトキーの影響を受けない。
     func action(event: NSEvent) -> KeyBinding.Action? {
-        sorted.first(where: { $0.0.accepts(event: event) })?.1
+        let currentInput = CurrentInput(event: event)
+
+        return sorted.first(where: { $0.0.accepts(currentInput: currentInput) })?.1
     }
 
     var canDelete: Bool {

@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4B8E87D42CE05C40004E7461 /* CurrentInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B8E87D32CE05C3F004E7461 /* CurrentInput.swift */; };
+		4B8E87D62CE05D0C004E7461 /* Key.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B8E87D52CE05D0A004E7461 /* Key.swift */; };
+		4B8E87D82CE068A0004E7461 /* CurrentInputTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B8E87D72CE0689D004E7461 /* CurrentInputTests.swift */; };
 		CE0326A02C5D1DD6000FF691 /* SKK-JISYO.test.json in Resources */ = {isa = PBXBuildFile; fileRef = CE03269F2C5D1DD6000FF691 /* SKK-JISYO.test.json */; };
 		CE06CA2B2AAC171B00E80E5E /* FileDictTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE06CA292AAC171B00E80E5E /* FileDictTests.swift */; };
 		CE06CA2D2AAC172F00E80E5E /* empty.txt in Resources */ = {isa = PBXBuildFile; fileRef = CE06CA2C2AAC172F00E80E5E /* empty.txt */; };
@@ -168,6 +171,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		4B8E87D32CE05C3F004E7461 /* CurrentInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentInput.swift; sourceTree = "<group>"; };
+		4B8E87D52CE05D0A004E7461 /* Key.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Key.swift; sourceTree = "<group>"; };
+		4B8E87D72CE0689D004E7461 /* CurrentInputTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentInputTests.swift; sourceTree = "<group>"; };
 		CE03269F2C5D1DD6000FF691 /* SKK-JISYO.test.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "SKK-JISYO.test.json"; sourceTree = "<group>"; };
 		CE06CA292AAC171B00E80E5E /* FileDictTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileDictTests.swift; sourceTree = "<group>"; };
 		CE06CA2C2AAC172F00E80E5E /* empty.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = empty.txt; sourceTree = "<group>"; };
@@ -406,6 +412,8 @@
 				CEADA44A2B025A0F0026E2BD /* Entry.swift */,
 				CE4CB5CB2AD557D90046FA34 /* NumberEntry.swift */,
 				CE84A3E6295DA4DA009394C4 /* Romaji.swift */,
+				4B8E87D32CE05C3F004E7461 /* CurrentInput.swift */,
+				4B8E87D52CE05D0A004E7461 /* Key.swift */,
 				CE11C7BE2BE47D9800A35F3D /* KeyBinding.swift */,
 				CE39FA962BF0813E00E293F0 /* KeyBindingSet.swift */,
 				CE3E44AC2B5391DB00105798 /* SettingsWatcher.swift */,
@@ -467,6 +475,7 @@
 				CED1CA1D2BAFBE0600C32AE3 /* SKKServDictTests.swift */,
 				CEADA44C2B025A8A0026E2BD /* EntryTests.swift */,
 				CE84A3E8295DA504009394C4 /* RomajiTests.swift */,
+				4B8E87D72CE0689D004E7461 /* CurrentInputTests.swift */,
 				CE2F3B122C030C9A00CE342B /* KeyBindingTests.swift */,
 				CE49A2772C19E07800D53CFE /* KeyBindingSetTests.swift */,
 				CED7CA3D2A8397E4004EF988 /* UpdateCheckerTests.swift */,
@@ -789,6 +798,7 @@
 				CE1B006D2BA54DE400C830FD /* SKKServClientProtocol.swift in Sources */,
 				CE1B006A2BA5490E00C830FD /* SKKServDictView.swift in Sources */,
 				CED0984D2B779E4700F2E844 /* UNNotifier.swift in Sources */,
+				4B8E87D42CE05C40004E7461 /* CurrentInput.swift in Sources */,
 				CE7F9AD92AADEBF9001B1877 /* AppDelegate.swift in Sources */,
 				CEF0825B296D8FF000646366 /* CandidatesView.swift in Sources */,
 				CED098512B95F32600F2E844 /* WorkaroundView.swift in Sources */,
@@ -800,6 +810,7 @@
 				CEF3D86C2B9C022900BD1D3A /* WorkaroundApplicationView.swift in Sources */,
 				CE11C7B52BDD461C00A35F3D /* Global.swift in Sources */,
 				CE84A3DE29571797009394C4 /* Action.swift in Sources */,
+				4B8E87D62CE05D0C004E7461 /* Key.swift in Sources */,
 				CED987412BB953E7001B40F9 /* Data+EucJis2004.swift in Sources */,
 				CE485A882A8FA195008271EF /* Release+UNNotification.swift in Sources */,
 				CED7CA3A2A839505004EF988 /* FetchUpdateServiceProtocol.swift in Sources */,
@@ -837,6 +848,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4B8E87D82CE068A0004E7461 /* CurrentInputTests.swift in Sources */,
 				CE84A3ED295DA818009394C4 /* MemoryDictTests.swift in Sources */,
 				CE06CA342AAC199500E80E5E /* UserDict+Utilities.swift in Sources */,
 				CE84A3E9295DA504009394C4 /* RomajiTests.swift in Sources */,

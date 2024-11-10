@@ -4,16 +4,16 @@
 import SwiftUI
 
 struct KeyWithModifierFlags: Hashable {
-    let key: KeyBinding.Key
+    let key: Key
     let modifierFlags: NSEvent.ModifierFlags
 
     var displayString: String {
         KeyBinding.Input(key: key, modifierFlags: modifierFlags).localized
     }
 
-    init(_ key: KeyBinding.Key, _ modifierFlags: NSEvent.ModifierFlags) {
+    init(_ key: Key, _ modifierFlags: NSEvent.ModifierFlags) {
         self.key = key
-        self.modifierFlags = modifierFlags.intersection(KeyBinding.Input.allowedModifierFlags)
+        self.modifierFlags = modifierFlags.intersection(Key.allowedModifierFlags)
     }
 
     // Equatable
@@ -35,7 +35,7 @@ final class KeyBindingInput: ObservableObject, Identifiable, Hashable {
     @Published var displayString: String
     var optionalModifierFlags: NSEvent.ModifierFlags
 
-    init(key: KeyBinding.Key, modifierFlags: NSEvent.ModifierFlags, optionalModifierFlags: NSEvent.ModifierFlags = []) {
+    init(key: Key, modifierFlags: NSEvent.ModifierFlags, optionalModifierFlags: NSEvent.ModifierFlags = []) {
         let keyWithModifierFlags = KeyWithModifierFlags(key, modifierFlags)
         self.keyWithModifierFlags = keyWithModifierFlags
         self.optionalModifierFlags = optionalModifierFlags
@@ -149,8 +149,8 @@ struct KeyBindingInputsView: View {
                 .onChange(of: editingInput) { newEditingInput in
                     if let newEditingInput {
                         eventMonitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown]) { event in
-                            let key: KeyBinding.Key
-                            if let character = event.charactersIgnoringModifiers?.lowercased().first, KeyBinding.Key.characters.contains(character) {
+                            let key: Key
+                            if let character = event.charactersIgnoringModifiers?.lowercased().first, Key.characters.contains(character) {
                                 key = .character(character)
                             } else {
                                 key = .code(event.keyCode)

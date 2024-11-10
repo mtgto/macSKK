@@ -71,103 +71,15 @@ struct KeyBinding: Identifiable, Hashable {
         }
     }
 
-    enum Key: Hashable, Equatable {
-        /// jやqやlなど、キーに印字されているテキスト。
-        /// シフトを押しながら入力する場合は英字は小文字、!や#など記号はそのまま。
-        case character(Character)
-        /// keyCode形式。矢印キーなど表記できないキーを表現するために使用する。
-        /// 設定でDvorak配列を選んでいる場合などもkeyCodeはQwerty配列の位置のままなので基本的にはcharacterで設定すること。
-        /// 例えば設定でDvorak配列を選んだ状態でoを入力してもkeyCodeはQwerty配列のsのキーと同じになる。
-        case code(UInt16)
-        /// macSKKでkeyCodeベースでなく印字されている文字で取り扱うキーの集合。
-        /// キーバインド設定画面で使用しているNSEvent#charactersIngoringModifiersはIMKInputControllerへ入力されるNSEventと違い
-        /// Shiftを押しながら入力する記号の場合 (!とか) は記号の方が渡ってくる
-        /// (IMKInputControllerのNSEvent#charactersIgnoringModifiersは1)
-        /// Shiftを押しながら入力する記号も含まれている。
-        static let characters: [Character] = "abcdefghijklmnopqrstuvwxyz1234567890,./;-=`'\\!@#$%^&*()|:<>?\"~".map { $0 }
-
-        // UserDefaultsからのデコード用
-        init?(rawValue: Any) {
-            if let character = rawValue as? String, Self.characters.contains(character) {
-                self = .character(Character(character))
-            } else if let keyCode = rawValue as? UInt16 {
-                self = .code(keyCode)
-            } else {
-                return nil
-            }
-        }
-
-        // UserDefaultsへのエンコード用
-        func encode() -> Any {
-            switch self {
-            case .character(let character):
-                return String(character)
-            case .code(let keyCode):
-                return keyCode
-            }
-        }
-
-        var displayString: String {
-            switch self {
-            case .character(let character):
-                if character.isAlphabet {
-                    return character.uppercased()
-                } else {
-                    return String(character)
-                }
-            case .code(let keyCode):
-                switch keyCode {
-                case 0x24:
-                    return "Enter"
-                case 0x30:
-                    return "Tab"
-                case 0x31:
-                    return "Space"
-                case 0x33:
-                    return "Backspace"
-                case 0x35:
-                    return "ESC"
-                case 0x66:
-                    return String(localized: "KeyEisu")
-                case 0x68:
-                    return String(localized: "KeyKana")
-                case 0x73:
-                    return "Home"
-                case 0x74:
-                    return "PageUp"
-                case 0x75:
-                    return "Delete"
-                case 0x77:
-                    return "End"
-                case 0x79:
-                    return "PageDown"
-                case 0x7b:
-                    return "←"
-                case 0x7c:
-                    return "→"
-                case 0x7d:
-                    return "↓"
-                case 0x7e:
-                    return "↑"
-                default:
-                    return "\(keyCode)"
-                }
-            }
-        }
-    }
-
     struct Input: Equatable, Identifiable, Hashable {
         let key: Key
         /// 入力時に押されていないといけない修飾キー。
         /// keyがcode形式の場合 (スペース、タブ、バックスペース、矢印キーなど) はmodifierFlagsはShiftのみ許可する
-        /// keyがcharacter形式の場合は
+        /// keyがcharacter形式の場合は`Key.allowedModifierFlags`にあるものを許可する
         let modifierFlags: NSEvent.ModifierFlags
 
         /// 入力時に押されていてもよい修飾キー。
         let optionalModifierFlags: NSEvent.ModifierFlags
-
-        /// Inputで管理する修飾キーの集合。ここに含まれてない修飾キーは無視する
-        static let allowedModifierFlags: NSEvent.ModifierFlags = [.shift, .control, .function, .option, .command]
 
         // MARK: Identifiable
         var id: String {
@@ -179,10 +91,10 @@ struct KeyBinding: Identifiable, Hashable {
             }
         }
 
-        init(key: KeyBinding.Key, modifierFlags: NSEvent.ModifierFlags, optionalModifierFlags: NSEvent.ModifierFlags = []) {
+        init(key: Key, modifierFlags: NSEvent.ModifierFlags, optionalModifierFlags: NSEvent.ModifierFlags = []) {
             self.key = key
-            self.modifierFlags = modifierFlags.intersection(Self.allowedModifierFlags)
-            self.optionalModifierFlags = optionalModifierFlags.intersection(Self.allowedModifierFlags)
+            self.modifierFlags = modifierFlags.intersection(Key.allowedModifierFlags)
+            self.optionalModifierFlags = optionalModifierFlags.intersection(Key.allowedModifierFlags)
         }
 
         init?(dict: [String: Any]) {
@@ -192,8 +104,8 @@ struct KeyBinding: Identifiable, Hashable {
                 return nil
             }
             self.key = key
-            self.modifierFlags = NSEvent.ModifierFlags(rawValue: modifierFlagsValue).intersection(Self.allowedModifierFlags)
-            self.optionalModifierFlags = NSEvent.ModifierFlags(rawValue: optionalModifierFlagsValue).intersection(Self.allowedModifierFlags)
+            self.modifierFlags = NSEvent.ModifierFlags(rawValue: modifierFlagsValue).intersection(Key.allowedModifierFlags)
+            self.optionalModifierFlags = NSEvent.ModifierFlags(rawValue: optionalModifierFlagsValue).intersection(Key.allowedModifierFlags)
         }
 
         static func == (lhs: Self, rhs: Self) -> Bool {
@@ -224,24 +136,9 @@ struct KeyBinding: Identifiable, Hashable {
         }
 
         /// このキーバインド設定がキーイベントをこのキーバインドの入力として受理するかどうかを返す。
-        func accepts(event: NSEvent) -> Bool {
-            if modifierFlags.contains(.shift), let character = event.characters?.lowercased().first, Key.characters.contains(character) {
-                // Shiftを押しながら入力されたキーはキーバインド設定から登録した場合は (NSEvent#charactersIgnoringModifiersが記号のほうを返すため)
-                // .character("!") のように記号のほうをもっているが、IMKInputController#handleに渡されるNSEventの
-                // charactersIgnoringModifiersは記号のほうではない ("!"なら"1"になっている) ため、charactersのほうを見る
-                if key != .character(character) {
-                    return false
-                }
-            } else if let character = event.charactersIgnoringModifiers?.lowercased().first, Key.characters.contains(character) {
-                if key != .character(character) {
-                    return false
-                }
-            } else if key != .code(event.keyCode) {
-                return false
-            }
-            // 使用する可能性があるものだけを抽出する。じゃないとrawValueで256が入ってしまうっぽい?
-            let eventModifierFlags = event.modifierFlags.intersection(Self.allowedModifierFlags)
-            return modifierFlags.isSubset(of: eventModifierFlags) && modifierFlags.union(optionalModifierFlags).isSuperset(of: eventModifierFlags)
+        func accepts(currentInput: CurrentInput) -> Bool {
+            // 入力キーが両方あっているかと修飾キーの集合の関係によって判定する
+            key == currentInput.key && modifierFlags.isSubset(of: currentInput.modifierFlags) && modifierFlags.union(optionalModifierFlags).isSuperset(of: currentInput.modifierFlags)
         }
 
         func hash(into hasher: inout Hasher) {
