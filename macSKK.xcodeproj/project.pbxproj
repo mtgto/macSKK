@@ -14,6 +14,7 @@
 		CE06CA2B2AAC171B00E80E5E /* FileDictTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE06CA292AAC171B00E80E5E /* FileDictTests.swift */; };
 		CE06CA2D2AAC172F00E80E5E /* empty.txt in Resources */ = {isa = PBXBuildFile; fileRef = CE06CA2C2AAC172F00E80E5E /* empty.txt */; };
 		CE06CA342AAC199500E80E5E /* UserDict+Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE06CA332AAC199500E80E5E /* UserDict+Utilities.swift */; };
+		CE118EE52CE0B4DE00A7C300 /* KeyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE118EE42CE0B4DB00A7C300 /* KeyTests.swift */; };
 		CE11C7B52BDD461C00A35F3D /* Global.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE11C7B42BDD461C00A35F3D /* Global.swift */; };
 		CE11C7BD2BE47D5D00A35F3D /* KeyBindingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE11C7BC2BE47D5D00A35F3D /* KeyBindingView.swift */; };
 		CE11C7BF2BE47D9800A35F3D /* KeyBinding.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE11C7BE2BE47D9800A35F3D /* KeyBinding.swift */; };
@@ -178,6 +179,7 @@
 		CE06CA292AAC171B00E80E5E /* FileDictTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileDictTests.swift; sourceTree = "<group>"; };
 		CE06CA2C2AAC172F00E80E5E /* empty.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = empty.txt; sourceTree = "<group>"; };
 		CE06CA332AAC199500E80E5E /* UserDict+Utilities.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UserDict+Utilities.swift"; sourceTree = "<group>"; };
+		CE118EE42CE0B4DB00A7C300 /* KeyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyTests.swift; sourceTree = "<group>"; };
 		CE11C7B42BDD461C00A35F3D /* Global.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Global.swift; sourceTree = "<group>"; };
 		CE11C7BC2BE47D5D00A35F3D /* KeyBindingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyBindingView.swift; sourceTree = "<group>"; };
 		CE11C7BE2BE47D9800A35F3D /* KeyBinding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyBinding.swift; sourceTree = "<group>"; };
@@ -476,6 +478,7 @@
 				CEADA44C2B025A8A0026E2BD /* EntryTests.swift */,
 				CE84A3E8295DA504009394C4 /* RomajiTests.swift */,
 				4B8E87D72CE0689D004E7461 /* CurrentInputTests.swift */,
+				CE118EE42CE0B4DB00A7C300 /* KeyTests.swift */,
 				CE2F3B122C030C9A00CE342B /* KeyBindingTests.swift */,
 				CE49A2772C19E07800D53CFE /* KeyBindingSetTests.swift */,
 				CED7CA3D2A8397E4004EF988 /* UpdateCheckerTests.swift */,
@@ -848,6 +851,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CE118EE52CE0B4DE00A7C300 /* KeyTests.swift in Sources */,
 				4B8E87D82CE068A0004E7461 /* CurrentInputTests.swift in Sources */,
 				CE84A3ED295DA818009394C4 /* MemoryDictTests.swift in Sources */,
 				CE06CA342AAC199500E80E5E /* UserDict+Utilities.swift in Sources */,

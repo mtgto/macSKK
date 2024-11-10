@@ -21,15 +21,6 @@ final class KeyBindingTests: XCTestCase {
         XCTAssertNotEqual(shiftRight, shiftCtrlRight)
     }
 
-    func testKeyEncodeAndDecode() {
-        let key1: Key = .character("q")
-        XCTAssertEqual(key1, Key(rawValue: key1.encode()))
-        let key2: Key = .code(0x66)
-        XCTAssertEqual(key2, Key(rawValue: key2.encode()))
-        let key3: Key = .character("Q")
-        XCTAssertNil(Key(rawValue: key3.encode()))
-    }
-
     func testInputEncodeAndDecode() {
         let input1 = KeyBinding.Input(key: .character("l"), modifierFlags: [])
         XCTAssertEqual(input1, KeyBinding.Input(dict: input1.encode()))
