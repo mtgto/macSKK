@@ -21,15 +21,6 @@ final class KeyBindingTests: XCTestCase {
         XCTAssertNotEqual(shiftRight, shiftCtrlRight)
     }
 
-    func testKeyEncodeAndDecode() {
-        let key1: KeyBinding.Key = .character("q")
-        XCTAssertEqual(key1, KeyBinding.Key(rawValue: key1.encode()))
-        let key2: KeyBinding.Key = .code(0x66)
-        XCTAssertEqual(key2, KeyBinding.Key(rawValue: key2.encode()))
-        let key3: KeyBinding.Key = .character("Q")
-        XCTAssertNil(KeyBinding.Key(rawValue: key3.encode()))
-    }
-
     func testInputEncodeAndDecode() {
         let input1 = KeyBinding.Input(key: .character("l"), modifierFlags: [])
         XCTAssertEqual(input1, KeyBinding.Input(dict: input1.encode()))
@@ -57,38 +48,26 @@ final class KeyBindingTests: XCTestCase {
     }
 
     func testInputAccepts() {
-        func generateKeyEvent(modifierFlags: NSEvent.ModifierFlags, characters: String, charactersIgnoringModifiers: String? = nil, keyCode: UInt16 = 0) -> NSEvent {
-            NSEvent.keyEvent(with: .keyDown,
-                             location: .zero,
-                             modifierFlags: modifierFlags,
-                             timestamp: 0,
-                             windowNumber: 0,
-                             context: nil,
-                             characters: characters,
-                             charactersIgnoringModifiers: charactersIgnoringModifiers ?? characters,
-                             isARepeat: false,
-                             keyCode: keyCode)!
-        }
         let inputQ = KeyBinding.Input(key: .character("q"), modifierFlags: [])
         let inputShiftQ = KeyBinding.Input(key: .character("q"), modifierFlags: .shift)
-        let eventQ = generateKeyEvent(modifierFlags: [], characters: "q")
-        let eventShiftQ = generateKeyEvent(modifierFlags: .shift, characters: "q")
-        XCTAssertTrue(inputQ.accepts(event: eventQ))
-        XCTAssertFalse(inputShiftQ.accepts(event: eventQ))
-        XCTAssertFalse(inputQ.accepts(event: eventShiftQ))
-        XCTAssertTrue(inputShiftQ.accepts(event: eventShiftQ))
+        let currentInputQ = CurrentInput(key: .character("q"), modifierFlags: [])
+        let currentInputShiftQ = CurrentInput(key: .character("q"), modifierFlags: .shift)
+        XCTAssertTrue(inputQ.accepts(currentInput: currentInputQ))
+        XCTAssertFalse(inputShiftQ.accepts(currentInput: currentInputQ))
+        XCTAssertFalse(inputQ.accepts(currentInput: currentInputShiftQ))
+        XCTAssertTrue(inputShiftQ.accepts(currentInput: currentInputShiftQ))
         let inputLeft = KeyBinding.Input(key: .code(0x7b), modifierFlags: .function, optionalModifierFlags: .shift)
-        let eventLeft = generateKeyEvent(modifierFlags: [.function], characters: "\u{63234}", keyCode: 0x7b)
-        let eventShiftLeft = generateKeyEvent(modifierFlags: [.function, .shift], characters: "\u{63234}", keyCode: 0x7b)
-        XCTAssertTrue(inputLeft.accepts(event: eventLeft))
-        XCTAssertTrue(inputLeft.accepts(event: eventShiftLeft))
-        XCTAssertFalse(inputLeft.accepts(event: eventQ))
+        let currentInputLeft = CurrentInput(key: .code(0x7b), modifierFlags: [.function])
+        let currentInputShiftLeft = CurrentInput(key: .code(0x7b), modifierFlags: [.function, .shift])
+        XCTAssertTrue(inputLeft.accepts(currentInput: currentInputLeft))
+        XCTAssertTrue(inputLeft.accepts(currentInput: currentInputShiftLeft))
+        XCTAssertFalse(inputLeft.accepts(currentInput: currentInputQ))
         let inputEnter = KeyBinding.Input(key: .code(0x24), modifierFlags: [], optionalModifierFlags: .option)
-        let eventEnter = generateKeyEvent(modifierFlags: [], characters: "\r", keyCode: 0x24)
-        let eventOptionEnter = generateKeyEvent(modifierFlags: .option, characters: "\r", keyCode: 0x24)
-        XCTAssertTrue(inputEnter.accepts(event: eventEnter))
-        XCTAssertTrue(inputEnter.accepts(event: eventOptionEnter))
-        XCTAssertFalse(inputEnter.accepts(event: eventLeft))
+        let currentInputEnter = CurrentInput(key: .code(0x24), modifierFlags: [])
+        let currentInputOptionEnter = CurrentInput(key: .code(0x24), modifierFlags: .option)
+        XCTAssertTrue(inputEnter.accepts(currentInput: currentInputEnter))
+        XCTAssertTrue(inputEnter.accepts(currentInput: currentInputOptionEnter))
+        XCTAssertFalse(inputEnter.accepts(currentInput: currentInputLeft))
     }
 
     func testIsDefault() {
