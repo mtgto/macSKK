@@ -189,6 +189,36 @@ enum SelectingBackspace: Int, CaseIterable, Identifiable {
     }
 }
 
+/**
+ * ピリオドを入力したときに使用する句点の設定。
+ * ローマ字かな変換ルールを上書きすることが可能。
+ */
+enum Period: Int, CaseIterable, Identifiable {
+    typealias ID = Int
+    var id: ID { rawValue }
+    /// ローマ字かな変換ルールをそのまま適用する
+    case `default` = 0
+    /// "。" を入力する
+    case maru = 1
+    /// "．" (全角ピリオド) を入力する
+    case period = 2
+}
+
+/**
+ * カンマを入力したときに使用する読点の設定。
+ * ローマ字かな変換ルールを上書きすることが可能。
+ */
+enum Comma: Int, CaseIterable, Identifiable {
+    typealias ID = Int
+    var id: ID { rawValue }
+    /// ローマ字かな変換ルールをそのまま適用する
+    case `default` = 0
+    /// "、" を入力する
+    case ten = 1
+    /// "，" (全角カンマ) を入力する
+    case comma = 2
+}
+
 @MainActor
 final class SettingsViewModel: ObservableObject {
     /// CheckUpdaterで取得した最新のリリース。取得前はnil
