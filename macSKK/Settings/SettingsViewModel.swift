@@ -261,6 +261,8 @@ final class SettingsViewModel: ObservableObject {
     @Published var enterNewLine: Bool
     @Published var systemDict: SystemDict.Kind
     @Published var selectingBackspace: SelectingBackspace
+    @Published var period: Period
+    @Published var comma: Comma
 
     // 辞書ディレクトリ
     let dictionariesDirectoryUrl: URL
@@ -314,6 +316,8 @@ final class SettingsViewModel: ObservableObject {
         selectCandidateKeys = UserDefaults.standard.string(forKey: UserDefaultsKeys.selectCandidateKeys)!
         enterNewLine = UserDefaults.standard.bool(forKey: UserDefaultsKeys.enterNewLine)
         selectingBackspace = SelectingBackspace(rawValue: UserDefaults.standard.integer(forKey: UserDefaultsKeys.selectingBackspace)) ?? SelectingBackspace.default
+        comma = Comma(rawValue: UserDefaults.standard.integer(forKey: UserDefaultsKeys.comma)) ?? .default
+        period = Period(rawValue: UserDefaults.standard.integer(forKey: UserDefaultsKeys.period)) ?? .default
         Global.selectCandidateKeys = selectCandidateKeys.lowercased().map { $0 }
         Global.systemDict = systemDict
         Global.selectingBackspace = selectingBackspace
@@ -530,6 +534,8 @@ final class SettingsViewModel: ObservableObject {
         enterNewLine = false
         systemDict = .daijirin
         selectingBackspace = SelectingBackspace.default
+        comma = Comma.default
+        period = Period.default
     }
 
     // DictionaryViewのPreviewProvider用

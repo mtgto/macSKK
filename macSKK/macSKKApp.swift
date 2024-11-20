@@ -195,6 +195,8 @@ struct macSKKApp: App {
             UserDefaultsKeys.enterNewLine: false,
             UserDefaultsKeys.systemDict: SystemDict.Kind.daijirin.rawValue,
             UserDefaultsKeys.selectingBackspace: SelectingBackspace.default.rawValue,
+            UserDefaultsKeys.comma: Comma.default.rawValue,
+            UserDefaultsKeys.period: Period.default.rawValue,
         ])
     }
 

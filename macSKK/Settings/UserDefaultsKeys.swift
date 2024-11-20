@@ -33,4 +33,8 @@ struct UserDefaultsKeys {
     static let systemDict = "systemDict"
     // 変換候補選択中のバックスペースの挙動
     static let selectingBackspace = "selectingBackspace"
+    // カンマ入力時の読点
+    static let comma = "comma"
+    // ピリオド入力時の句点
+    static let period = "period"
 }
