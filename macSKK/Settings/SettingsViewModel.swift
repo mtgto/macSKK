@@ -190,21 +190,6 @@ enum SelectingBackspace: Int, CaseIterable, Identifiable {
 }
 
 /**
- * ピリオドを入力したときに使用する句点の設定。
- * ローマ字かな変換ルールを上書きすることが可能。
- */
-enum Period: Int, CaseIterable, Identifiable {
-    typealias ID = Int
-    var id: ID { rawValue }
-    /// ローマ字かな変換ルールをそのまま適用する
-    case `default` = 0
-    /// "。" を入力する
-    case maru = 1
-    /// "．" (全角ピリオド) を入力する
-    case period = 2
-}
-
-/**
  * カンマを入力したときに使用する読点の設定。
  * ローマ字かな変換ルールを上書きすることが可能。
  */
@@ -217,6 +202,41 @@ enum Comma: Int, CaseIterable, Identifiable {
     case ten = 1
     /// "，" (全角カンマ) を入力する
     case comma = 2
+
+    init?(rawValue: Int) {
+        switch rawValue & 3 {
+        case 0: self = .default
+        case 1: self = .ten
+        case 2: self = .comma
+        default:
+            return nil
+        }
+    }
+}
+
+/**
+ * ピリオドを入力したときに使用する句点の設定。
+ * ローマ字かな変換ルールを上書きすることが可能。
+ */
+enum Period: Int, CaseIterable, Identifiable {
+    typealias ID = Int
+    var id: ID { rawValue }
+    /// ローマ字かな変換ルールをそのまま適用する
+    case `default` = 0
+    /// "。" を入力する
+    case maru = 4
+    /// "．" (全角ピリオド) を入力する
+    case period = 8
+
+    init?(rawValue: Int) {
+        switch rawValue & 12 {
+        case 0: self = .default
+        case 4: self = .maru
+        case 8: self = .period
+        default:
+            return nil
+        }
+    }
 }
 
 @MainActor
@@ -316,11 +336,13 @@ final class SettingsViewModel: ObservableObject {
         selectCandidateKeys = UserDefaults.standard.string(forKey: UserDefaultsKeys.selectCandidateKeys)!
         enterNewLine = UserDefaults.standard.bool(forKey: UserDefaultsKeys.enterNewLine)
         selectingBackspace = SelectingBackspace(rawValue: UserDefaults.standard.integer(forKey: UserDefaultsKeys.selectingBackspace)) ?? SelectingBackspace.default
-        comma = Comma(rawValue: UserDefaults.standard.integer(forKey: UserDefaultsKeys.comma)) ?? .default
-        period = Period(rawValue: UserDefaults.standard.integer(forKey: UserDefaultsKeys.period)) ?? .default
+        comma = Comma(rawValue: UserDefaults.standard.integer(forKey: UserDefaultsKeys.punctuation)) ?? .default
+        period = Period(rawValue: UserDefaults.standard.integer(forKey: UserDefaultsKeys.punctuation)) ?? .default
         Global.selectCandidateKeys = selectCandidateKeys.lowercased().map { $0 }
         Global.systemDict = systemDict
         Global.selectingBackspace = selectingBackspace
+        Global.comma = comma
+        Global.period = period
 
         // SKK-JISYO.Lのようなファイルの読み込みが遅いのでバックグラウンドで処理
         $dictSettings.filter({ !$0.isEmpty }).receive(on: DispatchQueue.global()).sink { dictSettings in
@@ -381,6 +403,12 @@ final class SettingsViewModel: ObservableObject {
 
         $workaroundApplications.sink { applications in
             Global.insertBlankStringBundleIdentifiers.send(applications.filter { $0.insertBlankString }.map { $0.bundleIdentifier })
+        }.store(in: &cancellables)
+
+        $comma.combineLatest($period).dropFirst().sink { (comma, period) in
+            Global.comma = comma
+            Global.period = period
+            UserDefaults.standard.set(comma.rawValue | period.rawValue, forKey: UserDefaultsKeys.punctuation)
         }.store(in: &cancellables)
 
         NotificationCenter.default.publisher(for: notificationNameToggleDirectMode)
