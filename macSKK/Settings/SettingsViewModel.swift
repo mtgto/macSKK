@@ -212,6 +212,17 @@ enum Comma: Int, CaseIterable, Identifiable {
             return nil
         }
     }
+
+    var description: String {
+        switch self {
+        case .default:
+            return String(localized: "Follow Romaji-Kana Rule")
+        case .ten:
+            return String(format: String(localized: "EnterKey"), "、")
+        case .comma:
+            return String(format: String(localized: "EnterKey"), "，")
+        }
+    }
 }
 
 /**
@@ -235,6 +246,17 @@ enum Period: Int, CaseIterable, Identifiable {
         case 8: self = .period
         default:
             return nil
+        }
+    }
+
+    var description: String {
+        switch self {
+        case .default:
+            return String(localized: "Follow Romaji-Kana Rule")
+        case .maru:
+            return String(format: String(localized: "EnterKey"), "。")
+        case .period:
+            return String(format: String(localized: "EnterKey"), "．")
         }
     }
 }
@@ -405,12 +427,6 @@ final class SettingsViewModel: ObservableObject {
             Global.insertBlankStringBundleIdentifiers.send(applications.filter { $0.insertBlankString }.map { $0.bundleIdentifier })
         }.store(in: &cancellables)
 
-        $comma.combineLatest($period).dropFirst().sink { (comma, period) in
-            Global.comma = comma
-            Global.period = period
-            UserDefaults.standard.set(comma.rawValue | period.rawValue, forKey: UserDefaultsKeys.punctuation)
-        }.store(in: &cancellables)
-
         NotificationCenter.default.publisher(for: notificationNameToggleDirectMode)
             .sink { [weak self] notification in
                 if let bundleIdentifier = notification.object as? String {
@@ -521,6 +537,13 @@ final class SettingsViewModel: ObservableObject {
             logger.log("変換候補選択時のバックスペースの挙動を \(selectingBackspace.description, privacy: .public) に変更しました")
             UserDefaults.standard.set(selectingBackspace.rawValue, forKey: UserDefaultsKeys.selectingBackspace)
             Global.selectingBackspace = selectingBackspace
+        }.store(in: &cancellables)
+
+        $comma.combineLatest($period).dropFirst().sink { (comma, period) in
+            logger.log("句読点の入力が変更されました。 カンマ: \(comma.description, privacy: .public), ピリオド: \(period.description, privacy: .public)")
+            Global.comma = comma
+            Global.period = period
+            UserDefaults.standard.set(comma.rawValue | period.rawValue, forKey: UserDefaultsKeys.punctuation)
         }.store(in: &cancellables)
 
         NotificationCenter.default.publisher(for: notificationNameDictLoad).receive(on: RunLoop.main).sink { [weak self] notification in
