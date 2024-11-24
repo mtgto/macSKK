@@ -231,6 +231,8 @@ final class SettingsViewModel: ObservableObject {
     @Published var enterNewLine: Bool
     @Published var systemDict: SystemDict.Kind
     @Published var selectingBackspace: SelectingBackspace
+    @Published var period: Punctuation.Period
+    @Published var comma: Punctuation.Comma
 
     // 辞書ディレクトリ
     let dictionariesDirectoryUrl: URL
@@ -284,9 +286,12 @@ final class SettingsViewModel: ObservableObject {
         selectCandidateKeys = UserDefaults.standard.string(forKey: UserDefaultsKeys.selectCandidateKeys)!
         enterNewLine = UserDefaults.standard.bool(forKey: UserDefaultsKeys.enterNewLine)
         selectingBackspace = SelectingBackspace(rawValue: UserDefaults.standard.integer(forKey: UserDefaultsKeys.selectingBackspace)) ?? SelectingBackspace.default
+        comma = Punctuation.Comma(rawValue: UserDefaults.standard.integer(forKey: UserDefaultsKeys.punctuation)) ?? .default
+        period = Punctuation.Period(rawValue: UserDefaults.standard.integer(forKey: UserDefaultsKeys.punctuation)) ?? .default
         Global.selectCandidateKeys = selectCandidateKeys.lowercased().map { $0 }
         Global.systemDict = systemDict
         Global.selectingBackspace = selectingBackspace
+        Global.punctuation = Punctuation(comma: comma, period: period)
 
         // SKK-JISYO.Lのようなファイルの読み込みが遅いのでバックグラウンドで処理
         $dictSettings.filter({ !$0.isEmpty }).receive(on: DispatchQueue.global()).sink { dictSettings in
@@ -461,6 +466,13 @@ final class SettingsViewModel: ObservableObject {
             Global.selectingBackspace = selectingBackspace
         }.store(in: &cancellables)
 
+        $comma.combineLatest($period).dropFirst().sink { (comma, period) in
+            logger.log("句読点の入力が変更されました。 カンマ: \(comma.description, privacy: .public), ピリオド: \(period.description, privacy: .public)")
+            let punctuation = Punctuation(comma: comma, period: period)
+            Global.punctuation = punctuation
+            UserDefaults.standard.set(punctuation.rawValue, forKey: UserDefaultsKeys.punctuation)
+        }.store(in: &cancellables)
+
         NotificationCenter.default.publisher(for: notificationNameDictLoad).receive(on: RunLoop.main).sink { [weak self] notification in
             if let loadEvent = notification.object as? DictLoadEvent, let self {
                 if let userDict = Global.dictionary.userDict as? FileDict, userDict.id == loadEvent.id {
@@ -500,6 +512,8 @@ final class SettingsViewModel: ObservableObject {
         enterNewLine = false
         systemDict = .daijirin
         selectingBackspace = SelectingBackspace.default
+        comma = Punctuation.default.comma
+        period = Punctuation.default.period
     }
 
     // DictionaryViewのPreviewProvider用

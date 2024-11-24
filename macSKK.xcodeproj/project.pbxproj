@@ -89,6 +89,8 @@
 		CEA78FAE2961BA1D00B67E25 /* String+TransformTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA78FAD2961BA1D00B67E25 /* String+TransformTests.swift */; };
 		CEA78FB02964209B00B67E25 /* UserDict.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA78FAF2964209B00B67E25 /* UserDict.swift */; };
 		CEA78FB229646CA100B67E25 /* UserDictTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA78FB129646CA100B67E25 /* UserDictTests.swift */; };
+		CEAC95572CF34E7700CD6D55 /* Punctuation.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEAC95562CF34E7700CD6D55 /* Punctuation.swift */; };
+		CEAC95592CF34F4100CD6D55 /* PunctuationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEAC95582CF34F4100CD6D55 /* PunctuationTests.swift */; };
 		CEADA44B2B025A0F0026E2BD /* Entry.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEADA44A2B025A0F0026E2BD /* Entry.swift */; };
 		CEADA44D2B025A8A0026E2BD /* EntryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEADA44C2B025A8A0026E2BD /* EntryTests.swift */; };
 		CEADA44F2B1357090026E2BD /* GeneralView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEADA44E2B1357090026E2BD /* GeneralView.swift */; };
@@ -255,6 +257,8 @@
 		CEA78FAD2961BA1D00B67E25 /* String+TransformTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+TransformTests.swift"; sourceTree = "<group>"; };
 		CEA78FAF2964209B00B67E25 /* UserDict.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDict.swift; sourceTree = "<group>"; };
 		CEA78FB129646CA100B67E25 /* UserDictTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDictTests.swift; sourceTree = "<group>"; };
+		CEAC95562CF34E7700CD6D55 /* Punctuation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Punctuation.swift; sourceTree = "<group>"; };
+		CEAC95582CF34F4100CD6D55 /* PunctuationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PunctuationTests.swift; sourceTree = "<group>"; };
 		CEADA44A2B025A0F0026E2BD /* Entry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Entry.swift; sourceTree = "<group>"; };
 		CEADA44C2B025A8A0026E2BD /* EntryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryTests.swift; sourceTree = "<group>"; };
 		CEADA44E2B1357090026E2BD /* GeneralView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralView.swift; sourceTree = "<group>"; };
@@ -414,6 +418,7 @@
 				CEADA44A2B025A0F0026E2BD /* Entry.swift */,
 				CE4CB5CB2AD557D90046FA34 /* NumberEntry.swift */,
 				CE84A3E6295DA4DA009394C4 /* Romaji.swift */,
+				CEAC95562CF34E7700CD6D55 /* Punctuation.swift */,
 				4B8E87D32CE05C3F004E7461 /* CurrentInput.swift */,
 				4B8E87D52CE05D0A004E7461 /* Key.swift */,
 				CE11C7BE2BE47D9800A35F3D /* KeyBinding.swift */,
@@ -477,6 +482,7 @@
 				CED1CA1D2BAFBE0600C32AE3 /* SKKServDictTests.swift */,
 				CEADA44C2B025A8A0026E2BD /* EntryTests.swift */,
 				CE84A3E8295DA504009394C4 /* RomajiTests.swift */,
+				CEAC95582CF34F4100CD6D55 /* PunctuationTests.swift */,
 				4B8E87D72CE0689D004E7461 /* CurrentInputTests.swift */,
 				CE118EE42CE0B4DB00A7C300 /* KeyTests.swift */,
 				CE2F3B122C030C9A00CE342B /* KeyBindingTests.swift */,
@@ -817,6 +823,7 @@
 				CED987412BB953E7001B40F9 /* Data+EucJis2004.swift in Sources */,
 				CE485A882A8FA195008271EF /* Release+UNNotification.swift in Sources */,
 				CED7CA3A2A839505004EF988 /* FetchUpdateServiceProtocol.swift in Sources */,
+				CEAC95572CF34E7700CD6D55 /* Punctuation.swift in Sources */,
 				CEA78FB02964209B00B67E25 /* UserDict.swift in Sources */,
 				CEF08257296D8CBD00646366 /* CandidatesPanel.swift in Sources */,
 				CEADA44B2B025A0F0026E2BD /* Entry.swift in Sources */,
@@ -863,6 +870,7 @@
 				CE496C952B440BBD001C623C /* Data+EucJis2004Tests.swift in Sources */,
 				CEE2D9792A99FEC700A4CD76 /* CandidateTest.swift in Sources */,
 				CEF0823629685C0800646366 /* StateTests.swift in Sources */,
+				CEAC95592CF34F4100CD6D55 /* PunctuationTests.swift in Sources */,
 				CED7CA3E2A8397E4004EF988 /* UpdateCheckerTests.swift in Sources */,
 				CE8DFE092CBEAA2900A24230 /* Character+AdditionsTests.swift in Sources */,
 				CE2F3B132C030C9A00CE342B /* KeyBindingTests.swift in Sources */,

@@ -65,6 +65,8 @@
 "Copy" = "Copy";
 "Number of inline candidates" = "Number of inline candidates";
 "Backspace in selecting candidates" = "Backspace in selecting candidates";
+"Behavior of Comma" = "Behavior of Comma";
+"Behavior of Period" = "Behavior of Period";
 "Candidates font size" = "Candidates font size";
 "Annotation font size" = "Annotation font size";
 "Find completion from all dictionaries" = "Find completion from all dictionaries";
@@ -122,3 +124,5 @@
 "SelectingBackspaceCancel" = "Go back one step";
 "SelectingBackspaceDropLastInlineOnly" = "Delete a last character & commit in Inline";
 "SelectingBackspaceDropLastAlways" = "Delete a last character & commit always";
+"Follow Romaji-Kana Rule" = "Follow Romaji-Kana Rule";
+"EnterKey" = "Enter \"%@\"";

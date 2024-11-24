@@ -65,6 +65,8 @@
 "Copy" = "コピー";
 "Number of inline candidates" = "インラインで表示する変換候補の数";
 "Backspace in selecting candidates" = "変換候補選択中のバックスペース";
+"Behavior of Comma" = "カンマの挙動";
+"Behavior of Period" = "ピリオドの挙動";
 "Candidates font size" = "変換候補のフォントサイズ";
 "Annotation font size" = "注釈のフォントサイズ";
 "Find completion from all dictionaries" = "ユーザー辞書だけでなくすべての辞書から補完を探す";
@@ -122,3 +124,5 @@
 "SelectingBackspaceCancel" = "一つ前の状態に戻す";
 "SelectingBackspaceDropLastInlineOnly" = "インライン時は一文字削除して確定";
 "SelectingBackspaceDropLastAlways" = "常に一文字削除して確定";
+"Follow Romaji-Kana Rule" = "ローマ字かな変換ルールに従う";
+"EnterKey" = "\"%@\" を入力";
