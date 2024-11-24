@@ -30,12 +30,12 @@ struct GeneralView: View {
                     Text("AOEUIDHTN").tag("AOEUIDHTN")
                 }
                 Picker("Behavior of Comma", selection: $settingsViewModel.comma) {
-                    ForEach(Comma.allCases, id: \.id) { comma in
+                    ForEach(Punctuation.Comma.allCases, id: \.id) { comma in
                         Text(comma.description).tag(comma)
                     }
                 }
                 Picker("Behavior of Period", selection: $settingsViewModel.period) {
-                    ForEach(Period.allCases, id: \.id) { period in
+                    ForEach(Punctuation.Period.allCases, id: \.id) { period in
                         Text(period.description).tag(period)
                     }
                 }

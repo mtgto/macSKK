@@ -272,19 +272,19 @@ struct Romaji: Equatable, Sendable {
      * - ",", "." は引数 `comma`, `period` に従って変換する
      * - "1" のように非ローマ字文字列を受け取った場合は未定義とする (呼び出し側で処理する予定だけどここで処理するかも)
      */
-    func convert(_ input: String, comma: Comma, period: Period) -> ConvertedMoji {
-        if input == "," && comma != .default {
-            if case .ten = comma {
+    func convert(_ input: String, punctuation: Punctuation) -> ConvertedMoji {
+        if input == "," && punctuation.comma != .default {
+            if case .ten = punctuation.comma {
                 return ConvertedMoji(input: "", kakutei: Romaji.Moji(firstRomaji: ",", kana: "、"))
-            } else if case .comma = comma {
+            } else if case .comma = punctuation.comma {
                 return ConvertedMoji(input: "", kakutei: Romaji.Moji(firstRomaji: ",", kana: "，"))
             } else {
                 fatalError()
             }
-        } else if input == "." && period != .default {
-            if case .maru = period {
+        } else if input == "." && punctuation.period != .default {
+            if case .maru = punctuation.period {
                 return ConvertedMoji(input: "", kakutei: Romaji.Moji(firstRomaji: ".", kana: "。"))
-            } else if case .period = period {
+            } else if case .period = punctuation.period {
                 return ConvertedMoji(input: "", kakutei: Romaji.Moji(firstRomaji: ".", kana: "．"))
             } else {
                 fatalError()
@@ -296,7 +296,7 @@ struct Romaji: Equatable, Sendable {
         } else if input.hasPrefix("n") && input.count == 2 {
             return ConvertedMoji(input: String(input.dropFirst()), kakutei: Romaji.n)
         } else if input.count > 1, let c = input.last {
-            return convert(String(c), comma: comma, period: period)
+            return convert(String(c), punctuation: punctuation)
         }
         return ConvertedMoji(input: input, kakutei: nil)
     }

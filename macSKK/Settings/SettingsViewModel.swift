@@ -189,78 +189,6 @@ enum SelectingBackspace: Int, CaseIterable, Identifiable {
     }
 }
 
-/**
- * カンマを入力したときに使用する読点の設定。
- * ローマ字かな変換ルールを上書きすることが可能。
- */
-enum Comma: Int, CaseIterable, Identifiable {
-    typealias ID = Int
-    var id: ID { rawValue }
-    /// ローマ字かな変換ルールをそのまま適用する
-    case `default` = 0
-    /// "、" を入力する
-    case ten = 1
-    /// "，" (全角カンマ) を入力する
-    case comma = 2
-
-    init?(rawValue: Int) {
-        switch rawValue & 3 {
-        case 0: self = .default
-        case 1: self = .ten
-        case 2: self = .comma
-        default:
-            return nil
-        }
-    }
-
-    var description: String {
-        switch self {
-        case .default:
-            return String(localized: "Follow Romaji-Kana Rule")
-        case .ten:
-            return String(format: String(localized: "EnterKey"), "、")
-        case .comma:
-            return String(format: String(localized: "EnterKey"), "，")
-        }
-    }
-}
-
-/**
- * ピリオドを入力したときに使用する句点の設定。
- * ローマ字かな変換ルールを上書きすることが可能。
- */
-enum Period: Int, CaseIterable, Identifiable {
-    typealias ID = Int
-    var id: ID { rawValue }
-    /// ローマ字かな変換ルールをそのまま適用する
-    case `default` = 0
-    /// "。" を入力する
-    case maru = 4
-    /// "．" (全角ピリオド) を入力する
-    case period = 8
-
-    init?(rawValue: Int) {
-        switch rawValue & 12 {
-        case 0: self = .default
-        case 4: self = .maru
-        case 8: self = .period
-        default:
-            return nil
-        }
-    }
-
-    var description: String {
-        switch self {
-        case .default:
-            return String(localized: "Follow Romaji-Kana Rule")
-        case .maru:
-            return String(format: String(localized: "EnterKey"), "。")
-        case .period:
-            return String(format: String(localized: "EnterKey"), "．")
-        }
-    }
-}
-
 @MainActor
 final class SettingsViewModel: ObservableObject {
     /// CheckUpdaterで取得した最新のリリース。取得前はnil
@@ -303,8 +231,8 @@ final class SettingsViewModel: ObservableObject {
     @Published var enterNewLine: Bool
     @Published var systemDict: SystemDict.Kind
     @Published var selectingBackspace: SelectingBackspace
-    @Published var period: Period
-    @Published var comma: Comma
+    @Published var period: Punctuation.Period
+    @Published var comma: Punctuation.Comma
 
     // 辞書ディレクトリ
     let dictionariesDirectoryUrl: URL
@@ -358,13 +286,12 @@ final class SettingsViewModel: ObservableObject {
         selectCandidateKeys = UserDefaults.standard.string(forKey: UserDefaultsKeys.selectCandidateKeys)!
         enterNewLine = UserDefaults.standard.bool(forKey: UserDefaultsKeys.enterNewLine)
         selectingBackspace = SelectingBackspace(rawValue: UserDefaults.standard.integer(forKey: UserDefaultsKeys.selectingBackspace)) ?? SelectingBackspace.default
-        comma = Comma(rawValue: UserDefaults.standard.integer(forKey: UserDefaultsKeys.punctuation)) ?? .default
-        period = Period(rawValue: UserDefaults.standard.integer(forKey: UserDefaultsKeys.punctuation)) ?? .default
+        comma = Punctuation.Comma(rawValue: UserDefaults.standard.integer(forKey: UserDefaultsKeys.punctuation)) ?? .default
+        period = Punctuation.Period(rawValue: UserDefaults.standard.integer(forKey: UserDefaultsKeys.punctuation)) ?? .default
         Global.selectCandidateKeys = selectCandidateKeys.lowercased().map { $0 }
         Global.systemDict = systemDict
         Global.selectingBackspace = selectingBackspace
-        Global.comma = comma
-        Global.period = period
+        Global.punctuation = Punctuation(comma: comma, period: period)
 
         // SKK-JISYO.Lのようなファイルの読み込みが遅いのでバックグラウンドで処理
         $dictSettings.filter({ !$0.isEmpty }).receive(on: DispatchQueue.global()).sink { dictSettings in
@@ -541,9 +468,9 @@ final class SettingsViewModel: ObservableObject {
 
         $comma.combineLatest($period).dropFirst().sink { (comma, period) in
             logger.log("句読点の入力が変更されました。 カンマ: \(comma.description, privacy: .public), ピリオド: \(period.description, privacy: .public)")
-            Global.comma = comma
-            Global.period = period
-            UserDefaults.standard.set(comma.rawValue | period.rawValue, forKey: UserDefaultsKeys.punctuation)
+            let punctuation = Punctuation(comma: comma, period: period)
+            Global.punctuation = punctuation
+            UserDefaults.standard.set(punctuation.rawValue, forKey: UserDefaultsKeys.punctuation)
         }.store(in: &cancellables)
 
         NotificationCenter.default.publisher(for: notificationNameDictLoad).receive(on: RunLoop.main).sink { [weak self] notification in
@@ -585,8 +512,8 @@ final class SettingsViewModel: ObservableObject {
         enterNewLine = false
         systemDict = .daijirin
         selectingBackspace = SelectingBackspace.default
-        comma = Comma.default
-        period = Period.default
+        comma = Punctuation.default.comma
+        period = Punctuation.default.period
     }
 
     // DictionaryViewのPreviewProvider用

@@ -364,7 +364,7 @@ final class StateMachine {
         switch state.inputMode {
         case .hiragana, .katakana, .hankaku:
             if input.isAlphabet && !action.optionIsPressed() {
-                let result = Global.kanaRule.convert(input, comma: Global.comma, period: Global.period)
+                let result = Global.kanaRule.convert(input, punctuation: Global.punctuation)
                 if let moji = result.kakutei {
                     if action.shiftIsPressed() {
                         state.inputMethod = .composing(
@@ -389,7 +389,7 @@ final class StateMachine {
                                    cursorPosition: action.cursorPosition),
                             specialState: specialState)
                     }
-                    let result = Global.kanaRule.convert(characters, comma: Global.comma, period: Global.period)
+                    let result = Global.kanaRule.convert(characters, punctuation: Global.punctuation)
                     if let moji = result.kakutei {
                         if action.shiftIsPressed() && moji.kana.isHiragana {
                             state.inputMethod = .composing(
@@ -631,7 +631,7 @@ final class StateMachine {
             if state.inputMode == .direct {
                 return handleComposingPrintable(
                     input: ";",
-                    converted: Global.kanaRule.convert(";", comma: Global.comma, period: Global.period),
+                    converted: Global.kanaRule.convert(";", punctuation: Global.punctuation),
                     action: action,
                     composing: composing,
                     specialState: specialState)
@@ -759,9 +759,9 @@ final class StateMachine {
         if let input {
             let converted: Romaji.ConvertedMoji
             if !input.isAlphabet, let characters = action.characters() {
-                converted = Global.kanaRule.convert(romaji + characters, comma: Global.comma, period: Global.period)
+                converted = Global.kanaRule.convert(romaji + characters, punctuation: Global.punctuation)
             } else {
-                converted = Global.kanaRule.convert(romaji + input, comma: Global.comma, period: Global.period)
+                converted = Global.kanaRule.convert(romaji + input, punctuation: Global.punctuation)
             }
 
             return handleComposingPrintable(
@@ -915,7 +915,7 @@ final class StateMachine {
 
     @MainActor private func useKanaRuleIfPresent(inputMode: InputMode, romaji: String, input: String) -> Romaji.ConvertedMoji? {
         if inputMode != .direct && !romaji.isEmpty {
-            let converted = Global.kanaRule.convert(romaji + input, comma: Global.comma, period: Global.period)
+            let converted = Global.kanaRule.convert(romaji + input, punctuation: Global.punctuation)
             if converted.kakutei != nil && converted.input == "" {
                 return converted
             } else {
