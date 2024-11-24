@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## v1.5.0 (2024-11-24)
+
+- CI環境をmacOS 15に変更 (#244)
+- `KeyBinding.accepts`の入力の`NSEvent`をやめて前処理用の`CurrentInput`を導入 (#245)
+- 新規ファイルテンプレからSPDX-FileCopyrightTextを削除 (#246)
+- カンマとピリオド入力時の句読点の設定を追加 (#248)
+
 ## v1.4.1 (2024-11-04)
 
 - SKK辞書のファイル名にutf8が含まれたらUTF-8をデフォルトで指定する (#241)
