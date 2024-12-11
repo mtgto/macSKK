@@ -57,7 +57,8 @@ struct macSKKApp: App {
             ).appendingPathComponent("Dictionaries")
             let settingsViewModel = try SettingsViewModel(dictionariesDirectoryUrl: dictionariesDirectoryUrl)
             let settingsWindow = SettingsWindow(settingsViewModel: settingsViewModel)
-            
+            Global.privateMode.send(UserDefaults.standard.bool(forKey: UserDefaultsKeys.privateMode))
+
             // SettingsViewModelの初期化が終わったあとにユーザー辞書を読み込まないと辞書のロード状態が設定されない
             Global.dictionary = try UserDict(dicts: [], privateMode: Global.privateMode, findCompletionFromAllDicts: Global.findCompletionFromAllDicts)
             settingsWindowController = NSWindowController(window: settingsWindow)
@@ -195,7 +196,8 @@ struct macSKKApp: App {
             UserDefaultsKeys.enterNewLine: false,
             UserDefaultsKeys.systemDict: SystemDict.Kind.daijirin.rawValue,
             UserDefaultsKeys.selectingBackspace: SelectingBackspace.default.rawValue,
-            UserDefaultsKeys.punctuation: Punctuation.default.rawValue
+            UserDefaultsKeys.punctuation: Punctuation.default.rawValue,
+            UserDefaultsKeys.privateMode: false,
         ])
     }
 
