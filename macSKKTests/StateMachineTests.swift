@@ -16,6 +16,7 @@ final class StateMachineTests: XCTestCase {
 
     @MainActor override func setUpWithError() throws {
         Global.dictionary.setEntries([:])
+        Global.privateMode.send(false)
         Global.skkservDict = nil
         cancellables = []
         // テストごとにローマ字かな変換ルールをデフォルトに戻す
@@ -2819,13 +2820,11 @@ final class StateMachineTests: XCTestCase {
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertNil(Global.dictionary.entries())
-        XCTAssertTrue(Global.dictionary.privateUserDict.entries.isEmpty)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
         XCTAssertTrue(stateMachine.handle(enterAction))
         XCTAssertNil(Global.dictionary.entries())
-        XCTAssertFalse(Global.dictionary.privateUserDict.entries.isEmpty)
         wait(for: [expectation], timeout: 1.0)
     }
 

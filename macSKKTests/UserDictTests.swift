@@ -49,27 +49,20 @@ final class UserDictTests: XCTestCase {
     }
 
     func testPrivateMode() throws {
-        let privateMode = CurrentValueSubject<Bool, Never>(true)
+        let privateMode = CurrentValueSubject<Bool, Never>(false)
         let findCompletionFromAllDicts = CurrentValueSubject<Bool, Never>(false)
-        let userDict = try UserDict(dicts: [], userDictEntries: [:], privateMode: privateMode, findCompletionFromAllDicts: findCompletionFromAllDicts)
-        let word1 = Word("井")
-        let word2 = Word("伊")
+        let userDict = try UserDict(dicts: [], userDictEntries: ["い": [Word("位")]], privateMode: privateMode, findCompletionFromAllDicts: findCompletionFromAllDicts)
+        let word = Word("井")
+        XCTAssertEqual(userDict.refer("い").map { $0.word }, ["位"])
+        privateMode.send(true)
         // addのテスト
-        userDict.add(yomi: "い", word: word1)
-        XCTAssertEqual(userDict.privateUserDict.entries, ["い": [word1]])
-        userDict.add(yomi: "い", word: word2)
-        XCTAssertEqual(userDict.privateUserDict.entries, ["い": [word2, word1]])
-        userDict.add(yomi: "い", word: word1)
-        XCTAssertEqual(userDict.privateUserDict.entries, ["い": [word1, word2]])
-        // referのテスト
-        XCTAssertEqual(userDict.refer("い").map { $0.word }, ["井", "伊"])
+        userDict.add(yomi: "い", word: word)
+        // referは変化しない
+        XCTAssertEqual(userDict.refer("い").map { $0.word }, ["位"])
         // deleteのテスト
         XCTAssertTrue(userDict.delete(yomi: "い", word: "井"))
-        XCTAssertEqual(userDict.refer("い").map { $0.word }, ["伊"])
-        // プライベートモードが解除されるとプライベートモードでのエントリがリセットされる
-        privateMode.send(false)
-        XCTAssertTrue(userDict.privateUserDict.entries.isEmpty)
     }
+
     func testFindCompletionFromAllDicts() throws {
         let privateMode = CurrentValueSubject<Bool, Never>(false)
         let findCompletionFromAllDicts = CurrentValueSubject<Bool, Never>(false)
