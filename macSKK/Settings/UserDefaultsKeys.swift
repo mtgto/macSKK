@@ -36,4 +36,6 @@ struct UserDefaultsKeys {
     // カンマ、ピリオド入力時の句読点
     static let punctuation = "punctuation"
     static let privateMode = "privateMode"
+    // プライベートモード時に変換候補にユーザー辞書を無視するかどうか
+    static let privateModeIgnoreUserDict = "privateModeIgnoreUserDict"
 }

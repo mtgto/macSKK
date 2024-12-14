@@ -1306,7 +1306,9 @@ final class StateMachine {
     /// 見出し語で辞書を引く。同じ文字列である変換候補が複数の辞書にある場合は最初の1つにまとめる。
     /// 「う゛」は「ゔ」にしてから引く
     @MainActor func candidates(for yomi: String, option: DictReferringOption? = nil) -> [Candidate] {
-        return Global.dictionary.referDicts(yomi.replacing("う゛", with: "ゔ"), option: option)
+        return Global.dictionary.referDicts(yomi.replacing("う゛", with: "ゔ"),
+                                            referUserDict: !Global.privateMode.value || !Global.privateModeIgnoreUserDict,
+                                            option: option)
     }
 
     /**

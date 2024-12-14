@@ -101,11 +101,12 @@ class UserDict: NSObject, DictProtocol {
      *
      * - Parameters:
      *   - yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
+     *   - referUserDict: ユーザー辞書を参照するかどうか
      *   - option: 辞書を引くときに接頭辞や接尾辞から検索するかどうか。nilなら通常のエントリから検索する
      */
-    @MainActor func referDicts(_ yomi: String, option: DictReferringOption? = nil) -> [Candidate] {
+    @MainActor func referDicts(_ yomi: String, referUserDict: Bool, option: DictReferringOption? = nil) -> [Candidate] {
         var result: [Candidate] = []
-        var candidates = refer(yomi, option: option).map { word in
+        var candidates = refer(yomi, referUserDict: referUserDict, option: option).map { word in
             let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
             return Candidate(word.word, annotations: annotations)
         }
@@ -146,6 +147,30 @@ class UserDict: NSObject, DictProtocol {
      * 非プライベートモード時はユーザー辞書、それ以外の辞書の順に参照する。
      * プライベートモードで入力したエントリは参照しない。
      */
+    func refer(_ yomi: String, referUserDict: Bool, option: DictReferringOption? = nil) -> [Word] {
+        if let userDict = userDict {
+            var result: [Word] = if referUserDict {
+                userDict.refer(yomi, option: option)
+            } else {
+                []
+            }
+            dicts.forEach { dict in
+                dict.refer(yomi, option: option).forEach { found in
+                    if !result.contains(found) {
+                        result.append(found)
+                    }
+                }
+            }
+            return result
+        } else {
+            return []
+        }
+    }
+
+    /**
+     * 非プライベートモード時はユーザー辞書、それ以外の辞書の順に参照する。
+     * プライベートモードで入力したエントリは参照しない。
+     */
     // MARK: DictProtocol
     func refer(_ yomi: String, option: DictReferringOption? = nil) -> [Word] {
         if let userDict = userDict {
@@ -173,9 +198,11 @@ class UserDict: NSObject, DictProtocol {
      *   - word: SKK辞書の変換候補。
      */
     func add(yomi: String, word: Word) {
-        if !privateMode.value, let dict = userDict as? FileDict {
-            dict.add(yomi: yomi, word: word)
-            savePublisher.send(())
+        if !privateMode.value {
+            if let dict = userDict as? FileDict {
+                dict.add(yomi: yomi, word: word)
+                savePublisher.send(())
+            }
         }
     }
 

@@ -198,6 +198,7 @@ struct macSKKApp: App {
             UserDefaultsKeys.selectingBackspace: SelectingBackspace.default.rawValue,
             UserDefaultsKeys.punctuation: Punctuation.default.rawValue,
             UserDefaultsKeys.privateMode: false,
+            UserDefaultsKeys.privateModeIgnoreUserDict: false,
         ])
     }
 
