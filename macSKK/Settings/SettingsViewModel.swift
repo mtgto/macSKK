@@ -234,7 +234,7 @@ final class SettingsViewModel: ObservableObject {
     @Published var period: Punctuation.Period
     @Published var comma: Punctuation.Comma
     // プライベートモード時に変換候補にユーザー辞書を無視するかどうか
-    @Published var privateModeIgnoreUserDict: Bool
+    @Published var ignoreUserDictInPrivateMode: Bool
 
     // 辞書ディレクトリ
     let dictionariesDirectoryUrl: URL
@@ -290,12 +290,12 @@ final class SettingsViewModel: ObservableObject {
         selectingBackspace = SelectingBackspace(rawValue: UserDefaults.standard.integer(forKey: UserDefaultsKeys.selectingBackspace)) ?? SelectingBackspace.default
         comma = Punctuation.Comma(rawValue: UserDefaults.standard.integer(forKey: UserDefaultsKeys.punctuation)) ?? .default
         period = Punctuation.Period(rawValue: UserDefaults.standard.integer(forKey: UserDefaultsKeys.punctuation)) ?? .default
-        privateModeIgnoreUserDict = UserDefaults.standard.bool(forKey: UserDefaultsKeys.privateModeIgnoreUserDict)
+        ignoreUserDictInPrivateMode = UserDefaults.standard.bool(forKey: UserDefaultsKeys.ignoreUserDictInPrivateMode)
         Global.selectCandidateKeys = selectCandidateKeys.lowercased().map { $0 }
         Global.systemDict = systemDict
         Global.selectingBackspace = selectingBackspace
         Global.punctuation = Punctuation(comma: comma, period: period)
-        Global.privateModeIgnoreUserDict = privateModeIgnoreUserDict
+        Global.ignoreUserDictInPrivateMode = ignoreUserDictInPrivateMode
 
         // SKK-JISYO.Lのようなファイルの読み込みが遅いのでバックグラウンドで処理
         $dictSettings.filter({ !$0.isEmpty }).receive(on: DispatchQueue.global()).sink { dictSettings in
@@ -518,7 +518,7 @@ final class SettingsViewModel: ObservableObject {
         selectingBackspace = SelectingBackspace.default
         comma = Punctuation.default.comma
         period = Punctuation.default.period
-        privateModeIgnoreUserDict = false
+        ignoreUserDictInPrivateMode = false
     }
 
     // DictionaryViewのPreviewProvider用

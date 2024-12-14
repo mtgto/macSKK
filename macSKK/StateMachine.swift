@@ -1307,7 +1307,7 @@ final class StateMachine {
     /// 「う゛」は「ゔ」にしてから引く
     @MainActor func candidates(for yomi: String, option: DictReferringOption? = nil) -> [Candidate] {
         return Global.dictionary.referDicts(yomi.replacing("う゛", with: "ゔ"),
-                                            referUserDict: !Global.privateMode.value || !Global.privateModeIgnoreUserDict,
+                                            referUserDict: !Global.privateMode.value || !Global.ignoreUserDictInPrivateMode,
                                             option: option)
     }
 
