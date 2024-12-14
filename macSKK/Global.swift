@@ -14,6 +14,8 @@ import Combine
     /// skkserv辞書
     static var skkservDict: SKKServDict? = nil
     static let privateMode = CurrentValueSubject<Bool, Never>(false)
+    /// プライベートモード時に変換候補にユーザー辞書を無視するかどうか
+    static var ignoreUserDictInPrivateMode = CurrentValueSubject<Bool, Never>(false)
     // 直接入力するアプリケーションのBundleIdentifierの集合のコピー。
     // マスターはSettingsViewModelがもっているが、InputControllerからAppが参照できないのでグローバル変数にコピーしている。
     // FIXME: NotificationCenter経由で設定画面で変更したことを各InputControllerに通知するようにしてこの変数は消すかも。
@@ -39,8 +41,6 @@ import Combine
     static var selectingBackspace: SelectingBackspace = .default
     /// カンマかピリオドを入力したときに入力する句読点の設定
     static var punctuation: Punctuation = .default
-    /// プライベートモード時に変換候補にユーザー辞書を無視するかどうか
-    static var ignoreUserDictInPrivateMode: Bool = false
     /// 現在のモードを表示するパネル
     private let inputModePanel: InputModePanel
     /// 変換候補を表示するパネル

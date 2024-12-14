@@ -295,7 +295,7 @@ final class SettingsViewModel: ObservableObject {
         Global.systemDict = systemDict
         Global.selectingBackspace = selectingBackspace
         Global.punctuation = Punctuation(comma: comma, period: period)
-        Global.ignoreUserDictInPrivateMode = ignoreUserDictInPrivateMode
+        Global.ignoreUserDictInPrivateMode.send(ignoreUserDictInPrivateMode)
 
         // SKK-JISYO.Lのようなファイルの読み込みが遅いのでバックグラウンドで処理
         $dictSettings.filter({ !$0.isEmpty }).receive(on: DispatchQueue.global()).sink { dictSettings in
@@ -475,6 +475,12 @@ final class SettingsViewModel: ObservableObject {
             let punctuation = Punctuation(comma: comma, period: period)
             Global.punctuation = punctuation
             UserDefaults.standard.set(punctuation.rawValue, forKey: UserDefaultsKeys.punctuation)
+        }.store(in: &cancellables)
+
+        $ignoreUserDictInPrivateMode.dropFirst().sink { ignoreUserDictInPrivateMode in
+            logger.log("プライベートモードでユーザー辞書を \(ignoreUserDictInPrivateMode ? "参照しない" : "参照する", privacy: .public) に変更しました")
+            Global.ignoreUserDictInPrivateMode.send(ignoreUserDictInPrivateMode)
+            UserDefaults.standard.set(ignoreUserDictInPrivateMode, forKey: UserDefaultsKeys.ignoreUserDictInPrivateMode)
         }.store(in: &cancellables)
 
         NotificationCenter.default.publisher(for: notificationNameDictLoad).receive(on: RunLoop.main).sink { [weak self] notification in

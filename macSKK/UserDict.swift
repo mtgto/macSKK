@@ -23,17 +23,20 @@ class UserDict: NSObject, DictProtocol {
     var dicts: [any DictProtocol]
     private let savePublisher = PassthroughSubject<Void, Never>()
     private let privateMode: CurrentValueSubject<Bool, Never>
-    private var cancellables: Set<AnyCancellable> = []
+    /// プライベートモード時に変換候補にユーザー辞書を無視するかどうか
+    private let ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>
     // ユーザー辞書だけでなくすべての辞書から補完候補を検索するか？
     private let findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>
+    private var cancellables: Set<AnyCancellable> = []
 
     // MARK: NSFilePresenter
     let presentedItemURL: URL?
     let presentedItemOperationQueue: OperationQueue = OperationQueue()
 
-    init(dicts: [any DictProtocol], userDictEntries: [String: [Word]]? = nil, privateMode: CurrentValueSubject<Bool, Never>, findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>) throws {
+    init(dicts: [any DictProtocol], userDictEntries: [String: [Word]]? = nil, privateMode: CurrentValueSubject<Bool, Never>, ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>, findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>) throws {
         self.dicts = dicts
         self.privateMode = privateMode
+        self.ignoreUserDictInPrivateMode = ignoreUserDictInPrivateMode
         self.findCompletionFromAllDicts = findCompletionFromAllDicts
         dictionariesDirectoryURL = try FileManager.default.url(
             for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false
@@ -101,12 +104,11 @@ class UserDict: NSObject, DictProtocol {
      *
      * - Parameters:
      *   - yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
-     *   - referUserDict: ユーザー辞書を参照するかどうか
      *   - option: 辞書を引くときに接頭辞や接尾辞から検索するかどうか。nilなら通常のエントリから検索する
      */
-    @MainActor func referDicts(_ yomi: String, referUserDict: Bool, option: DictReferringOption? = nil) -> [Candidate] {
+    @MainActor func referDicts(_ yomi: String, option: DictReferringOption? = nil) -> [Candidate] {
         var result: [Candidate] = []
-        var candidates = refer(yomi, referUserDict: referUserDict, option: option).map { word in
+        var candidates = refer(yomi, option: option).map { word in
             let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
             return Candidate(word.word, annotations: annotations)
         }
@@ -147,34 +149,13 @@ class UserDict: NSObject, DictProtocol {
      * 非プライベートモード時はユーザー辞書、それ以外の辞書の順に参照する。
      * プライベートモードで入力したエントリは参照しない。
      */
-    func refer(_ yomi: String, referUserDict: Bool, option: DictReferringOption? = nil) -> [Word] {
+    func refer(_ yomi: String, option: DictReferringOption? = nil) -> [Word] {
         if let userDict = userDict {
-            var result: [Word] = if referUserDict {
+            var result: [Word] = if !privateMode.value || !ignoreUserDictInPrivateMode.value {
                 userDict.refer(yomi, option: option)
             } else {
                 []
             }
-            dicts.forEach { dict in
-                dict.refer(yomi, option: option).forEach { found in
-                    if !result.contains(found) {
-                        result.append(found)
-                    }
-                }
-            }
-            return result
-        } else {
-            return []
-        }
-    }
-
-    /**
-     * 非プライベートモード時はユーザー辞書、それ以外の辞書の順に参照する。
-     * プライベートモードで入力したエントリは参照しない。
-     */
-    // MARK: DictProtocol
-    func refer(_ yomi: String, option: DictReferringOption? = nil) -> [Word] {
-        if let userDict = userDict {
-            var result = userDict.refer(yomi, option: option)
             dicts.forEach { dict in
                 dict.refer(yomi, option: option).forEach { found in
                     if !result.contains(found) {
@@ -248,9 +229,11 @@ class UserDict: NSObject, DictProtocol {
      * - 数値変換用の読みは補完候補としない
      */
     func findCompletion(prefix: String) -> String? {
-        if let userDict {
-            if let completion = userDict.findCompletion(prefix: prefix) {
-                return completion
+        if !privateMode.value || !ignoreUserDictInPrivateMode.value {
+            if let userDict {
+                if let completion = userDict.findCompletion(prefix: prefix) {
+                    return completion
+                }
             }
         }
         if findCompletionFromAllDicts.value {

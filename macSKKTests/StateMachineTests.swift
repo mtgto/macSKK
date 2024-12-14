@@ -2371,6 +2371,7 @@ final class StateMachineTests: XCTestCase {
         let dict = MemoryDict(entries: ["あu": [Word("会"), Word("合")]], readonly: true)
         Global.dictionary = try UserDict(dicts: [dict],
                                          privateMode: CurrentValueSubject<Bool, Never>(false),
+                                         ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
                                          findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false))
         Global.dictionary.setEntries([:])
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
@@ -2394,6 +2395,7 @@ final class StateMachineTests: XCTestCase {
         let dict = MemoryDict(entries: ["あu": [Word("会"), Word("合")]], readonly: true)
         Global.dictionary = try UserDict(dicts: [dict],
                                          privateMode: CurrentValueSubject<Bool, Never>(false),
+                                         ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
                                          findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false))
         Global.dictionary.setEntries([:])
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
@@ -2420,6 +2422,7 @@ final class StateMachineTests: XCTestCase {
         let dict = MemoryDict(entries: ["あu": [Word("会"), Word("合")]], readonly: true)
         Global.dictionary = try UserDict(dicts: [dict],
                                          privateMode: CurrentValueSubject<Bool, Never>(false),
+                                         ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
                                          findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false))
         Global.dictionary.setEntries([:])
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
@@ -2807,7 +2810,11 @@ final class StateMachineTests: XCTestCase {
         let privateMode = CurrentValueSubject<Bool, Never>(false)
         // プライベートモードが有効ならユーザー辞書を参照はするが保存はしない
         let dict = MemoryDict(entries: ["と": [Word("都")]], readonly: true)
-        Global.dictionary = try UserDict(dicts: [dict], userDictEntries: [:], privateMode: privateMode, findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false))
+        Global.dictionary = try UserDict(dicts: [dict],
+                                         userDictEntries: [:],
+                                         privateMode: privateMode,
+                                         ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
+                                         findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false))
 
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
