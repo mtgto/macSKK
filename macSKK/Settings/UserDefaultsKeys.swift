@@ -35,4 +35,5 @@ struct UserDefaultsKeys {
     static let selectingBackspace = "selectingBackspace"
     // カンマ、ピリオド入力時の句読点
     static let punctuation = "punctuation"
+    static let privateMode = "privateMode"
 }
