@@ -16,6 +16,7 @@ final class StateMachineTests: XCTestCase {
 
     @MainActor override func setUpWithError() throws {
         Global.dictionary.setEntries([:])
+        Global.privateMode.send(false)
         Global.skkservDict = nil
         cancellables = []
         // テストごとにローマ字かな変換ルールをデフォルトに戻す
@@ -2370,6 +2371,7 @@ final class StateMachineTests: XCTestCase {
         let dict = MemoryDict(entries: ["あu": [Word("会"), Word("合")]], readonly: true)
         Global.dictionary = try UserDict(dicts: [dict],
                                          privateMode: CurrentValueSubject<Bool, Never>(false),
+                                         ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
                                          findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false))
         Global.dictionary.setEntries([:])
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
@@ -2393,6 +2395,7 @@ final class StateMachineTests: XCTestCase {
         let dict = MemoryDict(entries: ["あu": [Word("会"), Word("合")]], readonly: true)
         Global.dictionary = try UserDict(dicts: [dict],
                                          privateMode: CurrentValueSubject<Bool, Never>(false),
+                                         ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
                                          findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false))
         Global.dictionary.setEntries([:])
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
@@ -2419,6 +2422,7 @@ final class StateMachineTests: XCTestCase {
         let dict = MemoryDict(entries: ["あu": [Word("会"), Word("合")]], readonly: true)
         Global.dictionary = try UserDict(dicts: [dict],
                                          privateMode: CurrentValueSubject<Bool, Never>(false),
+                                         ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
                                          findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false))
         Global.dictionary.setEntries([:])
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
@@ -2806,7 +2810,11 @@ final class StateMachineTests: XCTestCase {
         let privateMode = CurrentValueSubject<Bool, Never>(false)
         // プライベートモードが有効ならユーザー辞書を参照はするが保存はしない
         let dict = MemoryDict(entries: ["と": [Word("都")]], readonly: true)
-        Global.dictionary = try UserDict(dicts: [dict], userDictEntries: [:], privateMode: privateMode, findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false))
+        Global.dictionary = try UserDict(dicts: [dict],
+                                         userDictEntries: [:],
+                                         privateMode: privateMode,
+                                         ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
+                                         findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false))
 
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
@@ -2819,13 +2827,11 @@ final class StateMachineTests: XCTestCase {
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertNil(Global.dictionary.entries())
-        XCTAssertTrue(Global.dictionary.privateUserDict.entries.isEmpty)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
         XCTAssertTrue(stateMachine.handle(enterAction))
         XCTAssertNil(Global.dictionary.entries())
-        XCTAssertFalse(Global.dictionary.privateUserDict.entries.isEmpty)
         wait(for: [expectation], timeout: 1.0)
     }
 
