@@ -341,6 +341,20 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    @MainActor func testHandleNormalStickyShiftCustomized() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .direct))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(1).sink { events in
+            XCTAssertEqual(events[0], .fixedText("z"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        // zキーをStickyShiftにカスタマイズしているという設定
+        XCTAssertTrue(stateMachine.handle(Action(keyBind: .stickyShift,
+                                                 event: generateNSEvent(character: "z", characterIgnoringModifiers: "z"),
+                                                 cursorPosition: .zero)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     @MainActor func testHandleNormalCtrlJ() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .direct))
         let expectation = XCTestExpectation()
@@ -1353,6 +1367,30 @@ final class StateMachineTests: XCTestCase {
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: false)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ";")))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    @MainActor func testHandleComposingStickyShiftCustomized() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(5).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("あ*")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("あ")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose])))
+            XCTAssertEqual(events[4], .fixedText("ｚ"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        // zキーをStickyShiftにカスタマイズしているという設定
+        XCTAssertTrue(stateMachine.handle(Action(keyBind: .stickyShift,
+                                                 event: generateNSEvent(character: "z", characterIgnoringModifiers: "z"),
+                                                 cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(backspaceAction))
+        XCTAssertTrue(stateMachine.handle(backspaceAction))
+        XCTAssertTrue(stateMachine.handle(Action(keyBind: .stickyShift,
+                                                 event: generateNSEvent(character: "z", characterIgnoringModifiers: "z"),
+                                                 cursorPosition: .zero)))
         wait(for: [expectation], timeout: 1.0)
     }
 
