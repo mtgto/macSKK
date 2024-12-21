@@ -248,12 +248,10 @@ final class StateMachine {
             case .hiragana, .katakana, .hankaku:
                 state.inputMethod = .composing(ComposingState(isShift: true, text: [], okuri: nil, romaji: ""))
                 updateMarkedText()
-            case .eisu:
-                addFixedText("；")
-            case .direct:
-                addFixedText(";")
+                return true
+            case .eisu, .direct:
+                break
             }
-            return true
         case .cancel:
             if let specialState = state.specialState {
                 switch specialState {
@@ -629,18 +627,13 @@ final class StateMachine {
             return true
         case .stickyShift:
             if state.inputMode == .direct {
-                return handleComposingPrintable(
-                    input: ";",
-                    converted: Global.kanaRule.convert(";", punctuation: Global.punctuation),
-                    action: action,
-                    composing: composing,
-                    specialState: specialState)
+                break
             }
 
             // "k;"のようなセミコロンを使ったルールがある場合はそれを優先させる
-            if let converted = useKanaRuleIfPresent(inputMode: state.inputMode, romaji: romaji, input: ";") {
+            if let input, let converted = useKanaRuleIfPresent(inputMode: state.inputMode, romaji: romaji, input: input) {
                 return handleComposingPrintable(
-                    input: ";",
+                    input: input,
                     converted: converted,
                     action: action,
                     composing: composing,
@@ -653,10 +646,13 @@ final class StateMachine {
                 // AquaSKKは送り仮名の末尾に"；"をつけて変換処理もしくは単語登録に遷移
                 return true
             } else {
-                // 空文字列のときは全角；を入力、それ以外のときは送り仮名モードへ
+                // 空文字列のときはAquaSKKと同様に全角で入力、それ以外のときは送り仮名モードへ
+                // NOTE: 空文字列のときは無視する、でもいいかも?
                 if text.isEmpty {
                     state.inputMethod = .normal
-                    addFixedText("；")
+                    if let characters = action.characters() {
+                        addFixedText(characters.toZenkaku())
+                    }
                 } else {
                     // ローマ字がnのときは「ん」と確定する
                     if romaji == "n" {
