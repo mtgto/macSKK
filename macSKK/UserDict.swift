@@ -78,7 +78,6 @@ class UserDict: NSObject, DictProtocol {
             if privateMode {
                 logger.log("プライベートモードが設定されました")
             } else {
-                // プライベートモードを解除したときにそれまでのエントリを削除する
                 logger.log("プライベートモードが解除されました")
             }
             UserDefaults.standard.set(privateMode, forKey: UserDefaultsKeys.privateMode)
@@ -202,7 +201,7 @@ class UserDict: NSObject, DictProtocol {
      *  - Parameters:
      *    - yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
      *    - word: SKK辞書の変換候補。
-     *  - Returns: エントリを削除できたかどうか。プライベートモード時は常にtrue。
+     *  - Returns: エントリを削除できたかどうか。プライベートモード時はなにも削除せずに常にtrueを返す。
      */
     func delete(yomi: String, word: Word.Word) -> Bool {
         if privateMode.value {
