@@ -60,7 +60,10 @@ struct macSKKApp: App {
             Global.privateMode.send(UserDefaults.standard.bool(forKey: UserDefaultsKeys.privateMode))
 
             // SettingsViewModelの初期化が終わったあとにユーザー辞書を読み込まないと辞書のロード状態が設定されない
-            Global.dictionary = try UserDict(dicts: [], privateMode: Global.privateMode, findCompletionFromAllDicts: Global.findCompletionFromAllDicts)
+            Global.dictionary = try UserDict(dicts: [],
+                                             privateMode: Global.privateMode,
+                                             ignoreUserDictInPrivateMode: Global.ignoreUserDictInPrivateMode,
+                                             findCompletionFromAllDicts: Global.findCompletionFromAllDicts)
             settingsWindowController = NSWindowController(window: settingsWindow)
             self.settingsViewModel = settingsViewModel
             settingsWindowController.windowFrameAutosaveName = "Settings"
@@ -198,6 +201,7 @@ struct macSKKApp: App {
             UserDefaultsKeys.selectingBackspace: SelectingBackspace.default.rawValue,
             UserDefaultsKeys.punctuation: Punctuation.default.rawValue,
             UserDefaultsKeys.privateMode: false,
+            UserDefaultsKeys.ignoreUserDictInPrivateMode: false,
         ])
     }
 

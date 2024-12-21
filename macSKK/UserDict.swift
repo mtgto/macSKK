@@ -21,26 +21,22 @@ class UserDict: NSObject, DictProtocol {
     var userDict: (any DictProtocol)?
     /// 有効になっている辞書。優先度が高い順。
     var dicts: [any DictProtocol]
-    /**
-     * プライベートモードのユーザー辞書。プライベートモードが有効な時に変換や単語登録するとユーザー辞書とは別に更新されます。
-     *
-     * マイ辞書ファイルには永続化されません。
-     * プライベートモード時に変換・登録された単語だけ登録されるので、このあと非プライベートモードに遷移するとリセットされます。
-     */
-    private(set) var privateUserDict = MemoryDict(entries: [:], readonly: true)
     private let savePublisher = PassthroughSubject<Void, Never>()
     private let privateMode: CurrentValueSubject<Bool, Never>
-    private var cancellables: Set<AnyCancellable> = []
+    /// プライベートモード時に変換候補にユーザー辞書を無視するかどうか
+    private let ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>
     // ユーザー辞書だけでなくすべての辞書から補完候補を検索するか？
     private let findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>
+    private var cancellables: Set<AnyCancellable> = []
 
     // MARK: NSFilePresenter
     let presentedItemURL: URL?
     let presentedItemOperationQueue: OperationQueue = OperationQueue()
 
-    init(dicts: [any DictProtocol], userDictEntries: [String: [Word]]? = nil, privateMode: CurrentValueSubject<Bool, Never>, findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>) throws {
+    init(dicts: [any DictProtocol], userDictEntries: [String: [Word]]? = nil, privateMode: CurrentValueSubject<Bool, Never>, ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>, findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>) throws {
         self.dicts = dicts
         self.privateMode = privateMode
+        self.ignoreUserDictInPrivateMode = ignoreUserDictInPrivateMode
         self.findCompletionFromAllDicts = findCompletionFromAllDicts
         dictionariesDirectoryURL = try FileManager.default.url(
             for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false
@@ -78,13 +74,11 @@ class UserDict: NSObject, DictProtocol {
                 }
             }
             .store(in: &cancellables)
-        self.privateMode.drop(while: { !$0 }).removeDuplicates().sink { [weak self] privateMode in
+        self.privateMode.drop(while: { !$0 }).removeDuplicates().sink { privateMode in
             if privateMode {
                 logger.log("プライベートモードが設定されました")
             } else {
-                // プライベートモードを解除したときにそれまでのエントリを削除する
                 logger.log("プライベートモードが解除されました")
-                self?.privateUserDict = MemoryDict(entries: [:], readonly: true)
             }
             UserDefaults.standard.set(privateMode, forKey: UserDefaultsKeys.privateMode)
         }
@@ -150,16 +144,16 @@ class UserDict: NSObject, DictProtocol {
         return result
     }
 
-    // MARK: DictProtocol
+    /**
+     * 非プライベートモード時はユーザー辞書、それ以外の辞書の順に参照する。
+     * プライベートモードで入力したエントリは参照しない。
+     */
     func refer(_ yomi: String, option: DictReferringOption? = nil) -> [Word] {
         if let userDict = userDict {
-            var result = userDict.refer(yomi, option: option)
-            if privateMode.value {
-                privateUserDict.refer(yomi, option: option).forEach { found in
-                    if !result.contains(found) {
-                        result.append(found)
-                    }
-                }
+            var result: [Word] = if !privateMode.value || !ignoreUserDictInPrivateMode.value {
+                userDict.refer(yomi, option: option)
+            } else {
+                []
             }
             dicts.forEach { dict in
                 dict.refer(yomi, option: option).forEach { found in
@@ -177,19 +171,18 @@ class UserDict: NSObject, DictProtocol {
     /**
      * ユーザー辞書にエントリを追加する。
      *
-     * プライベートモード時にはメモリ上に記録はされるが、通常モード時とは分けて記録しているため
-     * プライベートモード時に追加されたエントリはマイ辞書に永続化されないといった違いがある。
+     * プライベートモード時には追加を行わない。
      *
      * - Parameters:
      *   - yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
      *   - word: SKK辞書の変換候補。
      */
     func add(yomi: String, word: Word) {
-        if privateMode.value {
-            privateUserDict.add(yomi: yomi, word: word)
-        } else if let dict = userDict as? FileDict {
-            dict.add(yomi: yomi, word: word)
-            savePublisher.send(())
+        if !privateMode.value {
+            if let dict = userDict as? FileDict {
+                dict.add(yomi: yomi, word: word)
+                savePublisher.send(())
+            }
         }
     }
 
@@ -199,24 +192,20 @@ class UserDict: NSObject, DictProtocol {
      *  ユーザー辞書にないエントリ (ファイル辞書) の削除は無視されます。
      *  (ユーザー辞書に入力履歴があれば削除されるが、元のファイル辞書は更新されない)
      *
-     *  プライベートモードが有効なときの仕様はあんまり自信がないが、ひとまず次のように定義します。
      *  - 非プライベート時
-     *    - 非プライベートモード用の辞書からのみエントリを削除する
-     *    - もしプライベートモード用の辞書にエントリがあっても削除しない
+     *    - 非プライベートモード用のユーザー辞書からのみエントリを削除する
      *    - ファイル形式の辞書にだけエントリがあった場合はなにもしない
      *  - プライベートモード時
-     *    - プライベートモード用の辞書からのみエントリを削除する
-     *    - もし非プライベートモード用の辞書にエントリがあっても削除しない
-     *    - ファイル形式の辞書にだけエントリがあった場合はなにもしない
+     *    - なにもしない
      *
      *  - Parameters:
      *    - yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
      *    - word: SKK辞書の変換候補。
-     *  - Returns: エントリを削除できたかどうか
+     *  - Returns: エントリを削除できたかどうか。プライベートモード時はなにも削除せずに常にtrueを返す。
      */
     func delete(yomi: String, word: Word.Word) -> Bool {
         if privateMode.value {
-            return privateUserDict.delete(yomi: yomi, word: word)
+            return true
         } else if let dict = userDict as? FileDict {
             if dict.delete(yomi: yomi, word: word) {
                 savePublisher.send(())
@@ -239,14 +228,11 @@ class UserDict: NSObject, DictProtocol {
      * - 数値変換用の読みは補完候補としない
      */
     func findCompletion(prefix: String) -> String? {
-        if privateMode.value {
-            if let completion = privateUserDict.findCompletion(prefix: prefix) {
-                return completion
-            }
-        }
-        if let userDict {
-            if let completion = userDict.findCompletion(prefix: prefix) {
-                return completion
+        if !privateMode.value || !ignoreUserDictInPrivateMode.value {
+            if let userDict {
+                if let completion = userDict.findCompletion(prefix: prefix) {
+                    return completion
+                }
             }
         }
         if findCompletionFromAllDicts.value {
