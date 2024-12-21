@@ -646,7 +646,8 @@ final class StateMachine {
                 // AquaSKKは送り仮名の末尾に"；"をつけて変換処理もしくは単語登録に遷移
                 return true
             } else {
-                // 空文字列のときは全角で入力、それ以外のときは送り仮名モードへ
+                // 空文字列のときはAquaSKKと同様に全角で入力、それ以外のときは送り仮名モードへ
+                // NOTE: 空文字列のときは無視する、でもいいかも?
                 if text.isEmpty {
                     state.inputMethod = .normal
                     if let characters = action.characters() {
