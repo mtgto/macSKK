@@ -775,7 +775,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if [ ${CONFIGURATION} = \"Release\" ]; then\n    /usr/libexec/PlistBuddy -c \"Add LSUIElement BOOL YES\" \"${TEMP_DIR}/Preprocessed-Info.plist\"\nfi\n";
+			shellScript = "if [ ${CONFIGURATION} = \"Release\" ]; then\n    /usr/libexec/PlistBuddy -c \"Add LSUIElement BOOL YES\" \"${TEMP_DIR}/Preprocessed-Info.plist\"\n    /usr/libexec/PlistBuddy -c \"Add LSBackgroundOnly BOOL YES\" \"${TEMP_DIR}/Preprocessed-Info.plist\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
