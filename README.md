@@ -83,6 +83,8 @@ macSKKが入力メソッドとして選択されているときに入力メニ�
 | systemDict                  | String     | 注釈に使用するシステム辞書              |
 | selectingBackspace          | Number     | 変換候補選択時のバックスペースの挙動    |
 | punctuation                 | Number     | カンマとピリオド押下時の句読点設定      |
+| privateMode                 | Boolean    | プライベートモード                      |
+| ignoreUserDictInPrivateMode | Boolean    | プライベートモードでユーザー辞書を無視するか |
 
 ## 機能
 
