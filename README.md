@@ -283,6 +283,11 @@ A. Karabiner-Elementsで `C-j` をかなキーに置換することで対応す�
 }
 ```
 
+### Q. Ghosttyでq/lキーでモードを切り替えてもq/lが入力されてしまう / `C-j` を押すと改行されてしまう
+
+https://zenn.dev/mtgto/articles/macskk-karabiner-settings-for-ghostty を参考にしてください。
+q, lは「空文字挿入」ワークアラウンドも効かなかったのでKarabiner-Elementsでq, lキーをIMEのモード変換に置き換えるのがよさそうです。
+
 ### Q. アプリによってq/lキーでモードを切り替えてもq/lが入力されてしまう / `C-j`で改行されてしまう
 
 https://github.com/mtgto/macSKK/issues/119 と同じ問題と思われます。
