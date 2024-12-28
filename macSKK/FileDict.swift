@@ -238,11 +238,11 @@ enum FileDictType: Equatable {
     var failedEntryCount: Int { return dict.failedEntryCount }
 
     // MARK: DictProtocol
-    func refer(_ yomi: String, option: DictReferringOption?) -> [Word] {
+    @MainActor func refer(_ yomi: String, option: DictReferringOption?) -> [Word] {
         return dict.refer(yomi, option: option)
     }
 
-    func add(yomi: String, word: Word) {
+    @MainActor func add(yomi: String, word: Word) {
         dict.add(yomi: yomi, word: word)
         NotificationCenter.default.post(name: notificationNameDictLoad,
                                         object: DictLoadEvent(id: self.id,
@@ -250,7 +250,7 @@ enum FileDictType: Equatable {
         hasUnsavedChanges = true
     }
 
-    func delete(yomi: String, word: Word.Word) -> Bool {
+    @MainActor func delete(yomi: String, word: Word.Word) -> Bool {
         if dict.delete(yomi: yomi, word: word) {
             hasUnsavedChanges = true
             NotificationCenter.default.post(name: notificationNameDictLoad,
@@ -261,7 +261,7 @@ enum FileDictType: Equatable {
         return false
     }
 
-    func findCompletion(prefix: String) -> String? {
+    @MainActor func findCompletion(prefix: String) -> String? {
         return dict.findCompletion(prefix: prefix)
     }
 
@@ -277,10 +277,6 @@ extension FileDict: NSFilePresenter {
     // どちらも同じ辞書ファイルを監視しているので、Aが保存してもAのpresentedItemDidChangeは呼び出されないが、
     // BのpresentedItemDidChangeは呼び出される。
     nonisolated func presentedItemDidChange() {
-        guard let version = NSFileVersion.currentVersionOfItem(at: fileURL) else {
-            logger.error("辞書 \(self.id, privacy: .public) のバージョンが存在しません")
-            return
-        }
         logger.log("辞書 \(self.id, privacy: .public) が変更されたので読み込みます")
         load(fileURL: self.fileURL)
     }

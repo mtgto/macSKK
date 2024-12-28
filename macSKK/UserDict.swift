@@ -105,7 +105,7 @@ import Foundation
      *   - yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
      *   - option: 辞書を引くときに接頭辞や接尾辞から検索するかどうか。nilなら通常のエントリから検索する
      */
-    @MainActor func referDicts(_ yomi: String, option: DictReferringOption? = nil) -> [Candidate] {
+    func referDicts(_ yomi: String, option: DictReferringOption? = nil) -> [Candidate] {
         var result: [Candidate] = []
         var candidates = refer(yomi, option: option).map { word in
             let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }

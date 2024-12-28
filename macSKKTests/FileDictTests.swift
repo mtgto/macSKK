@@ -10,13 +10,13 @@ final class FileDictTests: XCTestCase {
     let fileURL = Bundle(for: FileDictTests.self).url(forResource: "empty", withExtension: "txt")!
     var cancellables: Set<AnyCancellable> = []
 
-    func testLoadContainsBom() throws {
+    @MainActor func testLoadContainsBom() throws {
         let fileURL = Bundle(for: Self.self).url(forResource: "utf8-bom", withExtension: "txt")!
         let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: true)
         XCTAssertEqual(dict.dict.entries, ["ゆにこーど": [Word("ユニコード")]])
     }
 
-    func testLoadJson() throws {
+    @MainActor func testLoadJson() throws {
         let expectation = XCTestExpectation()
         NotificationCenter.default.publisher(for: notificationNameDictLoad).sink { notification in
             if let loadEvent = notification.object as? DictLoadEvent {
@@ -34,7 +34,7 @@ final class FileDictTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    func testLoadJsonBroken() throws {
+    @MainActor func testLoadJsonBroken() throws {
         let expectation = XCTestExpectation()
         NotificationCenter.default.publisher(for: notificationNameDictLoad).sink { notification in
             if let loadEvent = notification.object as? DictLoadEvent {
@@ -48,7 +48,7 @@ final class FileDictTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    func testAdd() throws {
+    @MainActor func testAdd() throws {
         let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: true)
         XCTAssertEqual(dict.entryCount, 0)
         let word = Word("井")
@@ -58,7 +58,7 @@ final class FileDictTests: XCTestCase {
         XCTAssertTrue(dict.hasUnsavedChanges)
     }
 
-    func testDelete() throws {
+    @MainActor func testDelete() throws {
         let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: true)
         dict.setEntries(["あr": [Word("有"), Word("在")]], readonly: true)
         XCTAssertFalse(dict.delete(yomi: "あr", word: "或"))
@@ -67,7 +67,7 @@ final class FileDictTests: XCTestCase {
         XCTAssertTrue(dict.hasUnsavedChanges)
     }
 
-    func testSerialize() throws {
+    @MainActor func testSerialize() throws {
         let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: false)
         XCTAssertEqual(dict.serialize(),
                        [FileDict.headers[0], FileDict.okuriAriHeader, FileDict.okuriNashiHeader, ""].joined(separator: "\n"))
