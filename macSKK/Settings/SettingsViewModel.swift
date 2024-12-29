@@ -304,6 +304,9 @@ final class SettingsViewModel: ObservableObject {
                 return Future<[FileDict], Never>() { promise in
                     Task {
                         for dictSetting in dictSettings {
+                            if !dictSetting.enabled {
+                                continue
+                            }
                             let dict = Global.dictionary.fileDict(id: dictSetting.id)
                             // 無効だった辞書が有効化された、もしくは辞書のエンコーディング設定が変わったら読み込む
                             if dictSetting.type.encoding != dict?.type.encoding {
