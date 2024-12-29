@@ -298,34 +298,37 @@ final class SettingsViewModel: ObservableObject {
         Global.ignoreUserDictInPrivateMode.send(ignoreUserDictInPrivateMode)
 
         // SKK-JISYO.Lのようなファイルの読み込みが遅いのでバックグラウンドで処理
-        $dictSettings.filter({ !$0.isEmpty }).receive(on: DispatchQueue.global()).sink { dictSettings in
-            let enabledDicts = dictSettings.compactMap { dictSetting -> FileDict? in
-                let dict = Global.dictionary.fileDict(id: dictSetting.id)
-                if dictSetting.enabled {
-                    // 無効だった辞書が有効化された、もしくは辞書のエンコーディング設定が変わったら読み込む
-                    if dictSetting.type.encoding != dict?.type.encoding {
-                        let fileURL = dictionariesDirectoryUrl.appendingPathComponent(dictSetting.filename)
-                        do {
-                            logger.log("SKK辞書 \(dictSetting.filename, privacy: .public) を読み込みます")
-                            let fileDict = try FileDict(contentsOf: fileURL, type: dictSetting.type, readonly: true)
-                            logger.log("SKK辞書 \(dictSetting.filename, privacy: .public) から \(fileDict.entryCount) エントリ読み込みました")
-                            return fileDict
-                        } catch {
-                            dictSetting.enabled = false
-                            logger.log("SKK辞書 \(dictSetting.filename, privacy: .public) の読み込みに失敗しました!: \(error)")
-                            return nil
+        $dictSettings.filter({ !$0.isEmpty }).receive(on: DispatchQueue.global()).flatMap { dictSettings in
+            Deferred {
+                var fileDicts: [FileDict] = []
+                return Future<[FileDict], Never>() { promise in
+                    Task {
+                        for dictSetting in dictSettings {
+                            let dict = Global.dictionary.fileDict(id: dictSetting.id)
+                            // 無効だった辞書が有効化された、もしくは辞書のエンコーディング設定が変わったら読み込む
+                            if dictSetting.type.encoding != dict?.type.encoding {
+                                let fileURL = dictionariesDirectoryUrl.appendingPathComponent(dictSetting.filename)
+                                do {
+                                    logger.log("SKK辞書 \(dictSetting.filename, privacy: .public) を読み込みます")
+                                    let fileDict = FileDict(contentsOf: fileURL, type: dictSetting.type, readonly: true)
+                                    try await fileDict.load(fileURL: fileURL)
+                                    logger.log("SKK辞書 \(dictSetting.filename, privacy: .public) から \(fileDict.entryCount) エントリ読み込みました")
+                                    fileDicts.append(fileDict)
+                                } catch {
+                                    dictSetting.enabled = false
+                                    logger.log("SKK辞書 \(dictSetting.filename, privacy: .public) の読み込みに失敗しました!: \(error)")
+                                }
+                            } else if let dict {
+                                // 変更がないのでそのまま
+                                fileDicts.append(dict)
+                            }
                         }
-                    } else {
-                        return dict
+                        promise(.success(fileDicts))
                     }
-                } else {
-                    if dict != nil {
-                        logger.log("SKK辞書 \(dictSetting.filename, privacy: .public) を無効化します")
-                    }
-                    return nil
                 }
             }
-            Global.dictionary.dicts = enabledDicts
+        }.sink { fileDicts in
+            Global.dictionary.dicts = fileDicts
             UserDefaults.standard.set(self.dictSettings.map { $0.encode() }, forKey: UserDefaultsKeys.dictionaries)
         }
         .store(in: &cancellables)

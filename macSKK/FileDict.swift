@@ -57,6 +57,7 @@ enum FileDictType: Equatable {
 
     enum FileDictError: Error {
         case decode
+        case unknown
     }
 
     /// JSON形式
@@ -77,7 +78,7 @@ enum FileDictType: Equatable {
         return queue
     }()
 
-    init(contentsOf fileURL: URL, type: FileDictType, readonly: Bool) throws {
+    init(contentsOf fileURL: URL, type: FileDictType, readonly: Bool) {
         // iCloud Documents使うときには辞書フォルダが複数になりうるけど、それまではひとまずファイル名をIDとして使う
         self.id = fileURL.lastPathComponent
         self.fileURL = fileURL
@@ -85,67 +86,71 @@ enum FileDictType: Equatable {
         self.dict = MemoryDict(entries: [:], readonly: readonly)
         self.readonly = readonly
         super.init()
-        load(fileURL: fileURL)
         NSFileCoordinator.addFilePresenter(self)
     }
 
-    nonisolated func load(fileURL: URL) {
-        let operation = BlockOperation {
-            var coordinationError: NSError?
-            var readingError: NSError?
-            let fileCoordinator = NSFileCoordinator(filePresenter: self)
-            NotificationCenter.default.post(name: notificationNameDictLoad,
-                                            object: DictLoadEvent(id: self.id,
-                                                                  status: .loading))
+    // このメソッド自体はasyncにしていますがマルチスレッドを使用はしていません。
+    // 呼び出し側でマルチスレッドから呼び出してください。
+    // TODO: NSFileCoordinatorの非同期版を使うことを検討する
+    nonisolated func load(fileURL: URL) async throws {
+        var coordinationError: NSError?
+        let fileCoordinator = NSFileCoordinator(filePresenter: self)
+        NotificationCenter.default.post(name: notificationNameDictLoad,
+                                        object: DictLoadEvent(id: self.id,
+                                                              status: .loading))
+        let memoryDict: MemoryDict = try await withCheckedThrowingContinuation { continuation in
             fileCoordinator.coordinate(readingItemAt: fileURL, error: &coordinationError) { [weak self] url in
-                if let self {
-                    do {
-                        let memoryDict: MemoryDict
-                        if case .json = self.type {
-                            let decoder = JSONDecoder()
-                            decoder.keyDecodingStrategy = .convertFromSnakeCase
-                            let jisyo = try decoder.decode(JsonJisyo.self, from: try Data(contentsOf: url))
-                            if jisyo.version != "0.0.0" {
-                                logger.warning("JSON辞書のバージョンが未対応のバージョンのため無視します")
-                                throw FileDictError.decode
-                            }
-                            let okuriAriEntries = jisyo.okuriAri.mapValues({
-                                $0.map { Word($0) }
-                            })
-                            let okuriNashiEntries = jisyo.okuriNasi.mapValues({
-                                $0.map { Word($0) }
-                            })
-                            memoryDict = MemoryDict(okuriAriEntries: okuriAriEntries, okuriNashiEntries: okuriNashiEntries, readonly: readonly)
-                        } else if case .traditional(let encoding) = self.type {
-                            let source = try self.loadString(url, encoding: encoding)
-                            if source.isEmpty {
-                                // 辞書ファイルを書き込み中に読み込んでしまった?
-                                logger.warning("辞書 \(self.id) を読み込んだところ0バイトだったため更新を無視します")
-                            }
-                            memoryDict = MemoryDict(dictId: self.id, source: source, readonly: readonly)
-                        } else {
-                            fatalError()
+                guard let self else {
+                    continuation.resume(throwing: FileDictError.unknown)
+                    return
+                }
+                do {
+                    let memoryDict: MemoryDict
+                    if case .json = self.type {
+                        let decoder = JSONDecoder()
+                        decoder.keyDecodingStrategy = .convertFromSnakeCase
+                        let jisyo = try decoder.decode(JsonJisyo.self, from: try Data(contentsOf: url))
+                        if jisyo.version != "0.0.0" {
+                            logger.warning("JSON辞書のバージョンが未対応のバージョンのため無視します")
+                            throw FileDictError.decode
                         }
-                        Task { @MainActor in
-                            self.dict = memoryDict
+                        let okuriAriEntries = jisyo.okuriAri.mapValues({
+                            $0.map { Word($0) }
+                        })
+                        let okuriNashiEntries = jisyo.okuriNasi.mapValues({
+                            $0.map { Word($0) }
+                        })
+                        memoryDict = MemoryDict(okuriAriEntries: okuriAriEntries, okuriNashiEntries: okuriNashiEntries, readonly: readonly)
+                    } else if case .traditional(let encoding) = self.type {
+                        let source = try self.loadString(url, encoding: encoding)
+                        if source.isEmpty {
+                            // 辞書ファイルを書き込み中に読み込んでしまった?
+                            logger.warning("辞書 \(self.id) を読み込んだところ0バイトだったため更新を無視します")
                         }
-                        NotificationCenter.default.post(name: notificationNameDictLoad,
-                                                        object: DictLoadEvent(id: self.id,
-                                                                              status: .loaded(success: memoryDict.entryCount,     failure: memoryDict.failedEntryCount)))
-                    } catch {
-                        NotificationCenter.default.post(name: notificationNameDictLoad,
-                                                        object: DictLoadEvent(id: self.id,
-                                                                              status: .fail(error)))
-                        readingError = error as NSError
+                        memoryDict = MemoryDict(dictId: self.id, source: source, readonly: readonly)
+                    } else {
+                        fatalError()
                     }
+                    continuation.resume(returning: memoryDict)
+                    NotificationCenter.default.post(name: notificationNameDictLoad,
+                                                    object: DictLoadEvent(id: self.id,
+                                                                          status: .loaded(success: memoryDict.entryCount,
+                                                                                          failure: memoryDict.failedEntryCount)))
+                } catch {
+                    NotificationCenter.default.post(name: notificationNameDictLoad,
+                                                    object: DictLoadEvent(id: self.id,
+                                                                          status: .fail(error)))
+                    continuation.resume(throwing: error)
                 }
             }
-            if let error = coordinationError ?? readingError {
-                logger.error("辞書 \(self.id, privacy: .public) の読み込み中にエラーが発生しました: \(error)")
-            }
         }
-        fileOperationQueue.addOperation(operation)
-        operation.waitUntilFinished()
+        if let error = coordinationError {
+            logger.error("辞書 \(self.id, privacy: .public) の読み込み中にエラーが発生しました: \(error)")
+            throw error
+        }
+        await MainActor.run { [memoryDict] in
+            self.dict = memoryDict
+        }
     }
 
     nonisolated private func loadString(_ url: URL, encoding: String.Encoding) throws -> String {
@@ -278,6 +283,8 @@ extension FileDict: NSFilePresenter {
     // BのpresentedItemDidChangeは呼び出される。
     nonisolated func presentedItemDidChange() {
         logger.log("辞書 \(self.id, privacy: .public) が変更されたので読み込みます")
-        load(fileURL: self.fileURL)
+        Task {
+            try await load(fileURL: self.fileURL)
+        }
     }
 }
