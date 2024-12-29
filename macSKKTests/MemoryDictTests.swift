@@ -89,7 +89,7 @@ class MemoryDictTests: XCTestCase {
         XCTAssertNil(dict.entries["から"])
     }
 
-    func testAdd() throws {
+    @MainActor func testAdd() throws {
         var dict = MemoryDict(entries: [:], readonly: false)
         XCTAssertEqual(dict.entryCount, 0)
         let word1 = Word("井")
@@ -120,7 +120,7 @@ class MemoryDictTests: XCTestCase {
         XCTAssertEqual(dict.refer("いt", option: nil), [Word("行", okuri: "った"), Word("行")])
     }
 
-    func testDelete() throws {
+    @MainActor func testDelete() throws {
         var dict = MemoryDict(entries: ["あr": [Word("有"), Word("在")], "え": [Word("絵"), Word("柄")]], readonly: false)
         XCTAssertFalse(dict.entries.isEmpty)
         XCTAssertEqual(dict.okuriAriYomis, ["あr"])
@@ -145,14 +145,14 @@ class MemoryDictTests: XCTestCase {
         XCTAssertTrue(dict.entries.isEmpty)
     }
 
-    func testDeleteOkuriBlock() throws {
+    @MainActor func testDeleteOkuriBlock() throws {
         var dict = MemoryDict(entries: ["あr": [Word("有", okuri: "る"), Word("有", okuri: "り"), Word("有")]], readonly: false)
         XCTAssertTrue(dict.delete(yomi: "あr", word: "有"))
         XCTAssertEqual(dict.refer("あr", option: nil), [], "あr を読みとして持つ変換候補が全て削除された")
         XCTAssertEqual(dict.okuriAriYomis, [])
     }
 
-    func testFindCompletion() throws {
+    @MainActor func testFindCompletion() throws {
         var dict = MemoryDict(entries: [:], readonly: false)
         XCTAssertNil(dict.findCompletion(prefix: ""), "辞書が空だとnil")
         dict.add(yomi: "あいうえおか", word: Word("アイウエオカ"))
@@ -166,7 +166,7 @@ class MemoryDictTests: XCTestCase {
         XCTAssertNil(dict.findCompletion(prefix: "だい"), "数値変換の読みはnil")
     }
 
-    func testReferWithOption() {
+    @MainActor func testReferWithOption() {
         let dict = MemoryDict(entries: ["あき>": [Word("空き")],
                                         "あき": [Word("秋")],
                                         ">し": [Word("氏")],
