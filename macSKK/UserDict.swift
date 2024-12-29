@@ -54,12 +54,8 @@ import Foundation
                 logger.log("ユーザー辞書ファイルがないため作成します")
                 try Data().write(to: userDictFileURL, options: .withoutOverwriting)
             }
-            do {
-                let userDict = try FileDict(contentsOf: userDictFileURL, type: .traditional(.utf8), readonly: false)
-                self.userDict = userDict
-            } catch {
-                self.userDict = nil
-            }
+            let userDict = FileDict(contentsOf: userDictFileURL, type: .traditional(.utf8), readonly: false)
+            self.userDict = userDict
         }
         super.init()
         NSFileCoordinator.addFilePresenter(self)
@@ -87,6 +83,12 @@ import Foundation
 
     deinit {
         NSFileCoordinator.removeFilePresenter(self)
+    }
+
+    func load() async throws {
+        if let userDict = userDict as? FileDict {
+            try await userDict.load(fileURL: userDictFileURL)
+        }
     }
 
     /**
