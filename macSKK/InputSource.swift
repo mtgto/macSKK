@@ -18,15 +18,17 @@ struct InputSource: Hashable, Identifiable {
             kTISPropertyInputSourceType: kTISTypeKeyboardLayout,
             kTISPropertyInputSourceIsASCIICapable: kCFBooleanTrue,
         ]
-        guard let result = TISCreateInputSourceList(options as CFDictionary, true).takeUnretainedValue() as? Array<TISInputSource> else {
+        // APIドキュメントには特に書いてないけどCFGetRetainCountで見るとretainedな値を返してそうなのでtakeRetainedValueで変換
+        guard let result = TISCreateInputSourceList(options as CFDictionary, true).takeRetainedValue() as? Array<TISInputSource> else {
             return nil
         }
         return result.compactMap { inputSource -> InputSource? in
             guard let id = getStringProperty(inputSource, key: kTISPropertyInputSourceID) else { return nil }
             guard let localizedName = getStringProperty(inputSource, key: kTISPropertyLocalizedName) else { return nil }
-            // 第一言語が英語じゃないものは弾く
+            // 第一言語が英語じゃないものは弾く。
+            // APIドキュメントには特に書いてないけどCFGetRetainCountで見るとretainedな値を返してそうなのでtakeRetainedValueで変換
             if let languagesPointer = TISGetInputSourceProperty(inputSource, kTISPropertyInputSourceLanguages),
-               let languages = Unmanaged<CFArray>.fromOpaque(languagesPointer).takeUnretainedValue() as? Array<String> {
+               let languages = Unmanaged<CFArray>.fromOpaque(languagesPointer).takeRetainedValue() as? Array<String> {
                 if let first = languages.first {
                     if first != "en" {
                         return nil
@@ -39,6 +41,6 @@ struct InputSource: Hashable, Identifiable {
 
     static func getStringProperty(_ tisInputSource: TISInputSource, key: NSString) -> String? {
         guard let pointer = TISGetInputSourceProperty(tisInputSource, key) else { return nil }
-        return String(Unmanaged<CFString>.fromOpaque(pointer).takeUnretainedValue())
+        return unsafeBitCast(pointer, to: CFString.self) as String
     }
 }
