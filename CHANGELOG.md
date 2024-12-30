@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## v1.6.1 (2024-12-30)
+
+- LSBackgroundOnlyを設定する (#257)
+- InputSourceでのメモリリークの解決 (#258)
+- App Store用のアイコンを削除 (#259)
+- CIでxcbeautifyを使う (#261)
+
 ## v1.6.0 (2024-12-22)
 
 - GitHub Actions環境をXcode 16.1に変更 (before 16.0) (#249)
