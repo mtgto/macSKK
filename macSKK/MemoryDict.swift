@@ -4,7 +4,7 @@
 import Foundation
 
 /// 実ファイルをもたないSKK辞書
-struct MemoryDict: DictProtocol {
+struct MemoryDict: DictProtocol, Sendable {
     /**
      * 読み込み専用で保存しないかどうか
      *

@@ -7,7 +7,7 @@ import Combine
 @testable import macSKK
 
 final class UserDictTests: XCTestCase {
-    func testRefer() throws {
+    @MainActor func testRefer() throws {
         let dict1 = MemoryDict(entries: ["い": [Word("胃"), Word("伊")]], readonly: true)
         let dict2 = MemoryDict(entries: ["い": [Word("胃"), Word("意")]], readonly: true)
         let userDict = try UserDict(dicts: [dict1, dict2],
@@ -32,7 +32,7 @@ final class UserDictTests: XCTestCase {
         XCTAssertEqual(userDict.referDicts("い").map({ $0.annotations.map({ $0.dictId }) }), [["dict1", "dict2"], [], []])
     }
 
-    func testReferWithOption() throws {
+    @MainActor func testReferWithOption() throws {
         let dict = MemoryDict(entries: ["あき>": [Word("空き")],
                                         "あき": [Word("秋")],
                                         ">し": [Word("氏")],
@@ -54,7 +54,7 @@ final class UserDictTests: XCTestCase {
         XCTAssertEqual(userDict.refer("し", option: .prefix), [])
     }
 
-    func testPrivateMode() throws {
+    @MainActor func testPrivateMode() throws {
         let privateMode = CurrentValueSubject<Bool, Never>(false)
         let userDict = try UserDict(dicts: [],
                                     userDictEntries: ["い": [Word("位")]],
@@ -72,7 +72,7 @@ final class UserDictTests: XCTestCase {
         XCTAssertTrue(userDict.delete(yomi: "い", word: "井"))
     }
 
-    func testFindCompletionPrivateMode() throws {
+    @MainActor func testFindCompletionPrivateMode() throws {
         let privateMode = CurrentValueSubject<Bool, Never>(true)
         let ignoreUserDictInPrivateMode = CurrentValueSubject<Bool, Never>(false)
         let dict1 = MemoryDict(entries: ["にほん": [Word("日本")], "にほ": [Word("2歩")]], readonly: false)
@@ -92,7 +92,7 @@ final class UserDictTests: XCTestCase {
         XCTAssertEqual(userDict.findCompletion(prefix: "に"), "にふ")
     }
 
-    func testFindCompletionFromAllDicts() throws {
+    @MainActor func testFindCompletionFromAllDicts() throws {
         let privateMode = CurrentValueSubject<Bool, Never>(false)
         let ignoreUserDictInPrivateMode = CurrentValueSubject<Bool, Never>(false)
         let findCompletionFromAllDicts = CurrentValueSubject<Bool, Never>(false)

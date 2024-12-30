@@ -8,8 +8,8 @@ import Foundation
 /// v0.22.0以降はskkservサーバーを辞書としても利用することが可能。
 ///
 /// TODO: ファイル辞書にしかない単語を削除しようとしたときにどうやってそれを記録するか。NG登録?
-class UserDict: NSObject, DictProtocol {
-    static let userDictFilename = "skk-jisyo.utf8"
+@MainActor class UserDict: NSObject, DictProtocol {
+    nonisolated static let userDictFilename = "skk-jisyo.utf8"
     let dictionariesDirectoryURL: URL
     let userDictFileURL: URL
     /**
@@ -54,12 +54,8 @@ class UserDict: NSObject, DictProtocol {
                 logger.log("ユーザー辞書ファイルがないため作成します")
                 try Data().write(to: userDictFileURL, options: .withoutOverwriting)
             }
-            do {
-                let userDict = try FileDict(contentsOf: userDictFileURL, type: .traditional(.utf8), readonly: false)
-                self.userDict = userDict
-            } catch {
-                self.userDict = nil
-            }
+            let userDict = FileDict(contentsOf: userDictFileURL, type: .traditional(.utf8), readonly: false)
+            self.userDict = userDict
         }
         super.init()
         NSFileCoordinator.addFilePresenter(self)
@@ -68,9 +64,9 @@ class UserDict: NSObject, DictProtocol {
             // 短期間に複数の保存要求があっても60秒に一回にまとめる
             .debounce(for: .seconds(60), scheduler: DispatchQueue.global(qos: .background))
             .sink { [weak self] _ in
-                if let fileDict = self?.userDict as? FileDict {
+                if let self, let fileDict = self.userDict as? FileDict {
                     logger.log("ユーザー辞書を永続化します。現在のエントリ数は \(fileDict.dict.entries.count)")
-                    fileDict.save()
+                    fileDict.save(to: fileDict.fileURL, encoding: fileDict.type.encoding)
                 }
             }
             .store(in: &cancellables)
@@ -89,6 +85,12 @@ class UserDict: NSObject, DictProtocol {
         NSFileCoordinator.removeFilePresenter(self)
     }
 
+    func load() async throws {
+        if let userDict = userDict as? FileDict {
+            try await userDict.load(fileURL: userDictFileURL)
+        }
+    }
+
     /**
      * 保持する辞書を順に引き変換候補順に返す。
      *
@@ -105,7 +107,7 @@ class UserDict: NSObject, DictProtocol {
      *   - yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
      *   - option: 辞書を引くときに接頭辞や接尾辞から検索するかどうか。nilなら通常のエントリから検索する
      */
-    @MainActor func referDicts(_ yomi: String, option: DictReferringOption? = nil) -> [Candidate] {
+    func referDicts(_ yomi: String, option: DictReferringOption? = nil) -> [Candidate] {
         var result: [Candidate] = []
         var candidates = refer(yomi, option: option).map { word in
             let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
@@ -255,7 +257,7 @@ class UserDict: NSObject, DictProtocol {
         }
         if let userDict {
             if let dict = userDict as? FileDict {
-                dict.save()
+                dict.save(to: dict.fileURL, encoding: dict.type.encoding)
             } else {
                 // ユニットテストなど特殊な場合のみ
                 logger.info("永続化が要求されましたが、ユーザー辞書がファイル形式でないため無視されます")
@@ -278,7 +280,7 @@ class UserDict: NSObject, DictProtocol {
 }
 
 extension UserDict: NSFilePresenter {
-    func presentedSubitemDidAppear(at url: URL) {
+    nonisolated func presentedSubitemDidAppear(at url: URL) {
         do {
             if try isValidFile(url) {
                 logger.log("新しいファイル \(url.lastPathComponent, privacy: .public) が作成されました")
@@ -293,7 +295,7 @@ extension UserDict: NSFilePresenter {
     }
 
     // 他フォルダから移動された場合だけでなく他フォルダに移動した場合にも発生する (後者はdidMoveToも発生する)
-    func presentedSubitemDidChange(at url: URL) {
+    nonisolated func presentedSubitemDidChange(at url: URL) {
         // 削除されたときにaccommodatePresentedSubitemDeletionが呼ばれないがこのメソッドは呼ばれるようだった。
         // そのためこのメソッドで削除のとき同様の処理を行う。
         if !FileManager.default.fileExists(atPath: url.path) {
@@ -326,7 +328,7 @@ extension UserDict: NSFilePresenter {
     }
 
     // 子要素を他フォルダに移動した場合に発生する
-    func presentedSubitem(at oldURL: URL, didMoveTo newURL: URL) {
+    nonisolated func presentedSubitem(at oldURL: URL, didMoveTo newURL: URL) {
         logger.log("ファイル \(oldURL.lastPathComponent, privacy: .public) が辞書フォルダから移動されました")
         NotificationCenter.default.post(name: notificationNameDictFileDidMove, object: oldURL)
     }
@@ -339,7 +341,7 @@ extension UserDict: NSFilePresenter {
     }
 
     // 辞書ファイルとして問題があるファイルでないかを判定する
-    private func isValidFile(_ fileURL: URL) throws -> Bool {
+    nonisolated private func isValidFile(_ fileURL: URL) throws -> Bool {
         return try fileURL.isReadable()
     }
 }

@@ -104,6 +104,9 @@ struct macSKKApp: App {
             setupDirectMode()
             setupSettingsNotification()
         }
+        Task {
+            try await Global.dictionary.load()
+        }
     }
 
     var body: some Scene {
