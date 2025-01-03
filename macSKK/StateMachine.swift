@@ -361,7 +361,9 @@ final class StateMachine {
     @MainActor func handleNormalPrintable(input: String, action: Action, specialState: SpecialState?) -> Bool {
         switch state.inputMode {
         case .hiragana, .katakana, .hankaku:
-            if input.isAlphabet && !action.optionIsPressed() {
+            // アルファベットまたはローマ字かな変換ルールの一部として登録されているかを見る
+            // アルファベットの場合はローマ字として処理する可能性があるのでシフトを考慮しなくてもよい
+            if Global.kanaRule.isPrefix(input: input, modifierFlags: action.event.modifierFlags) {
                 let result = Global.kanaRule.convert(input, punctuation: Global.punctuation)
                 if let moji = result.kakutei {
                     if action.shiftIsPressed() {

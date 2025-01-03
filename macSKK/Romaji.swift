@@ -335,4 +335,36 @@ struct Romaji: Equatable, Sendable {
         }
         return nil
     }
+
+    /**
+     * 入力された文字列を受け取り、ローマ字かな変換ルールの入力として正しい接頭辞または全部かどうかを判定する。
+     *
+     * Option, Command, Controlが押されている場合は常にfalseを返す。
+     * アルファベットかそれ以外かで挙動が変わる。
+     *
+     * デフォルトのローマ字かな変換ルールでの例:
+     *
+     * input | modifierFlags | 結果 | 補足
+     * ----- | ------------- | ---- | ----
+     * "a" | `[]` | true | "a" の全体なので
+     * "a" | `[.shift]` | true | アルファベットの場合シフトキーが押されていてもよい
+     * "a" | `[.option]` | false | Optionキーが押されている場合は常にfalse
+     * "k" | `[]` | true | "ka" の一部
+     * "ky" | `[]` | true | "kya" の一部
+     * "q" | `[]` | false | "q" で始まるローマ字はない
+     * "." | `[]` | true | ".,。" の全体なのでtrue
+     * "." | `[.shift]` | false | アルファベット以外の場合シフトキーが押されている場合は別のキーとして扱われる
+     *
+     * - Parameters
+     *   - input: ``Action/KeyEvent/printable(_:)`` の引数であるcharacterIgnoringModifiersな文字列
+     *   - modifierFlags: 修飾キー
+     */
+    func isPrefix(input: String, modifierFlags: NSEvent.ModifierFlags = []) -> Bool {
+        if !modifierFlags.intersection([.option, .command, .control]).isEmpty {
+            return false
+        } else if (input.isAlphabet || !modifierFlags.contains(.shift)) && (undecidedInputs.contains(input) || table[input] != nil) {
+            return true
+        }
+        return false
+    }
 }
