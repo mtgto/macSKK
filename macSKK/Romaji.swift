@@ -111,7 +111,7 @@ struct Romaji: Equatable, Sendable {
             }
             // TODO: 正規表現などで一要素目がキーボードから直接入力できるASCII文字であることを検査する
             let elements = line.split(separator: ",", maxSplits: 5).map {
-                $0.replacingOccurrences(of: "&comma;", with: ",")
+                $0.replacingOccurrences(of: "&comma;", with: ",").replacingOccurrences(of: "&sharp;", with: "#")
             }
             if elements.count < 2 || elements.contains(where: { $0.isEmpty }) {
                 logger.error("ローマ字変換定義ファイルの \(lineNumber) 行目の記述が壊れているため読み込みできません")
