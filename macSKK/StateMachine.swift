@@ -606,7 +606,7 @@ final class StateMachine {
                 return true
             } else {
                 if state.inputMode != .direct {
-                    return handleComposingStartConvert(action, composing: composing.trim(), specialState: specialState)
+                    return handleComposingStartConvert(action, composing: composing.trim(kanaRule: Global.kanaRule), specialState: specialState)
                 } else {
                     return handleComposingStartConvert(action, composing: composing, specialState: specialState)
                 }
@@ -928,7 +928,7 @@ final class StateMachine {
         // skkservから引く場合もあるのでTaskで実行する
         // 未確定ローマ字はn以外は入力されずに削除される. nだけは"ん"として変換する
         // 変換候補がないときは辞書登録へ
-        let trimmedComposing = composing.trim()
+        let trimmedComposing = composing.trim(kanaRule: Global.kanaRule)
         var yomiText = trimmedComposing.yomi(for: self.state.inputMode)
         let candidateWords: [Candidate]
         // FIXME: Abbrevモードでも接頭辞、接尾辞を検索するべきか再検討する。

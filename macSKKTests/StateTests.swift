@@ -6,6 +6,10 @@ import XCTest
 @testable import macSKK
 
 final class StateTests: XCTestCase {
+    @MainActor override func setUp() {
+        Global.kanaRule = Romaji.defaultKanaRule
+    }
+
     func testComposingStateAppendText() throws {
         var state = ComposingState(
             isShift: true, text: ["あ", "い"], okuri: nil, romaji: "", cursor: nil)
@@ -86,18 +90,22 @@ final class StateTests: XCTestCase {
         XCTAssertEqual(state.subText(), ["あ"], "未確定のローマ字部分は含まない")
     }
 
-    func testComposingStateTrim() {
+    @MainActor func testComposingStateTrim() {
         let state = ComposingState(
-            isShift: true, text: ["あ"], okuri: nil, romaji: "n", cursor: nil).trim()
+            isShift: true,
+            text: ["あ"],
+            okuri: nil,
+            romaji: "n",
+            cursor: nil).trim(kanaRule: Global.kanaRule)
         XCTAssertEqual(state.text, ["あ", "ん"])
         XCTAssertNil(state.okuri)
     }
 
-    func testComposingStateTrimOkuriN() {
+    @MainActor func testComposingStateTrimOkuriN() {
         let state = ComposingState(
-            isShift: true, text: ["く", "や"], okuri: [], romaji: "n", cursor: nil).trim()
-        XCTAssertEqual(state.trim().text, ["く", "や"])
-        XCTAssertEqual(state.trim().okuri, [Romaji.n])
+            isShift: true, text: ["く", "や"], okuri: [], romaji: "n", cursor: nil).trim(kanaRule: Global.kanaRule)
+        XCTAssertEqual(state.trim(kanaRule: Global.kanaRule).text, ["く", "や"])
+        XCTAssertEqual(state.trim(kanaRule: Global.kanaRule).okuri, [Romaji.n])
     }
 
     func testComposingStateYomi() {

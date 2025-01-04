@@ -106,38 +106,43 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
     }
 
     /**
-     * 現在の状態で別の状態に移行するための処理を行った結果を返す
-     * 読みもしくは送り仮名が末尾がnで終わっていたら「ん」が入力されたものと見做す。それ以外の未確定部分はそのままにする
+     * 現在の状態で別の状態に移行するための処理を行った結果を返す。
+     *
+     * デフォルトのローマ字かな変換ルールでは、読みもしくは送り仮名が末尾がnで終わっていたら「ん」が入力されたものと見做す。
+     * ローマ字かな変換ルールをカスタマイズしている場合は、今の`romaji`からかな一文字への変換をもっているかを調べて
+     * その文字に末尾を変換するという処理を行う。
      * okuriが1文字以上含む場合にリセットするかどうかは未定義。
-     * 現状はスペース押されたときの処理でしか使ってないので送り仮名を「ん」一文字にするかそれ以外だけしか発生しないはずだけど
-     * ひとまず自然な方と思われる「ローマ字の未確定部分がnのときだけ末尾に「ん」をつける」としています。
+     * 現状はスペース押されたときの処理でしか使ってないので送り仮名を「ん」一文字にするかそれ以外だけしか発生しないはず。
+     *
+     * - Parameters:
+     *   - kanaRule: ローマ字かな変換ルール
      */
-    func trim() -> Self {
-        if romaji == "n" {
+    func trim(kanaRule: Romaji) -> Self {
+        if let moji = kanaRule.table[romaji] {
             if let okuri {
                 return ComposingState(
                     isShift: isShift,
                     text: text,
-                    okuri: okuri + [Romaji.n],
+                    okuri: okuri + [moji],
                     romaji: "",
                     cursor: cursor,
                     prevMode: prevMode)
             } else {
                 return ComposingState(
                     isShift: isShift,
-                    text: text + [Romaji.n.kana],
+                    text: text + [moji.kana],
                     okuri: nil,
                     romaji: "",
                     cursor: cursor,
                     prevMode: prevMode)
             }
-        } else {
-            return self
         }
+        return self
     }
 
     /// text部分を指定の入力モードに合わせて文字列に変換する
-    /// - Parameter: convertHatsuon 入力未確定の送り仮名の一文字目がnだったら撥音「ん」としてあつかうかどうか
+    /// - Parameters:
+    ///   - convertHatsuon: 入力未確定の送り仮名の一文字目がnだったら撥音「ん」としてあつかうかどうか
     func string(for mode: InputMode, convertHatsuon: Bool) -> String {
         let newText: String = convertHatsuon && romaji == "n" ? text.joined() + Romaji.n.kana : text.joined()
         switch mode {
@@ -218,7 +223,7 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
         return ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: "", cursor: cursor, prevMode: prevMode)
     }
 
-    /// カーソルより左のtext部分を返す。未確定のローマ字部分は含まない。
+    /// カーソルより左のtext部分を返す。``trim(kanaRule:)`` と違い、未確定のローマ字部分は含まない。
     func subText() -> [String] {
         if let cursor {
             return Array(text[0..<cursor])
