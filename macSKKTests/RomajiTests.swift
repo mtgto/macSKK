@@ -37,7 +37,7 @@ class RomajiTests: XCTestCase {
         XCTAssertEqual(kanaRule.convert("z,", punctuation: .default), Romaji.ConvertedMoji(input: "", kakutei: Romaji.Moji(firstRomaji: "z", kana: "‥")))
         XCTAssertEqual(kanaRule.convert("x,,", punctuation: .default), Romaji.ConvertedMoji(input: "", kakutei: Romaji.Moji(firstRomaji: "d", kana: "だぶるかんま")), "firstRomajiはかなの一文字目から決定される")
         XCTAssertEqual(kanaRule.convert("@", punctuation: .default), Romaji.ConvertedMoji(input: "@", kakutei: nil), "ルールにない文字は変換されない")
-        XCTAssertEqual(kanaRule.convert("a;", punctuation: .default), Romaji.ConvertedMoji(input: "", kakutei: Romaji.Moji(firstRomaji: "a", kana:"あせみころん")), "システム用の文字を含むことができる")
+        XCTAssertEqual(kanaRule.convert("b;", punctuation: .default), Romaji.ConvertedMoji(input: "", kakutei: Romaji.Moji(firstRomaji: "b", kana:"びーせみころん")), "システム用の文字を含むことができる")
         XCTAssertEqual(kanaRule.convert("ca", punctuation: .default), Romaji.ConvertedMoji(input: "", kakutei: Romaji.Moji(firstRomaji: "k", kana:"か")), "実際に入力した一文字目(c)ではなく「か」からローマ字(k)に変換する")
         // 読点
         XCTAssertEqual(kanaRule.convert(",", punctuation: Punctuation(comma: .ten, period: .default)), Romaji.ConvertedMoji(input: "", kakutei: Romaji.Moji(firstRomaji: ",", kana: "、")))

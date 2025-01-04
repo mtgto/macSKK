@@ -266,6 +266,8 @@ struct Romaji: Equatable, Sendable {
      *
      * - "ka" が入力されたら確定文字 "か" と残りのローマ字文字列 "" を返す
      * - "k" が入力されたら確定文字はnil, 残りのローマ字文字列 "k" を返す
+     * - "n" が入力されたらこのあとに子音が続くまでは「ん」とならないので確定文字はnil
+     * - "nk" のようにn + 子音が入力されたら確定文字 "ん" と残りのローマ字文字列 "k" を返す
      * - "kt" のように連続できない子音が連続したinputの場合は"k"を捨てて"t"をinput引数としたときのconvertの結果を返す
      * - "kya" のように確定した文字が複数の場合がありえる
      * - "aiueo" のように複数の確定が可能な場合は最初に確定できた文字だけを確定文字として返し、残りは(確定可能だが)inputとして返す
@@ -289,10 +291,10 @@ struct Romaji: Equatable, Sendable {
             } else {
                 fatalError()
             }
-        } else if let moji = table[input] {
-            return ConvertedMoji(input: moji.remain ?? "", kakutei: moji)
         } else if undecidedInputs.contains(input) {
             return ConvertedMoji(input: input, kakutei: nil)
+        } else if let moji = table[input] {
+            return ConvertedMoji(input: moji.remain ?? "", kakutei: moji)
         } else if input.hasPrefix("n") && input.count == 2 {
             return ConvertedMoji(input: String(input.dropFirst()), kakutei: Romaji.n)
         } else if input.count > 1, let c = input.last {
