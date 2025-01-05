@@ -359,8 +359,8 @@ struct Romaji: Equatable, Sendable {
      *   - input: ``Action/KeyEvent/printable(_:)`` の引数であるcharacterIgnoringModifiersな文字列
      *   - modifierFlags: 修飾キー
      */
-    func isPrefix(input: String, modifierFlags: NSEvent.ModifierFlags = []) -> Bool {
-        if !modifierFlags.intersection([.option, .command, .control]).isEmpty {
+    func isPrefix(input: String, modifierFlags: NSEvent.ModifierFlags) -> Bool {
+        if !modifierFlags.isDisjoint(with: [.option, .command, .control]) {
             return false
         } else if (input.isAlphabet || !modifierFlags.contains(.shift)) && (undecidedInputs.contains(input) || table[input] != nil) {
             return true
