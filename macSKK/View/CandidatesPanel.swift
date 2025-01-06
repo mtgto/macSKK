@@ -95,17 +95,15 @@ final class CandidatesPanel: NSPanel {
         }
         setContentSize(NSSize(width: width, height: height))
         if let mainScreen = NSScreen.main {
-            // スクリーン右にはみ出す場合はスクリーン右端に接するように表示する
-            if origin.x + width > mainScreen.visibleFrame.size.width {
-                origin.x = mainScreen.frame.size.width - width
+            let visibleFrame = mainScreen.visibleFrame
+            if origin.x + width > visibleFrame.minX + visibleFrame.width {
+                origin.x = visibleFrame.minX + visibleFrame.width - width
+            }
+            if origin.y - height < visibleFrame.minY {
+                origin.y = cursorPosition.maxY + height
             }
         }
-        if origin.y > height {
-            setFrameTopLeftPoint(origin)
-        } else {
-            // スクリーン下にはみ出す場合はテキスト入力位置の上に表示する
-            setFrameOrigin(CGPoint(x: origin.x, y: origin.y + cursorPosition.size.height))
-        }
+        setFrameTopLeftPoint(origin)
         level = windowLevel
         orderFrontRegardless()
     }
