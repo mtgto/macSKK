@@ -71,6 +71,7 @@
 "Annotation font size" = "Annotation font size";
 "Find completion from all dictionaries" = "Find completion from all dictionaries";
 "Ignore User Dict in Private Mode" = "Ignore User Dict in Private Mode";
+"Show Input Mode Modal" = "Show Input Mode Modal";
 "Enter Key confirms a candidate and sends a newline" = "Enter Key confirms a candidate and sends a newline";
 "Insert Blank String" = "Insert Blank String";
 "Enabled" = "Enabled";

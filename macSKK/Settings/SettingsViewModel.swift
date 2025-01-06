@@ -235,6 +235,8 @@ final class SettingsViewModel: ObservableObject {
     @Published var comma: Punctuation.Comma
     // プライベートモード時に変換候補にユーザー辞書を無視するかどうか
     @Published var ignoreUserDictInPrivateMode: Bool
+    // 入力モードのモーダルを表示するかどうか
+    @Published var showInputIconModal: Bool
 
     // 辞書ディレクトリ
     let dictionariesDirectoryUrl: URL
@@ -291,6 +293,8 @@ final class SettingsViewModel: ObservableObject {
         comma = Punctuation.Comma(rawValue: UserDefaults.standard.integer(forKey: UserDefaultsKeys.punctuation)) ?? .default
         period = Punctuation.Period(rawValue: UserDefaults.standard.integer(forKey: UserDefaultsKeys.punctuation)) ?? .default
         ignoreUserDictInPrivateMode = UserDefaults.standard.bool(forKey: UserDefaultsKeys.ignoreUserDictInPrivateMode)
+        showInputIconModal = UserDefaults.standard.bool(forKey: UserDefaultsKeys.showInputModePanel)
+        
         Global.selectCandidateKeys = selectCandidateKeys.lowercased().map { $0 }
         Global.systemDict = systemDict
         Global.selectingBackspace = selectingBackspace
@@ -482,6 +486,11 @@ final class SettingsViewModel: ObservableObject {
             Global.ignoreUserDictInPrivateMode.send(ignoreUserDictInPrivateMode)
             UserDefaults.standard.set(ignoreUserDictInPrivateMode, forKey: UserDefaultsKeys.ignoreUserDictInPrivateMode)
         }.store(in: &cancellables)
+        
+        $showInputIconModal.dropFirst().sink { showInputModePanel in
+            UserDefaults.standard.set(showInputModePanel, forKey: UserDefaultsKeys.showInputModePanel)
+            logger.log("入力モードアイコンを\(showInputModePanel ? "表示" : "非表示", privacy: .public)に変更しました")
+        }.store(in: &cancellables)
 
         NotificationCenter.default.publisher(for: notificationNameDictLoad).receive(on: RunLoop.main).sink { [weak self] notification in
             if let loadEvent = notification.object as? DictLoadEvent, let self {
@@ -525,6 +534,7 @@ final class SettingsViewModel: ObservableObject {
         comma = Punctuation.default.comma
         period = Punctuation.default.period
         ignoreUserDictInPrivateMode = false
+        showInputIconModal = true
     }
 
     // DictionaryViewのPreviewProvider用
