@@ -63,4 +63,29 @@ class RomajiTests: XCTestCase {
         kanaRule = try Romaji(source: "vu,ゔ")
         XCTAssertEqual(kanaRule.convert("vu", punctuation: .default).kakutei?.kana, "ゔ")
     }
+
+    func testIsPrefix() throws {
+        let kanaRule = Romaji.defaultKanaRule
+        XCTAssertTrue(kanaRule.isPrefix(input: "a", modifierFlags: []))
+        XCTAssertTrue(kanaRule.isPrefix(input: "a", modifierFlags: [.shift]))
+        XCTAssertFalse(kanaRule.isPrefix(input: "a", modifierFlags: [.option]))
+        XCTAssertFalse(kanaRule.isPrefix(input: "a", modifierFlags: [.shift, .option]))
+        XCTAssertFalse(kanaRule.isPrefix(input: "a", modifierFlags: [.command]))
+        XCTAssertFalse(kanaRule.isPrefix(input: "a", modifierFlags: [.control]))
+        XCTAssertTrue(kanaRule.isPrefix(input: "k", modifierFlags: []))
+        XCTAssertTrue(kanaRule.isPrefix(input: "ky", modifierFlags: []))
+        XCTAssertTrue(kanaRule.isPrefix(input: "kya", modifierFlags: []))
+        XCTAssertFalse(kanaRule.isPrefix(input: "kyi", modifierFlags: []))
+        XCTAssertFalse(kanaRule.isPrefix(input: "q", modifierFlags: []))
+        XCTAssertTrue(kanaRule.isPrefix(input: ",", modifierFlags: []))
+        XCTAssertFalse(kanaRule.isPrefix(input: ",", modifierFlags: [.shift]))
+    }
+}
+
+extension Romaji {
+    // アプリデフォルトのローマ字かな変換ルール
+    static var defaultKanaRule: Romaji {
+        let kanaRuleFileURL = Bundle.main.url(forResource: "kana-rule", withExtension: "conf")!
+        return try! Romaji(contentsOf: kanaRuleFileURL)
+    }
 }

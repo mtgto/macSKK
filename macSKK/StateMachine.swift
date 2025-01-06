@@ -361,7 +361,7 @@ final class StateMachine {
     @MainActor func handleNormalPrintable(input: String, action: Action, specialState: SpecialState?) -> Bool {
         switch state.inputMode {
         case .hiragana, .katakana, .hankaku:
-            if input.isAlphabet && !action.optionIsPressed() {
+            if Global.kanaRule.isPrefix(input: input, modifierFlags: action.event.modifierFlags) {
                 let result = Global.kanaRule.convert(input, punctuation: Global.punctuation)
                 if let moji = result.kakutei {
                     if action.shiftIsPressed() {
@@ -865,21 +865,9 @@ final class StateMachine {
                     }
                 }
                 updateMarkedText()
-            } else if !input.isAlphabet {
-                // 非ローマ字で特殊な記号でない場合。数字が読みとして使われている場合などを想定。
-                if okuri == nil {
-                    // ローマ字が残っていた場合は消去してキー入力をそのままくっつける
-                    if let characters = action.characters() {
-                        state.inputMethod = .composing(composing.resetRomaji().appendText(Romaji.Moji(firstRomaji: "", kana: characters)))
-                    } else {
-                        state.inputMethod = .composing(composing.resetRomaji().appendText(Romaji.Moji(firstRomaji: "", kana: input)))
-                    }
-                    updateMarkedText()
-                } else {
-                    // 送り仮名入力モード時は入力しなかった扱いとする
-                    return true
-                }
-            } else {  // converted.kakutei == nil
+            } else if Global.kanaRule.isPrefix(input: input, modifierFlags: action.event.modifierFlags) {
+                // ローマ字の一部が入力された場合
+                // シフトが押されているかどうかで送り仮名入力かそうでないかに分岐
                 if !text.isEmpty && okuri == nil && action.shiftIsPressed() {
                     state.inputMethod = .composing(
                         ComposingState(isShift: isShift,
@@ -896,6 +884,20 @@ final class StateMachine {
                                        cursor: composing.cursor))
                 }
                 updateMarkedText()
+            } else {
+                // 非ローマ字で特殊な記号でない場合。数字が読みとして使われている場合などを想定。
+                if okuri == nil {
+                    // ローマ字が残っていた場合は消去してキー入力をそのままくっつける
+                    if let characters = action.characters() {
+                        state.inputMethod = .composing(composing.resetRomaji().appendText(Romaji.Moji(firstRomaji: "", kana: characters)))
+                    } else {
+                        state.inputMethod = .composing(composing.resetRomaji().appendText(Romaji.Moji(firstRomaji: "", kana: input)))
+                    }
+                    updateMarkedText()
+                } else {
+                    // 送り仮名入力モード時は入力しなかった扱いとする
+                    return true
+                }
             }
             return true
         case .direct:

@@ -8,11 +8,6 @@ import XCTest
 
 final class StateMachineTests: XCTestCase {
     var cancellables: Set<AnyCancellable> = []
-    // アプリデフォルトのローマ字かな変換ルール
-    static var defaultKanaRule: Romaji {
-        let kanaRuleFileURL = Bundle.main.url(forResource: "kana-rule", withExtension: "conf")!
-        return try! Romaji(contentsOf: kanaRuleFileURL)
-    }
 
     @MainActor override func setUpWithError() throws {
         Global.dictionary.setEntries([:])
@@ -21,7 +16,7 @@ final class StateMachineTests: XCTestCase {
         cancellables = []
         // テストごとにローマ字かな変換ルールをデフォルトに戻す
         // こうしないとテストの中でGlobal.kanaRuleを書き換えるテストと一緒に走らせると違うかな変換ルールのままに実行されてしまう
-        Global.kanaRule = Self.defaultKanaRule
+        Global.kanaRule = Romaji.defaultKanaRule
         Global.selectCandidateKeys = "123456789".map { $0 }
         Global.enterNewLine = false
         Global.selectingBackspace = SelectingBackspace.default
@@ -219,6 +214,20 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "-")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "<", characterIgnoringModifier: ",", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "5")))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    @MainActor func testHandleNormalNoAlphabetRomajiKanaRule() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        Global.kanaRule = try! Romaji(source: "0a,あ")
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(2).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.plain("0")])))
+            XCTAssertEqual(events[1], .fixedText("あ"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "0")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
         wait(for: [expectation], timeout: 1.0)
     }
 
@@ -1423,6 +1432,22 @@ final class StateMachineTests: XCTestCase {
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ":", characterIgnoringModifier: ";", withShift: true)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    @MainActor func testHandleComposingNoAlphabetRomajiKanaRule() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        Global.kanaRule = try! Romaji(source: ["0a,あ", "i,い"].joined(separator: "\n"))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(3).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("い")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("い0")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("いあ")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "0")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
         wait(for: [expectation], timeout: 1.0)
     }
 
