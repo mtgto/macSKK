@@ -1054,37 +1054,7 @@ final class StateMachine {
             } else {
                 diff = 1
             }
-            if selecting.candidateIndex + diff < selecting.candidates.count {
-                let newSelectingState = selecting.addCandidateIndex(diff: diff)
-                state.inputMethod = .selecting(newSelectingState)
-                updateCandidates(selecting: newSelectingState)
-            } else {
-                if case .register(let registerState, let prev) = specialState {
-                    state.specialState = .register(RegisterState(
-                        prev: RegisterState.PrevState(
-                            mode: selecting.prev.mode,
-                            composing: selecting.prev.composing),
-                        yomi: selecting.yomi),
-                    prev: prev + [registerState])
-                } else if specialState != nil {
-                    state.inputMethod = .normal
-                    state.inputMode = selecting.prev.mode
-                } else {
-                    state.specialState = .register(
-                        RegisterState(
-                            prev: RegisterState.PrevState(
-                                mode: selecting.prev.mode,
-                                composing: selecting.prev.composing),
-                            yomi: selecting.yomi),
-                        prev: [])
-                    state.inputMethod = .normal
-                    state.inputMode = .hiragana
-                    inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
-                }
-                updateCandidates(selecting: nil)
-            }
-            updateMarkedText()
-            return true
+            return handleSelectingNext(action, diff: diff, selecting: selecting, specialState: specialState)
         case .backwardCandidate:
             return handleSelectingPrevious(diff: -1, selecting: selecting)
         case .tab:
@@ -1108,19 +1078,8 @@ final class StateMachine {
                 return true
             }
         case .right:
-            if selecting.candidateIndex >= inlineCandidateCount {
-                // 次ページの先頭
-                let diff = displayCandidateCount - (selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount
-                if selecting.candidateIndex + diff < selecting.candidates.count {
-                    return handleSelectingPrevious(diff: diff, selecting: selecting)
-                } else {
-                    // 次ページがないときはひとまず何もしない
-                    return true
-                }
-            } else {
-                // AquaSKKと同様に何もしない (IMKCandidates表示時はそちらの移動に使われる)
-                return true
-            }
+            let diff = displayCandidateCount - (selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount
+            return handleSelectingNext(action, diff: diff, selecting: selecting, specialState: specialState)
         case .startOfLine:
             // 現ページの先頭
             let diff = -(selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount
@@ -1206,6 +1165,40 @@ final class StateMachine {
             updateCandidates(selecting: nil)
             state.inputMethod = .composing(selecting.prev.composing)
             state.inputMode = selecting.prev.mode
+        }
+        updateMarkedText()
+        return true
+    }
+
+    @MainActor private func handleSelectingNext(_ action: Action, diff: Int, selecting: SelectingState, specialState: SpecialState?) -> Bool {
+        if selecting.candidateIndex + diff < selecting.candidates.count {
+            let newSelectingState = selecting.addCandidateIndex(diff: diff)
+            state.inputMethod = .selecting(newSelectingState)
+            updateCandidates(selecting: newSelectingState)
+        } else {
+            if case .register(let registerState, let prev) = specialState {
+                state.specialState = .register(RegisterState(
+                    prev: RegisterState.PrevState(
+                        mode: selecting.prev.mode,
+                        composing: selecting.prev.composing),
+                    yomi: selecting.yomi),
+                prev: prev + [registerState])
+            } else if specialState != nil {
+                state.inputMethod = .normal
+                state.inputMode = selecting.prev.mode
+            } else {
+                state.specialState = .register(
+                    RegisterState(
+                        prev: RegisterState.PrevState(
+                            mode: selecting.prev.mode,
+                            composing: selecting.prev.composing),
+                        yomi: selecting.yomi),
+                    prev: [])
+                state.inputMethod = .normal
+                state.inputMode = .hiragana
+                inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
+            }
+            updateCandidates(selecting: nil)
         }
         updateMarkedText()
         return true

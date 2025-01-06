@@ -2629,7 +2629,7 @@ final class StateMachineTests: XCTestCase {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         expectation.expectedFulfillmentCount = 2
-        stateMachine.inputMethodEvent.collect(10).sink { events in
+        stateMachine.inputMethodEvent.collect(12).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
             XCTAssertEqual(events[1], .markedText(MarkedText([.markerSelect, .emphasized("1")])))
             XCTAssertEqual(events[2], .markedText(MarkedText([.markerSelect, .emphasized("2")])))
@@ -2640,6 +2640,8 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[7], .markedText(MarkedText([.markerSelect, .emphasized("N")])))
             XCTAssertEqual(events[8], .markedText(MarkedText([.markerSelect, .emphasized("V")])), "Mの9個先のVを表示")
             XCTAssertEqual(events[9], .markedText(MarkedText([.markerSelect, .emphasized("W")])))
+            XCTAssertEqual(events[10], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[11], .markedText(MarkedText([.plain("[登録：あ]")])))
             expectation.fulfill()
         }.store(in: &cancellables)
         stateMachine.candidateEvent.collect(9).sink { events in
@@ -2671,7 +2673,7 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(downKeyAction))
         XCTAssertTrue(stateMachine.handle(rightKeyAction))
         XCTAssertTrue(stateMachine.handle(downKeyAction))
-        XCTAssertTrue(stateMachine.handle(rightKeyAction)) // 次のページはもうないため何も起きない
+        XCTAssertTrue(stateMachine.handle(rightKeyAction))
         wait(for: [expectation], timeout: 1.0)
     }
 
