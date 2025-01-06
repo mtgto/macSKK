@@ -229,10 +229,10 @@ struct KeyBinding: Identifiable, Hashable {
                 return KeyBinding(action, [Input(key: .code(0x35), modifierFlags: []),
                                            Input(key: .character("g"), modifierFlags: .control)])
             case .left:
-                return KeyBinding(action, [Input(key: .code(0x7b), modifierFlags: .function, optionalModifierFlags: [.shift]),
+                return KeyBinding(action, [Input(key: .code(0x7b), modifierFlags: .function, optionalModifierFlags: [.shift, .option]),
                                            Input(key: .character("b"), modifierFlags: .control)])
             case .right:
-                return KeyBinding(action, [Input(key: .code(0x7c), modifierFlags: .function, optionalModifierFlags: [.shift]),
+                return KeyBinding(action, [Input(key: .code(0x7c), modifierFlags: .function, optionalModifierFlags: [.shift, .option]),
                                            Input(key: .character("f"), modifierFlags: .control)])
             case .down:
                 return KeyBinding(action, [Input(key: .code(0x7d), modifierFlags: .function, optionalModifierFlags: [.shift]),
