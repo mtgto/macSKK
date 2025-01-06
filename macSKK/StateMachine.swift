@@ -1111,7 +1111,12 @@ final class StateMachine {
             if selecting.candidateIndex >= inlineCandidateCount {
                 // 次ページの先頭
                 let diff = displayCandidateCount - (selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount
-                return handleSelectingPrevious(diff: diff, selecting: selecting)
+                if selecting.candidateIndex + diff < selecting.candidates.count {
+                    return handleSelectingPrevious(diff: diff, selecting: selecting)
+                } else {
+                    // 次ページがないときはひとまず何もしない
+                    return true
+                }
             } else {
                 // AquaSKKと同様に何もしない (IMKCandidates表示時はそちらの移動に使われる)
                 return true
