@@ -39,6 +39,9 @@ struct GeneralView: View {
                         Text(period.description).tag(period)
                     }
                 }
+                Toggle(isOn: $settingsViewModel.showInputIconModal, label: {
+                    Text("Show Input Mode Modal")
+                })
                 Section {
                     Picker("Number of inline candidates", selection: $settingsViewModel.inlineCandidateCount) {
                         ForEach(0..<10) { count in

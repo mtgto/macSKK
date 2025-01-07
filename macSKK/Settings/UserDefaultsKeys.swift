@@ -38,4 +38,6 @@ struct UserDefaultsKeys {
     static let privateMode = "privateMode"
     // プライベートモード時に変換候補にユーザー辞書を無視するかどうか
     static let ignoreUserDictInPrivateMode = "ignoreUserDictInPrivateMode"
+    // 入力モードのモーダルを表示するかどうか
+    static let showInputModePanel = "showInputModePanel"
 }

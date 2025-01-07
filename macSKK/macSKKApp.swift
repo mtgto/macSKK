@@ -202,6 +202,7 @@ struct macSKKApp: App {
             UserDefaultsKeys.punctuation: Punctuation.default.rawValue,
             UserDefaultsKeys.privateMode: false,
             UserDefaultsKeys.ignoreUserDictInPrivateMode: false,
+            UserDefaultsKeys.showInputModePanel: true,
         ])
     }
 

@@ -86,10 +86,14 @@ class InputController: IMKInputController {
                     }
                     if !self.directMode {
                         textInput.selectMode(inputMode.rawValue)
-                        Global.inputModePanel.show(at: cursorPosition.origin,
-                                                   mode: inputMode,
-                                                   privateMode: Global.privateMode.value,
-                                                   windowLevel: windowLevel)
+                        
+                        let showInputModePanel = UserDefaults.standard.bool(forKey: UserDefaultsKeys.showInputModePanel)
+                        if showInputModePanel {
+                            Global.inputModePanel.show(at: cursorPosition.origin,
+                                                       mode: inputMode,
+                                                       privateMode: Global.privateMode.value,
+                                                       windowLevel: windowLevel)
+                        }
                     }
                 }
             }
@@ -289,10 +293,12 @@ class InputController: IMKInputController {
             logger.warning("setValueの引数clientがIMKTextInputではありません")
             return
         }
+        
         // カーソル位置あたりを取得する
         _ = textInput.attributes(forCharacterIndex: 0, lineHeightRectangle: &cursorPosition)
         windowLevel = NSWindow.Level(rawValue: Int(textInput.windowLevel() + 1))
-        if !directMode {
+        let showInputModePanel = UserDefaults.standard.bool(forKey: UserDefaultsKeys.showInputModePanel)
+        if showInputModePanel && !directMode {
             Global.inputModePanel.show(at: cursorPosition.origin, mode: inputMode, privateMode: Global.privateMode.value, windowLevel: windowLevel)
         }
         // キー配列を設定する
