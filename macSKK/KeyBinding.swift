@@ -220,7 +220,7 @@ struct KeyBinding: Identifiable, Hashable {
             case .tab:
                 return KeyBinding(action, [Input(key: .code(0x30), modifierFlags: [], optionalModifierFlags: .shift)])
             case .backspace:
-                return KeyBinding(action, [Input(key: .code(0x33), modifierFlags: [], optionalModifierFlags: .shift),
+                return KeyBinding(action, [Input(key: .code(0x33), modifierFlags: [], optionalModifierFlags: [.shift, .option]),
                                            Input(key: .character("h"), modifierFlags: .control)])
             case .delete:
                 return KeyBinding(action, [Input(key: .code(0x75), modifierFlags: .function),
