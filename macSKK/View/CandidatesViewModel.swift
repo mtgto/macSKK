@@ -42,8 +42,10 @@ final class CandidatesViewModel: ObservableObject {
     @Published var maxWidth: CGFloat = -1
     /// 最長のテキストを表示するために必要なビューの横幅。パネル表示のときは注釈部分は除いたリスト部分の幅。
     @Published var minWidth: CGFloat = 0
+    /// 表示座標から上方向に取れる最大の幅。負数のときは不明なとき
+    @Published var maxHeight: CGFloat = -1
     /// パネル表示時の注釈を左側に表示するかどうか
-    @Published var displayPopoverInLeft: Bool = false
+    @Published var displayPopoverInLeftOrTop: Bool = false
     /// 候補リストを縦で表示するか横で表示するか
     @Published var displayCandidatesHorizontally = false
     /// 変換候補の一行の高さ
@@ -87,33 +89,57 @@ final class CandidatesViewModel: ObservableObject {
         }
         .store(in: &cancellables)
 
-        $candidates.map { candidates in
+        $candidates.combineLatest($displayCandidatesHorizontally)
+            .map { candidates, displayCandidatesHorizontally in
             if case let .panel(words, _, _) = candidates {
-                let listWidth = words.map { candidate -> CGFloat in
-                    let size = candidate.word.boundingRect(
-                        with: CGSize(width: .greatestFiniteMagnitude, height: self.candidatesLineHeight),
-                        options: .usesLineFragmentOrigin,
-                        attributes: [.font: NSFont.preferredFont(forTextStyle: .body)])
-                    // 未解決の余白(8px) + 添字(16px) + 余白(4px) + テキスト + 余白(4px) + 未解決の余白(22px)
-                    // @see https://forums.swift.org/t/swiftui-list-horizontal-insets-macos/52985/5
-                    return 16 + 4 + size.width + 4 + 22
-                }.max() ?? 0
-                return listWidth
+                if displayCandidatesHorizontally {
+                    let listWidth = words.reduce(0) { last, candidate -> CGFloat in
+                        let size = candidate.word.boundingRect(
+                            with: CGSize(width: .greatestFiniteMagnitude, height: self.candidatesLineHeight),
+                            options: .usesLineFragmentOrigin,
+                            attributes: [.font: NSFont.preferredFont(forTextStyle: .body)])
+                        // 添字(16px) + テキスト + 余白(4px)
+                        return 16 + size.width + 4 + last
+                    }
+                    // + ページカウント(64px)
+                    return listWidth + 64
+                } else {
+                    let listWidth = words.map { candidate -> CGFloat in
+                        let size = candidate.word.boundingRect(
+                            with: CGSize(width: .greatestFiniteMagnitude, height: self.candidatesLineHeight),
+                            options: .usesLineFragmentOrigin,
+                            attributes: [.font: NSFont.preferredFont(forTextStyle: .body)])
+                        // 未解決の余白(8px) + 添字(16px) + 余白(4px) + テキスト + 余白(4px) + 未解決の余白(22px)
+                        // @see https://forums.swift.org/t/swiftui-list-horizontal-insets-macos/52985/5
+                        return 16 + 4 + size.width + 4 + 22
+                    }.max() ?? 0
+                    return listWidth
+                }
             } else {
                 return 300
             }
         }
         .assign(to: &$minWidth)
 
-        $maxWidth.combineLatest($minWidth, $showAnnotationPopover)
-            .filter { maxWidth, _, _ in
+        $maxWidth.combineLatest($minWidth, $showAnnotationPopover, $displayCandidatesHorizontally)
+            .filter { maxWidth, _, _, displayCandidatesHorizontally in
                 // maxWidthが0未満のときはまだスクリーンサイズがわかっていない
-                maxWidth >= 0
+                !displayCandidatesHorizontally && maxWidth >= 0
             }
-            .map { maxWidth, minWidth, showAnnotationPopover in
+            .map { maxWidth, minWidth, showAnnotationPopover, _ in
                 showAnnotationPopover &&
                 minWidth + CandidatesView.annotationPopupWidth + CandidatesView.annotationMargin >= maxWidth
             }
-            .assign(to: &$displayPopoverInLeft)
+            .assign(to: &$displayPopoverInLeftOrTop)
+        
+        $maxHeight.combineLatest($showAnnotationPopover, $displayCandidatesHorizontally)
+            .filter { maxHeight, _, displayCandidatesHorizontally in
+                return displayCandidatesHorizontally && maxHeight >= 0
+            }
+            .map { maxHeight, showAnnotationPopover, _ in
+                showAnnotationPopover &&
+                self.candidatesLineHeight + CandidatesView.annotationPopupHeightInHorzontalMode + CandidatesView.annotationMargin >= maxHeight
+            }
+            .assign(to: &$displayPopoverInLeftOrTop)
     }
 }
