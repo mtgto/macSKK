@@ -10,6 +10,8 @@
 		4B8E87D42CE05C40004E7461 /* CurrentInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B8E87D32CE05C3F004E7461 /* CurrentInput.swift */; };
 		4B8E87D62CE05D0C004E7461 /* Key.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B8E87D52CE05D0A004E7461 /* Key.swift */; };
 		4B8E87D82CE068A0004E7461 /* CurrentInputTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B8E87D72CE0689D004E7461 /* CurrentInputTests.swift */; };
+		94DB63242D329CBF005250B8 /* HorizontalCandidatesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DB63222D329CBF005250B8 /* HorizontalCandidatesView.swift */; };
+		94DB63252D329CBF005250B8 /* VerticalCandidatesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DB63232D329CBF005250B8 /* VerticalCandidatesView.swift */; };
 		CE0326A02C5D1DD6000FF691 /* SKK-JISYO.test.json in Resources */ = {isa = PBXBuildFile; fileRef = CE03269F2C5D1DD6000FF691 /* SKK-JISYO.test.json */; };
 		CE06CA2B2AAC171B00E80E5E /* FileDictTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE06CA292AAC171B00E80E5E /* FileDictTests.swift */; };
 		CE06CA2D2AAC172F00E80E5E /* empty.txt in Resources */ = {isa = PBXBuildFile; fileRef = CE06CA2C2AAC172F00E80E5E /* empty.txt */; };
@@ -177,6 +179,8 @@
 		4B8E87D32CE05C3F004E7461 /* CurrentInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentInput.swift; sourceTree = "<group>"; };
 		4B8E87D52CE05D0A004E7461 /* Key.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Key.swift; sourceTree = "<group>"; };
 		4B8E87D72CE0689D004E7461 /* CurrentInputTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentInputTests.swift; sourceTree = "<group>"; };
+		94DB63222D329CBF005250B8 /* HorizontalCandidatesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HorizontalCandidatesView.swift; sourceTree = "<group>"; };
+		94DB63232D329CBF005250B8 /* VerticalCandidatesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerticalCandidatesView.swift; sourceTree = "<group>"; };
 		CE03269F2C5D1DD6000FF691 /* SKK-JISYO.test.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "SKK-JISYO.test.json"; sourceTree = "<group>"; };
 		CE06CA292AAC171B00E80E5E /* FileDictTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileDictTests.swift; sourceTree = "<group>"; };
 		CE06CA2C2AAC172F00E80E5E /* empty.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = empty.txt; sourceTree = "<group>"; };
@@ -502,6 +506,8 @@
 		CE7F9ADA2AB53E31001B1877 /* View */ = {
 			isa = PBXGroup;
 			children = (
+				94DB63222D329CBF005250B8 /* HorizontalCandidatesView.swift */,
+				94DB63232D329CBF005250B8 /* VerticalCandidatesView.swift */,
 				CEF08239296BCDB000646366 /* InputModePanel.swift */,
 				CEF08256296D8CBD00646366 /* CandidatesPanel.swift */,
 				CEF0825A296D8FF000646366 /* CandidatesView.swift */,
@@ -806,6 +812,8 @@
 				CE84A3E7295DA4DA009394C4 /* Romaji.swift in Sources */,
 				CE1B006D2BA54DE400C830FD /* SKKServClientProtocol.swift in Sources */,
 				CE1B006A2BA5490E00C830FD /* SKKServDictView.swift in Sources */,
+				94DB63242D329CBF005250B8 /* HorizontalCandidatesView.swift in Sources */,
+				94DB63252D329CBF005250B8 /* VerticalCandidatesView.swift in Sources */,
 				CED0984D2B779E4700F2E844 /* UNNotifier.swift in Sources */,
 				4B8E87D42CE05C40004E7461 /* CurrentInput.swift in Sources */,
 				CE7F9AD92AADEBF9001B1877 /* AppDelegate.swift in Sources */,
