@@ -51,10 +51,10 @@ import Combine
     init() {
         inputModePanel = InputModePanel()
         candidatesPanel = CandidatesPanel(
+            displayCandidatesHorizontally: UserDefaults.standard.bool(forKey: UserDefaultsKeys.displayCandidatesHorizontally),
             showAnnotationPopover: UserDefaults.standard.bool(forKey: UserDefaultsKeys.showAnnotation),
             candidatesFontSize: UserDefaults.standard.integer(forKey: UserDefaultsKeys.candidatesFontSize),
-            annotationFontSize: UserDefaults.standard.integer(forKey: UserDefaultsKeys.annotationFontSize),
-            displayCandidatesHorizontally: UserDefaults.standard.bool(forKey: UserDefaultsKeys.displayCandidatesHorizontally)
+            annotationFontSize: UserDefaults.standard.integer(forKey: UserDefaultsKeys.annotationFontSize)
         )
         completionPanel = CompletionPanel()
     }

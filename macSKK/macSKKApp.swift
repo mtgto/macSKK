@@ -43,7 +43,7 @@ struct macSKKApp: App {
     private let settingsWatcher: SettingsWatcher?
     @State private var fetchReleaseTask: Task<Void, any Error>?
     #if DEBUG
-    private let candidatesPanel: CandidatesPanel = CandidatesPanel(showAnnotationPopover: true, candidatesFontSize: 13, annotationFontSize: 13, displayCandidatesHorizontally: false)
+    private let candidatesPanel: CandidatesPanel = CandidatesPanel(displayCandidatesHorizontally: false, showAnnotationPopover: true, candidatesFontSize: 13, annotationFontSize: 13)
     private let inputModePanel = InputModePanel()
     #endif
 

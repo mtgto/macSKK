@@ -15,14 +15,14 @@ final class CandidatesPanel: NSPanel {
      *   - showAnnotationPopover: パネル表示時に注釈を表示するかどうか
      *   - candidatesFontSize: 変換候補のフォントサイズ
      */
-    init(showAnnotationPopover: Bool, candidatesFontSize: Int, annotationFontSize: Int, displayCandidatesHorizontally: Bool) {
+    init(displayCandidatesHorizontally: Bool, showAnnotationPopover: Bool, candidatesFontSize: Int, annotationFontSize: Int) {
         viewModel = CandidatesViewModel(candidates: [],
                                         currentPage: 0,
                                         totalPageCount: 0,
+                                        displayCandidatesHorizontally: displayCandidatesHorizontally,
                                         showAnnotationPopover: showAnnotationPopover,
                                         candidatesFontSize: CGFloat(candidatesFontSize),
-                                        annotationFontSize: CGFloat(annotationFontSize),
-                                        displayCandidatesHorizontally: displayCandidatesHorizontally)
+                                        annotationFontSize: CGFloat(annotationFontSize))
         let rootView = CandidatesView(candidates: self.viewModel)
         let viewController = NSHostingController(rootView: rootView)
         // borderlessにしないとdeactivateServerが呼ばれてしまう
@@ -91,7 +91,7 @@ final class CandidatesPanel: NSPanel {
         if case let .panel(words, _, _) = viewModel.candidates {
             if viewModel.displayCandidatesHorizontally {
                 width = viewModel.minWidth
-                height = (viewModel.showAnnotationPopover ? CandidatesView.annotationPopupHeightInHorzontalMode + CandidatesView.annotationMargin : 0 ) + viewModel.candidatesLineHeight
+                height = (viewModel.showAnnotationPopover ? HorizontalCandidatesView.annotationPopupHeight + CandidatesView.annotationMargin : 0 ) + viewModel.candidatesLineHeight
             } else {
                 width = viewModel.showAnnotationPopover ? viewModel.minWidth + CandidatesView.annotationPopupWidth : viewModel.minWidth
                 height = CGFloat(words.count) * viewModel.candidatesLineHeight + CandidatesView.footerHeight

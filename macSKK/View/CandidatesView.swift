@@ -12,8 +12,6 @@ struct CandidatesView: View {
     static let annotationMargin: CGFloat = 8
     /// パネル型の注釈ビューの幅
     static let annotationPopupWidth: CGFloat = 300
-    /// パネル型の注釈ビューの縦幅
-    static let annotationPopupHeightInHorzontalMode: CGFloat = 120
 
     var body: some View {
         switch candidates.candidates {

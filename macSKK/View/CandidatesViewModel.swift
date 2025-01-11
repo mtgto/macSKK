@@ -59,18 +59,18 @@ final class CandidatesViewModel: ObservableObject {
         candidates: [Candidate],
         currentPage: Int,
         totalPageCount: Int,
+        displayCandidatesHorizontally: Bool = false,
         showAnnotationPopover: Bool,
         candidatesFontSize: CGFloat = 13,
-        annotationFontSize: CGFloat = 13,
-        displayCandidatesHorizontally: Bool = false
+        annotationFontSize: CGFloat = 13
     ) {
         self.candidates = .panel(words: candidates,
                                  currentPage: currentPage,
                                  totalPageCount: totalPageCount)
+        self.displayCandidatesHorizontally = displayCandidatesHorizontally
         self.showAnnotationPopover = showAnnotationPopover
         self.candidatesFontSize = candidatesFontSize
         self.annotationFontSize = annotationFontSize
-        self.displayCandidatesHorizontally = displayCandidatesHorizontally
         if let first = candidates.first {
             self.selected = first
         }
@@ -138,7 +138,7 @@ final class CandidatesViewModel: ObservableObject {
             }
             .map { maxHeight, showAnnotationPopover, _ in
                 showAnnotationPopover &&
-                self.candidatesLineHeight + CandidatesView.annotationPopupHeightInHorzontalMode + CandidatesView.annotationMargin >= maxHeight
+                self.candidatesLineHeight + HorizontalCandidatesView.annotationPopupHeight + CandidatesView.annotationMargin >= maxHeight
             }
             .assign(to: &$displayPopoverInLeftOrTop)
     }
