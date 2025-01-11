@@ -44,6 +44,8 @@ final class CandidatesViewModel: ObservableObject {
     @Published var minWidth: CGFloat = 0
     /// パネル表示時の注釈を左側に表示するかどうか
     @Published var displayPopoverInLeft: Bool = false
+    /// 候補リストを縦で表示するか横で表示するか
+    @Published var displayCandidatesHorizontally = false
     /// 変換候補の一行の高さ
     var candidatesLineHeight: CGFloat {
         candidatesFontSize + 11
@@ -57,7 +59,8 @@ final class CandidatesViewModel: ObservableObject {
         totalPageCount: Int,
         showAnnotationPopover: Bool,
         candidatesFontSize: CGFloat = 13,
-        annotationFontSize: CGFloat = 13
+        annotationFontSize: CGFloat = 13,
+        displayCandidatesHorizontally: Bool = false
     ) {
         self.candidates = .panel(words: candidates,
                                  currentPage: currentPage,
@@ -65,6 +68,7 @@ final class CandidatesViewModel: ObservableObject {
         self.showAnnotationPopover = showAnnotationPopover
         self.candidatesFontSize = candidatesFontSize
         self.annotationFontSize = annotationFontSize
+        self.displayCandidatesHorizontally = displayCandidatesHorizontally
         if let first = candidates.first {
             self.selected = first
         }

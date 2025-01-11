@@ -43,6 +43,10 @@ struct GeneralView: View {
                     Text("Show Input Mode Modal")
                 })
                 Section {
+                    Picker("Show candidate list horizontally", selection: $settingsViewModel.displayCandidatesHorizontally) {
+                        Text("Yes").tag(true)
+                        Text("No").tag(false)
+                    }
                     Picker("Number of inline candidates", selection: $settingsViewModel.inlineCandidateCount) {
                         ForEach(0..<10) { count in
                             Text("\(count)")
