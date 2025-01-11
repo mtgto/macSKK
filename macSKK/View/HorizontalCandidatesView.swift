@@ -44,7 +44,7 @@ struct HorizontalCandidatesView: View {
                             .padding(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 4))
                     }
                     .frame(height: candidates.candidatesLineHeight)
-                    .foregroundStyle(candidates.selected == candidate ? Color(NSColor.highlightColor) : Color(NSColor.textColor))
+                    .foregroundStyle(candidates.selected == candidate ? Color(NSColor.selectedMenuItemTextColor) : Color(NSColor.textColor))
                     .background(candidates.selected == candidate ? Color.accentColor : Color.clear)
                 }
                 Text("\(currentPage + 1) / \(totalPageCount)")
