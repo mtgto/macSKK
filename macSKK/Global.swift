@@ -53,7 +53,8 @@ import Combine
         candidatesPanel = CandidatesPanel(
             showAnnotationPopover: UserDefaults.standard.bool(forKey: UserDefaultsKeys.showAnnotation),
             candidatesFontSize: UserDefaults.standard.integer(forKey: UserDefaultsKeys.candidatesFontSize),
-            annotationFontSize: UserDefaults.standard.integer(forKey: UserDefaultsKeys.annotationFontSize)
+            annotationFontSize: UserDefaults.standard.integer(forKey: UserDefaultsKeys.annotationFontSize),
+            displayCandidatesHorizontally: UserDefaults.standard.bool(forKey: UserDefaultsKeys.displayCandidatesHorizontally)
         )
         completionPanel = CompletionPanel()
     }

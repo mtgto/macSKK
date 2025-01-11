@@ -22,6 +22,8 @@ let notificationNameCandidatesFontSize = Notification.Name("candidatesFontSize")
 let notificationNameAnnotationFontSize = Notification.Name("annotationFontSize")
 // 一般辞書を補完で検索するかが変更されたときに通知される通知の名前
 let notificationNameFindCompletionFromAllDicts =  Notification.Name("findCompletionFromAllDicts")
+// 候補リストを縦横表示が変更されたときに通知される通知の名前
+let notificationNameDisplayCandidatesHorizontally =  Notification.Name("displayCandidatesHorizontally")
 
 func isTest() -> Bool {
     return ProcessInfo.processInfo.environment["MACSKK_IS_TEST"] == "1"
@@ -41,7 +43,7 @@ struct macSKKApp: App {
     private let settingsWatcher: SettingsWatcher?
     @State private var fetchReleaseTask: Task<Void, any Error>?
     #if DEBUG
-    private let candidatesPanel: CandidatesPanel = CandidatesPanel(showAnnotationPopover: true, candidatesFontSize: 13, annotationFontSize: 13)
+    private let candidatesPanel: CandidatesPanel = CandidatesPanel(showAnnotationPopover: true, candidatesFontSize: 13, annotationFontSize: 13, displayCandidatesHorizontally: false)
     private let inputModePanel = InputModePanel()
     #endif
 

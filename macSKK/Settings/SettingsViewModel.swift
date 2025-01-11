@@ -497,6 +497,7 @@ final class SettingsViewModel: ObservableObject {
         
         $displayCandidatesHorizontally.dropFirst().sink { displayCandidatesHorizontally in
             UserDefaults.standard.set(displayCandidatesHorizontally, forKey: UserDefaultsKeys.displayCandidatesHorizontally)
+            NotificationCenter.default.post(name: notificationNameDisplayCandidatesHorizontally, object: displayCandidatesHorizontally)
             logger.log("候補リストを\(displayCandidatesHorizontally ? "横" : "縦", privacy: .public)で表示するように変更しました")
         }.store(in: &cancellables)
 

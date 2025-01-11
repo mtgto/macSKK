@@ -15,13 +15,14 @@ final class CandidatesPanel: NSPanel {
      *   - showAnnotationPopover: パネル表示時に注釈を表示するかどうか
      *   - candidatesFontSize: 変換候補のフォントサイズ
      */
-    init(showAnnotationPopover: Bool, candidatesFontSize: Int, annotationFontSize: Int) {
+    init(showAnnotationPopover: Bool, candidatesFontSize: Int, annotationFontSize: Int, displayCandidatesHorizontally: Bool) {
         viewModel = CandidatesViewModel(candidates: [],
                                         currentPage: 0,
                                         totalPageCount: 0,
                                         showAnnotationPopover: showAnnotationPopover,
                                         candidatesFontSize: CGFloat(candidatesFontSize),
-                                        annotationFontSize: CGFloat(annotationFontSize))
+                                        annotationFontSize: CGFloat(annotationFontSize),
+                                        displayCandidatesHorizontally: displayCandidatesHorizontally)
         let rootView = CandidatesView(candidates: self.viewModel)
         let viewController = NSHostingController(rootView: rootView)
         // borderlessにしないとdeactivateServerが呼ばれてしまう
@@ -58,6 +59,10 @@ final class CandidatesPanel: NSPanel {
 
     func setAnnotationFontSize(_ annotationFontSize: Int) {
         self.viewModel.annotationFontSize = CGFloat(annotationFontSize)
+    }
+    
+    func setDisplayCandidatesHorizontally(_ displayCandidatesHorizontally: Bool) {
+        self.viewModel.displayCandidatesHorizontally = displayCandidatesHorizontally
     }
 
     /**
