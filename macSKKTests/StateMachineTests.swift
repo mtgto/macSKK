@@ -906,7 +906,7 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
     
-    @MainActor func testHandleAbbrevSlash() {
+    @MainActor func testHandleComposingAbbrevSlash() {
         Global.dictionary.setEntries(["/": [Word("／")]])
 
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
