@@ -746,9 +746,9 @@ final class StateMachine {
                 updateMarkedText()
             }
             return true
-        case .abbrev, .up, .down, .registerPaste, .eisu, .kana:
+        case .up, .down, .registerPaste, .eisu, .kana:
             return true
-        case .unregister, .backwardCandidate, .none:
+        case .abbrev, .unregister, .backwardCandidate, .none:
             break
         }
 
