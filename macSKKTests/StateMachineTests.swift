@@ -2641,6 +2641,60 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    @MainActor func testHandleSelectingLeftRight() {
+        Global.dictionary.setEntries(["あ": "123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".map { Word(String($0)) }])
+
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        expectation.expectedFulfillmentCount = 2
+        stateMachine.inputMethodEvent.collect(12).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerSelect, .emphasized("1")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerSelect, .emphasized("2")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerSelect, .emphasized("3")])))
+            XCTAssertEqual(events[4], .markedText(MarkedText([.markerSelect, .emphasized("4")])), "変換候補パネルが表示開始")
+            XCTAssertEqual(events[5], .markedText(MarkedText([.markerSelect, .emphasized("D")])), "9個先のDを表示")
+            XCTAssertEqual(events[6], .markedText(MarkedText([.markerSelect, .emphasized("M")])), "9個先のMを表示")
+            XCTAssertEqual(events[7], .markedText(MarkedText([.markerSelect, .emphasized("N")])))
+            XCTAssertEqual(events[8], .markedText(MarkedText([.markerSelect, .emphasized("V")])), "Mの9個先のVを表示")
+            XCTAssertEqual(events[9], .markedText(MarkedText([.markerSelect, .emphasized("W")])))
+            XCTAssertEqual(events[10], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[11], .markedText(MarkedText([.plain("[登録：あ]")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        stateMachine.candidateEvent.collect(9).sink { events in
+            XCTAssertEqual(events[0]?.selected.word, "1")
+            XCTAssertEqual(events[1]?.selected.word, "2")
+            XCTAssertEqual(events[2]?.selected.word, "3")
+            XCTAssertEqual(events[3]?.selected.word, "4")
+            XCTAssertEqual(events[3]?.page?.current, 0, "0オリジン")
+            XCTAssertEqual(events[3]?.page?.total, 4, "35個の変換候補があり、最初3つはインライン表示して残りを4ページで表示する")
+            XCTAssertEqual(events[4]?.selected.word, "D")
+            XCTAssertEqual(events[4]?.page?.current, 1)
+            XCTAssertEqual(events[5]?.selected.word, "M")
+            XCTAssertEqual(events[5]?.page?.current, 2)
+            XCTAssertEqual(events[6]?.selected.word, "N")
+            XCTAssertEqual(events[6]?.page?.current, 2)
+            XCTAssertEqual(events[7]?.selected.word, "V")
+            XCTAssertEqual(events[7]?.page?.current, 3)
+            XCTAssertEqual(events[8]?.selected.word, "W")
+            XCTAssertEqual(events[8]?.page?.current, 3)
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(rightKeyAction))
+        XCTAssertTrue(stateMachine.handle(rightKeyAction))
+        XCTAssertTrue(stateMachine.handle(downKeyAction))
+        XCTAssertTrue(stateMachine.handle(rightKeyAction))
+        XCTAssertTrue(stateMachine.handle(downKeyAction))
+        XCTAssertTrue(stateMachine.handle(rightKeyAction))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     @MainActor func testHandleSelectingCtrlACtrlE() {
         Global.dictionary.setEntries(["と": [Word("戸"), Word("都"), Word("徒"), Word("途"), Word("斗")]])
 
