@@ -85,6 +85,7 @@ macSKKが入力メソッドとして選択されているときに入力メニ�
 | punctuation                 | Number     | カンマとピリオド押下時の句読点設定      |
 | privateMode                 | Boolean    | プライベートモード                      |
 | ignoreUserDictInPrivateMode | Boolean    | プライベートモードでユーザー辞書を無視するか |
+| showInputModePanel          | Boolean    | 入力モードをモーダル表示するか          |
 
 ## 機能
 
