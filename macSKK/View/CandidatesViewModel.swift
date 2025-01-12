@@ -98,8 +98,8 @@ final class CandidatesViewModel: ObservableObject {
                             with: CGSize(width: .greatestFiniteMagnitude, height: self.candidatesLineHeight),
                             options: .usesLineFragmentOrigin,
                             attributes: [.font: NSFont.preferredFont(forTextStyle: .body)])
-                        // 添字(16px) + テキスト + 余白(4px)
-                        return 16 + size.width + 4 + last
+                        // 添字(16px) + 余白(4px) +  テキスト + 余白(8px)
+                        return 16 + 4 + size.width + 8 + last
                     }
                     // + ページカウント(64px)
                     return listWidth + 64

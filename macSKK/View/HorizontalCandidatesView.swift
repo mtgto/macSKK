@@ -36,18 +36,21 @@ struct HorizontalCandidatesView: View {
                         Text(String(Global.selectCandidateKeys[index]).uppercased())
                         // 変換候補の90%のフォントサイズ
                             .font(.system(size: candidates.candidatesFontSize * 0.9))
-                            .padding(EdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 0))
-                            .frame(width: 16)
+                        // めたたないようにする
+                            .foregroundStyle(candidates.selected == candidate ? Color(NSColor.selectedMenuItemTextColor.withAlphaComponent(0.8)) : Color(NSColor.secondaryLabelColor))
+                            .frame(width: 16, alignment: .trailing)
+                            .padding(.trailing, 4)
                         Text(candidate.word)
                             .font(.system(size: candidates.candidatesFontSize))
+                            .foregroundStyle(candidates.selected == candidate ? Color(NSColor.selectedMenuItemTextColor) : Color(NSColor.textColor))
                             .fixedSize(horizontal: true, vertical: false)
-                            .padding(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 4))
+                            .padding(.trailing, 8)
                     }
                     .frame(height: candidates.candidatesLineHeight)
-                    .foregroundStyle(candidates.selected == candidate ? Color(NSColor.selectedMenuItemTextColor) : Color(NSColor.textColor))
                     .background(candidates.selected == candidate ? Color.accentColor : Color.clear)
                 }
                 Text("\(currentPage + 1) / \(totalPageCount)")
+                    .foregroundStyle(Color(NSColor.secondaryLabelColor))
                     .padding(.trailing, 8)
                     .frame(width: 64, height: CandidatesView.footerHeight, alignment: .trailing)
             }
