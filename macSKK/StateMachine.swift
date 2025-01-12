@@ -929,7 +929,7 @@ final class StateMachine {
         // 未確定ローマ字はn以外は入力されずに削除される. nだけは"ん"として変換する
         // 変換候補がないときは辞書登録へ
         let trimmedComposing = composing.trim(kanaRule: Global.kanaRule)
-        var yomiText = trimmedComposing.yomi(for: self.state.inputMode)
+        var yomiText = trimmedComposing.yomi(for: self.state.inputMode, kanaRule: Global.kanaRule)
         let candidateWords: [Candidate]
         // FIXME: Abbrevモードでも接頭辞、接尾辞を検索するべきか再検討する。
         // いまは ">"で終わる・始まる場合は、Abbrevモードであっても接頭辞・接尾辞を探しているものとして検索する

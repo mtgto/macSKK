@@ -140,7 +140,8 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
         return self
     }
 
-    /// text部分を指定の入力モードに合わせて文字列に変換する
+    /// text部分を指定の入力モードに合わせて文字列に変換する。
+    /// カーソル位置が先端じゃなくとも考慮しない。
     /// - Parameters:
     ///   - kanaRule: 末尾の未確定のローマ字を変換するローマ字かな変換ルール。
     ///               例えば "n" を "ん" に変換するために使用する。
@@ -250,12 +251,16 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
     /// 辞書を引く際の読みを返す。
     /// カーソルがある場合はカーソルより左側の文字列だけを対象にする。
     /// 末尾がnの場合は「ん」と入力したとして解釈する
-    func yomi(for mode: InputMode) -> String {
+    func yomi(for mode: InputMode, kanaRule: Romaji) -> String {
         switch mode {
         case .direct:  // Abbrev
             return subText().joined()
         case .hiragana, .katakana, .hankaku:
-            let newText: [String] = romaji == "n" ? subText() + ["ん"] : subText()
+            let newText: [String] = if let converted = kanaRule.table[romaji] {
+                subText() + [converted.kana]
+            } else {
+                subText()
+            }
             return newText.joined() + (okuri?.first?.firstRomaji ?? "")
         case .eisu:
             fatalError("InputMode \(mode) ではyomi(for: InputMode)は使用できない")
