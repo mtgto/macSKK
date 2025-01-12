@@ -14,14 +14,21 @@ final class StateTests: XCTestCase {
         var state = ComposingState(
             isShift: true, text: ["あ", "い"], okuri: nil, romaji: "", cursor: nil)
         state = state.appendText(Romaji.Moji(firstRomaji: "u", kana: "う"))
-        XCTAssertEqual(state.string(for: .hiragana, convertHatsuon: false), "あいう")
+        XCTAssertEqual(state.string(for: .hiragana, kanaRule: nil), "あいう")
         state = state.moveCursorLeft()
         XCTAssertEqual(state.cursor, 2)
         state = state.appendText(Romaji.Moji(firstRomaji: "e", kana: "え"))
-        XCTAssertEqual(state.string(for: .hiragana, convertHatsuon: false), "あいえう")
+        XCTAssertEqual(state.string(for: .hiragana, kanaRule: nil), "あいえう")
         XCTAssertEqual(state.cursor, 3)
         state = state.moveCursorRight()
         XCTAssertNil(state.cursor, "末尾まで移動したらカーソルはnilになる")
+    }
+
+    func testComposingStateString() {
+        let state = ComposingState(
+            isShift: true, text: ["あ", "い"], okuri: nil, romaji: "n", cursor: nil)
+        XCTAssertEqual(state.string(for: .hiragana, kanaRule: Romaji.defaultKanaRule), "あいん")
+        XCTAssertEqual(state.string(for: .hiragana, kanaRule: nil), "あい")
     }
 
     func testComposingStateDropLast() {

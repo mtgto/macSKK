@@ -142,9 +142,15 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
 
     /// text部分を指定の入力モードに合わせて文字列に変換する
     /// - Parameters:
-    ///   - convertHatsuon: 入力未確定の送り仮名の一文字目がnだったら撥音「ん」としてあつかうかどうか
-    func string(for mode: InputMode, convertHatsuon: Bool) -> String {
-        let newText: String = convertHatsuon && romaji == "n" ? text.joined() + Romaji.n.kana : text.joined()
+    ///   - kanaRule: 末尾の未確定のローマ字を変換するローマ字かな変換ルール。
+    ///               例えば "n" を "ん" に変換するために使用する。
+    ///               nilの場合は変換しない。
+    func string(for mode: InputMode, kanaRule: Romaji?) -> String {
+        let newText: String = if let kanaRule, !romaji.isEmpty, let converted = kanaRule.table[romaji] {
+            text.joined() + converted.kana
+        } else {
+            text.joined()
+        }
         switch mode {
         case .hiragana, .direct:
             return newText
@@ -153,7 +159,7 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
         case .hankaku:
             return newText.toKatakana().toHankaku()
         default:
-            fatalError("Called ComposingState#string from wrong mode \(mode)")
+            fatalError("Called ComposingState#string(mode:kanaRule:) from wrong mode \(mode)")
         }
     }
 
@@ -312,7 +318,7 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
 
     // MARK: - MarkedTextProtocol
     func markedTextElements(inputMode: InputMode) -> [MarkedText.Element] {
-        let displayText = string(for: inputMode, convertHatsuon: false)
+        let displayText = string(for: inputMode, kanaRule: nil)
         var result: [MarkedText.Element?] = []
         var okuriDisplayText: String = ""
 
