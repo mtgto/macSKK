@@ -66,19 +66,20 @@ class RomajiTests: XCTestCase {
 
     func testIsPrefix() throws {
         let kanaRule = Romaji.defaultKanaRule
-        XCTAssertTrue(kanaRule.isPrefix(input: "a", modifierFlags: []))
-        XCTAssertTrue(kanaRule.isPrefix(input: "a", modifierFlags: [.shift]))
-        XCTAssertFalse(kanaRule.isPrefix(input: "a", modifierFlags: [.option]))
-        XCTAssertFalse(kanaRule.isPrefix(input: "a", modifierFlags: [.shift, .option]))
-        XCTAssertFalse(kanaRule.isPrefix(input: "a", modifierFlags: [.command]))
-        XCTAssertFalse(kanaRule.isPrefix(input: "a", modifierFlags: [.control]))
-        XCTAssertTrue(kanaRule.isPrefix(input: "k", modifierFlags: []))
-        XCTAssertTrue(kanaRule.isPrefix(input: "ky", modifierFlags: []))
-        XCTAssertTrue(kanaRule.isPrefix(input: "kya", modifierFlags: []))
-        XCTAssertFalse(kanaRule.isPrefix(input: "kyi", modifierFlags: []))
-        XCTAssertFalse(kanaRule.isPrefix(input: "q", modifierFlags: []))
-        XCTAssertTrue(kanaRule.isPrefix(input: ",", modifierFlags: []))
-        XCTAssertFalse(kanaRule.isPrefix(input: ",", modifierFlags: [.shift]))
+        XCTAssertTrue(kanaRule.isPrefix("a", modifierFlags: [], treatedAsAlphabet: false))
+        XCTAssertTrue(kanaRule.isPrefix("a", modifierFlags: [.shift], treatedAsAlphabet: false))
+        XCTAssertFalse(kanaRule.isPrefix("a", modifierFlags: [.option], treatedAsAlphabet: false))
+        XCTAssertFalse(kanaRule.isPrefix("a", modifierFlags: [.shift, .option], treatedAsAlphabet: false))
+        XCTAssertFalse(kanaRule.isPrefix("a", modifierFlags: [.command], treatedAsAlphabet: false))
+        XCTAssertFalse(kanaRule.isPrefix("a", modifierFlags: [.control], treatedAsAlphabet: false))
+        XCTAssertTrue(kanaRule.isPrefix("k", modifierFlags: [], treatedAsAlphabet: false))
+        XCTAssertTrue(kanaRule.isPrefix("ky", modifierFlags: [], treatedAsAlphabet: false))
+        XCTAssertTrue(kanaRule.isPrefix("kya", modifierFlags: [], treatedAsAlphabet: false))
+        XCTAssertFalse(kanaRule.isPrefix("kyi", modifierFlags: [], treatedAsAlphabet: false))
+        XCTAssertFalse(kanaRule.isPrefix("q", modifierFlags: [], treatedAsAlphabet: false))
+        XCTAssertTrue(kanaRule.isPrefix(",", modifierFlags: [], treatedAsAlphabet: false))
+        XCTAssertFalse(kanaRule.isPrefix(",", modifierFlags: [.shift], treatedAsAlphabet: false))
+        XCTAssertTrue(kanaRule.isPrefix(",", modifierFlags: [.shift], treatedAsAlphabet: true))
     }
 }
 
