@@ -1469,6 +1469,20 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    @MainActor func testHandleComposingRomajiKanaRuleKigou() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        Global.kanaRule = try! Romaji(source: ["ka,か", "<,<shift>k"].joined(separator: "\n"))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(2).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("k")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("か")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "<", characterIgnoringModifier: ",", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     @MainActor func testHandleComposingPrintableAndL() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()

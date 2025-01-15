@@ -309,6 +309,11 @@ struct Romaji: Equatable, Sendable {
      *
      * 今はシフトキーが押されているときのみに対応する
      * https://github.com/mtgto/macSKK/issues/225
+     *
+     * > Note: charactersIgnoringModifiersは本来のIMKInputController#handleではシフトキーで変わる記号の場合
+     *         `characters = "<"`, `charactersIgnoringModifiers = ","` のように異なります。
+     *         しかしcharactersが記号の場合のcharactersIgnoringModifiersをシフトキーなしのときの文字として
+     *         記述する設定方法を用意してないので、暫定としてcharactersと同様の値を設定します。
      */
     func convertKeyEvent(_ event: NSEvent) -> NSEvent? {
         // シフトキーが押されてなければ無視する
@@ -316,9 +321,6 @@ struct Romaji: Equatable, Sendable {
             return nil
         }
         guard let characters = event.characters else {
-            return nil
-        }
-        guard let charactersIgnoringCharacters = event.charactersIgnoringModifiers else {
             return nil
         }
         if let mapped = lowercaseMap[characters] {
@@ -329,7 +331,7 @@ struct Romaji: Equatable, Sendable {
                                     windowNumber: event.windowNumber,
                                     context: nil,
                                     characters: mapped,
-                                    charactersIgnoringModifiers: charactersIgnoringCharacters,
+                                    charactersIgnoringModifiers: mapped,
                                     isARepeat: event.isARepeat,
                                     keyCode: event.keyCode)
         }
