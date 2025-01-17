@@ -581,6 +581,7 @@ final class StateMachine {
                 state.inputMethod = .composing(newComposingState)
             } else {
                 state.inputMethod = .normal
+                updateModeIfPrevModeExists()
             }
             updateMarkedText()
             return true
