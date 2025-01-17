@@ -6,18 +6,29 @@ import XCTest
 @testable import macSKK
 
 final class StateTests: XCTestCase {
+    @MainActor override func setUp() {
+        Global.kanaRule = Romaji.defaultKanaRule
+    }
+
     func testComposingStateAppendText() throws {
         var state = ComposingState(
             isShift: true, text: ["あ", "い"], okuri: nil, romaji: "", cursor: nil)
         state = state.appendText(Romaji.Moji(firstRomaji: "u", kana: "う"))
-        XCTAssertEqual(state.string(for: .hiragana, convertHatsuon: false), "あいう")
+        XCTAssertEqual(state.string(for: .hiragana, kanaRule: nil), "あいう")
         state = state.moveCursorLeft()
         XCTAssertEqual(state.cursor, 2)
         state = state.appendText(Romaji.Moji(firstRomaji: "e", kana: "え"))
-        XCTAssertEqual(state.string(for: .hiragana, convertHatsuon: false), "あいえう")
+        XCTAssertEqual(state.string(for: .hiragana, kanaRule: nil), "あいえう")
         XCTAssertEqual(state.cursor, 3)
         state = state.moveCursorRight()
         XCTAssertNil(state.cursor, "末尾まで移動したらカーソルはnilになる")
+    }
+
+    func testComposingStateString() {
+        let state = ComposingState(
+            isShift: true, text: ["あ", "い"], okuri: nil, romaji: "n", cursor: nil)
+        XCTAssertEqual(state.string(for: .hiragana, kanaRule: Romaji.defaultKanaRule), "あいん")
+        XCTAssertEqual(state.string(for: .hiragana, kanaRule: nil), "あい")
     }
 
     func testComposingStateDropLast() {
@@ -86,35 +97,46 @@ final class StateTests: XCTestCase {
         XCTAssertEqual(state.subText(), ["あ"], "未確定のローマ字部分は含まない")
     }
 
-    func testComposingStateTrim() {
+    @MainActor func testComposingStateTrim() {
         let state = ComposingState(
-            isShift: true, text: ["あ"], okuri: nil, romaji: "n", cursor: nil).trim()
+            isShift: true,
+            text: ["あ"],
+            okuri: nil,
+            romaji: "n",
+            cursor: nil).trim(kanaRule: Global.kanaRule)
         XCTAssertEqual(state.text, ["あ", "ん"])
         XCTAssertNil(state.okuri)
     }
 
-    func testComposingStateTrimOkuriN() {
+    @MainActor func testComposingStateTrimOkuriN() {
         let state = ComposingState(
-            isShift: true, text: ["く", "や"], okuri: [], romaji: "n", cursor: nil).trim()
-        XCTAssertEqual(state.trim().text, ["く", "や"])
-        XCTAssertEqual(state.trim().okuri, [Romaji.n])
+            isShift: true, text: ["く", "や"], okuri: [], romaji: "n", cursor: nil).trim(kanaRule: Global.kanaRule)
+        XCTAssertEqual(state.trim(kanaRule: Global.kanaRule).text, ["く", "や"])
+        XCTAssertEqual(state.trim(kanaRule: Global.kanaRule).okuri, [Romaji.n])
     }
 
-    func testComposingStateYomi() {
+    func testComposingStateYomi() throws {
         var state = ComposingState(
             isShift: true,
             text: ["あ", "い"],
             okuri: nil,
             romaji: "",
             cursor: nil)
-        XCTAssertEqual(state.yomi(for: .hiragana), "あい")
-        XCTAssertEqual(state.yomi(for: .katakana), "あい")
-        XCTAssertEqual(state.yomi(for: .hankaku), "あい")
-        XCTAssertEqual(state.yomi(for: .direct), "あい")
+        XCTAssertEqual(state.yomi(for: .hiragana, kanaRule: Romaji.defaultKanaRule), "あい")
+        XCTAssertEqual(state.yomi(for: .katakana, kanaRule: Romaji.defaultKanaRule), "あい")
+        XCTAssertEqual(state.yomi(for: .hankaku, kanaRule: Romaji.defaultKanaRule), "あい")
+        XCTAssertEqual(state.yomi(for: .direct, kanaRule: Romaji.defaultKanaRule), "あい")
         state = state.with(cursor: 1)
-        XCTAssertEqual(state.yomi(for: .hiragana), "あ")
+        XCTAssertEqual(state.yomi(for: .hiragana, kanaRule: Romaji.defaultKanaRule), "あ")
         state = state.with(okuri: [Romaji.Moji(firstRomaji: "u", kana: "う")]).with(cursor: nil)
-        XCTAssertEqual(state.yomi(for: .katakana), "あいu")
+        XCTAssertEqual(state.yomi(for: .katakana, kanaRule: Romaji.defaultKanaRule), "あいu")
+        state = state.with(romaji: "n")
+        XCTAssertEqual(state.yomi(for: .katakana, kanaRule: Romaji.defaultKanaRule), "あいんu")
+        // "n" → "ん" のルールがないときは末尾のnは無視される
+        let customizedKanaRule = try Romaji(source: "")
+        XCTAssertEqual(state.yomi(for: .katakana, kanaRule: customizedKanaRule), "あいu")
+        state = state.with(romaji: "ny")
+        XCTAssertEqual(state.yomi(for: .katakana, kanaRule: Romaji.defaultKanaRule), "あいu")
     }
 
     func testComposingStateYomiAbbrevCursor() {
@@ -124,9 +146,9 @@ final class StateTests: XCTestCase {
             okuri: nil,
             romaji: "",
             cursor: nil)
-        XCTAssertEqual(state.yomi(for: .direct), "ab")
+        XCTAssertEqual(state.yomi(for: .direct, kanaRule: Romaji.defaultKanaRule), "ab")
         state = state.with(cursor: 1)
-        XCTAssertEqual(state.yomi(for: .direct), "a")
+        XCTAssertEqual(state.yomi(for: .direct, kanaRule: Romaji.defaultKanaRule), "a")
     }
 
     func testComposingStateMoveCorsorEmptyText() {
@@ -531,6 +553,10 @@ extension ComposingState {
     }
 
     func with(okuri: [Romaji.Moji]) -> Self {
+        ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: romaji, cursor: cursor, prevMode: prevMode)
+    }
+
+    func with(romaji: String) -> Self {
         ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: romaji, cursor: cursor, prevMode: prevMode)
     }
 }

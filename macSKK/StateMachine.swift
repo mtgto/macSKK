@@ -467,7 +467,7 @@ final class StateMachine {
             }
             // 入力中文字列を確定させてひらがなモードにする
             state.inputMethod = .normal
-            addFixedText(composing.string(for: state.inputMode, convertHatsuon: true))
+            addFixedText(composing.string(for: state.inputMode, kanaRule: Global.kanaRule))
             state.inputMode = .hiragana
             inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
             return true
@@ -478,10 +478,10 @@ final class StateMachine {
                 state.inputMethod = .normal
                 switch state.inputMode {
                 case .hiragana, .hankaku:
-                    addFixedText(composing.string(for: .katakana, convertHatsuon: true))
+                    addFixedText(composing.string(for: .katakana, kanaRule: Global.kanaRule))
                     return true
                 case .katakana:
-                    addFixedText(composing.string(for: .hiragana, convertHatsuon: true))
+                    addFixedText(composing.string(for: .hiragana, kanaRule: Global.kanaRule))
                     return true
                 case .direct:
                     // 普通に入力させる
@@ -507,7 +507,7 @@ final class StateMachine {
                 } else {
                     // 半角カタカナで確定する。
                     state.inputMethod = .normal
-                    addFixedText(composing.string(for: .hankaku, convertHatsuon: false))
+                    addFixedText(composing.string(for: .hankaku, kanaRule: nil))
                 }
                 return true
             } else {
@@ -520,7 +520,7 @@ final class StateMachine {
                 switch state.inputMode {
                 case .hiragana, .katakana, .hankaku:
                     state.inputMethod = .normal
-                    addFixedText(composing.string(for: state.inputMode, convertHatsuon: true))
+                    addFixedText(composing.string(for: state.inputMode, kanaRule: Global.kanaRule))
                     return handleNormal(action, specialState: specialState)
                 case .direct:
                     // 普通にlを入力させる
@@ -568,7 +568,7 @@ final class StateMachine {
             break
         case .enter:
             // 未確定ローマ字はn以外は入力されずに削除される. nだけは"ん"として変換する
-            let fixedText = composing.string(for: state.inputMode, convertHatsuon: true)
+            let fixedText = composing.string(for: state.inputMode, kanaRule: Global.kanaRule)
             state.inputMethod = .normal
             addFixedText(fixedText)
             updateModeIfPrevModeExists()
@@ -606,7 +606,7 @@ final class StateMachine {
                 return true
             } else {
                 if state.inputMode != .direct {
-                    return handleComposingStartConvert(action, composing: composing.trim(), specialState: specialState)
+                    return handleComposingStartConvert(action, composing: composing.trim(kanaRule: Global.kanaRule), specialState: specialState)
                 } else {
                     return handleComposingStartConvert(action, composing: composing, specialState: specialState)
                 }
@@ -928,8 +928,8 @@ final class StateMachine {
         // skkservから引く場合もあるのでTaskで実行する
         // 未確定ローマ字はn以外は入力されずに削除される. nだけは"ん"として変換する
         // 変換候補がないときは辞書登録へ
-        let trimmedComposing = composing.trim()
-        var yomiText = trimmedComposing.yomi(for: self.state.inputMode)
+        let trimmedComposing = composing.trim(kanaRule: Global.kanaRule)
+        var yomiText = trimmedComposing.yomi(for: self.state.inputMode, kanaRule: Global.kanaRule)
         let candidateWords: [Candidate]
         // FIXME: Abbrevモードでも接頭辞、接尾辞を検索するべきか再検討する。
         // いまは ">"で終わる・始まる場合は、Abbrevモードであっても接頭辞・接尾辞を探しているものとして検索する
@@ -1234,7 +1234,7 @@ final class StateMachine {
             case .normal:
                 return
             case .composing(let composing):
-                let fixedText = composing.string(for: state.inputMode, convertHatsuon: false)
+                let fixedText = composing.string(for: state.inputMode, kanaRule: nil)
                 state.inputMethod = .normal
                 addFixedText(fixedText)
             case .selecting(let selecting):
