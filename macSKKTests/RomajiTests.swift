@@ -7,7 +7,12 @@ import XCTest
 
 class RomajiTests: XCTestCase {
     func testInit() {
-        XCTAssertNoThrow(try Romaji(source: "# hoge"), "#で始まる行はコメント")
+        XCTAssertThrowsError(try Romaji(source: "")) { error in
+            XCTAssertEqual(error as? Romaji.RomajiError, Romaji.RomajiError.empty)
+        }
+        XCTAssertThrowsError(try Romaji(source: "# hoge"), "#で始まる行はコメント") { error in
+            XCTAssertEqual(error as? Romaji.RomajiError, Romaji.RomajiError.empty)
+        }
         XCTAssertNoThrow(try Romaji(source: "&sharp;,あ"), "シャープを使いたい場合は &sharp; と書く")
         XCTAssertThrowsError(try Romaji(source: ",あ"), "1要素目が空")
         XCTAssertThrowsError(try Romaji(source: "a,"), "2要素目が空")

@@ -72,6 +72,8 @@ struct Romaji: Equatable, Sendable {
     enum RomajiError: Error {
         /// 不正な設定
         case invalid
+        /// 1行も有効な設定がない
+        case empty
     }
 
     /// ローマ字かな変換テーブル
@@ -148,6 +150,8 @@ struct Romaji: Equatable, Sendable {
         }
         if let error {
             throw error
+        } else if table.isEmpty && lowercaseMap.isEmpty {
+            throw RomajiError.empty
         }
         self.table = table
         self.undecidedInputs = undecidedInputs
