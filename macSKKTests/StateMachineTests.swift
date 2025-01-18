@@ -950,7 +950,31 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
         wait(for: [expectation], timeout: 1.0)
     }
-    
+
+    @MainActor func testHandleComposingAbbrevBackspace() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(9).sink { events in
+            XCTAssertEqual(events[0], .modeChanged(.direct, .zero))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose])))
+            // AbbrevモードでBackspaceしたときは直前のモードに戻る (cancelと同じ)
+            XCTAssertEqual(events[2], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[3], .markedText(MarkedText([])))
+            XCTAssertEqual(events[4], .modeChanged(.katakana, .zero))
+            XCTAssertEqual(events[5], .modeChanged(.direct, .zero))
+            XCTAssertEqual(events[6], .markedText(MarkedText([.markerCompose])))
+            XCTAssertEqual(events[7], .modeChanged(.katakana, .zero))
+            XCTAssertEqual(events[8], .markedText(MarkedText([])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "/")))
+        XCTAssertTrue(stateMachine.handle(backspaceAction))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "/")))
+        XCTAssertTrue(stateMachine.handle(backspaceAction))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     @MainActor func testHandleComposingSuffix() {
         Global.dictionary.setEntries([">あ": [Word("亜")], "あ": [Word("阿")]])
 
