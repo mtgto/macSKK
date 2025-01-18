@@ -40,14 +40,17 @@ final class SettingsWatcher: NSObject, Sendable {
     @MainActor func loadKanaRule(contentsOf url: URL) {
         do {
             if try url.isReadable() {
-                Global.kanaRule = try Romaji(contentsOf: url)
-                logger.log("独自のローマ字かな変換ルールを適用しました")
+                let kanaRule = try Romaji(contentsOf: url)
+                if kanaRule.isEmpty {
+                    Global.kanaRule = Global.defaultKanaRule
+                    logger.log("ローマ字かな変換ルールファイルが空のためデフォルトのルールを使用します")
+                } else {
+                    Global.kanaRule = kanaRule
+                    logger.log("独自のローマ字かな変換ルールを適用しました")
+                }
             } else {
                 logger.log("ローマ字かな変換ルールファイルとして不適合なファイルであるため読み込みできませんでした")
             }
-        } catch Romaji.RomajiError.empty {
-            Global.kanaRule = Global.defaultKanaRule
-            logger.log("ローマ字かな変換ルールファイルが空のためデフォルトのルールを使用します")
         } catch {
             logger.error("ローマ字かな変換ルールの読み込みでエラーが発生しました: \(error)")
         }
