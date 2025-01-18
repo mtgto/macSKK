@@ -346,7 +346,7 @@ struct Romaji: Equatable, Sendable {
      *
      * デフォルトのローマ字かな変換ルールでの例:
      *
-     * input | modifierFlags | treatedAsAlphabet | 結果 | 補足
+     * input | modifierFlags | treatAsAlphabet | 結果 | 補足
      * ----- | ------------- | ----------------- | ---- | ----
      * "a" | `[]` | false | true | "a" の全体なので
      * "a" | `[.shift]` | false | true | アルファベットの場合シフトキーが押されていてもよい
@@ -361,13 +361,13 @@ struct Romaji: Equatable, Sendable {
      * - Parameters
      *   - input: IMKInputController.handle の引数NSEventのcharacterIgnoringModifiers
      *   - modifierFlags: 修飾キー
-     *   - treatedAsAlphabet: 実質アルファベットとして見做すかどうか。Romaji.convertedKeyEventで変換された場合。
+     *   - treatAsAlphabet: 実質アルファベットとして見做すかどうか。Romaji.convertedKeyEventで変換された場合。
      */
-    func isPrefix(_ input: String, modifierFlags: NSEvent.ModifierFlags, treatedAsAlphabet: Bool) -> Bool {
+    func isPrefix(_ input: String, modifierFlags: NSEvent.ModifierFlags, treatAsAlphabet: Bool) -> Bool {
         if !modifierFlags.isDisjoint(with: [.option, .command, .control]) {
             return false
         } else if undecidedInputs.contains(input) || table[input] != nil {
-            return input.isAlphabet || !modifierFlags.contains(.shift) || treatedAsAlphabet
+            return input.isAlphabet || !modifierFlags.contains(.shift) || treatAsAlphabet
         }
         return false
     }

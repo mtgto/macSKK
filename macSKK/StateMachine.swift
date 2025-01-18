@@ -364,7 +364,7 @@ final class StateMachine {
     @MainActor func handleNormalPrintable(input: String, action: Action, specialState: SpecialState?) -> Bool {
         switch state.inputMode {
         case .hiragana, .katakana, .hankaku:
-            if Global.kanaRule.isPrefix(input, modifierFlags: action.event.modifierFlags, treatedAsAlphabet: action.treatedAsAlphabet) {
+            if Global.kanaRule.isPrefix(input, modifierFlags: action.event.modifierFlags, treatAsAlphabet: action.treatAsAlphabet) {
                 let result = Global.kanaRule.convert(input, punctuation: Global.punctuation)
                 if let moji = result.kakutei {
                     if action.shiftIsPressed() {
@@ -388,7 +388,7 @@ final class StateMachine {
                             Action(keyBind: Global.keyBinding.action(event: mappedEvent),
                                    event: mappedEvent,
                                    cursorPosition: action.cursorPosition,
-                                   treatedAsAlphabet: true),
+                                   treatAsAlphabet: true),
                             specialState: specialState)
                     }
                     let result = Global.kanaRule.convert(characters, punctuation: Global.punctuation)
@@ -806,7 +806,7 @@ final class StateMachine {
                     Action(keyBind: Global.keyBinding.action(event: mappedEvent),
                            event: mappedEvent,
                            cursorPosition: action.cursorPosition,
-                           treatedAsAlphabet: true),
+                           treatAsAlphabet: true),
                     composing: composing,
                     specialState: specialState
                 )
@@ -870,7 +870,7 @@ final class StateMachine {
                     }
                 }
                 updateMarkedText()
-            } else if Global.kanaRule.isPrefix(input, modifierFlags: action.event.modifierFlags, treatedAsAlphabet: action.treatedAsAlphabet) {
+            } else if Global.kanaRule.isPrefix(input, modifierFlags: action.event.modifierFlags, treatAsAlphabet: action.treatAsAlphabet) {
                 // ローマ字の一部が入力された場合
                 // シフトが押されているかどうかで送り仮名入力かそうでないかに分岐
                 if !text.isEmpty && okuri == nil && action.shiftIsPressed() {
