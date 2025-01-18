@@ -9,6 +9,15 @@ struct Action {
     let event: NSEvent
     /// 現在のカーソル位置。正常に取得できない場合はNSRect.zeroになっているかも?
     let cursorPosition: NSRect
+    /// ``Romaji/convertKeyEvent(_:)`` によって変換されたNSEventから生成されたアクションかどうか.
+    let treatAsAlphabet: Bool
+
+    init(keyBind: KeyBinding.Action?, event: NSEvent, cursorPosition: NSRect, treatAsAlphabet: Bool = false) {
+        self.keyBind = keyBind
+        self.event = event
+        self.cursorPosition = cursorPosition
+        self.treatAsAlphabet = treatAsAlphabet
+    }
 
     func shiftIsPressed() -> Bool {
         return event.modifierFlags.contains(.shift)

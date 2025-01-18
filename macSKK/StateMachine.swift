@@ -343,7 +343,10 @@ final class StateMachine {
         }
 
         let event = action.event
-        if let input = event.charactersIgnoringModifiers, !event.modifierFlags.contains(.control) && !event.modifierFlags.contains(.command) {
+        guard let input = event.charactersIgnoringModifiers else {
+            return false
+        }
+        if !event.modifierFlags.contains(.control) && !event.modifierFlags.contains(.command) {
             return handleNormalPrintable(input: input, action: action, specialState: specialState)
         } else {
             // 単語登録中や登録解除中はtrueを返してなにもしない
@@ -361,7 +364,7 @@ final class StateMachine {
     @MainActor func handleNormalPrintable(input: String, action: Action, specialState: SpecialState?) -> Bool {
         switch state.inputMode {
         case .hiragana, .katakana, .hankaku:
-            if Global.kanaRule.isPrefix(input: input, modifierFlags: action.event.modifierFlags) {
+            if Global.kanaRule.isPrefix(input, modifierFlags: action.event.modifierFlags, treatAsAlphabet: action.treatAsAlphabet) {
                 let result = Global.kanaRule.convert(input, punctuation: Global.punctuation)
                 if let moji = result.kakutei {
                     if action.shiftIsPressed() {
@@ -384,7 +387,8 @@ final class StateMachine {
                         return handleNormal(
                             Action(keyBind: Global.keyBinding.action(event: mappedEvent),
                                    event: mappedEvent,
-                                   cursorPosition: action.cursorPosition),
+                                   cursorPosition: action.cursorPosition,
+                                   treatAsAlphabet: true),
                             specialState: specialState)
                     }
                     let result = Global.kanaRule.convert(characters, punctuation: Global.punctuation)
@@ -802,7 +806,8 @@ final class StateMachine {
                 return handleComposing(
                     Action(keyBind: Global.keyBinding.action(event: mappedEvent),
                            event: mappedEvent,
-                           cursorPosition: action.cursorPosition),
+                           cursorPosition: action.cursorPosition,
+                           treatAsAlphabet: true),
                     composing: composing,
                     specialState: specialState
                 )
@@ -866,7 +871,7 @@ final class StateMachine {
                     }
                 }
                 updateMarkedText()
-            } else if Global.kanaRule.isPrefix(input: input, modifierFlags: action.event.modifierFlags) {
+            } else if Global.kanaRule.isPrefix(input, modifierFlags: action.event.modifierFlags, treatAsAlphabet: action.treatAsAlphabet) {
                 // ローマ字の一部が入力された場合
                 // シフトが押されているかどうかで送り仮名入力かそうでないかに分岐
                 if !text.isEmpty && okuri == nil && action.shiftIsPressed() {

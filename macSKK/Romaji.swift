@@ -312,6 +312,11 @@ struct Romaji: Equatable, Sendable {
      *
      * 今はシフトキーが押されているときのみに対応する
      * https://github.com/mtgto/macSKK/issues/225
+     *
+     * > Note: charactersIgnoringModifiersは本来のIMKInputController#handleではシフトキーで変わる記号の場合
+     *         `characters = "<"`, `charactersIgnoringModifiers = ","` のように異なります。
+     *         しかしcharactersが記号の場合のcharactersIgnoringModifiersをシフトキーなしのときの文字として
+     *         記述する設定方法を用意してないので、暫定としてcharactersと同様の値を設定します。
      */
     func convertKeyEvent(_ event: NSEvent) -> NSEvent? {
         // シフトキーが押されてなければ無視する
@@ -319,9 +324,6 @@ struct Romaji: Equatable, Sendable {
             return nil
         }
         guard let characters = event.characters else {
-            return nil
-        }
-        guard let charactersIgnoringCharacters = event.charactersIgnoringModifiers else {
             return nil
         }
         if let mapped = lowercaseMap[characters] {
@@ -332,7 +334,7 @@ struct Romaji: Equatable, Sendable {
                                     windowNumber: event.windowNumber,
                                     context: nil,
                                     characters: mapped,
-                                    charactersIgnoringModifiers: charactersIgnoringCharacters,
+                                    charactersIgnoringModifiers: mapped,
                                     isARepeat: event.isARepeat,
                                     keyCode: event.keyCode)
         }
@@ -347,26 +349,28 @@ struct Romaji: Equatable, Sendable {
      *
      * デフォルトのローマ字かな変換ルールでの例:
      *
-     * input | modifierFlags | 結果 | 補足
-     * ----- | ------------- | ---- | ----
-     * "a" | `[]` | true | "a" の全体なので
-     * "a" | `[.shift]` | true | アルファベットの場合シフトキーが押されていてもよい
-     * "a" | `[.option]` | false | Optionキーが押されている場合は常にfalse
-     * "k" | `[]` | true | "ka" の一部
-     * "ky" | `[]` | true | "kya" の一部
-     * "q" | `[]` | false | "q" で始まるローマ字はない
-     * "." | `[]` | true | ".,。" の全体なのでtrue
-     * "." | `[.shift]` | false | アルファベット以外の場合シフトキーが押されている場合は別のキーとして扱われる
+     * input | modifierFlags | treatAsAlphabet | 結果 | 補足
+     * ----- | ------------- | ----------------- | ---- | ----
+     * "a" | `[]` | false | true | "a" の全体なので
+     * "a" | `[.shift]` | false | true | アルファベットの場合シフトキーが押されていてもよい
+     * "a" | `[.option]` | false | false | Optionキーが押されている場合は常にfalse
+     * "k" | `[]` | false | true | "ka" の一部
+     * "ky" | `[]` | false | true | "kya" の一部
+     * "q" | `[]` | false | false | "q" で始まるローマ字はない
+     * "." | `[]` | false | true | ".,。" の全体なのでtrue
+     * "." | `[.shift]` | false | false | アルファベット以外でシフトキーが押されている場合は別のキーとして扱う
+     * "." | `[.shift]` | true | true | 記号だが実質アルファベットとして見做す
      *
      * - Parameters
-     *   - input: ``Action/KeyEvent/printable(_:)`` の引数であるcharacterIgnoringModifiersな文字列
+     *   - input: IMKInputController.handle の引数NSEventのcharacterIgnoringModifiers
      *   - modifierFlags: 修飾キー
+     *   - treatAsAlphabet: 実質アルファベットとして見做すかどうか。Romaji.convertedKeyEventで変換された場合。
      */
-    func isPrefix(input: String, modifierFlags: NSEvent.ModifierFlags) -> Bool {
+    func isPrefix(_ input: String, modifierFlags: NSEvent.ModifierFlags, treatAsAlphabet: Bool) -> Bool {
         if !modifierFlags.isDisjoint(with: [.option, .command, .control]) {
             return false
-        } else if (input.isAlphabet || !modifierFlags.contains(.shift)) && (undecidedInputs.contains(input) || table[input] != nil) {
-            return true
+        } else if undecidedInputs.contains(input) || table[input] != nil {
+            return input.isAlphabet || !modifierFlags.contains(.shift) || treatAsAlphabet
         }
         return false
     }
