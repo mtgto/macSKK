@@ -143,7 +143,9 @@ struct Romaji: Equatable, Sendable {
                                       hankaku: hankaku,
                                       remain: remain)
             if elements[0].count > 1 {
-                undecidedInputs.insert(String(elements[0].dropLast()))
+                for n in 1..<elements[0].count {
+                    undecidedInputs.insert(String(elements[0].prefix(n)))
+                }
             }
         }
         if let error {

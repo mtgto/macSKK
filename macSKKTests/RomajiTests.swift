@@ -64,6 +64,14 @@ class RomajiTests: XCTestCase {
         XCTAssertEqual(kanaRule.convert("vu", punctuation: .default).kakutei?.kana, "ゔ")
     }
 
+    func testIsPrefixLongRule() throws {
+        let kanaRule = try Romaji(source: "abcdefghijklmnopqrstuvwxyz,あ")
+        XCTAssertTrue(kanaRule.isPrefix("a", modifierFlags: [], treatAsAlphabet: false))
+        XCTAssertTrue(kanaRule.isPrefix("ab", modifierFlags: [], treatAsAlphabet: false))
+        XCTAssertTrue(kanaRule.isPrefix("abcdefghijkl", modifierFlags: [], treatAsAlphabet: false))
+        XCTAssertTrue(kanaRule.isPrefix("abcdefghijklmnopqrstuvwxy", modifierFlags: [], treatAsAlphabet: false))
+    }
+
     func testIsPrefix() throws {
         let kanaRule = Romaji.defaultKanaRule
         XCTAssertTrue(kanaRule.isPrefix("a", modifierFlags: [], treatAsAlphabet: false))
