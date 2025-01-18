@@ -44,7 +44,7 @@ final class CandidatesPanel: NSPanel {
     func setCursorPosition(_ cursorPosition: NSRect) {
         self.cursorPosition = cursorPosition
         if let mainScreen = NSScreen.main {
-            viewModel.maxWidth = mainScreen.visibleFrame.size.width - cursorPosition.origin.x
+            viewModel.maxWidth = mainScreen.visibleFrame.minX + mainScreen.visibleFrame.size.width - cursorPosition.origin.x
         }
     }
 
