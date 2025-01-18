@@ -15,9 +15,23 @@ class CompletionPanel: NSPanel {
         contentViewController = viewController
     }
 
-    func show(at point: NSPoint, windowLevel: NSWindow.Level) {
+    func show(at cursorPoint: NSRect, windowLevel: NSWindow.Level) {
         level = windowLevel
-        setFrameTopLeftPoint(point)
+        var origin = cursorPoint.origin
+        
+        if let size = contentViewController?.view.frame.size, let mainScreen = NSScreen.main {
+            let visibleFrame = mainScreen.visibleFrame
+            if origin.x + size.width > visibleFrame.minX + visibleFrame.width {
+                origin.x = visibleFrame.minX + visibleFrame.width - size.width
+            }
+            // 1ピクセルの余白を設ける
+            if origin.y - size.height < visibleFrame.minY {
+                origin.y = origin.y + size.height + cursorPoint.height + 1
+            } else {
+                origin.y -= 1
+            }
+        }
+        setFrameTopLeftPoint(origin)
         orderFrontRegardless()
     }
 }
