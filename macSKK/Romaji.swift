@@ -93,6 +93,11 @@ struct Romaji: Equatable, Sendable {
      */
     let undecidedInputs: Set<String>
 
+    /// 設定がまったくないか
+    var isEmpty: Bool {
+        table.isEmpty && lowercaseMap.isEmpty
+    }
+
     init(contentsOf url: URL) throws {
         try self.init(source: try String(contentsOf: url, encoding: .utf8))
     }
