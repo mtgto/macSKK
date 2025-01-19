@@ -262,11 +262,7 @@ class InputController: IMKInputController {
 
     // MARK: - IMKStateSetting
     @MainActor override func activateServer(_ sender: Any!) {
-        if let textInput = sender as? any IMKTextInput {
-            setCustomInputSource(textInput: textInput)
-        } else {
-            logger.warning("activateServerの引数clientがIMKTextInputではありません")
-        }
+        super.activateServer(sender)
     }
 
     @MainActor override func deactivateServer(_ sender: Any!) {
