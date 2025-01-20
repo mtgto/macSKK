@@ -53,18 +53,18 @@ struct KeyBinding: Identifiable, Hashable {
         case startOfLine
         /// カーソルを行終端に移動する。デフォルトはCtrl-eキー
         case endOfLine
-        /// 単語登録時のみクリップボードからテキストをペーストする。デフォルトはCtrl-yキー
-        case registerPaste
         /// 変換候補選択時に入力することで登録解除確認へ遷移する。デフォルトはShift-xキー
         case unregister
+        /// 単語登録時のみクリップボードからテキストをペーストする。デフォルトはCtrl-yキー
+        case registerPaste
+        /// 確定した文字列を選択して再変換する。デフォルトはCtrl-/キー
+        case reconvert
         /// 英数キー
         /// TODO: カスタマイズできなくする?
         case eisu
         /// かなキー
         /// TODO: カスタマイズできなくする?
         case kana
-        /// 確定した文字列を選択して再変換する。デフォルトはCtrl-/キー
-        case reconvert
 
         var localizedAction: String {
             // CodingKeyのstringValueを使う
@@ -250,12 +250,12 @@ struct KeyBinding: Identifiable, Hashable {
                 return KeyBinding(action, [Input(key: .character("x"), modifierFlags: .shift)])
             case .registerPaste:
                 return KeyBinding(action, [Input(key: .character("y"), modifierFlags: .control)])
+            case .reconvert:
+                return KeyBinding(action, [Input(key: .character("/"), modifierFlags: [.control])])
             case .eisu:
                 return KeyBinding(action, [Input(key: .code(0x66), modifierFlags: [])])
             case .kana:
                 return KeyBinding(action, [Input(key: .code(0x68), modifierFlags: [])])
-            case .reconvert:
-                return KeyBinding(action, [Input(key: .character("/"), modifierFlags: [.control])])
             }
         }
     }

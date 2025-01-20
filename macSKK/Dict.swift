@@ -42,6 +42,11 @@ protocol DictProtocol {
     func refer(_ yomi: String, option: DictReferringOption?) -> [Word]
 
     /**
+     * 辞書の変換候補を逆引きし、最初に見つかった読みを返す
+     */
+    func reverseRefer(_ word: String) -> String?
+
+    /**
      * 辞書にエントリを追加する。
      *
      * - Parameters:

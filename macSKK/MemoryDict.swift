@@ -112,6 +112,18 @@ struct MemoryDict: DictProtocol {
         }
     }
 
+    func reverseRefer(_ word: String) -> String? {
+        // 全探索
+        for (yomi, candidates) in entries {
+            for candidate in candidates {
+                if candidate.word == word {
+                    return yomi
+                }
+            }
+        }
+        return nil
+    }
+
     /// 辞書にエントリを追加する。
     ///
     /// すでに同じ読みが登録されている場合、

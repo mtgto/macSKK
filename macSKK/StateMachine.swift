@@ -335,11 +335,23 @@ final class StateMachine {
             } else {
                 return false
             }
+        case .reconvert:
+            if let textInput = action.textInput {
+                if let substring = textInput.attributedSubstring(from: textInput.selectedRange()) {
+                    let word = substring.string
+                    if let yomi = Global.dictionary.reverseRefer(word) {
+                        state.inputMethod = .composing(
+                            ComposingState(isShift: true,
+                                           text: yomi.map { String($0) },
+                                           romaji: "",
+                                           reconvertText: word))
+                        updateMarkedText()
+                    }
+                }
+            }
+            return true
         case .eisu:
             // 何もしない (OSがIMEの切り替えはしてくれる)
-            return true
-        case .reconvert:
-            // TODO: 実装
             return true
         case .unregister, .backwardCandidate, nil:
             break
@@ -391,6 +403,7 @@ final class StateMachine {
                             Action(keyBind: Global.keyBinding.action(event: mappedEvent),
                                    event: mappedEvent,
                                    cursorPosition: action.cursorPosition,
+                                   textInput: action.textInput,
                                    treatAsAlphabet: true),
                             specialState: specialState)
                     }
@@ -684,6 +697,9 @@ final class StateMachine {
             if text.isEmpty || romaji.isEmpty {
                 // 下線テキストをリセットする
                 state.inputMethod = .normal
+                if let reconvertText = composing.reconvertText {
+                    addFixedText(reconvertText)
+                }
                 updateModeIfPrevModeExists()
             } else {
                 state.inputMethod = .composing(ComposingState(isShift: isShift, text: text, okuri: nil, romaji: ""))
@@ -810,6 +826,7 @@ final class StateMachine {
                     Action(keyBind: Global.keyBinding.action(event: mappedEvent),
                            event: mappedEvent,
                            cursorPosition: action.cursorPosition,
+                           textInput: action.textInput,
                            treatAsAlphabet: true),
                     composing: composing,
                     specialState: specialState

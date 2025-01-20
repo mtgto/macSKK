@@ -169,6 +169,26 @@ class UserDict: NSObject, DictProtocol {
     }
 
     /**
+     * 変換候補から読みを逆引きする。
+     * プライベートモードで入力したエントリは参照しない
+     */
+    func reverseRefer(_ word: String) -> String? {
+        if let userDict = userDict {
+            if !privateMode.value || !ignoreUserDictInPrivateMode.value {
+                if let yomi = userDict.reverseRefer(word) {
+                    return yomi
+                }
+            }
+        }
+        for dict in dicts {
+            if let yomi = dict.reverseRefer(word) {
+                return yomi
+            }
+        }
+        return nil
+    }
+
+    /**
      * ユーザー辞書にエントリを追加する。
      *
      * プライベートモード時には追加を行わない。
