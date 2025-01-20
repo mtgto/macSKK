@@ -119,6 +119,7 @@
 "KeyBindingActionRegisterpaste" = "Paste on register";
 "KeyBindingActionEisu" = "Eisu Key";
 "KeyBindingActionKana" = "Kana Key";
+"KeyBindingActionReconvert" = "Reconvert";
 
 "KeyEisu" = "Eisu";
 "KeyKana" = "Kana";

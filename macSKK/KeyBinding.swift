@@ -63,6 +63,8 @@ struct KeyBinding: Identifiable, Hashable {
         /// かなキー
         /// TODO: カスタマイズできなくする?
         case kana
+        /// 確定した文字列を選択して再変換する。デフォルトはCtrl-/キー
+        case reconvert
 
         var localizedAction: String {
             // CodingKeyのstringValueを使う
@@ -252,6 +254,8 @@ struct KeyBinding: Identifiable, Hashable {
                 return KeyBinding(action, [Input(key: .code(0x66), modifierFlags: [])])
             case .kana:
                 return KeyBinding(action, [Input(key: .code(0x68), modifierFlags: [])])
+            case .reconvert:
+                return KeyBinding(action, [Input(key: .character("/"), modifierFlags: [.control])])
             }
         }
     }

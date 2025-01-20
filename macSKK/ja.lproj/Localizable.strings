@@ -119,6 +119,7 @@
 "KeyBindingActionRegisterpaste" = "登録モードでペースト";
 "KeyBindingActionEisu" = "英数キー";
 "KeyBindingActionKana" = "かなキー";
+"KeyBindingActionReconvert" = "再変換";
 
 "KeyEisu" = "英数";
 "KeyKana" = "かな";

@@ -1969,6 +1969,18 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    @MainActor func testHandleComposingReconvert() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(1).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(reconvertAction), "trueを返してなにもしない")
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     @MainActor func testHandleComposingUnregisteredKeyEventWithModifiers() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
@@ -2853,6 +2865,24 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    @MainActor func testHandleSelectingReconvert() {
+        Global.dictionary.setEntries(["と": [Word("戸")]])
+
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(3).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("t")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("と")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerSelect, .emphasized("戸")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(reconvertAction), "trueを返してなにもしない")
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     @MainActor func testHandleSelectingNum() {
         Global.dictionary.setEntries(["あ": "123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".map { Word(String($0)) }])
 
@@ -3204,6 +3234,11 @@ final class StateMachineTests: XCTestCase {
     // かなキーを押した
     var kanaKeyAction: Action {
         Action(keyBind: .kana, event: generateNSEvent(character: "\u{10}", characterIgnoringModifiers: "\u{10}"), cursorPosition: .zero)
+    }
+
+    // Ctrl-uキーを押した
+    var reconvertAction: Action {
+        Action(keyBind: .reconvert, event: generateNSEvent(character: "/", characterIgnoringModifiers: "/", modifierFlags: [.control]), cursorPosition: .zero)
     }
 
     private func printableKeyEventAction(character: Character, characterIgnoringModifier: Character? = nil, withShift: Bool = false) -> Action {

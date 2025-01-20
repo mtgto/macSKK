@@ -338,6 +338,9 @@ final class StateMachine {
         case .eisu:
             // 何もしない (OSがIMEの切り替えはしてくれる)
             return true
+        case .reconvert:
+            // TODO: 実装
+            return true
         case .unregister, .backwardCandidate, nil:
             break
         }
@@ -751,7 +754,7 @@ final class StateMachine {
                 updateMarkedText()
             }
             return true
-        case .up, .down, .registerPaste, .eisu, .kana:
+        case .up, .down, .registerPaste, .eisu, .kana, .reconvert:
             return true
         case .abbrev, .unregister, .backwardCandidate, .none:
             break
@@ -1124,7 +1127,7 @@ final class StateMachine {
             updateCandidates(selecting: nil)
             updateMarkedText()
             return true
-        case .registerPaste, .delete, .eisu, .kana:
+        case .registerPaste, .delete, .eisu, .kana, .reconvert:
             return true
         case .toggleKana, .direct, .zenkaku, .abbrev, .japanese:
             break
