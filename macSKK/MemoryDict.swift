@@ -115,10 +115,8 @@ struct MemoryDict: DictProtocol {
     func reverseRefer(_ word: String) -> String? {
         // 全探索
         for (yomi, candidates) in entries {
-            for candidate in candidates {
-                if candidate.word == word {
-                    return yomi
-                }
+            if candidates.contains(where: { $0.word == word }) {
+                return yomi
             }
         }
         return nil

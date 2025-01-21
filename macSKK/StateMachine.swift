@@ -339,7 +339,9 @@ final class StateMachine {
             if let textInput = action.textInput {
                 if let substring = textInput.attributedSubstring(from: textInput.selectedRange()) {
                     let word = substring.string
+                    // TODO: 言う などのように送り仮名つきであれば "言" で検索する (送り仮名もセットで検索したほうがいい)
                     if let yomi = Global.dictionary.reverseRefer(word) {
+                        // TODO: いu などのように送り仮名つきの読みかを確認する
                         state.inputMethod = .composing(
                             ComposingState(isShift: true,
                                            text: yomi.map { String($0) },

@@ -57,7 +57,7 @@ struct KeyBinding: Identifiable, Hashable {
         case unregister
         /// 単語登録時のみクリップボードからテキストをペーストする。デフォルトはCtrl-yキー
         case registerPaste
-        /// 確定した文字列を選択して再変換する。デフォルトはCtrl-/キー
+        /// 選択した文字列を辞書から逆引きして再変換をする。デフォルトはCtrl-/キー
         case reconvert
         /// 英数キー
         /// TODO: カスタマイズできなくする?
