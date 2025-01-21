@@ -117,7 +117,7 @@
 "KeyBindingActionEndofline" = "行末へ移動";
 "KeyBindingActionUnregister" = "選択中の変換候補の削除";
 "KeyBindingActionRegisterpaste" = "登録モードでペースト";
-"KeyBindingActionReconvert" = "再変換";
+"KeyBindingActionReconvert" = "選択テキストを再変換";
 "KeyBindingActionEisu" = "英数キー";
 "KeyBindingActionKana" = "かなキー";
 

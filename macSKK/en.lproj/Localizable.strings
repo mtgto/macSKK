@@ -117,7 +117,7 @@
 "KeyBindingActionEndofline" = "Go end of line";
 "KeyBindingActionUnregister" = "Unregister selected candidate";
 "KeyBindingActionRegisterpaste" = "Paste on register";
-"KeyBindingActionReconvert" = "Reconvert";
+"KeyBindingActionReconvert" = "Reconvert selected text";
 "KeyBindingActionEisu" = "Eisu Key";
 "KeyBindingActionKana" = "Kana Key";
 
