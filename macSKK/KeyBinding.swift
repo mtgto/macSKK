@@ -71,6 +71,17 @@ struct KeyBinding: Identifiable, Hashable {
         }
     }
 
+    /**
+     * キーバインドが成立するStateMachineの状態の集合
+     */
+    struct InputMethodStateFlags: OptionSet {
+        let rawValue: Int
+        static let normal = InputMethodStateFlags(rawValue: 1)
+        static let composing = InputMethodStateFlags(rawValue: 2)
+        static let selecting = InputMethodStateFlags(rawValue: 4)
+        static let all: InputMethodStateFlags = [normal, composing, selecting]
+    }
+
     struct Input: Equatable, Identifiable, Hashable {
         let key: Key
         /// 入力時に押されていないといけない修飾キー。
@@ -80,6 +91,8 @@ struct KeyBinding: Identifiable, Hashable {
 
         /// 入力時に押されていてもよい修飾キー。
         let optionalModifierFlags: NSEvent.ModifierFlags
+        /// 入力時に許容されるStateMachineの状態。
+        let inputMethodStateFlags: InputMethodStateFlags
 
         // MARK: Identifiable
         var id: String {
@@ -91,10 +104,11 @@ struct KeyBinding: Identifiable, Hashable {
             }
         }
 
-        init(key: Key, modifierFlags: NSEvent.ModifierFlags, optionalModifierFlags: NSEvent.ModifierFlags = []) {
+        init(key: Key, modifierFlags: NSEvent.ModifierFlags, optionalModifierFlags: NSEvent.ModifierFlags = [], inputMethodStateFlags: InputMethodStateFlags = InputMethodStateFlags.all) {
             self.key = key
             self.modifierFlags = modifierFlags.intersection(Key.allowedModifierFlags)
             self.optionalModifierFlags = optionalModifierFlags.intersection(Key.allowedModifierFlags)
+            self.inputMethodStateFlags = inputMethodStateFlags
         }
 
         init?(dict: [String: Any]) {
@@ -106,6 +120,7 @@ struct KeyBinding: Identifiable, Hashable {
             self.key = key
             self.modifierFlags = NSEvent.ModifierFlags(rawValue: modifierFlagsValue).intersection(Key.allowedModifierFlags)
             self.optionalModifierFlags = NSEvent.ModifierFlags(rawValue: optionalModifierFlagsValue).intersection(Key.allowedModifierFlags)
+            self.inputMethodStateFlags = .all
         }
 
         static func == (lhs: Self, rhs: Self) -> Bool {
