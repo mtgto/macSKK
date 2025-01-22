@@ -48,7 +48,8 @@ struct KeyEventView: View {
                             modifiers.append("Fn")
                         }
                         self.modifiers = modifiers.joined(separator: ", ")
-                        self.keyBinding = Global.keyBinding.action(event: event)
+                        // toggleKanaとconvertAndToggleKanaが判別できないけどデバッグ機能なのでよしとする
+                        self.keyBinding = Global.keyBinding.action(event: event, inputMethodState: .normal)
 
                         return event
                     }

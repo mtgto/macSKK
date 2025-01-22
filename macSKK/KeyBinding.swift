@@ -12,8 +12,12 @@ struct KeyBinding: Identifiable, Hashable {
     enum Action: CaseIterable, CodingKey, Comparable {
         /// ひらがな入力に切り替える。デフォルトはCtrl-jキー
         case hiragana
-        /// ひらがな・カタカナ入力に切り替える。デフォルトはqキー
+        /// ひらがな・カタカナ入力に切り替える。
+        /// デフォルトはconvertAndToggleKanaと同じqキー。InputMethodStateがnormalのときのみ。
         case toggleKana
+        /// 未確定文字列をひらがな⇔カタカナに変換して確定させる。
+        /// デフォルトはtoggleKanaと同じqキー。InputMethodStateがcomposingのときのみ。
+        case convertAndToggleKana
         /// 半角カナ入力に切り替える。デフォルトはCtrl-qキー
         case hankakuKana
         /// 半角英数入力に切り替える。デフォルトはlキー
@@ -80,6 +84,17 @@ struct KeyBinding: Identifiable, Hashable {
         static let composing = InputMethodStateFlags(rawValue: 2)
         static let selecting = InputMethodStateFlags(rawValue: 4)
         static let all: InputMethodStateFlags = [normal, composing, selecting]
+
+        func accepts(inputMethodState: InputMethodState) -> Bool {
+            switch inputMethodState {
+            case .normal:
+                contains(.normal)
+            case .composing(_):
+                contains(.composing)
+            case .selecting(_):
+                contains(.selecting)
+            }
+        }
     }
 
     struct Input: Equatable, Identifiable, Hashable {
@@ -151,7 +166,7 @@ struct KeyBinding: Identifiable, Hashable {
         }
 
         /// このキーバインド設定がキーイベントをこのキーバインドの入力として受理するかどうかを返す。
-        func accepts(currentInput: CurrentInput) -> Bool {
+        func accepts(currentInput: CurrentInput, inputMethodState: InputMethodState) -> Bool {
             // 入力キーが両方あっているかと修飾キーの集合の関係によって判定する
             key == currentInput.key && modifierFlags.isSubset(of: currentInput.modifierFlags) && modifierFlags.union(optionalModifierFlags).isSuperset(of: currentInput.modifierFlags)
         }
@@ -213,7 +228,9 @@ struct KeyBinding: Identifiable, Hashable {
             case .hiragana:
                 return KeyBinding(action, [Input(key: .character("j"), modifierFlags: .control)])
             case .toggleKana:
-                return KeyBinding(action, [Input(key: .character("q"), modifierFlags: [])])
+                return KeyBinding(action, [Input(key: .character("q"), modifierFlags: [], inputMethodStateFlags: .normal)])
+            case .convertAndToggleKana:
+                return KeyBinding(action, [Input(key: .character("q"), modifierFlags: [], inputMethodStateFlags: .composing)])
             case .hankakuKana:
                 return KeyBinding(action, [Input(key: .character("q"), modifierFlags: .control)])
             case .direct:

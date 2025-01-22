@@ -202,7 +202,7 @@ class InputController: IMKInputController {
         if event == nil {
             return false
         }
-        let keyBind = Global.keyBinding.action(event: event)
+        let keyBind = Global.keyBinding.action(event: event, inputMethodState: stateMachine.state.inputMethod)
         if directMode {
             if let keyBind, keyBind == .kana || keyBind == .eisu {
                 // 英数・かなキーは握り潰さないとエディタによって空白が入ってしまう

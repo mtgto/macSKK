@@ -338,7 +338,7 @@ final class StateMachine {
         case .eisu:
             // 何もしない (OSがIMEの切り替えはしてくれる)
             return true
-        case .unregister, .backwardCandidate, nil:
+        case .unregister, .backwardCandidate, .convertAndToggleKana, nil:
             break
         }
 
@@ -385,7 +385,7 @@ final class StateMachine {
                     // lowercaseMapにエントリがある場合はエントリの方のキーが入力されたと見做す
                     if let mappedEvent = Global.kanaRule.convertKeyEvent(action.event) {
                         return handleNormal(
-                            Action(keyBind: Global.keyBinding.action(event: mappedEvent),
+                            Action(keyBind: Global.keyBinding.action(event: mappedEvent, inputMethodState: state.inputMethod),
                                    event: mappedEvent,
                                    cursorPosition: action.cursorPosition,
                                    treatAsAlphabet: true),
@@ -475,7 +475,7 @@ final class StateMachine {
             state.inputMode = .hiragana
             inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
             return true
-        case .toggleKana:
+        case .convertAndToggleKana:
             if okuri == nil {
                 // ひらがな入力中ならカタカナ、カタカナ入力中ならひらがな、半角カタカナ入力中なら全角カタカナで確定する。
                 // 未確定ローマ字はn以外は入力されずに削除される. nだけは"ん"が入力されているとする
@@ -751,7 +751,7 @@ final class StateMachine {
                 updateMarkedText()
             }
             return true
-        case .up, .down, .registerPaste, .eisu, .kana:
+        case .up, .down, .registerPaste, .eisu, .kana, .toggleKana:
             return true
         case .abbrev, .unregister, .backwardCandidate, .none:
             break
@@ -804,7 +804,7 @@ final class StateMachine {
             // lowercaseMapにエントリがある場合はエントリの方のキーが入力されたと見做す
             if let mappedEvent = Global.kanaRule.convertKeyEvent(action.event) {
                 return handleComposing(
-                    Action(keyBind: Global.keyBinding.action(event: mappedEvent),
+                    Action(keyBind: Global.keyBinding.action(event: mappedEvent, inputMethodState: state.inputMethod),
                            event: mappedEvent,
                            cursorPosition: action.cursorPosition,
                            treatAsAlphabet: true),
@@ -1126,7 +1126,7 @@ final class StateMachine {
             return true
         case .registerPaste, .delete, .eisu, .kana:
             return true
-        case .toggleKana, .direct, .zenkaku, .abbrev, .japanese:
+        case .toggleKana, .convertAndToggleKana, .direct, .zenkaku, .abbrev, .japanese:
             break
         case nil:
             break
