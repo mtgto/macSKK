@@ -72,10 +72,10 @@ final class KeyBindingTests: XCTestCase {
 
     func testActionAccepts() {
         XCTAssertTrue(KeyBinding.Action.toggleKana.accepts(inputMethodState: .normal))
-        XCTAssertFalse(KeyBinding.Action.convertAndToggleKana.accepts(inputMethodState: .normal))
+        XCTAssertFalse(KeyBinding.Action.toggleAndFixKana.accepts(inputMethodState: .normal))
         let composing = ComposingState(isShift: false, text: [], romaji: "")
         XCTAssertFalse(KeyBinding.Action.toggleKana.accepts(inputMethodState: .composing(composing)))
-        XCTAssertTrue(KeyBinding.Action.convertAndToggleKana.accepts(inputMethodState: .composing(composing)))
+        XCTAssertTrue(KeyBinding.Action.toggleAndFixKana.accepts(inputMethodState: .composing(composing)))
     }
 
     func testIsDefault() {

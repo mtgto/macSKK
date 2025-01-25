@@ -95,7 +95,8 @@
 "Reset" = "Reset";
 
 "KeyBindingActionHiragana" = "Hiragana Mode";
-"KeyBindingActionTogglekana" = "Toggle Kana";
+"KeyBindingActionTogglekana" = "Toggle Kana Mode";
+"KeyBindingActionToggleandfixkana" = "Toggle And Fix Kana";
 "KeyBindingActionHankakukana" = "Hankaku Kana";
 "KeyBindingActionDirect" = "Direct Input";
 "KeyBindingActionZenkaku" = "Zenkaku Eisu Mode";

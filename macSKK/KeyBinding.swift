@@ -13,11 +13,11 @@ struct KeyBinding: Identifiable, Hashable {
         /// ひらがな入力に切り替える。デフォルトはCtrl-jキー
         case hiragana
         /// ひらがな・カタカナ入力に切り替える。
-        /// デフォルトはconvertAndToggleKanaと同じqキー。InputMethodStateがnormalのときのみ。
+        /// デフォルトはtoggleAndFixKanaと同じqキー。InputMethodStateがnormalのときのみ。
         case toggleKana
         /// 未確定文字列をひらがな⇔カタカナに変換して確定させる。
         /// デフォルトはtoggleKanaと同じqキー。InputMethodStateがcomposingのときのみ。
-        case convertAndToggleKana
+        case toggleAndFixKana
         /// 半角カナ入力に切り替える。デフォルトはCtrl-qキー
         case hankakuKana
         /// 半角英数入力に切り替える。デフォルトはlキー
@@ -82,7 +82,7 @@ struct KeyBinding: Identifiable, Hashable {
                 } else {
                     return false
                 }
-            case .convertAndToggleKana:
+            case .toggleAndFixKana:
                 if case .composing(_) = inputMethodState {
                     return true
                 } else {
@@ -244,7 +244,7 @@ struct KeyBinding: Identifiable, Hashable {
                 return KeyBinding(action, [Input(key: .character("j"), modifierFlags: .control)])
             case .toggleKana:
                 return KeyBinding(action, [Input(key: .character("q"), modifierFlags: [])])
-            case .convertAndToggleKana:
+            case .toggleAndFixKana:
                 return KeyBinding(action, [Input(key: .character("q"), modifierFlags: [])])
             case .hankakuKana:
                 return KeyBinding(action, [Input(key: .character("q"), modifierFlags: .control)])
