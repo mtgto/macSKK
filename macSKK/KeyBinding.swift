@@ -73,6 +73,25 @@ struct KeyBinding: Identifiable, Hashable {
             // String#capitalizedは先頭以外の大文字を小文字に変換するのでLocalized.stringsでのキーに注意
             String(localized: LocalizedStringResource(stringLiteral: "KeyBindingAction\(stringValue.capitalized)"))
         }
+
+        func accepts(inputMethodState: InputMethodState) -> Bool {
+            switch self {
+            case .toggleKana:
+                if case .normal = inputMethodState {
+                    return true
+                } else {
+                    return false
+                }
+            case .convertAndToggleKana:
+                if case .composing(_) = inputMethodState {
+                    return true
+                } else {
+                    return false
+                }
+            default:
+                return true
+            }
+        }
     }
 
     /**
@@ -106,8 +125,6 @@ struct KeyBinding: Identifiable, Hashable {
 
         /// 入力時に押されていてもよい修飾キー。
         let optionalModifierFlags: NSEvent.ModifierFlags
-        /// 入力時に許容されるStateMachineの状態。
-        let inputMethodStateFlags: InputMethodStateFlags
 
         // MARK: Identifiable
         var id: String {
@@ -119,11 +136,10 @@ struct KeyBinding: Identifiable, Hashable {
             }
         }
 
-        init(key: Key, modifierFlags: NSEvent.ModifierFlags, optionalModifierFlags: NSEvent.ModifierFlags = [], inputMethodStateFlags: InputMethodStateFlags = InputMethodStateFlags.all) {
+        init(key: Key, modifierFlags: NSEvent.ModifierFlags, optionalModifierFlags: NSEvent.ModifierFlags = []) {
             self.key = key
             self.modifierFlags = modifierFlags.intersection(Key.allowedModifierFlags)
             self.optionalModifierFlags = optionalModifierFlags.intersection(Key.allowedModifierFlags)
-            self.inputMethodStateFlags = inputMethodStateFlags
         }
 
         init?(dict: [String: Any]) {
@@ -135,7 +151,6 @@ struct KeyBinding: Identifiable, Hashable {
             self.key = key
             self.modifierFlags = NSEvent.ModifierFlags(rawValue: modifierFlagsValue).intersection(Key.allowedModifierFlags)
             self.optionalModifierFlags = NSEvent.ModifierFlags(rawValue: optionalModifierFlagsValue).intersection(Key.allowedModifierFlags)
-            self.inputMethodStateFlags = .all
         }
 
         static func == (lhs: Self, rhs: Self) -> Bool {
@@ -166,7 +181,7 @@ struct KeyBinding: Identifiable, Hashable {
         }
 
         /// このキーバインド設定がキーイベントをこのキーバインドの入力として受理するかどうかを返す。
-        func accepts(currentInput: CurrentInput, inputMethodState: InputMethodState) -> Bool {
+        func accepts(currentInput: CurrentInput) -> Bool {
             // 入力キーが両方あっているかと修飾キーの集合の関係によって判定する
             key == currentInput.key && modifierFlags.isSubset(of: currentInput.modifierFlags) && modifierFlags.union(optionalModifierFlags).isSuperset(of: currentInput.modifierFlags)
         }
@@ -228,9 +243,9 @@ struct KeyBinding: Identifiable, Hashable {
             case .hiragana:
                 return KeyBinding(action, [Input(key: .character("j"), modifierFlags: .control)])
             case .toggleKana:
-                return KeyBinding(action, [Input(key: .character("q"), modifierFlags: [], inputMethodStateFlags: .normal)])
+                return KeyBinding(action, [Input(key: .character("q"), modifierFlags: [])])
             case .convertAndToggleKana:
-                return KeyBinding(action, [Input(key: .character("q"), modifierFlags: [], inputMethodStateFlags: .composing)])
+                return KeyBinding(action, [Input(key: .character("q"), modifierFlags: [])])
             case .hankakuKana:
                 return KeyBinding(action, [Input(key: .character("q"), modifierFlags: .control)])
             case .direct:

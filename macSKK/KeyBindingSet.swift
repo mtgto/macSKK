@@ -88,7 +88,9 @@ struct KeyBindingSet: Identifiable, Hashable {
     func action(event: NSEvent, inputMethodState: InputMethodState) -> KeyBinding.Action? {
         let currentInput = CurrentInput(event: event)
 
-        return sorted.first(where: { $0.0.accepts(currentInput: currentInput, inputMethodState: inputMethodState) })?.1
+        return sorted.first(where: {
+            $0.0.accepts(currentInput: currentInput) && $0.1.accepts(inputMethodState: inputMethodState)
+        })?.1
     }
 
     var canDelete: Bool {

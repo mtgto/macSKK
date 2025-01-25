@@ -476,6 +476,7 @@ final class StateMachine {
             inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
             return true
         case .convertAndToggleKana:
+            logger.log("convertAndToggleKana")
             if okuri == nil {
                 // ひらがな入力中ならカタカナ、カタカナ入力中ならひらがな、半角カタカナ入力中なら全角カタカナで確定する。
                 // 未確定ローマ字はn以外は入力されずに削除される. nだけは"ん"が入力されているとする
@@ -752,6 +753,7 @@ final class StateMachine {
             }
             return true
         case .up, .down, .registerPaste, .eisu, .kana, .toggleKana:
+            logger.log("hogehoge")
             return true
         case .abbrev, .unregister, .backwardCandidate, .none:
             break
