@@ -255,6 +255,10 @@ class FileDict: NSObject, DictProtocol, Identifiable {
         return dict.refer(yomi, option: option)
     }
 
+    func reverseRefer(_ word: String) -> String? {
+        return dict.reverseRefer(word)
+    }
+
     func add(yomi: String, word: Word) {
         dict.add(yomi: yomi, word: word)
         NotificationCenter.default.post(name: notificationNameDictLoad,

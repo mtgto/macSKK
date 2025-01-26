@@ -211,7 +211,8 @@ class InputController: IMKInputController {
             return false
         }
         // 左下座標基準でwidth=1, height=(通常だとフォントサイズ)のNSRect
-        if let textInput = sender as? any IMKTextInput {
+        let textInput = sender as? any IMKTextInput
+        if let textInput {
             // カーソル位置あたりを取得する
             // TODO: 単語登録中など、現在のカーソル位置が0ではないときはそれに合わせて座標を取得したい
             // forCharacterIndexを0以外で取得しようとすると取得できないことがあるためひとまず断念
@@ -224,7 +225,7 @@ class InputController: IMKInputController {
             return stateMachine.handleUnhandledEvent(event)
         }
 
-        return stateMachine.handle(Action(keyBind: keyBind, event: event, cursorPosition: cursorPosition))
+        return stateMachine.handle(Action(keyBind: keyBind, event: event, cursorPosition: cursorPosition, textInput: textInput))
     }
 
     @MainActor override func menu() -> NSMenu! {
