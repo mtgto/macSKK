@@ -36,19 +36,6 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    @MainActor func testHandleNormalRomajiN() {
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-        let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(2).sink { events in
-            XCTAssertEqual(events[0], .markedText(MarkedText([.plain("n")])))
-            XCTAssertEqual(events[1], .fixedText("ん"))
-            expectation.fulfill()
-        }.store(in: &cancellables)
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t")))
-        wait(for: [expectation], timeout: 1.0)
-    }
-
     @MainActor func testHandleNormalRomaji() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
@@ -78,6 +65,20 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    @MainActor func testHandleNormalRomajiN() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(3).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.plain("n")])))
+            XCTAssertEqual(events[1], .fixedText("ん"))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.plain("t")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t")))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     @MainActor func testHandleNormalNAndHyphen() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
@@ -99,6 +100,19 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "1")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "!", characterIgnoringModifier: "1", withShift: true)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    @MainActor func testHandleNormalRomajiNAndSpace() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(2).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.plain("n")])))
+            XCTAssertEqual(events[1], .fixedText("ん "))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
         wait(for: [expectation], timeout: 1.0)
     }
 
