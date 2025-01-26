@@ -59,7 +59,7 @@ final class CandidatesViewModel: ObservableObject {
         candidates: [Candidate],
         currentPage: Int,
         totalPageCount: Int,
-        displayCandidatesHorizontally: Bool = false,
+        displayCandidatesHorizontally: Bool,
         showAnnotationPopover: Bool,
         candidatesFontSize: CGFloat = 13,
         annotationFontSize: CGFloat = 13

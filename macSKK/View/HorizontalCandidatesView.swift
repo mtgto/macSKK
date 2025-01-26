@@ -78,7 +78,7 @@ struct HorizonalCandidatesView_Previews: PreviewProvider {
     }
 
     private static func pageViewModel() -> CandidatesViewModel {
-        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, showAnnotationPopover: true)
+        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, displayCandidatesHorizontally: true, showAnnotationPopover: true)
         viewModel.selected = words.first
         viewModel.systemAnnotations = [words.first!.word: String(repeating: "これはシステム辞書の注釈です。", count: 20)]
         viewModel.maxWidth = 1000
@@ -87,7 +87,7 @@ struct HorizonalCandidatesView_Previews: PreviewProvider {
     }
 
     private static func pageViewModelLeftPopover() -> CandidatesViewModel {
-        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, showAnnotationPopover: true)
+        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, displayCandidatesHorizontally: true, showAnnotationPopover: true)
         viewModel.selected = words.first
         viewModel.systemAnnotations = [words.first!.word: String(repeating: "これはシステム辞書の注釈です。", count: 20)]
         viewModel.maxWidth = 1
@@ -96,7 +96,7 @@ struct HorizonalCandidatesView_Previews: PreviewProvider {
     }
 
     private static func pageWithoutPopoverViewModel() -> CandidatesViewModel {
-        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, showAnnotationPopover: false)
+        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, displayCandidatesHorizontally: true, showAnnotationPopover: false)
         viewModel.selected = words.first
         viewModel.systemAnnotations = [words.first!.word: String(repeating: "これはシステム辞書の注釈です。", count: 10)]
         viewModel.displayCandidatesHorizontally = true
@@ -104,7 +104,7 @@ struct HorizonalCandidatesView_Previews: PreviewProvider {
     }
 
     private static func inlineViewModel() -> CandidatesViewModel {
-        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, showAnnotationPopover: true)
+        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, displayCandidatesHorizontally: true, showAnnotationPopover: true)
         viewModel.candidates = .inline
         viewModel.selected = words.first
         viewModel.systemAnnotations = [words.first!.word: String(repeating: "これはシステム辞書の注釈です。", count: 10)]
@@ -113,7 +113,7 @@ struct HorizonalCandidatesView_Previews: PreviewProvider {
     }
 
     private static func fontSize19ViewModel() -> CandidatesViewModel {
-        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, showAnnotationPopover: true, candidatesFontSize: CGFloat(19), annotationFontSize: CGFloat(19))
+        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, displayCandidatesHorizontally: true, showAnnotationPopover: true, candidatesFontSize: CGFloat(19), annotationFontSize: CGFloat(19))
         viewModel.selected = words.first
         viewModel.systemAnnotations = [words.first!.word: String(repeating: "これはシステム辞書の注釈です。", count: 20)]
         viewModel.maxWidth = 1000
