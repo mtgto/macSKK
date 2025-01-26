@@ -601,7 +601,9 @@ final class StateMachine {
                 )
             }
             if text.isEmpty {
-                addFixedText(" ")
+                // 未確定ローマ字はn以外は入力されずに削除される. nだけは"ん"として変換する
+                let fixedText = composing.string(for: state.inputMode, kanaRule: Global.kanaRule)
+                addFixedText(fixedText + " ")
                 state.inputMethod = .normal
                 updateModeIfPrevModeExists()
                 return true

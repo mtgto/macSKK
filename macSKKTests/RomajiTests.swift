@@ -29,6 +29,7 @@ class RomajiTests: XCTestCase {
         XCTAssertEqual(kanaRule.convert("nn", punctuation: .default), Romaji.ConvertedMoji(input: "", kakutei: Romaji.Moji(firstRomaji: "n", kana: "ん")))
         XCTAssertEqual(kanaRule.convert("nk", punctuation: .default), Romaji.ConvertedMoji(input: "k", kakutei: Romaji.Moji(firstRomaji: "n", kana: "ん")))
         XCTAssertEqual(kanaRule.convert("n!", punctuation: .default), Romaji.ConvertedMoji(input: "!", kakutei: Romaji.Moji(firstRomaji: "n", kana: "ん")))
+        XCTAssertEqual(kanaRule.convert("n ", punctuation: .default), Romaji.ConvertedMoji(input: " ", kakutei: Romaji.Moji(firstRomaji: "n", kana: "ん")))
         XCTAssertEqual(kanaRule.convert("kn", punctuation: .default), Romaji.ConvertedMoji(input: "n", kakutei: nil))
         XCTAssertEqual(kanaRule.convert("ny", punctuation: .default), Romaji.ConvertedMoji(input: "ny", kakutei: nil))
         XCTAssertEqual(kanaRule.convert("nya", punctuation: .default), Romaji.ConvertedMoji(input: "", kakutei: Romaji.Moji(firstRomaji: "n", kana: "にゃ")))
