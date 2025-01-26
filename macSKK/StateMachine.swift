@@ -342,6 +342,10 @@ final class StateMachine {
             break
         }
 
+        // 直接入力時かつ下線が引かれた未確定文字列がないときはなにもしない
+        if state.inputMode == .direct && state.specialState == nil {
+            return false
+        }
         let event = action.event
         guard let input = event.charactersIgnoringModifiers else {
             return false
