@@ -230,7 +230,10 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
         return ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: "", cursor: cursor, prevMode: prevMode)
     }
 
-    /// カーソルより左のtext部分を返す。``trim(kanaRule:)`` と違い、未確定のローマ字部分は含まない。
+    /**
+     * カーソルより左のtext部分を返す。
+     * ``trim(kanaRule:)`` と違い、未確定のローマ字部分の変換 ("n" を "ん" にするなど) は行わない。
+     */
     func subText() -> [String] {
         if let cursor {
             return Array(text[0..<cursor])

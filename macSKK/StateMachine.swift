@@ -798,7 +798,7 @@ final class StateMachine {
 
         if input == "." && action.shiftIsPressed() && state.inputMode != .direct && !composing.text.isEmpty { // ">"
             // 接頭辞が入力されたものとして ">" より前で変換を開始する
-            let newComposing = composing.appendText(Romaji.Moji(firstRomaji: "", kana: ">"))
+            let newComposing = composing.trim(kanaRule: Global.kanaRule).appendText(Romaji.Moji(firstRomaji: "", kana: ">"))
             return handleComposingStartConvert(action, composing: newComposing, specialState: specialState)
         }
         switch state.inputMode {

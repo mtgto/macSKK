@@ -927,6 +927,23 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    @MainActor func testHandleComposingPrefixN() {
+        Global.dictionary.setEntries(["あん>": [Word("暗")]])
+
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(3).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("あn")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerSelect, .emphasized("暗")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ">", characterIgnoringModifier: ".", withShift: true)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     @MainActor func testHandleComposingPrefixAbbrev() {
         Global.dictionary.setEntries(["A": [Word("Å")]])
 
