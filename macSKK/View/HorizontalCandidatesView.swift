@@ -34,9 +34,9 @@ struct HorizontalCandidatesView: View {
                 ForEach(Array(words.enumerated()), id: \.element) { index, candidate in
                     HStack(alignment: .firstTextBaseline, spacing: 0) {
                         Text(String(Global.selectCandidateKeys[index]).uppercased())
-                        // 変換候補の90%のフォントサイズ
+                            // 変換候補の90%のフォントサイズ
                             .font(.system(size: candidates.candidatesFontSize * 0.9))
-                        // めたたないようにする
+                            // 目立たないようにする
                             .foregroundStyle(candidates.selected == candidate ? Color(NSColor.selectedMenuItemTextColor.withAlphaComponent(0.8)) : Color(NSColor.secondaryLabelColor))
                             .frame(width: 16, alignment: .trailing)
                             .padding(.trailing, 4)
@@ -74,7 +74,7 @@ struct HorizontalCandidatesView: View {
 
 struct HorizonalCandidatesView_Previews: PreviewProvider {
     private static let words: [Candidate] = (1...9).map {
-        Candidate("例文\($0)", annotations: [Annotation(dictId: "SKK-JISYO.L", text: "注釈\($0)")])
+        Candidate("\(String(repeating: "例文", count: $0 % 4 + 1))", annotations: [Annotation(dictId: "SKK-JISYO.L", text: "注釈\($0)")])
     }
 
     private static func pageViewModel() -> CandidatesViewModel {

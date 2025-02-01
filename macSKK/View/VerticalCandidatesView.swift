@@ -30,10 +30,12 @@ struct VerticalCandidatesView: View {
             }
             VStack(spacing: 0) {
                 List(Array(words.enumerated()), id: \.element, selection: $candidates.selected) { index, candidate in
-                    HStack {
+                    HStack(alignment: .firstTextBaseline) {
                         Text(String(Global.selectCandidateKeys[index]).uppercased())
-                        // 変換候補の90%のフォントサイズ
+                            // 変換候補の90%のフォントサイズ
                             .font(.system(size: candidates.candidatesFontSize * 0.9))
+                            // 目立たないようにする
+                            .foregroundStyle(candidates.selected == candidate ? Color(NSColor.selectedMenuItemTextColor.withAlphaComponent(0.8)) : Color(NSColor.secondaryLabelColor))
                             .padding(EdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 0))
                             .frame(width: 16)
                         Text(candidate.word)
