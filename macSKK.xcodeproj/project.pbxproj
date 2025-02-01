@@ -506,11 +506,11 @@
 		CE7F9ADA2AB53E31001B1877 /* View */ = {
 			isa = PBXGroup;
 			children = (
-				94DB63222D329CBF005250B8 /* HorizontalCandidatesView.swift */,
-				94DB63232D329CBF005250B8 /* VerticalCandidatesView.swift */,
 				CEF08239296BCDB000646366 /* InputModePanel.swift */,
 				CEF08256296D8CBD00646366 /* CandidatesPanel.swift */,
 				CEF0825A296D8FF000646366 /* CandidatesView.swift */,
+				94DB63222D329CBF005250B8 /* HorizontalCandidatesView.swift */,
+				94DB63232D329CBF005250B8 /* VerticalCandidatesView.swift */,
 				CEB0888D2A7F393600EFD1E3 /* AnnotationView.swift */,
 				CEF0825C296DB58600646366 /* CandidatesViewModel.swift */,
 				CEC061C72ABB0A0100A11614 /* CompletionPanel.swift */,
