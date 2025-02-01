@@ -15,11 +15,10 @@ final class CandidatesPanel: NSPanel {
      *   - showAnnotationPopover: パネル表示時に注釈を表示するかどうか
      *   - candidatesFontSize: 変換候補のフォントサイズ
      */
-    init(displayCandidatesHorizontally: Bool, showAnnotationPopover: Bool, candidatesFontSize: Int, annotationFontSize: Int) {
+    init(showAnnotationPopover: Bool, candidatesFontSize: Int, annotationFontSize: Int) {
         viewModel = CandidatesViewModel(candidates: [],
                                         currentPage: 0,
                                         totalPageCount: 0,
-                                        displayCandidatesHorizontally: displayCandidatesHorizontally,
                                         showAnnotationPopover: showAnnotationPopover,
                                         candidatesFontSize: CGFloat(candidatesFontSize),
                                         annotationFontSize: CGFloat(annotationFontSize))
@@ -61,10 +60,6 @@ final class CandidatesPanel: NSPanel {
     func setAnnotationFontSize(_ annotationFontSize: Int) {
         self.viewModel.annotationFontSize = CGFloat(annotationFontSize)
     }
-    
-    func setDisplayCandidatesHorizontally(_ displayCandidatesHorizontally: Bool) {
-        self.viewModel.displayCandidatesHorizontally = displayCandidatesHorizontally
-    }
 
     /**
      * 表示する。スクリーンからはみ出す位置が指定されている場合は自動で調整する。
@@ -89,15 +84,16 @@ final class CandidatesPanel: NSPanel {
         let width: CGFloat
         let height: CGFloat
         if case let .panel(words, _, _) = viewModel.candidates {
-            if viewModel.displayCandidatesHorizontally {
-                width = viewModel.minWidth
-                height = (viewModel.showAnnotationPopover ? HorizontalCandidatesView.annotationPopupHeight + CandidatesView.annotationMargin : 0 ) + viewModel.candidatesLineHeight
-            } else {
+            switch Global.candidateListDirection.value {
+            case .vertical:
                 width = viewModel.showAnnotationPopover ? viewModel.minWidth + CandidatesView.annotationPopupWidth : viewModel.minWidth
                 height = CGFloat(words.count) * viewModel.candidatesLineHeight + CandidatesView.footerHeight
                 if viewModel.displayPopoverInLeftOrTop {
                     origin.x = origin.x - CandidatesView.annotationPopupWidth - CandidatesView.annotationMargin
                 }
+            case .horizontal:
+                width = viewModel.minWidth
+                height = (viewModel.showAnnotationPopover ? HorizontalCandidatesView.annotationPopupHeight + CandidatesView.annotationMargin : 0 ) + viewModel.candidatesLineHeight
             }
         } else {
             // FIXME: 短い文のときにはそれに合わせて高さを縮める

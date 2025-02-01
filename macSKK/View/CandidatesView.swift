@@ -21,10 +21,11 @@ struct CandidatesView: View {
                 .frame(width: 300, height: 200)
                 .background()
         case let .panel(words, currentPage, totalPageCount):
-            if candidates.displayCandidatesHorizontally {
-                HorizontalCandidatesView(candidates: candidates, words: words, currentPage: currentPage, totalPageCount: totalPageCount)
-            } else {
+            switch Global.candidateListDirection.value {
+            case .vertical:
                 VerticalCandidatesView(candidates: candidates, words: words, currentPage: currentPage, totalPageCount: totalPageCount)
+            case .horizontal:
+                HorizontalCandidatesView(candidates: candidates, words: words, currentPage: currentPage, totalPageCount: totalPageCount)
             }
         }
     }

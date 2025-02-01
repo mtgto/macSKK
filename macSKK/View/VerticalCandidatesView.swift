@@ -88,7 +88,7 @@ struct VerticalCandidatesView_Previews: PreviewProvider {
     }
 
     private static func pageViewModel() -> CandidatesViewModel {
-        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, displayCandidatesHorizontally: false, showAnnotationPopover: true)
+        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, showAnnotationPopover: true)
         viewModel.selected = words.first
         viewModel.systemAnnotations = [words.first!.word: String(repeating: "これはシステム辞書の注釈です。", count: 20)]
         viewModel.maxWidth = 1000
@@ -96,7 +96,7 @@ struct VerticalCandidatesView_Previews: PreviewProvider {
     }
 
     private static func pageViewModelLeftPopover() -> CandidatesViewModel {
-        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, displayCandidatesHorizontally: false, showAnnotationPopover: true)
+        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, showAnnotationPopover: true)
         viewModel.selected = words.first
         viewModel.systemAnnotations = [words.first!.word: String(repeating: "これはシステム辞書の注釈です。", count: 20)]
         viewModel.maxWidth = 1
@@ -104,14 +104,14 @@ struct VerticalCandidatesView_Previews: PreviewProvider {
     }
 
     private static func pageWithoutPopoverViewModel() -> CandidatesViewModel {
-        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, displayCandidatesHorizontally: false, showAnnotationPopover: false)
+        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, showAnnotationPopover: false)
         viewModel.selected = words.first
         viewModel.systemAnnotations = [words.first!.word: String(repeating: "これはシステム辞書の注釈です。", count: 10)]
         return viewModel
     }
 
     private static func inlineViewModel() -> CandidatesViewModel {
-        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, displayCandidatesHorizontally: false, showAnnotationPopover: true)
+        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, showAnnotationPopover: true)
         viewModel.candidates = .inline
         viewModel.selected = words.first
         viewModel.systemAnnotations = [words.first!.word: String(repeating: "これはシステム辞書の注釈です。", count: 10)]
@@ -119,7 +119,7 @@ struct VerticalCandidatesView_Previews: PreviewProvider {
     }
 
     private static func fontSize19ViewModel() -> CandidatesViewModel {
-        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, displayCandidatesHorizontally: false, showAnnotationPopover: true, candidatesFontSize: CGFloat(19), annotationFontSize: CGFloat(19))
+        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, showAnnotationPopover: true, candidatesFontSize: CGFloat(19), annotationFontSize: CGFloat(19))
         viewModel.selected = words.first
         viewModel.systemAnnotations = [words.first!.word: String(repeating: "これはシステム辞書の注釈です。", count: 20)]
         viewModel.maxWidth = 1000
@@ -127,17 +127,17 @@ struct VerticalCandidatesView_Previews: PreviewProvider {
     }
 
     static var previews: some View {
-        CandidatesView(candidates: pageViewModel())
+        VerticalCandidatesView(candidates: pageViewModel(), words: words, currentPage: 0, totalPageCount: 3)
             .background(Color.cyan)
             .previewDisplayName("パネル表示")
-        CandidatesView(candidates: pageViewModelLeftPopover())
+        VerticalCandidatesView(candidates: pageViewModelLeftPopover(), words: words, currentPage: 0, totalPageCount: 3)
             .background(Color.cyan)
             .previewDisplayName("パネル表示 (注釈左)")
-        CandidatesView(candidates: pageWithoutPopoverViewModel())
+        VerticalCandidatesView(candidates: pageWithoutPopoverViewModel(), words: words, currentPage: 0, totalPageCount: 3)
             .previewDisplayName("パネル表示 (注釈なし)")
-        CandidatesView(candidates: inlineViewModel())
+        VerticalCandidatesView(candidates: inlineViewModel(), words: words, currentPage: 0, totalPageCount: 3)
             .previewDisplayName("インライン表示")
-        CandidatesView(candidates: fontSize19ViewModel())
+        VerticalCandidatesView(candidates: fontSize19ViewModel(), words: words, currentPage: 0, totalPageCount: 3)
             .background(Color.cyan)
             .previewDisplayName("フォントサイズ19")
     }

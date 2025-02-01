@@ -41,6 +41,8 @@ import Combine
     static var selectingBackspace: SelectingBackspace = .default
     /// カンマかピリオドを入力したときに入力する句読点の設定
     static var punctuation: Punctuation = .default
+    /// 変換候補パネルの表示方向
+    static var candidateListDirection = CurrentValueSubject<CandidateListDirection, Never>(.vertical)
     /// 現在のモードを表示するパネル
     private let inputModePanel: InputModePanel
     /// 変換候補を表示するパネル
@@ -51,7 +53,6 @@ import Combine
     init() {
         inputModePanel = InputModePanel()
         candidatesPanel = CandidatesPanel(
-            displayCandidatesHorizontally: UserDefaults.standard.bool(forKey: UserDefaultsKeys.displayCandidatesHorizontally),
             showAnnotationPopover: UserDefaults.standard.bool(forKey: UserDefaultsKeys.showAnnotation),
             candidatesFontSize: UserDefaults.standard.integer(forKey: UserDefaultsKeys.candidatesFontSize),
             annotationFontSize: UserDefaults.standard.integer(forKey: UserDefaultsKeys.annotationFontSize)

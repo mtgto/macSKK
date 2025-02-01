@@ -17,6 +17,11 @@ struct GeneralView: View {
                         Text(inputSource.localizedName)
                     }
                 }
+                Picker("Direction of candidate list", selection: $settingsViewModel.candidateListDirection) {
+                    ForEach(CandidateListDirection.allCases, id: \.id) { listDirection in
+                        Text(listDirection.description).tag(listDirection)
+                    }
+                }
                 Toggle(isOn: $settingsViewModel.showAnnotation, label: {
                     Text("Show Annotation")
                 })
@@ -43,10 +48,6 @@ struct GeneralView: View {
                     Text("Show Input Mode Modal")
                 })
                 Section {
-                    Picker("Show candidate list horizontally", selection: $settingsViewModel.displayCandidatesHorizontally) {
-                        Text("Yes").tag(true)
-                        Text("No").tag(false)
-                    }
                     Picker("Number of inline candidates", selection: $settingsViewModel.inlineCandidateCount) {
                         ForEach(0..<10) { count in
                             Text("\(count)")

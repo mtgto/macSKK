@@ -189,6 +189,24 @@ enum SelectingBackspace: Int, CaseIterable, Identifiable {
     }
 }
 
+/// 変換候補リストの表示方向
+enum CandidateListDirection: Int, CaseIterable, Identifiable {
+    typealias ID = Int
+    var id: ID { rawValue }
+
+    case vertical = 0
+    case horizontal = 1
+
+    var description: String {
+        switch self {
+        case .vertical:
+            String(localized: "Vertical")
+        case .horizontal:
+            String(localized: "Horizontal")
+        }
+    }
+}
+
 @MainActor
 final class SettingsViewModel: ObservableObject {
     /// CheckUpdaterで取得した最新のリリース。取得前はnil
@@ -237,8 +255,8 @@ final class SettingsViewModel: ObservableObject {
     @Published var ignoreUserDictInPrivateMode: Bool
     // 入力モードのモーダルを表示するかどうか
     @Published var showInputIconModal: Bool
-    // 候補リストを縦で表示するか横で表示するか
-    @Published var displayCandidatesHorizontally: Bool
+    // 変換候補リストの表示方向
+    @Published var candidateListDirection: CandidateListDirection
 
     // 辞書ディレクトリ
     let dictionariesDirectoryUrl: URL
@@ -296,8 +314,8 @@ final class SettingsViewModel: ObservableObject {
         period = Punctuation.Period(rawValue: UserDefaults.standard.integer(forKey: UserDefaultsKeys.punctuation)) ?? .default
         ignoreUserDictInPrivateMode = UserDefaults.standard.bool(forKey: UserDefaultsKeys.ignoreUserDictInPrivateMode)
         showInputIconModal = UserDefaults.standard.bool(forKey: UserDefaultsKeys.showInputModePanel)
-        displayCandidatesHorizontally = UserDefaults.standard.bool(forKey: UserDefaultsKeys.displayCandidatesHorizontally)
-        
+        candidateListDirection = CandidateListDirection(rawValue: UserDefaults.standard.integer(forKey: UserDefaultsKeys.candidateListDirection)) ?? .vertical
+
         Global.selectCandidateKeys = selectCandidateKeys.lowercased().map { $0 }
         Global.systemDict = systemDict
         Global.selectingBackspace = selectingBackspace
@@ -494,11 +512,11 @@ final class SettingsViewModel: ObservableObject {
             UserDefaults.standard.set(showInputModePanel, forKey: UserDefaultsKeys.showInputModePanel)
             logger.log("入力モードアイコンを\(showInputModePanel ? "表示" : "非表示", privacy: .public)に変更しました")
         }.store(in: &cancellables)
-        
-        $displayCandidatesHorizontally.dropFirst().sink { displayCandidatesHorizontally in
-            UserDefaults.standard.set(displayCandidatesHorizontally, forKey: UserDefaultsKeys.displayCandidatesHorizontally)
-            NotificationCenter.default.post(name: notificationNameDisplayCandidatesHorizontally, object: displayCandidatesHorizontally)
-            logger.log("候補リストを\(displayCandidatesHorizontally ? "横" : "縦", privacy: .public)で表示するように変更しました")
+
+        $candidateListDirection.dropFirst().sink { candidateListDirection in
+            UserDefaults.standard.set(candidateListDirection.rawValue, forKey: UserDefaultsKeys.candidateListDirection)
+            logger.log("変換候補リストを\(candidateListDirection == .vertical ? "縦" : "横", privacy: .public)で表示するように変更しました")
+            Global.candidateListDirection.send(candidateListDirection)
         }.store(in: &cancellables)
 
         NotificationCenter.default.publisher(for: notificationNameDictLoad).receive(on: RunLoop.main).sink { [weak self] notification in
@@ -544,7 +562,7 @@ final class SettingsViewModel: ObservableObject {
         period = Punctuation.default.period
         ignoreUserDictInPrivateMode = false
         showInputIconModal = true
-        displayCandidatesHorizontally = true
+        candidateListDirection = .vertical
     }
 
     // DictionaryViewのPreviewProvider用

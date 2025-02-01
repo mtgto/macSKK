@@ -81,61 +81,56 @@ struct HorizonalCandidatesView_Previews: PreviewProvider {
     }
 
     private static func pageViewModel() -> CandidatesViewModel {
-        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, displayCandidatesHorizontally: true, showAnnotationPopover: true)
+        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, showAnnotationPopover: true)
         viewModel.selected = words.first
         viewModel.systemAnnotations = [words.first!.word: String(repeating: "これはシステム辞書の注釈です。", count: 20)]
         viewModel.maxWidth = 1000
-        viewModel.displayCandidatesHorizontally = true
         return viewModel
     }
 
     private static func pageViewModelLeftPopover() -> CandidatesViewModel {
-        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, displayCandidatesHorizontally: true, showAnnotationPopover: true)
+        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, showAnnotationPopover: true)
         viewModel.selected = words.first
         viewModel.systemAnnotations = [words.first!.word: String(repeating: "これはシステム辞書の注釈です。", count: 20)]
         viewModel.maxWidth = 1
-        viewModel.displayCandidatesHorizontally = true
         return viewModel
     }
 
     private static func pageWithoutPopoverViewModel() -> CandidatesViewModel {
-        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, displayCandidatesHorizontally: true, showAnnotationPopover: false)
+        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, showAnnotationPopover: false)
         viewModel.selected = words.first
         viewModel.systemAnnotations = [words.first!.word: String(repeating: "これはシステム辞書の注釈です。", count: 10)]
-        viewModel.displayCandidatesHorizontally = true
         return viewModel
     }
 
     private static func inlineViewModel() -> CandidatesViewModel {
-        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, displayCandidatesHorizontally: true, showAnnotationPopover: true)
+        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, showAnnotationPopover: true)
         viewModel.candidates = .inline
         viewModel.selected = words.first
         viewModel.systemAnnotations = [words.first!.word: String(repeating: "これはシステム辞書の注釈です。", count: 10)]
-        viewModel.displayCandidatesHorizontally = true
         return viewModel
     }
 
     private static func fontSize19ViewModel() -> CandidatesViewModel {
-        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, displayCandidatesHorizontally: true, showAnnotationPopover: true, candidatesFontSize: CGFloat(19), annotationFontSize: CGFloat(19))
+        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, showAnnotationPopover: true, candidatesFontSize: CGFloat(19), annotationFontSize: CGFloat(19))
         viewModel.selected = words.first
         viewModel.systemAnnotations = [words.first!.word: String(repeating: "これはシステム辞書の注釈です。", count: 20)]
         viewModel.maxWidth = 1000
-        viewModel.displayCandidatesHorizontally = true
         return viewModel
     }
 
     static var previews: some View {
-        CandidatesView(candidates: pageViewModel())
+        HorizontalCandidatesView(candidates: pageViewModel(), words: words, currentPage: 0, totalPageCount: 3)
             .background(Color.cyan)
             .previewDisplayName("パネル表示 (横)")
-        CandidatesView(candidates: pageViewModelLeftPopover())
+        HorizontalCandidatesView(candidates: pageViewModelLeftPopover(), words: words, currentPage: 0, totalPageCount: 3)
             .background(Color.cyan)
             .previewDisplayName("パネル表示 (横、注釈上)")
-        CandidatesView(candidates: pageWithoutPopoverViewModel())
+        HorizontalCandidatesView(candidates: pageWithoutPopoverViewModel(), words: words, currentPage: 0, totalPageCount: 3)
             .previewDisplayName("パネル表示 (横、注釈なし)")
-        CandidatesView(candidates: inlineViewModel())
+        HorizontalCandidatesView(candidates: inlineViewModel(), words: words, currentPage: 0, totalPageCount: 3)
             .previewDisplayName("インライン表示")
-        CandidatesView(candidates: fontSize19ViewModel())
+        HorizontalCandidatesView(candidates: fontSize19ViewModel(), words: words, currentPage: 0, totalPageCount: 3)
             .background(Color.cyan)
             .previewDisplayName("フォントサイズ19 (横)")
     }

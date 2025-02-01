@@ -40,6 +40,6 @@ struct UserDefaultsKeys {
     static let ignoreUserDictInPrivateMode = "ignoreUserDictInPrivateMode"
     // 入力モードのモーダルを表示するかどうか
     static let showInputModePanel = "showInputModePanel"
-    // 候補リストは横で表示するか縦で表示するか
-    static let displayCandidatesHorizontally = "displayCandidatesHorizontally"
+    // 候補リストの表示方向
+    static let candidateListDirection = "candidateListDirection"
 }

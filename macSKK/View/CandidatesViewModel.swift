@@ -46,8 +46,6 @@ final class CandidatesViewModel: ObservableObject {
     @Published var maxHeight: CGFloat = -1
     /// パネル表示時の注釈を左側に表示するかどうか
     @Published var displayPopoverInLeftOrTop: Bool = false
-    /// 候補リストを縦で表示するか横で表示するか
-    @Published var displayCandidatesHorizontally = false
     /// 変換候補の一行の高さ
     var candidatesLineHeight: CGFloat {
         candidatesFontSize + 11
@@ -59,7 +57,6 @@ final class CandidatesViewModel: ObservableObject {
         candidates: [Candidate],
         currentPage: Int,
         totalPageCount: Int,
-        displayCandidatesHorizontally: Bool,
         showAnnotationPopover: Bool,
         candidatesFontSize: CGFloat = 13,
         annotationFontSize: CGFloat = 13
@@ -67,7 +64,6 @@ final class CandidatesViewModel: ObservableObject {
         self.candidates = .panel(words: candidates,
                                  currentPage: currentPage,
                                  totalPageCount: totalPageCount)
-        self.displayCandidatesHorizontally = displayCandidatesHorizontally
         self.showAnnotationPopover = showAnnotationPopover
         self.candidatesFontSize = candidatesFontSize
         self.annotationFontSize = annotationFontSize
@@ -89,21 +85,10 @@ final class CandidatesViewModel: ObservableObject {
         }
         .store(in: &cancellables)
 
-        $candidates.combineLatest($displayCandidatesHorizontally)
-            .map { candidates, displayCandidatesHorizontally in
+        $candidates.combineLatest(Global.candidateListDirection).map { candidates, listDirection in
             if case let .panel(words, _, _) = candidates {
-                if displayCandidatesHorizontally {
-                    let listWidth = words.reduce(0) { last, candidate -> CGFloat in
-                        let size = candidate.word.boundingRect(
-                            with: CGSize(width: .greatestFiniteMagnitude, height: self.candidatesLineHeight),
-                            options: .usesLineFragmentOrigin,
-                            attributes: [.font: NSFont.preferredFont(forTextStyle: .body)])
-                        // 添字(16px) + 余白(4px) +  テキスト + 余白(8px)
-                        return 16 + 4 + size.width + 8 + last
-                    }
-                    // + ページカウント(64px)
-                    return listWidth + 64
-                } else {
+                switch listDirection {
+                case .vertical:
                     let listWidth = words.map { candidate -> CGFloat in
                         let size = candidate.word.boundingRect(
                             with: CGSize(width: .greatestFiniteMagnitude, height: self.candidatesLineHeight),
@@ -114,6 +99,17 @@ final class CandidatesViewModel: ObservableObject {
                         return 16 + 4 + size.width + 4 + 22
                     }.max() ?? 0
                     return listWidth
+                case .horizontal:
+                    let listWidth = words.reduce(0) { last, candidate -> CGFloat in
+                        let size = candidate.word.boundingRect(
+                            with: CGSize(width: .greatestFiniteMagnitude, height: self.candidatesLineHeight),
+                            options: .usesLineFragmentOrigin,
+                            attributes: [.font: NSFont.preferredFont(forTextStyle: .body)])
+                        // 添字(16px) + 余白(4px) +  テキスト + 余白(8px)
+                        return 16 + 4 + size.width + 8 + last
+                    }
+                    // + ページカウント(64px)
+                    return listWidth + 64
                 }
             } else {
                 return 300
@@ -121,10 +117,10 @@ final class CandidatesViewModel: ObservableObject {
         }
         .assign(to: &$minWidth)
 
-        $maxWidth.combineLatest($minWidth, $showAnnotationPopover, $displayCandidatesHorizontally)
-            .filter { maxWidth, _, _, displayCandidatesHorizontally in
+        $maxWidth.combineLatest($minWidth, $showAnnotationPopover, Global.candidateListDirection)
+            .filter { maxWidth, _, _, listDirection in
                 // maxWidthが0未満のときはまだスクリーンサイズがわかっていない
-                !displayCandidatesHorizontally && maxWidth >= 0
+                listDirection == .vertical && maxWidth >= 0
             }
             .map { maxWidth, minWidth, showAnnotationPopover, _ in
                 showAnnotationPopover &&
@@ -132,9 +128,9 @@ final class CandidatesViewModel: ObservableObject {
             }
             .assign(to: &$displayPopoverInLeftOrTop)
         
-        $maxHeight.combineLatest($showAnnotationPopover, $displayCandidatesHorizontally)
-            .filter { maxHeight, _, displayCandidatesHorizontally in
-                return displayCandidatesHorizontally && maxHeight >= 0
+        $maxHeight.combineLatest($showAnnotationPopover, Global.candidateListDirection)
+            .filter { maxHeight, _, listDirection in
+                return listDirection == .horizontal && maxHeight >= 0
             }
             .map { maxHeight, showAnnotationPopover, _ in
                 showAnnotationPopover &&

@@ -72,7 +72,7 @@
 "Find completion from all dictionaries" = "Find completion from all dictionaries";
 "Ignore User Dict in Private Mode" = "Ignore User Dict in Private Mode";
 "Show Input Mode Modal" = "Show Input Mode Modal";
-"Show candidate list horizontally" = "Show candidate list horizontally";
+"Direction of candidate list" = "Direction of candidate list";
 "Enter Key confirms a candidate and sends a newline" = "Enter Key confirms a candidate and sends a newline";
 "Insert Blank String" = "Insert Blank String";
 "Enabled" = "Enabled";
@@ -94,6 +94,8 @@
 "Modifier Flags (Required)" = "Modifier Flags (Required)";
 "Modifier Flags (Optional)" = "Modifier Flags (Optional)";
 "Reset" = "Reset";
+"Vertical" = "Vertical";
+"Horizontal" = "Horizontal";
 
 "KeyBindingActionHiragana" = "Hiragana Mode";
 "KeyBindingActionTogglekana" = "Toggle Kana";

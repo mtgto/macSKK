@@ -189,12 +189,6 @@ class InputController: IMKInputController {
                     Global.candidatesPanel.setAnnotationFontSize(annotationFontSize)
                 }
             }.store(in: &cancellables)
-        NotificationCenter.default.publisher(for: notificationNameDisplayCandidatesHorizontally)
-            .sink { notification in
-                if let displayCandidatesHorizontally = notification.object as? Bool {
-                    Global.candidatesPanel.setDisplayCandidatesHorizontally(displayCandidatesHorizontally)
-                }
-            }.store(in: &cancellables)
         NotificationCenter.default.publisher(for: notificationNameFindCompletionFromAllDicts)
             .sink { notification in
                 if let findCompletionFromAllDicts = notification.object as? Bool {
