@@ -1051,16 +1051,19 @@ final class StateMachine {
                 return true
             }
         case .up:
-            return handleSelectingPrevious(diff: -1, selecting: selecting)
-        case .space, .down:
-            let diff: Int
-            if selecting.candidateIndex >= inlineCandidateCount && action.keyBind == .space {
-                // 次ページの先頭
-                diff = displayCandidateCount - (selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount
+            if case .vertical = Global.candidateListDirection.value {
+                return handleSelectingPrevious(diff: -1, selecting: selecting)
             } else {
-                diff = 1
+                return handleSelectingPreviousPage(selecting: selecting)
             }
-            return handleSelectingNext(action, diff: diff, selecting: selecting, specialState: specialState)
+        case .down:
+            if case .vertical = Global.candidateListDirection.value {
+                return handleSelectingNext(action, diff: 1, selecting: selecting, specialState: specialState)
+            } else {
+                return handleSelectingNextPage(action, selecting: selecting, specialState: specialState)
+            }
+        case .space:
+            return handleSelectingNextPage(action, selecting: selecting, specialState: specialState)
         case .backwardCandidate:
             return handleSelectingPrevious(diff: -1, selecting: selecting)
         case .tab:
@@ -1075,17 +1078,17 @@ final class StateMachine {
             updateMarkedText()
             return true
         case .left:
-            if selecting.candidateIndex >= inlineCandidateCount {
-                // 前ページの先頭
-                let diff = -((selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount) - displayCandidateCount
-                return handleSelectingPrevious(diff: diff, selecting: selecting)
+            if case .vertical = Global.candidateListDirection.value {
+                return handleSelectingPreviousPage(selecting: selecting)
             } else {
-                // AquaSKKと同様に何もしない (IMKCandidates表示時はそちらの移動に使われる)
-                return true
+                return handleSelectingPrevious(diff: -1, selecting: selecting)
             }
         case .right:
-            let diff = displayCandidateCount - (selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount
-            return handleSelectingNext(action, diff: diff, selecting: selecting, specialState: specialState)
+            if case .vertical = Global.candidateListDirection.value {
+                return handleSelectingNextPage(action, selecting: selecting, specialState: specialState)
+            } else {
+                return handleSelectingNext(action, diff: 1, selecting: selecting, specialState: specialState)
+            }
         case .startOfLine:
             // 現ページの先頭
             let diff = -(selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount
@@ -1208,6 +1211,33 @@ final class StateMachine {
         }
         updateMarkedText()
         return true
+    }
+
+    /**
+     * 選択候補をインライン表示中なら一つ前、リスト表示なら前ページの先頭へ動かす。
+     * すでに変換候補の先頭だった場合は読み入力に戻す。
+     */
+    @MainActor private func handleSelectingPreviousPage(selecting: SelectingState) -> Bool {
+        if selecting.candidateIndex >= inlineCandidateCount {
+            // 前ページの先頭
+            let diff = -((selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount) - displayCandidateCount
+            return handleSelectingPrevious(diff: diff, selecting: selecting)
+        } else {
+            return handleSelectingPrevious(diff: -1, selecting: selecting)
+        }
+    }
+
+    /**
+     * 選択候補がインライン表示なら一つ先、リスト表示なら次ページの先頭へ動かす。
+     * 次ページがなければ単語登録に遷移する。
+     */
+    @MainActor private func handleSelectingNextPage(_ action: Action, selecting: SelectingState, specialState: SpecialState?) -> Bool {
+        if selecting.candidateIndex >= inlineCandidateCount {
+            let diff = displayCandidateCount - (selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount
+            return handleSelectingNext(action, diff: diff, selecting: selecting, specialState: specialState)
+        } else {
+            return handleSelectingNext(action, diff: 1, selecting: selecting, specialState: specialState)
+        }
     }
 
     func setMode(_ mode: InputMode) {
