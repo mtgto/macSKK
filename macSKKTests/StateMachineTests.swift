@@ -126,7 +126,7 @@ final class StateMachineTests: XCTestCase {
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
+        XCTAssertTrue(stateMachine.handle(toggleAndFixKanaAction))
         wait(for: [expectation], timeout: 1.0)
     }
 
@@ -566,7 +566,7 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "l")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "l", withShift: true)))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
+        XCTAssertTrue(stateMachine.handle(toggleAndFixKanaAction))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "_", characterIgnoringModifier: "-", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "<", characterIgnoringModifier: ",", withShift: true)))
@@ -643,10 +643,10 @@ final class StateMachineTests: XCTestCase {
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
+        XCTAssertTrue(stateMachine.handle(toggleAndFixKanaAction))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q", withShift: false)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n", withShift: true)))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
+        XCTAssertTrue(stateMachine.handle(toggleAndFixKanaAction))
         wait(for: [expectation], timeout: 1.0)
     }
 
@@ -672,8 +672,8 @@ final class StateMachineTests: XCTestCase {
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "v", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
+        XCTAssertTrue(stateMachine.handle(toggleAndFixKanaAction))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q", withShift: false)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "v", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u")))
         wait(for: [expectation], timeout: 1.0)
@@ -731,7 +731,7 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "y")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
+        XCTAssertTrue(stateMachine.handle(toggleAndFixKanaAction))
         wait(for: [expectation], timeout: 1.0)
     }
 
@@ -1322,7 +1322,7 @@ final class StateMachineTests: XCTestCase {
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "k", withShift: true)))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
+        XCTAssertTrue(stateMachine.handle(toggleAndFixKanaAction))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u")))
         wait(for: [expectation], timeout: 1.0)
     }
@@ -1489,8 +1489,8 @@ final class StateMachineTests: XCTestCase {
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t", withShift: true)))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q", withShift: false)))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q", withShift: false)))
+        XCTAssertTrue(stateMachine.handle(toggleAndFixKanaAction))
+        XCTAssertTrue(stateMachine.handle(toggleAndFixKanaAction))
         wait(for: [expectation], timeout: 1.0)
     }
 
@@ -3209,6 +3209,16 @@ final class StateMachineTests: XCTestCase {
     // かなキーを押した
     var kanaKeyAction: Action {
         Action(keyBind: .kana, event: generateNSEvent(character: "\u{10}", characterIgnoringModifiers: "\u{10}"), cursorPosition: .zero)
+    }
+
+    // Normalモードでqキーを押した
+    var toggleKanaAction: Action {
+        Action(keyBind: .toggleKana, event: generateNSEvent(character: "q", characterIgnoringModifiers: "q"), cursorPosition: .zero)
+    }
+
+    // Composingモードでqキーを押した
+    var toggleAndFixKanaAction: Action {
+        Action(keyBind: .toggleAndFixKana, event: generateNSEvent(character: "q", characterIgnoringModifiers: "q"), cursorPosition: .zero)
     }
 
     private func printableKeyEventAction(character: Character, characterIgnoringModifier: Character? = nil, withShift: Bool = false) -> Action {

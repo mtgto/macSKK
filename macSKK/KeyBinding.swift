@@ -12,8 +12,12 @@ struct KeyBinding: Identifiable, Hashable {
     enum Action: CaseIterable, CodingKey, Comparable {
         /// ひらがな入力に切り替える。デフォルトはCtrl-jキー
         case hiragana
-        /// ひらがな・カタカナ入力に切り替える。デフォルトはqキー
+        /// ひらがな・カタカナ入力に切り替える。
+        /// デフォルトはtoggleAndFixKanaと同じqキー。InputMethodStateがnormalのときのみ。
         case toggleKana
+        /// 未確定文字列をひらがな⇔カタカナに変換して確定させる。
+        /// デフォルトはtoggleKanaと同じqキー。InputMethodStateがcomposingのときのみ。
+        case toggleAndFixKana
         /// 半角カナ入力に切り替える。デフォルトはCtrl-qキー
         case hankakuKana
         /// 半角英数入力に切り替える。デフォルトはlキー
@@ -68,6 +72,47 @@ struct KeyBinding: Identifiable, Hashable {
             // CodingKeyのstringValueを使う
             // String#capitalizedは先頭以外の大文字を小文字に変換するのでLocalized.stringsでのキーに注意
             String(localized: LocalizedStringResource(stringLiteral: "KeyBindingAction\(stringValue.capitalized)"))
+        }
+
+        func accepts(inputMethodState: InputMethodState) -> Bool {
+            switch self {
+            case .toggleKana:
+                if case .normal = inputMethodState {
+                    return true
+                } else {
+                    return false
+                }
+            case .toggleAndFixKana:
+                if case .composing(_) = inputMethodState {
+                    return true
+                } else {
+                    return false
+                }
+            default:
+                return true
+            }
+        }
+    }
+
+    /**
+     * キーバインドが成立するStateMachineの状態の集合
+     */
+    struct InputMethodStateFlags: OptionSet {
+        let rawValue: Int
+        static let normal = InputMethodStateFlags(rawValue: 1)
+        static let composing = InputMethodStateFlags(rawValue: 2)
+        static let selecting = InputMethodStateFlags(rawValue: 4)
+        static let all: InputMethodStateFlags = [normal, composing, selecting]
+
+        func accepts(inputMethodState: InputMethodState) -> Bool {
+            switch inputMethodState {
+            case .normal:
+                contains(.normal)
+            case .composing(_):
+                contains(.composing)
+            case .selecting(_):
+                contains(.selecting)
+            }
         }
     }
 
@@ -198,6 +243,8 @@ struct KeyBinding: Identifiable, Hashable {
             case .hiragana:
                 return KeyBinding(action, [Input(key: .character("j"), modifierFlags: .control)])
             case .toggleKana:
+                return KeyBinding(action, [Input(key: .character("q"), modifierFlags: [])])
+            case .toggleAndFixKana:
                 return KeyBinding(action, [Input(key: .character("q"), modifierFlags: [])])
             case .hankakuKana:
                 return KeyBinding(action, [Input(key: .character("q"), modifierFlags: .control)])

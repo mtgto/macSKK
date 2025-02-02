@@ -95,7 +95,8 @@
 "Reset" = "リセット";
 
 "KeyBindingActionHiragana" = "ひらがなモード";
-"KeyBindingActionTogglekana" = "かなカナ切り替え";
+"KeyBindingActionTogglekana" = "かなカナモード切り替え";
+"KeyBindingActionToggleandfixkana" = "入力中のかなカナ切り替え";
 "KeyBindingActionHankakukana" = "半角カナモード";
 "KeyBindingActionDirect" = "直接入力";
 "KeyBindingActionZenkaku" = "全角英数モード";
