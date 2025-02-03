@@ -57,6 +57,7 @@ struct VerticalCandidatesView: View {
                 HStack(alignment: .center, spacing: 0) {
                     Spacer()
                     Text("\(currentPage + 1) / \(totalPageCount)")
+                        .foregroundStyle(Color(NSColor.secondaryLabelColor))
                         .padding(EdgeInsets(top: 2, leading: 0, bottom: 2, trailing: 4))
                 }
                 .frame(width: candidates.minWidth, height: CandidatesView.footerHeight)
