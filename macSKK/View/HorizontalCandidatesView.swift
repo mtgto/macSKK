@@ -5,7 +5,6 @@ import SwiftUI
 struct HorizontalCandidatesView: View {
     /// パネル型の注釈ビューの縦幅
     static let annotationPopupHeight: CGFloat = 120
-    static let annotationPopupMaxHeight: CGFloat = 200
     static let pageControlWidth: CGFloat = 64
 
     @ObservedObject var candidates: CandidatesViewModel
@@ -25,7 +24,6 @@ struct HorizontalCandidatesView: View {
                     )
                     .padding(EdgeInsets(top: 16, leading: 12, bottom: 16, trailing: 8))
                     .frame(width: CandidatesView.annotationPopupWidth, height: Self.annotationPopupHeight, alignment: .topLeading)
-                    .frame(maxHeight: Self.annotationPopupMaxHeight)
                     .fixedSize(horizontal: false, vertical: true)
                     .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
                     .opacity(0.9)
@@ -66,7 +64,6 @@ struct HorizontalCandidatesView: View {
                 )
                 .padding(EdgeInsets(top: 16, leading: 28, bottom: 16, trailing: 4))
                 .frame(width: CandidatesView.annotationPopupWidth, height: Self.annotationPopupHeight, alignment: .topLeading)
-                .frame(maxHeight: Self.annotationPopupMaxHeight)
                 .fixedSize(horizontal: false, vertical: /*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
                 .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
                 .opacity(0.9)

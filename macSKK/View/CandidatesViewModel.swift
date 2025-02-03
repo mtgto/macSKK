@@ -134,7 +134,7 @@ final class CandidatesViewModel: ObservableObject {
             }
             .map { maxHeight, showAnnotationPopover, _ in
                 showAnnotationPopover &&
-                self.candidatesLineHeight + HorizontalCandidatesView.annotationPopupMaxHeight + CandidatesView.annotationMargin >= maxHeight
+                self.candidatesLineHeight + HorizontalCandidatesView.annotationPopupHeight + CandidatesView.annotationMargin >= maxHeight
             }
             .assign(to: &$displayPopoverInLeftOrTop)
     }
