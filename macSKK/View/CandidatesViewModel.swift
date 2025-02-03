@@ -44,7 +44,7 @@ final class CandidatesViewModel: ObservableObject {
     @Published var minWidth: CGFloat = 0
     /// 表示座標から上方向に取れる最大の幅。負数のときは不明なとき
     @Published var maxHeight: CGFloat = -1
-    /// パネル表示時の注釈を左側に表示するかどうか
+    /// パネル表示時の注釈を変換候補の左側(縦表示)または上側(横表示)に表示するかどうか
     @Published var displayPopoverInLeftOrTop: Bool = false
     /// 変換候補の一行の高さ
     var candidatesLineHeight: CGFloat {

@@ -93,7 +93,7 @@ final class CandidatesPanel: NSPanel {
                 }
             case .horizontal:
                 width = viewModel.minWidth
-                height = (viewModel.showAnnotationPopover ? HorizontalCandidatesView.annotationPopupHeight + CandidatesView.annotationMargin : 0 ) + viewModel.candidatesLineHeight
+                height = (viewModel.showAnnotationPopover ? HorizontalCandidatesView.annotationPopupHeight + CandidatesView.annotationMargin : 0) + viewModel.candidatesLineHeight
             }
         } else {
             // FIXME: 短い文のときにはそれに合わせて高さを縮める
