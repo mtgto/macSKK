@@ -321,6 +321,7 @@ final class SettingsViewModel: ObservableObject {
         Global.selectingBackspace = selectingBackspace
         Global.punctuation = Punctuation(comma: comma, period: period)
         Global.ignoreUserDictInPrivateMode.send(ignoreUserDictInPrivateMode)
+        Global.candidateListDirection.send(candidateListDirection)
 
         // SKK-JISYO.Lのようなファイルの読み込みが遅いのでバックグラウンドで処理
         $dictSettings.filter({ !$0.isEmpty }).receive(on: DispatchQueue.global()).sink { dictSettings in
