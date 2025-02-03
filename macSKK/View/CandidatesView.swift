@@ -16,10 +16,14 @@ struct CandidatesView: View {
     var body: some View {
         switch candidates.candidates {
         case .inline:
-            AnnotationView(annotations: $candidates.selectedAnnotations, systemAnnotation: $candidates.selectedSystemAnnotation, annotationFontSize: candidates.annotationFontSize)
-                .padding(EdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4))
-                .frame(width: 300, height: 200)
-                .background()
+            AnnotationView(
+                annotations: $candidates.selectedAnnotations,
+                systemAnnotation: $candidates.selectedSystemAnnotation,
+                annotationFontSize: candidates.annotationFontSize
+            )
+            .padding(EdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4))
+            .frame(width: 300, height: 200)
+            .background()
         case let .panel(words, currentPage, totalPageCount):
             switch Global.candidateListDirection.value {
             case .vertical:

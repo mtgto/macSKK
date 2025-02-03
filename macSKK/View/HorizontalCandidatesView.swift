@@ -6,6 +6,7 @@ struct HorizontalCandidatesView: View {
     /// パネル型の注釈ビューの縦幅
     static let annotationPopupHeight: CGFloat = 120
     static let annotationPopupMaxHeight: CGFloat = 200
+    static let pageControlWidth: CGFloat = 64
 
     @ObservedObject var candidates: CandidatesViewModel
 
@@ -25,7 +26,7 @@ struct HorizontalCandidatesView: View {
                     .padding(EdgeInsets(top: 16, leading: 12, bottom: 16, trailing: 8))
                     .frame(width: CandidatesView.annotationPopupWidth, height: Self.annotationPopupHeight, alignment: .topLeading)
                     .frame(maxHeight: Self.annotationPopupMaxHeight)
-                    .fixedSize(horizontal: false, vertical: /*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
+                    .fixedSize(horizontal: false, vertical: true)
                     .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
                     .opacity(0.9)
                 } else {
@@ -54,7 +55,7 @@ struct HorizontalCandidatesView: View {
                 Text("\(currentPage + 1) / \(totalPageCount)")
                     .foregroundStyle(Color(NSColor.secondaryLabelColor))
                     .padding(.trailing, 8)
-                    .frame(width: 64, height: CandidatesView.footerHeight, alignment: .trailing)
+                    .frame(width: Self.pageControlWidth, height: CandidatesView.footerHeight, alignment: .trailing)
             }
             .background()
             if candidates.popoverIsPresented && !candidates.displayPopoverInLeftOrTop {
@@ -88,11 +89,20 @@ struct HorizonalCandidatesView_Previews: PreviewProvider {
         return viewModel
     }
 
-    private static func pageViewModelLeftPopover() -> CandidatesViewModel {
+    private static func pageViewModelUpPopover() -> CandidatesViewModel {
         let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, showAnnotationPopover: true)
         viewModel.selected = words.first
         viewModel.systemAnnotations = [words.first!.word: String(repeating: "これはシステム辞書の注釈です。", count: 20)]
-        viewModel.maxWidth = 1
+        viewModel.maxWidth = 1000
+        viewModel.maxHeight = 1
+        return viewModel
+    }
+
+    private static func pageViewModelShortAnnotation() -> CandidatesViewModel {
+        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, showAnnotationPopover: true)
+        viewModel.selected = words.first
+        viewModel.systemAnnotations = [:]
+        viewModel.maxWidth = 1000
         return viewModel
     }
 
@@ -122,16 +132,19 @@ struct HorizonalCandidatesView_Previews: PreviewProvider {
     static var previews: some View {
         HorizontalCandidatesView(candidates: pageViewModel(), words: words, currentPage: 0, totalPageCount: 3)
             .background(Color.cyan)
-            .previewDisplayName("パネル表示 (横)")
-        HorizontalCandidatesView(candidates: pageViewModelLeftPopover(), words: words, currentPage: 0, totalPageCount: 3)
+            .previewDisplayName("パネル表示")
+        HorizontalCandidatesView(candidates: pageViewModelUpPopover(), words: words, currentPage: 0, totalPageCount: 3)
             .background(Color.cyan)
-            .previewDisplayName("パネル表示 (横、注釈上)")
+            .previewDisplayName("パネル表示 (注釈上)")
+        HorizontalCandidatesView(candidates: pageViewModelShortAnnotation(), words: words, currentPage: 0, totalPageCount: 3)
+            .background(Color.cyan)
+            .previewDisplayName("パネル表示 (注釈短い)")
         HorizontalCandidatesView(candidates: pageWithoutPopoverViewModel(), words: words, currentPage: 0, totalPageCount: 3)
-            .previewDisplayName("パネル表示 (横、注釈なし)")
+            .previewDisplayName("パネル表示 (注釈なし)")
         HorizontalCandidatesView(candidates: inlineViewModel(), words: words, currentPage: 0, totalPageCount: 3)
             .previewDisplayName("インライン表示")
         HorizontalCandidatesView(candidates: fontSize19ViewModel(), words: words, currentPage: 0, totalPageCount: 3)
             .background(Color.cyan)
-            .previewDisplayName("フォントサイズ19 (横)")
+            .previewDisplayName("フォントサイズ19")
     }
 }
