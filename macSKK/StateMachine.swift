@@ -338,10 +338,14 @@ final class StateMachine {
         case .eisu:
             // 何もしない (OSがIMEの切り替えはしてくれる)
             return true
-        case .unregister, .backwardCandidate, nil:
+        case .unregister, .backwardCandidate, .toggleAndFixKana, nil:
             break
         }
 
+        // 直接入力時かつ下線が引かれた未確定文字列がないときはなにもしない
+        if state.inputMode == .direct && state.specialState == nil {
+            return false
+        }
         let event = action.event
         guard let input = event.charactersIgnoringModifiers else {
             return false
@@ -385,7 +389,7 @@ final class StateMachine {
                     // lowercaseMapにエントリがある場合はエントリの方のキーが入力されたと見做す
                     if let mappedEvent = Global.kanaRule.convertKeyEvent(action.event) {
                         return handleNormal(
-                            Action(keyBind: Global.keyBinding.action(event: mappedEvent),
+                            Action(keyBind: Global.keyBinding.action(event: mappedEvent, inputMethodState: state.inputMethod),
                                    event: mappedEvent,
                                    cursorPosition: action.cursorPosition,
                                    treatAsAlphabet: true),
@@ -475,7 +479,7 @@ final class StateMachine {
             state.inputMode = .hiragana
             inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
             return true
-        case .toggleKana:
+        case .toggleAndFixKana:
             if okuri == nil {
                 // ひらがな入力中ならカタカナ、カタカナ入力中ならひらがな、半角カタカナ入力中なら全角カタカナで確定する。
                 // 未確定ローマ字はn以外は入力されずに削除される. nだけは"ん"が入力されているとする
@@ -601,7 +605,9 @@ final class StateMachine {
                 )
             }
             if text.isEmpty {
-                addFixedText(" ")
+                // 未確定ローマ字はn以外は入力されずに削除される. nだけは"ん"として変換する
+                let fixedText = composing.string(for: state.inputMode, kanaRule: Global.kanaRule)
+                addFixedText(fixedText + " ")
                 state.inputMethod = .normal
                 updateModeIfPrevModeExists()
                 return true
@@ -751,7 +757,7 @@ final class StateMachine {
                 updateMarkedText()
             }
             return true
-        case .up, .down, .registerPaste, .eisu, .kana:
+        case .up, .down, .registerPaste, .eisu, .kana, .toggleKana:
             return true
         case .abbrev, .unregister, .backwardCandidate, .none:
             break
@@ -796,7 +802,7 @@ final class StateMachine {
 
         if input == "." && action.shiftIsPressed() && state.inputMode != .direct && !composing.text.isEmpty { // ">"
             // 接頭辞が入力されたものとして ">" より前で変換を開始する
-            let newComposing = composing.appendText(Romaji.Moji(firstRomaji: "", kana: ">"))
+            let newComposing = composing.trim(kanaRule: Global.kanaRule).appendText(Romaji.Moji(firstRomaji: "", kana: ">"))
             return handleComposingStartConvert(action, composing: newComposing, specialState: specialState)
         }
         switch state.inputMode {
@@ -804,7 +810,7 @@ final class StateMachine {
             // lowercaseMapにエントリがある場合はエントリの方のキーが入力されたと見做す
             if let mappedEvent = Global.kanaRule.convertKeyEvent(action.event) {
                 return handleComposing(
-                    Action(keyBind: Global.keyBinding.action(event: mappedEvent),
+                    Action(keyBind: Global.keyBinding.action(event: mappedEvent, inputMethodState: state.inputMethod),
                            event: mappedEvent,
                            cursorPosition: action.cursorPosition,
                            treatAsAlphabet: true),
@@ -1129,7 +1135,7 @@ final class StateMachine {
             return true
         case .registerPaste, .delete, .eisu, .kana:
             return true
-        case .toggleKana, .direct, .zenkaku, .abbrev, .japanese:
+        case .toggleKana, .toggleAndFixKana, .direct, .zenkaku, .abbrev, .japanese:
             break
         case nil:
             break
