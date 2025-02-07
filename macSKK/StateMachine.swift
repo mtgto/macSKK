@@ -480,7 +480,25 @@ final class StateMachine {
             inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
             return true
         case .toggleAndFixKana:
-            if okuri == nil {
+            if text.isEmpty {
+                // 入力中ローマ字を今のモードで確定してからモードを変更する
+                switch state.inputMode {
+                case .hiragana:
+                    state.inputMethod = .normal
+                    addFixedText(composing.string(for: state.inputMode, kanaRule: Global.kanaRule))
+                    state.inputMode = .katakana
+                    inputMethodEventSubject.send(.modeChanged(.katakana, action.cursorPosition))
+                    return true
+                case .katakana, .hankaku:
+                    state.inputMethod = .normal
+                    addFixedText(composing.string(for: state.inputMode, kanaRule: Global.kanaRule))
+                    state.inputMode = .hiragana
+                    inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
+                    return true
+                case .eisu, .direct:
+                    break
+                }
+            } else if okuri == nil {
                 // ひらがな入力中ならカタカナ、カタカナ入力中ならひらがな、半角カタカナ入力中なら全角カタカナで確定する。
                 // 未確定ローマ字はn以外は入力されずに削除される. nだけは"ん"が入力されているとする
                 state.inputMethod = .normal
