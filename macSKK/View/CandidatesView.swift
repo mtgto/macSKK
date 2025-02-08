@@ -8,8 +8,10 @@ import SwiftUI
 struct CandidatesView: View {
     @ObservedObject var candidates: CandidatesViewModel
     static let footerHeight: CGFloat = 20
-    /// 変換候補と注釈の間
-    static let annotationMargin: CGFloat = 8
+    /// 縦表示の変換候補と注釈の間 (左右の余白)
+    static let annotationMarginLeftRight: CGFloat = 8
+    /// 横表示の変換候補と注釈の間 (上下の余白)
+    static let annotationMarginTopBottom: CGFloat = 4
     /// パネル型の注釈ビューの幅
     static let annotationPopupWidth: CGFloat = 300
 

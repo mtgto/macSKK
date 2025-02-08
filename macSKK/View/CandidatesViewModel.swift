@@ -86,30 +86,34 @@ final class CandidatesViewModel: ObservableObject {
         .store(in: &cancellables)
 
         $candidates.combineLatest(Global.candidateListDirection).map { candidates, listDirection in
-            if case let .panel(words, _, _) = candidates {
+            if case let .panel(words, currentPage, totalPageCount) = candidates {
+                let font = NSFont.preferredFont(forTextStyle: .body)
                 switch listDirection {
                 case .vertical:
                     let listWidth = words.map { candidate -> CGFloat in
                         let size = candidate.word.boundingRect(
                             with: CGSize(width: .greatestFiniteMagnitude, height: self.candidatesLineHeight),
                             options: .usesLineFragmentOrigin,
-                            attributes: [.font: NSFont.preferredFont(forTextStyle: .body)])
+                            attributes: [.font: font])
                         // 未解決の余白(8px) + 添字(16px) + 余白(4px) + テキスト + 余白(4px) + 未解決の余白(22px)
                         // @see https://forums.swift.org/t/swiftui-list-horizontal-insets-macos/52985/5
                         return 16 + 4 + size.width + 4 + 22
                     }.max() ?? 0
                     return listWidth
                 case .horizontal:
-                    let listWidth = words.reduce(0) { last, candidate -> CGFloat in
+                    // 余白(4px) + ページ表示 + 余白(4px) を確保
+                    let pageControlSize = "\(currentPage + 1)/\(totalPageCount)".boundingRect(
+                        with: CGSize(width: .greatestFiniteMagnitude, height: self.candidatesLineHeight),
+                        options: .usesLineFragmentOrigin,
+                        attributes: [.font: font])
+                    return words.reduce(4 + pageControlSize.width + 4) { last, candidate -> CGFloat in
                         let size = candidate.word.boundingRect(
                             with: CGSize(width: .greatestFiniteMagnitude, height: self.candidatesLineHeight),
                             options: .usesLineFragmentOrigin,
-                            attributes: [.font: NSFont.preferredFont(forTextStyle: .body)])
+                            attributes: [.font: font])
                         // 添字(16px) + 余白(4px) + テキスト + 余白(8px)
                         return 16 + 4 + size.width + 8 + last
                     }
-                    // + ページ表示(64px)
-                    return listWidth + HorizontalCandidatesView.pageControlWidth
                 }
             } else {
                 return 300
@@ -122,9 +126,16 @@ final class CandidatesViewModel: ObservableObject {
                 // maxWidthが0未満のときはまだスクリーンサイズがわかっていない
                 listDirection == .vertical && maxWidth >= 0
             }
-            .map { maxWidth, minWidth, showAnnotationPopover, _ in
-                showAnnotationPopover &&
-                minWidth + CandidatesView.annotationPopupWidth + CandidatesView.annotationMargin >= maxWidth
+            .map { maxWidth, minWidth, showAnnotationPopover, listDirection in
+                if !showAnnotationPopover {
+                    return false
+                }
+                switch listDirection {
+                case .vertical:
+                    return minWidth + CandidatesView.annotationPopupWidth + CandidatesView.annotationMarginLeftRight >= maxWidth
+                case .horizontal:
+                    return minWidth + CandidatesView.annotationPopupWidth >= maxWidth
+                }
             }
             .assign(to: &$displayPopoverInLeftOrTop)
         
@@ -132,9 +143,16 @@ final class CandidatesViewModel: ObservableObject {
             .filter { maxHeight, _, listDirection in
                 return listDirection == .horizontal && maxHeight >= 0
             }
-            .map { maxHeight, showAnnotationPopover, _ in
-                showAnnotationPopover &&
-                self.candidatesLineHeight + HorizontalCandidatesView.annotationPopupHeight + CandidatesView.annotationMargin >= maxHeight
+            .map { maxHeight, showAnnotationPopover, listDirection in
+                if !showAnnotationPopover {
+                    return false
+                }
+                switch listDirection {
+                case .vertical:
+                    return self.candidatesLineHeight + HorizontalCandidatesView.annotationPopupHeight >= maxHeight
+                case .horizontal:
+                    return self.candidatesLineHeight + HorizontalCandidatesView.annotationPopupHeight + CandidatesView.annotationMarginTopBottom >= maxHeight
+                }
             }
             .assign(to: &$displayPopoverInLeftOrTop)
     }

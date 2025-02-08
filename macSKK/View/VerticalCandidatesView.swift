@@ -10,7 +10,7 @@ struct VerticalCandidatesView: View {
     let totalPageCount: Int
 
     var body: some View {
-        HStack(alignment: .top, spacing: CandidatesView.annotationMargin) {
+        HStack(alignment: .top, spacing: CandidatesView.annotationMarginLeftRight) {
             if candidates.displayPopoverInLeftOrTop {
                 if candidates.popoverIsPresented {
                     AnnotationView(

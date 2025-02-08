@@ -5,7 +5,6 @@ import SwiftUI
 struct HorizontalCandidatesView: View {
     /// パネル型の注釈ビューの縦幅
     static let annotationPopupHeight: CGFloat = 120
-    static let pageControlWidth: CGFloat = 64
 
     @ObservedObject var candidates: CandidatesViewModel
 
@@ -14,7 +13,7 @@ struct HorizontalCandidatesView: View {
     let totalPageCount: Int
 
     var body: some View {
-        VStack(alignment: .leading, spacing: CandidatesView.annotationMargin) {
+        VStack(alignment: .leading, spacing: CandidatesView.annotationMarginTopBottom) {
             if candidates.displayPopoverInLeftOrTop {
                 if candidates.popoverIsPresented {
                     AnnotationView(
@@ -52,8 +51,8 @@ struct HorizontalCandidatesView: View {
                 }
                 Text("\(currentPage + 1) / \(totalPageCount)")
                     .foregroundStyle(Color(NSColor.secondaryLabelColor))
-                    .padding(.trailing, 8)
-                    .frame(width: Self.pageControlWidth, height: CandidatesView.footerHeight, alignment: .trailing)
+                    .padding([.leading, .trailing], 4)
+                    .fixedSize(horizontal: true, vertical: false)
             }
             .background()
             if candidates.popoverIsPresented && !candidates.displayPopoverInLeftOrTop {
@@ -127,7 +126,7 @@ struct HorizonalCandidatesView_Previews: PreviewProvider {
     }
 
     static var previews: some View {
-        HorizontalCandidatesView(candidates: pageViewModel(), words: words, currentPage: 0, totalPageCount: 3)
+        HorizontalCandidatesView(candidates: pageViewModel(), words: words, currentPage: 9, totalPageCount: 10)
             .background(Color.cyan)
             .previewDisplayName("パネル表示")
         HorizontalCandidatesView(candidates: pageViewModelUpPopover(), words: words, currentPage: 0, totalPageCount: 3)

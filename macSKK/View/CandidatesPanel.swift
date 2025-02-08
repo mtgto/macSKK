@@ -89,11 +89,11 @@ final class CandidatesPanel: NSPanel {
                 width = viewModel.showAnnotationPopover ? viewModel.minWidth + CandidatesView.annotationPopupWidth : viewModel.minWidth
                 height = CGFloat(words.count) * viewModel.candidatesLineHeight + CandidatesView.footerHeight
                 if viewModel.displayPopoverInLeftOrTop {
-                    origin.x = origin.x - CandidatesView.annotationPopupWidth - CandidatesView.annotationMargin
+                    origin.x = origin.x - CandidatesView.annotationPopupWidth - CandidatesView.annotationMarginLeftRight
                 }
             case .horizontal:
                 width = viewModel.minWidth
-                height = (viewModel.showAnnotationPopover ? HorizontalCandidatesView.annotationPopupHeight + CandidatesView.annotationMargin : 0) + viewModel.candidatesLineHeight
+                height = (viewModel.showAnnotationPopover ? HorizontalCandidatesView.annotationPopupHeight + CandidatesView.annotationMarginTopBottom : 0) + viewModel.candidatesLineHeight
             }
         } else {
             // FIXME: 短い文のときにはそれに合わせて高さを縮める
