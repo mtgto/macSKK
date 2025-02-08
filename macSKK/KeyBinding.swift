@@ -79,6 +79,10 @@ struct KeyBinding: Identifiable, Hashable {
             case .toggleKana:
                 if case .normal = inputMethodState {
                     return true
+                } else if case .selecting(_) = inputMethodState {
+                    // selecting時にはqキーはtoggleKanaとして扱うことで、選択中の変換要素で確定し
+                    // さらにNormalモード時にtoggleKanaしたとして扱わせたい
+                    return true
                 } else {
                     return false
                 }

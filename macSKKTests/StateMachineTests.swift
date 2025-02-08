@@ -3025,6 +3025,26 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    @MainActor func testHandleSelectingToggleHiragana() {
+        Global.dictionary.setEntries(["う": [Word("雨")]])
+
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(4).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("う")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerSelect, .emphasized("雨")])))
+            XCTAssertEqual(events[2], .fixedText("雨"))
+            XCTAssertEqual(events[3], .modeChanged(.katakana, .zero))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        // selecting時にはqキーはtoggleKanaとして扱い、Normalモード時にtoggleKanaしたとして扱わせたい
+        XCTAssertTrue(stateMachine.handle(toggleKanaAction))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     @MainActor func testPrivateMode() throws {
         let privateMode = CurrentValueSubject<Bool, Never>(false)
         // プライベートモードが有効ならユーザー辞書を参照はするが保存はしない
@@ -3211,7 +3231,7 @@ final class StateMachineTests: XCTestCase {
         Action(keyBind: .kana, event: generateNSEvent(character: "\u{10}", characterIgnoringModifiers: "\u{10}"), cursorPosition: .zero)
     }
 
-    // Normalモードでqキーを押した
+    // NormalモードまたはSelectingモードでqキーを押した
     var toggleKanaAction: Action {
         Action(keyBind: .toggleKana, event: generateNSEvent(character: "q", characterIgnoringModifiers: "q"), cursorPosition: .zero)
     }
