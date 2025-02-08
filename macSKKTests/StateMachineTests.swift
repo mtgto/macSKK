@@ -116,6 +116,32 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    @MainActor func testHandleNormalRomajiNQ() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(10).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.plain("n")])))
+            XCTAssertEqual(events[1], .fixedText("ん"))
+            XCTAssertEqual(events[2], .modeChanged(.katakana, .zero))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.plain("n")])))
+            XCTAssertEqual(events[4], .fixedText("ン"))
+            XCTAssertEqual(events[5], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[6], .modeChanged(.hankaku, .zero))
+            XCTAssertEqual(events[7], .markedText(MarkedText([.plain("n")])))
+            XCTAssertEqual(events[8], .fixedText("ﾝ"))
+            XCTAssertEqual(events[9], .modeChanged(.hiragana, .zero))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n")))
+        XCTAssertTrue(stateMachine.handle(toggleAndFixKanaAction))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n")))
+        XCTAssertTrue(stateMachine.handle(toggleAndFixKanaAction))
+        XCTAssertTrue(stateMachine.handle(hankakuKanaAction))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n")))
+        XCTAssertTrue(stateMachine.handle(toggleAndFixKanaAction))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     @MainActor func testHandleNormalRomajiKanaRuleQ() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         Global.kanaRule = try! Romaji(source: "tq,たん")
@@ -627,13 +653,14 @@ final class StateMachineTests: XCTestCase {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         expectation.expectedFulfillmentCount = 2
-        stateMachine.inputMethodEvent.collect(6).sink { events in
+        stateMachine.inputMethodEvent.collect(7).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("お")])))
             XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("おn")])))
             XCTAssertEqual(events[2], .fixedText("オン"))
             XCTAssertEqual(events[3], .modeChanged(.katakana, .zero))
             XCTAssertEqual(events[4], .markedText(MarkedText([.markerCompose, .plain("n")])))
-            XCTAssertEqual(events[5], .fixedText("ん"))
+            XCTAssertEqual(events[5], .fixedText("ン"))
+            XCTAssertEqual(events[6], .modeChanged(.hiragana, .zero))
             expectation.fulfill()
         }.store(in: &cancellables)
         stateMachine.yomiEvent.collect(2).sink { events in
