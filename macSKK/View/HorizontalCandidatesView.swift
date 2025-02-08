@@ -4,6 +4,7 @@ import SwiftUI
 
 struct HorizontalCandidatesView: View {
     /// パネル型の注釈ビューの縦幅
+    /// TODO: 内容によって可変にしたい
     static let annotationPopupHeight: CGFloat = 120
 
     @ObservedObject var candidates: CandidatesViewModel
@@ -27,7 +28,7 @@ struct HorizontalCandidatesView: View {
                     .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
                     .opacity(0.9)
                 } else {
-                    Spacer(minLength: CandidatesView.annotationPopupWidth)
+                    Spacer(minLength: Self.annotationPopupHeight)
                 }
             }
             HStack(spacing: 0) {
