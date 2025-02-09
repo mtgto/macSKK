@@ -17,6 +17,11 @@ struct GeneralView: View {
                         Text(inputSource.localizedName)
                     }
                 }
+                Picker("Direction of candidate list", selection: $settingsViewModel.candidateListDirection) {
+                    ForEach(CandidateListDirection.allCases, id: \.id) { listDirection in
+                        Text(listDirection.description).tag(listDirection)
+                    }
+                }
                 Toggle(isOn: $settingsViewModel.showAnnotation, label: {
                     Text("Show Annotation")
                 })

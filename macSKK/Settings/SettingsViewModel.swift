@@ -189,6 +189,24 @@ enum SelectingBackspace: Int, CaseIterable, Identifiable {
     }
 }
 
+/// 変換候補リストの表示方向
+enum CandidateListDirection: Int, CaseIterable, Identifiable {
+    typealias ID = Int
+    var id: ID { rawValue }
+
+    case vertical = 0
+    case horizontal = 1
+
+    var description: String {
+        switch self {
+        case .vertical:
+            String(localized: "Vertical")
+        case .horizontal:
+            String(localized: "Horizontal")
+        }
+    }
+}
+
 @MainActor
 final class SettingsViewModel: ObservableObject {
     /// CheckUpdaterで取得した最新のリリース。取得前はnil
@@ -237,6 +255,8 @@ final class SettingsViewModel: ObservableObject {
     @Published var ignoreUserDictInPrivateMode: Bool
     // 入力モードのモーダルを表示するかどうか
     @Published var showInputIconModal: Bool
+    // 変換候補リストの表示方向
+    @Published var candidateListDirection: CandidateListDirection
 
     // 辞書ディレクトリ
     let dictionariesDirectoryUrl: URL
@@ -294,12 +314,14 @@ final class SettingsViewModel: ObservableObject {
         period = Punctuation.Period(rawValue: UserDefaults.standard.integer(forKey: UserDefaultsKeys.punctuation)) ?? .default
         ignoreUserDictInPrivateMode = UserDefaults.standard.bool(forKey: UserDefaultsKeys.ignoreUserDictInPrivateMode)
         showInputIconModal = UserDefaults.standard.bool(forKey: UserDefaultsKeys.showInputModePanel)
-        
+        candidateListDirection = CandidateListDirection(rawValue: UserDefaults.standard.integer(forKey: UserDefaultsKeys.candidateListDirection)) ?? .vertical
+
         Global.selectCandidateKeys = selectCandidateKeys.lowercased().map { $0 }
         Global.systemDict = systemDict
         Global.selectingBackspace = selectingBackspace
         Global.punctuation = Punctuation(comma: comma, period: period)
         Global.ignoreUserDictInPrivateMode.send(ignoreUserDictInPrivateMode)
+        Global.candidateListDirection.send(candidateListDirection)
 
         // SKK-JISYO.Lのようなファイルの読み込みが遅いのでバックグラウンドで処理
         $dictSettings.filter({ !$0.isEmpty }).receive(on: DispatchQueue.global()).sink { dictSettings in
@@ -492,6 +514,12 @@ final class SettingsViewModel: ObservableObject {
             logger.log("入力モードアイコンを\(showInputModePanel ? "表示" : "非表示", privacy: .public)に変更しました")
         }.store(in: &cancellables)
 
+        $candidateListDirection.dropFirst().sink { candidateListDirection in
+            UserDefaults.standard.set(candidateListDirection.rawValue, forKey: UserDefaultsKeys.candidateListDirection)
+            logger.log("変換候補リストを\(candidateListDirection == .vertical ? "縦" : "横", privacy: .public)で表示するように変更しました")
+            Global.candidateListDirection.send(candidateListDirection)
+        }.store(in: &cancellables)
+
         NotificationCenter.default.publisher(for: notificationNameDictLoad).receive(on: RunLoop.main).sink { [weak self] notification in
             if let loadEvent = notification.object as? DictLoadEvent, let self {
                 if let userDict = Global.dictionary.userDict as? FileDict, userDict.id == loadEvent.id {
@@ -535,6 +563,7 @@ final class SettingsViewModel: ObservableObject {
         period = Punctuation.default.period
         ignoreUserDictInPrivateMode = false
         showInputIconModal = true
+        candidateListDirection = .vertical
     }
 
     // DictionaryViewのPreviewProvider用
