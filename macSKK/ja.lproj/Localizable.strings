@@ -85,7 +85,8 @@
 "TCP Port" = "TCPポート番号";
 "Response Encoding" = "応答エンコーディング";
 "Yomi" = "読み";
-"Refer" = "参照";
+"Find Candidates" = "変換候補を検索";
+"Find Completions" = "補完候補を検索";
 "Rename" = "リネーム";
 "Duplicate" = "複製";
 "Edit" = "編集";

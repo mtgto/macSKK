@@ -85,7 +85,8 @@
 "TCP Port" = "TCP Port No.";
 "Response Encoding" = "Response Encoding";
 "Yomi" = "Yomi";
-"Refer" = "Refer";
+"Find Candidates" = "Find Candidates";
+"Find Completions" = "Find Completions";
 "Rename" = "Rename";
 "Duplicate" = "Duplicate";
 "Edit" = "Edit";

@@ -114,6 +114,39 @@ struct SKKServService: SKKServServiceProtocol {
         }
     }
 
+    func completion(yomi: String, destination: SKKServDestination, timeout: TimeInterval) throws -> String {
+        service.activate()
+        guard let proxy = service.remoteObjectProxy as? any SKKServClientProtocol else {
+            throw SKKServClientError.unexpected
+        }
+        let semaphore = DispatchSemaphore(value: 0)
+        var result: Result<String, any Error> = .failure(SKKServClientError.unexpected)
+        // NOTE: XPCからのコールバックはメインスレッドとは別のスレッドから返ってくる
+        proxy.completion(destination: destination, yomi: yomi) { line, error in
+            if let line {
+                result = .success(line)
+            } else if let error {
+                result = .failure(recastSKKServClientError(error))
+            } else {
+                fatalError("SKKServClientから不正な応答が返りました")
+            }
+            semaphore.signal()
+        }
+        switch semaphore.wait(timeout: .now() + timeout) {
+        case .success:
+            switch result {
+            case .success(let line):
+                return line
+            case .failure(let error):
+                throw error
+            }
+        case .timedOut:
+            logger.warning("skkservからの応答がなかったためタイムアウト処理を行います")
+            proxy.disconnect()
+            throw SKKServClientError.timeout
+        }
+    }
+
     /**
      * skkservとの通信を切断します。
      */

@@ -63,5 +63,6 @@ public enum SKKServClientError: Error, CaseIterable {
 @objc protocol SKKServClientProtocol {
     func serverVersion(destination: SKKServDestination, with reply: @escaping (String?, (any Error)?) -> Void)
     func refer(destination: SKKServDestination, yomi: String, with reply: @escaping (String?, (any Error)?) -> Void)
+    func completion(destination: SKKServDestination, yomi: String, with reply: @escaping (String?, (any Error)?) -> Void)
     func disconnect()
 }
