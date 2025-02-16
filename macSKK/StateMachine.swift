@@ -338,7 +338,7 @@ final class StateMachine {
         case .eisu:
             // 何もしない (OSがIMEの切り替えはしてくれる)
             return true
-        case .unregister, .backwardCandidate, .toggleAndFixKana, nil:
+        case .unregister, .backwardCandidate, .toggleAndFixKana, .affix, nil:
             break
         }
 
@@ -775,6 +775,23 @@ final class StateMachine {
                 updateMarkedText()
             }
             return true
+        case .affix:
+            if state.inputMode == .direct {
+                break
+            } else if composing.text.isEmpty {
+                // 接尾辞の入力開始として扱う
+                let converted = Global.kanaRule.convert(romaji + ">", punctuation: Global.punctuation)
+                return handleComposingPrintable(
+                    input: ">",
+                    converted: converted,
+                    action: action,
+                    composing: composing,
+                    specialState: specialState)
+            } else {
+                // 接頭辞が入力されたものとして ">" より前で変換を開始する
+                let newComposing = composing.trim(kanaRule: Global.kanaRule).appendText(Romaji.Moji(firstRomaji: "", kana: ">"))
+                return handleComposingStartConvert(action, composing: newComposing, specialState: specialState)
+            }
         case .up, .down, .registerPaste, .eisu, .kana, .toggleKana:
             return true
         case .abbrev, .unregister, .backwardCandidate, .none:
@@ -818,11 +835,6 @@ final class StateMachine {
         let text = composing.text
         let okuri = composing.okuri
 
-        if input == "." && action.shiftIsPressed() && state.inputMode != .direct && !composing.text.isEmpty { // ">"
-            // 接頭辞が入力されたものとして ">" より前で変換を開始する
-            let newComposing = composing.trim(kanaRule: Global.kanaRule).appendText(Romaji.Moji(firstRomaji: "", kana: ">"))
-            return handleComposingStartConvert(action, composing: newComposing, specialState: specialState)
-        }
         switch state.inputMode {
         case .hiragana, .katakana, .hankaku:
             // lowercaseMapにエントリがある場合はエントリの方のキーが入力されたと見做す
@@ -1151,6 +1163,19 @@ final class StateMachine {
             updateCandidates(selecting: nil)
             updateMarkedText()
             return true
+        case .affix:
+            // 選択中候補で確定し、接尾辞入力に移行。
+            // カーソル位置より右に文字列がある場合は接頭辞入力として扱う (無視してもいいかも)
+            addWordToUserDict(yomi: selecting.yomi, okuri: selecting.okuri, candidate: selecting.candidates[selecting.candidateIndex])
+            updateCandidates(selecting: nil)
+            addFixedText(selecting.fixedText(dropLast: false))
+            if let remain = selecting.remain {
+                state.inputMethod = .composing(ComposingState(isShift: true, text: remain, romaji: ""))
+                updateMarkedText()
+            } else {
+                state.inputMethod = .composing(ComposingState(isShift: true, text: [], okuri: nil, romaji: ""))
+            }
+            return handle(action)
         case .registerPaste, .delete, .eisu, .kana:
             return true
         case .toggleKana, .toggleAndFixKana, .direct, .zenkaku, .abbrev, .japanese:
@@ -1160,20 +1185,7 @@ final class StateMachine {
         }
 
         if let input = action.event.charactersIgnoringModifiers {
-            if input == "." && action.shiftIsPressed() {
-                // 選択中候補で確定し、接尾辞入力に移行。
-                // カーソル位置より右に文字列がある場合は接頭辞入力として扱う (無視してもいいかも)
-                addWordToUserDict(yomi: selecting.yomi, okuri: selecting.okuri, candidate: selecting.candidates[selecting.candidateIndex])
-                updateCandidates(selecting: nil)
-                addFixedText(selecting.fixedText(dropLast: false))
-                if let remain = selecting.remain {
-                    state.inputMethod = .composing(ComposingState(isShift: true, text: remain, romaji: ""))
-                    updateMarkedText()
-                } else {
-                    state.inputMethod = .composing(ComposingState(isShift: true, text: [], okuri: nil, romaji: ""))
-                }
-                return handle(action)
-            } else if selecting.candidateIndex >= inlineCandidateCount {
+            if selecting.candidateIndex >= inlineCandidateCount {
                 if let first = input.lowercased().first, let index = Global.selectCandidateKeys.firstIndex(of: first), index < displayCandidateCount {
                     let diff = index - (selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount
                     if selecting.candidateIndex + diff < selecting.candidates.count {

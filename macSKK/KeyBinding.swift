@@ -61,6 +61,8 @@ struct KeyBinding: Identifiable, Hashable {
         case registerPaste
         /// 変換候補選択時に入力することで登録解除確認へ遷移する。デフォルトはShift-xキー
         case unregister
+        /// 接頭辞・接尾辞の入力。デフォルトは ">" (Shift-.キー)
+        case affix
         /// 英数キー
         /// TODO: カスタマイズできなくする?
         case eisu
@@ -88,6 +90,14 @@ struct KeyBinding: Identifiable, Hashable {
                 }
             case .toggleAndFixKana:
                 if case .composing(_) = inputMethodState {
+                    return true
+                } else {
+                    return false
+                }
+            case .affix:
+                if case .composing(_) = inputMethodState {
+                    return true
+                } else if case .selecting(_) = inputMethodState {
                     return true
                 } else {
                     return false
@@ -299,6 +309,8 @@ struct KeyBinding: Identifiable, Hashable {
                 return KeyBinding(action, [Input(key: .character("x"), modifierFlags: .shift)])
             case .registerPaste:
                 return KeyBinding(action, [Input(key: .character("y"), modifierFlags: .control)])
+            case .affix:
+                return KeyBinding(action, [Input(key: .character(">"), modifierFlags: .shift)])
             case .eisu:
                 return KeyBinding(action, [Input(key: .code(0x66), modifierFlags: [])])
             case .kana:
