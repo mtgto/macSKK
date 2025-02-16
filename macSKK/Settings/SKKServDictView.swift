@@ -39,6 +39,27 @@ struct SKKServDictView: View {
                                                                  encoding: setting.encoding)
                             testing = true
                             let result = Result {
+                                try skkservService.completion(yomi: yomi, destination: destination, timeout: 1.0)
+                            }
+                            switch result {
+                            case .success(let response):
+                                logger.log("skkservの応答: \(response, privacy: .public)")
+                                information = response
+                            case .failure(let error):
+                                showError(error)
+                            }
+                            testing = false
+                        } label: {
+                            Text("Find Completions")
+                        }.disabled(yomi.isEmpty || testing)
+                        Button {
+                            let skkservService = SKKServService()
+                            let setting = settingsViewModel.skkservDictSetting
+                            let destination = SKKServDestination(host: setting.address,
+                                                                 port: setting.port,
+                                                                 encoding: setting.encoding)
+                            testing = true
+                            let result = Result {
                                 try skkservService.refer(yomi: yomi, destination: destination, timeout: 1.0)
                             }
                             switch result {
@@ -50,7 +71,7 @@ struct SKKServDictView: View {
                             }
                             testing = false
                         } label: {
-                            Text("Refer")
+                            Text("Find Candidates")
                         }.disabled(yomi.isEmpty || testing)
                     }
                 } header: {
