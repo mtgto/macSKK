@@ -10,13 +10,14 @@ final class FileDictTests: XCTestCase {
     let fileURL = Bundle(for: FileDictTests.self).url(forResource: "empty", withExtension: "txt")!
     var cancellables: Set<AnyCancellable> = []
 
-    func testLoadContainsBom() throws {
+    @MainActor func testLoadContainsBom() async throws {
         let fileURL = Bundle(for: Self.self).url(forResource: "utf8-bom", withExtension: "txt")!
-        let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: true)
+        let dict = FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: true)
+        try await dict.load(fileURL: fileURL)
         XCTAssertEqual(dict.dict.entries, ["ゆにこーど": [Word("ユニコード")]])
     }
 
-    func testLoadJson() throws {
+    @MainActor func testLoadJson() async throws {
         let expectation = XCTestExpectation()
         NotificationCenter.default.publisher(for: notificationNameDictLoad).sink { notification in
             if let loadEvent = notification.object as? DictLoadEvent {
@@ -28,13 +29,13 @@ final class FileDictTests: XCTestCase {
             }
         }.store(in: &cancellables)
         let fileURL = Bundle(for: Self.self).url(forResource: "SKK-JISYO.test", withExtension: "json")!
-        let dict = try FileDict(contentsOf: fileURL, type: .json, readonly: true)
+        let dict = FileDict(contentsOf: fileURL, type: .json, readonly: true)
+        try await dict.load(fileURL: fileURL)
         XCTAssertEqual(dict.dict.refer("い", option: nil).map({ $0.word }).sorted(), ["伊", "胃"])
         XCTAssertEqual(dict.dict.refer("あr", option: nil).map({ $0.word }).sorted(), ["在;注釈として解釈されない", "有"])
-        wait(for: [expectation], timeout: 1.0)
     }
 
-    func testLoadJsonBroken() throws {
+    @MainActor func testLoadJsonBroken() async throws {
         let expectation = XCTestExpectation()
         NotificationCenter.default.publisher(for: notificationNameDictLoad).sink { notification in
             if let loadEvent = notification.object as? DictLoadEvent {
@@ -44,12 +45,18 @@ final class FileDictTests: XCTestCase {
             }
         }.store(in: &cancellables)
         let fileURL = Bundle(for: Self.self).url(forResource: "SKK-JISYO.broken", withExtension: "json")!
-        _ = try FileDict(contentsOf: fileURL, type: .json, readonly: true)
-        wait(for: [expectation], timeout: 1.0)
+        let dict = FileDict(contentsOf: fileURL, type: .json, readonly: true)
+        do {
+            try await dict.load(fileURL: fileURL)
+            XCTFail("エラーが発生するはずなのに発生していない")
+        } catch {
+            // OK
+        }
     }
 
-    func testAdd() throws {
-        let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: true)
+    @MainActor func testAdd() async throws {
+        let dict = FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: true)
+        try await dict.load(fileURL: fileURL)
         XCTAssertEqual(dict.entryCount, 0)
         let word = Word("井")
         XCTAssertFalse(dict.hasUnsavedChanges)
@@ -58,8 +65,9 @@ final class FileDictTests: XCTestCase {
         XCTAssertTrue(dict.hasUnsavedChanges)
     }
 
-    func testDelete() throws {
-        let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: true)
+    @MainActor func testDelete() async throws {
+        let dict = FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: true)
+        try await dict.load(fileURL: fileURL)
         dict.setEntries(["あr": [Word("有"), Word("在")]], readonly: true)
         XCTAssertFalse(dict.delete(yomi: "あr", word: "或"))
         XCTAssertFalse(dict.hasUnsavedChanges)
@@ -67,8 +75,9 @@ final class FileDictTests: XCTestCase {
         XCTAssertTrue(dict.hasUnsavedChanges)
     }
 
-    func testSerialize() throws {
-        let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: false)
+    @MainActor func testSerialize() async throws {
+        let dict = FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: false)
+        try await dict.load(fileURL: fileURL)
         XCTAssertEqual(dict.serialize(),
                        [FileDict.headers[0], FileDict.okuriAriHeader, FileDict.okuriNashiHeader, ""].joined(separator: "\n"))
         dict.add(yomi: "あ", word: Word("亜", annotation: Annotation(dictId: "testDict", text: "亜の注釈")))
