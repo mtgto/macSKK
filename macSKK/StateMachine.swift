@@ -229,18 +229,9 @@ final class StateMachine {
                 state.specialState = specialState.dropLast()
                 updateMarkedText()
                 return true
-
             } else {
                 return false
             }
-        case .space:
-            switch state.inputMode {
-            case .eisu:
-                addFixedText("　")
-            default:
-                addFixedText(" ")
-            }
-            return true
         case .tab:
             return false
         case .stickyShift:
@@ -338,7 +329,7 @@ final class StateMachine {
         case .eisu:
             // 何もしない (OSがIMEの切り替えはしてくれる)
             return true
-        case .unregister, .backwardCandidate, .toggleAndFixKana, nil:
+        case .space, .unregister, .backwardCandidate, .toggleAndFixKana, nil:
             break
         }
 
