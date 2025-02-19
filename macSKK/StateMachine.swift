@@ -649,7 +649,8 @@ final class StateMachine {
                                                               text: newText,
                                                               okuri: nil,
                                                               romaji: "",
-                                                              cursor: nil))
+                                                              cursor: nil,
+                                                              prevMode: composing.prevMode))
                 self.completion = nil
                 updateMarkedText()
             }
