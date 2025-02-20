@@ -632,6 +632,26 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    @MainActor func testHandleNormalAbbrevCompletion() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(6).sink { events in
+            XCTAssertEqual(events[0], .modeChanged(.direct, .zero))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("a")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("apple")])))
+            XCTAssertEqual(events[4], .fixedText("apple"))
+            XCTAssertEqual(events[5], .modeChanged(.hiragana, .zero)) // abbrevモードでTab補完して確定したとき前のモードに戻す
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "/")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
+        stateMachine.completion = ("a", "apple")
+        XCTAssertTrue(stateMachine.handle(tabAction))
+        XCTAssertTrue(stateMachine.handle(enterAction))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     @MainActor func testHandleNormalOptionModifier() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
@@ -3265,6 +3285,10 @@ final class StateMachineTests: XCTestCase {
     // エンターキーを押した
     var enterAction: Action {
         Action(keyBind: .enter, event: generateNSEvent(character: "\r", characterIgnoringModifiers: "\r"), cursorPosition: .zero)
+    }
+    // タブキーを押した
+    var tabAction: Action {
+        Action(keyBind: .tab, event: generateNSEvent(character: "\t", characterIgnoringModifiers: "\t"), cursorPosition: .zero)
     }
     // Ctrl-gキーを押した
     var cancelAction: Action {
