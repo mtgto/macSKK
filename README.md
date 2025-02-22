@@ -86,6 +86,7 @@ macSKKが入力メソッドとして選択されているときに入力メニ�
 | privateMode                 | Boolean    | プライベートモード                      |
 | ignoreUserDictInPrivateMode | Boolean    | プライベートモードでユーザー辞書を無視するか |
 | showInputModePanel          | Boolean    | 入力モードをモーダル表示するか          |
+| candidateListDirection      | Number     | 変換候補リストの表示方向                |
 
 ## 機能
 

@@ -41,6 +41,8 @@ import Combine
     static var selectingBackspace: SelectingBackspace = .default
     /// カンマかピリオドを入力したときに入力する句読点の設定
     static var punctuation: Punctuation = .default
+    /// 変換候補パネルの表示方向
+    static var candidateListDirection = CurrentValueSubject<CandidateListDirection, Never>(.vertical)
     /// 現在のモードを表示するパネル
     private let inputModePanel: InputModePanel
     /// 変換候補を表示するパネル

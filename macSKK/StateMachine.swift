@@ -229,18 +229,9 @@ final class StateMachine {
                 state.specialState = specialState.dropLast()
                 updateMarkedText()
                 return true
-
             } else {
                 return false
             }
-        case .space:
-            switch state.inputMode {
-            case .eisu:
-                addFixedText("　")
-            default:
-                addFixedText(" ")
-            }
-            return true
         case .tab:
             return false
         case .stickyShift:
@@ -355,19 +346,23 @@ final class StateMachine {
         case .eisu:
             // 何もしない (OSがIMEの切り替えはしてくれる)
             return true
-        case .unregister, .backwardCandidate, nil:
+        case .space, .unregister, .backwardCandidate, .toggleAndFixKana, nil:
             break
         }
 
+        // 直接入力時かつ下線が引かれた未確定文字列がないときはなにもしない
+        if state.inputMode == .direct && state.specialState == nil {
+            return false
+        }
         let event = action.event
         guard let input = event.charactersIgnoringModifiers else {
             return false
         }
-        if !event.modifierFlags.contains(.control) && !event.modifierFlags.contains(.command) {
-            return handleNormalPrintable(input: input, action: action, specialState: specialState)
-        } else {
+        if event.modifierFlags.contains(.control) || event.modifierFlags.contains(.command) || event.modifierFlags.contains(.function) {
             // 単語登録中や登録解除中はtrueを返してなにもしない
             return state.specialState != nil
+        } else {
+            return handleNormalPrintable(input: input, action: action, specialState: specialState)
         }
     }
 
@@ -402,7 +397,7 @@ final class StateMachine {
                     // lowercaseMapにエントリがある場合はエントリの方のキーが入力されたと見做す
                     if let mappedEvent = Global.kanaRule.convertKeyEvent(action.event) {
                         return handleNormal(
-                            Action(keyBind: Global.keyBinding.action(event: mappedEvent),
+                            Action(keyBind: Global.keyBinding.action(event: mappedEvent, inputMethodState: state.inputMethod),
                                    event: mappedEvent,
                                    cursorPosition: action.cursorPosition,
                                    textInput: action.textInput,
@@ -493,8 +488,26 @@ final class StateMachine {
             state.inputMode = .hiragana
             inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
             return true
-        case .toggleKana:
-            if okuri == nil {
+        case .toggleAndFixKana:
+            if text.isEmpty {
+                // 入力中ローマ字を今のモードで確定してからモードを変更する
+                switch state.inputMode {
+                case .hiragana:
+                    state.inputMethod = .normal
+                    addFixedText(composing.string(for: state.inputMode, kanaRule: Global.kanaRule))
+                    state.inputMode = .katakana
+                    inputMethodEventSubject.send(.modeChanged(.katakana, action.cursorPosition))
+                    return true
+                case .katakana, .hankaku:
+                    state.inputMethod = .normal
+                    addFixedText(composing.string(for: state.inputMode, kanaRule: Global.kanaRule))
+                    state.inputMode = .hiragana
+                    inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
+                    return true
+                case .eisu, .direct:
+                    break
+                }
+            } else if okuri == nil {
                 // ひらがな入力中ならカタカナ、カタカナ入力中ならひらがな、半角カタカナ入力中なら全角カタカナで確定する。
                 // 未確定ローマ字はn以外は入力されずに削除される. nだけは"ん"が入力されているとする
                 state.inputMethod = .normal
@@ -619,7 +632,9 @@ final class StateMachine {
                 )
             }
             if text.isEmpty {
-                addFixedText(" ")
+                // 未確定ローマ字はn以外は入力されずに削除される. nだけは"ん"として変換する
+                let fixedText = composing.string(for: state.inputMode, kanaRule: Global.kanaRule)
+                addFixedText(fixedText + " ")
                 state.inputMethod = .normal
                 updateModeIfPrevModeExists()
                 return true
@@ -643,7 +658,8 @@ final class StateMachine {
                                                               text: newText,
                                                               okuri: nil,
                                                               romaji: "",
-                                                              cursor: nil))
+                                                              cursor: nil,
+                                                              prevMode: composing.prevMode))
                 self.completion = nil
                 updateMarkedText()
             }
@@ -772,7 +788,7 @@ final class StateMachine {
                 updateMarkedText()
             }
             return true
-        case .up, .down, .registerPaste, .eisu, .kana, .reconvert:
+        case .up, .down, .registerPaste, .eisu, .kana, .toggleKana, .reconvert:
             return true
         case .abbrev, .unregister, .backwardCandidate, .none:
             break
@@ -817,7 +833,7 @@ final class StateMachine {
 
         if input == "." && action.shiftIsPressed() && state.inputMode != .direct && !composing.text.isEmpty { // ">"
             // 接頭辞が入力されたものとして ">" より前で変換を開始する
-            let newComposing = composing.appendText(Romaji.Moji(firstRomaji: "", kana: ">"))
+            let newComposing = composing.trim(kanaRule: Global.kanaRule).appendText(Romaji.Moji(firstRomaji: "", kana: ">"))
             return handleComposingStartConvert(action, composing: newComposing, specialState: specialState)
         }
         switch state.inputMode {
@@ -825,7 +841,7 @@ final class StateMachine {
             // lowercaseMapにエントリがある場合はエントリの方のキーが入力されたと見做す
             if let mappedEvent = Global.kanaRule.convertKeyEvent(action.event) {
                 return handleComposing(
-                    Action(keyBind: Global.keyBinding.action(event: mappedEvent),
+                    Action(keyBind: Global.keyBinding.action(event: mappedEvent, inputMethodState: state.inputMethod),
                            event: mappedEvent,
                            cursorPosition: action.cursorPosition,
                            textInput: action.textInput,
@@ -1073,16 +1089,19 @@ final class StateMachine {
                 return true
             }
         case .up:
-            return handleSelectingPrevious(diff: -1, selecting: selecting)
-        case .space, .down:
-            let diff: Int
-            if selecting.candidateIndex >= inlineCandidateCount && action.keyBind == .space {
-                // 次ページの先頭
-                diff = displayCandidateCount - (selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount
+            if case .vertical = Global.candidateListDirection.value {
+                return handleSelectingPrevious(diff: -1, selecting: selecting)
             } else {
-                diff = 1
+                return handleSelectingPreviousPage(selecting: selecting)
             }
-            return handleSelectingNext(action, diff: diff, selecting: selecting, specialState: specialState)
+        case .down:
+            if case .vertical = Global.candidateListDirection.value {
+                return handleSelectingNext(action, diff: 1, selecting: selecting, specialState: specialState)
+            } else {
+                return handleSelectingNextPage(action, selecting: selecting, specialState: specialState)
+            }
+        case .space:
+            return handleSelectingNextPage(action, selecting: selecting, specialState: specialState)
         case .backwardCandidate:
             return handleSelectingPrevious(diff: -1, selecting: selecting)
         case .tab:
@@ -1097,17 +1116,17 @@ final class StateMachine {
             updateMarkedText()
             return true
         case .left:
-            if selecting.candidateIndex >= inlineCandidateCount {
-                // 前ページの先頭
-                let diff = -((selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount) - displayCandidateCount
-                return handleSelectingPrevious(diff: diff, selecting: selecting)
+            if case .vertical = Global.candidateListDirection.value {
+                return handleSelectingPreviousPage(selecting: selecting)
             } else {
-                // AquaSKKと同様に何もしない (IMKCandidates表示時はそちらの移動に使われる)
-                return true
+                return handleSelectingPrevious(diff: -1, selecting: selecting)
             }
         case .right:
-            let diff = displayCandidateCount - (selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount
-            return handleSelectingNext(action, diff: diff, selecting: selecting, specialState: specialState)
+            if case .vertical = Global.candidateListDirection.value {
+                return handleSelectingNextPage(action, selecting: selecting, specialState: specialState)
+            } else {
+                return handleSelectingNext(action, diff: 1, selecting: selecting, specialState: specialState)
+            }
         case .startOfLine:
             // 現ページの先頭
             let diff = -(selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount
@@ -1148,7 +1167,7 @@ final class StateMachine {
             return true
         case .registerPaste, .delete, .eisu, .kana, .reconvert:
             return true
-        case .toggleKana, .direct, .zenkaku, .abbrev, .japanese:
+        case .toggleKana, .toggleAndFixKana, .direct, .zenkaku, .abbrev, .japanese:
             break
         case nil:
             break
@@ -1230,6 +1249,33 @@ final class StateMachine {
         }
         updateMarkedText()
         return true
+    }
+
+    /**
+     * 選択候補をインライン表示中なら一つ前、リスト表示なら前ページの先頭へ動かす。
+     * すでに変換候補の先頭だった場合は読み入力に戻す。
+     */
+    @MainActor private func handleSelectingPreviousPage(selecting: SelectingState) -> Bool {
+        if selecting.candidateIndex >= inlineCandidateCount {
+            // 前ページの先頭
+            let diff = -((selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount) - displayCandidateCount
+            return handleSelectingPrevious(diff: diff, selecting: selecting)
+        } else {
+            return handleSelectingPrevious(diff: -1, selecting: selecting)
+        }
+    }
+
+    /**
+     * 選択候補がインライン表示なら一つ先、リスト表示なら次ページの先頭へ動かす。
+     * 次ページがなければ単語登録に遷移する。
+     */
+    @MainActor private func handleSelectingNextPage(_ action: Action, selecting: SelectingState, specialState: SpecialState?) -> Bool {
+        if selecting.candidateIndex >= inlineCandidateCount {
+            let diff = displayCandidateCount - (selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount
+            return handleSelectingNext(action, diff: diff, selecting: selecting, specialState: specialState)
+        } else {
+            return handleSelectingNext(action, diff: 1, selecting: selecting, specialState: specialState)
+        }
     }
 
     func setMode(_ mode: InputMode) {

@@ -72,6 +72,7 @@
 "Find completion from all dictionaries" = "ユーザー辞書だけでなくすべての辞書から補完を探す";
 "Ignore User Dict in Private Mode" = "プライベートモードではユーザー辞書を参照しない";
 "Show Input Mode Modal" = "入力モードアイコンを表示";
+"Direction of candidate list" = "変換候補リストの表示方向";
 "Enter Key confirms a candidate and sends a newline" = "Enterキーで変換候補確定後に改行を入力";
 "Insert Blank String" = "空文字挿入";
 "Enabled" = "有効";
@@ -84,7 +85,8 @@
 "TCP Port" = "TCPポート番号";
 "Response Encoding" = "応答エンコーディング";
 "Yomi" = "読み";
-"Refer" = "参照";
+"Find Candidates" = "変換候補を検索";
+"Find Completions" = "補完候補を検索";
 "Rename" = "リネーム";
 "Duplicate" = "複製";
 "Edit" = "編集";
@@ -93,9 +95,12 @@
 "Modifier Flags (Required)" = "修飾キー (必須)";
 "Modifier Flags (Optional)" = "修飾キー (任意)";
 "Reset" = "リセット";
+"Vertical" = "縦方向";
+"Horizontal" = "横方向";
 
 "KeyBindingActionHiragana" = "ひらがなモード";
-"KeyBindingActionTogglekana" = "かなカナ切り替え";
+"KeyBindingActionTogglekana" = "かなカナモード切り替え";
+"KeyBindingActionToggleandfixkana" = "入力中のかなカナ切り替え";
 "KeyBindingActionHankakukana" = "半角カナモード";
 "KeyBindingActionDirect" = "直接入力";
 "KeyBindingActionZenkaku" = "全角英数モード";

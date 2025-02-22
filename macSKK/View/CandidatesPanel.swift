@@ -45,9 +45,10 @@ final class CandidatesPanel: NSPanel {
         self.cursorPosition = cursorPosition
         if let mainScreen = NSScreen.main {
             viewModel.maxWidth = mainScreen.visibleFrame.minX + mainScreen.visibleFrame.size.width - cursorPosition.origin.x
+            viewModel.maxHeight = cursorPosition.origin.y - mainScreen.visibleFrame.minY
         }
     }
-
+    
     func setShowAnnotationPopover(_ showAnnotationPopover: Bool) {
         self.viewModel.showAnnotationPopover = showAnnotationPopover
     }
@@ -83,10 +84,16 @@ final class CandidatesPanel: NSPanel {
         let width: CGFloat
         let height: CGFloat
         if case let .panel(words, _, _) = viewModel.candidates {
-            width = viewModel.showAnnotationPopover ? viewModel.minWidth + CandidatesView.annotationPopupWidth : viewModel.minWidth
-            height = CGFloat(words.count) * viewModel.candidatesLineHeight + CandidatesView.footerHeight
-            if viewModel.displayPopoverInLeft {
-                origin.x = origin.x - CandidatesView.annotationPopupWidth - CandidatesView.annotationMargin
+            switch Global.candidateListDirection.value {
+            case .vertical:
+                width = viewModel.showAnnotationPopover ? viewModel.minWidth + CandidatesView.annotationPopupWidth : viewModel.minWidth
+                height = CGFloat(words.count) * viewModel.candidatesLineHeight + CandidatesView.footerHeight
+                if viewModel.displayPopoverInLeftOrTop {
+                    origin.x = origin.x - CandidatesView.annotationPopupWidth - CandidatesView.annotationMarginLeftRight
+                }
+            case .horizontal:
+                width = viewModel.minWidth
+                height = (viewModel.showAnnotationPopover ? HorizontalCandidatesView.annotationPopupHeight + CandidatesView.annotationMarginTopBottom : 0) + viewModel.candidatesLineHeight
             }
         } else {
             // FIXME: 短い文のときにはそれに合わせて高さを縮める
@@ -108,3 +115,4 @@ final class CandidatesPanel: NSPanel {
         orderFrontRegardless()
     }
 }
+ 
