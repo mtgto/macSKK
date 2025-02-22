@@ -342,10 +342,11 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    @MainActor func testHandleNormalUpDown() {
+    @MainActor func testHandleNormalUpDownPagedown() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         XCTAssertFalse(stateMachine.handle(upKeyAction))
         XCTAssertFalse(stateMachine.handle(downKeyAction))
+        XCTAssertFalse(stateMachine.handle(pagedownKeyAction))
     }
 
     @MainActor func testHandleNormalPrintableDirect() {
@@ -3351,7 +3352,7 @@ final class StateMachineTests: XCTestCase {
     }
     // Deleteを押した
     var deleteAction: Action {
-        Action(keyBind: .delete, event: generateNSEvent(character: "\u{63272}", characterIgnoringModifiers: "\u{63272}", modifierFlags: .function), cursorPosition: .zero)
+        Action(keyBind: .delete, event: generateNSEvent(character: "\u{f728}", characterIgnoringModifiers: "\u{f728}", modifierFlags: .function), cursorPosition: .zero)
     }
     // 英数キーを押した
     var eisuKeyAction: Action {
@@ -3360,6 +3361,10 @@ final class StateMachineTests: XCTestCase {
     // かなキーを押した
     var kanaKeyAction: Action {
         Action(keyBind: .kana, event: generateNSEvent(character: "\u{10}", characterIgnoringModifiers: "\u{10}"), cursorPosition: .zero)
+    }
+    // PageDownキーを押した
+    var pagedownKeyAction: Action {
+        Action(keyBind: nil, event: generateNSEvent(character: "\u{f72d}", characterIgnoringModifiers: "\u{f72d}", modifierFlags: .function), cursorPosition: .zero)
     }
 
     // NormalモードまたはSelectingモードでqキーを押した
