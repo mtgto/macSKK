@@ -316,7 +316,9 @@ final class SettingsViewModel: ObservableObject {
         showInputIconModal = UserDefaults.standard.bool(forKey: UserDefaultsKeys.showInputModePanel)
         candidateListDirection = CandidateListDirection(rawValue: UserDefaults.standard.integer(forKey: UserDefaultsKeys.candidateListDirection)) ?? .vertical
 
+        Global.keyBinding = selectedKeyBindingSet
         Global.selectCandidateKeys = selectCandidateKeys.lowercased().map { $0 }
+        Global.enterNewLine = enterNewLine
         Global.systemDict = systemDict
         Global.selectingBackspace = selectingBackspace
         Global.punctuation = Punctuation(comma: comma, period: period)
@@ -471,7 +473,7 @@ final class SettingsViewModel: ObservableObject {
             Global.keyBinding = keyBindingSets.first { $0.id == selectedKeyBindingSetId } ?? KeyBindingSet.defaultKeyBindingSet
         }.store(in: &cancellables)
 
-        $selectedKeyBindingSet.sink { selectedKeyBindingSet in
+        $selectedKeyBindingSet.dropFirst().sink { selectedKeyBindingSet in
             if Global.keyBinding.id != selectedKeyBindingSet.id {
                 logger.log("キーバインドのセットを \(Global.keyBinding.id, privacy: .public) から \(selectedKeyBindingSet.id, privacy: .public) に変更しました")
                 UserDefaults.standard.set(selectedKeyBindingSet.id, forKey: UserDefaultsKeys.selectedKeyBindingSetId)
@@ -479,8 +481,8 @@ final class SettingsViewModel: ObservableObject {
             }
         }.store(in: &cancellables)
 
-        $enterNewLine.sink { enterNewLine in
-            logger.log("Enterキーで変換確定と一緒に改行する設定を\(enterNewLine ? "有効" : "無効")にしました")
+        $enterNewLine.dropFirst().sink { enterNewLine in
+            logger.log("Enterキーで変換確定と一緒に改行する設定を\(enterNewLine ? "有効" : "無効", privacy: .public)にしました") 
             Global.enterNewLine = enterNewLine
         }.store(in: &cancellables)
 
