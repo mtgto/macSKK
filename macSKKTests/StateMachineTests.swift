@@ -21,6 +21,7 @@ final class StateMachineTests: XCTestCase {
         Global.enterNewLine = false
         Global.selectingBackspace = SelectingBackspace.default
         Global.candidateListDirection.send(.vertical)
+        Global.keyBinding = KeyBindingSet.defaultKeyBindingSet
     }
 
     @MainActor func testHandleNormalSimple() {
@@ -201,6 +202,24 @@ final class StateMachineTests: XCTestCase {
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "s")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    @MainActor func testHandleNormalSpaceCustomized() {
+        Global.keyBinding = KeyBindingSet(id: "spaceCustomized", values: [
+            KeyBinding(.space, [
+                KeyBinding.Input(key: .character("."), modifierFlags: []),
+                KeyBinding.Input(key: .character("n"), modifierFlags: [.control])
+            ])
+        ])
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(1).sink { events in
+            XCTAssertEqual(events[0], .fixedText("1")) // 変換開始や変換中じゃないので入力キーがそのまま入力される
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "1")))
+        XCTAssertFalse(stateMachine.handle(ctrlNAction)) // Ctrlを含むキー入力は無視して本来の挙動を優先する
         wait(for: [expectation], timeout: 1.0)
     }
 
@@ -3313,6 +3332,10 @@ final class StateMachineTests: XCTestCase {
     // 矢印の下キーを押した
     var downKeyAction: Action {
         Action(keyBind: .down, event: generateNSEvent(character: "\u{63233}", characterIgnoringModifiers: "\u{63233}", modifierFlags: [.function, .numericPad]), cursorPosition: .zero)
+    }
+    // Ctrl-nキーを押した
+    var ctrlNAction: Action {
+        Action(keyBind: .endOfLine, event: generateNSEvent(character: "n", characterIgnoringModifiers: "n", modifierFlags: .control), cursorPosition: .zero)
     }
     // 矢印の左キーを押した
     var leftKeyAction: Action {
