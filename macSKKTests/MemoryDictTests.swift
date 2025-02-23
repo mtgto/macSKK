@@ -182,4 +182,12 @@ class MemoryDictTests: XCTestCase {
         XCTAssertEqual(dict.refer("いt", option: nil), [Word("言"), Word("行", okuri: "った")])
         XCTAssertEqual(dict.refer("いt", option: .okuri("った")), [Word("行", okuri: "った"), Word("言")])
     }
+
+    func testReverseRefer() {
+        let dict = MemoryDict(entries: ["あr": [Word("有"), Word("在")], "え": [Word("絵"), Word("柄")]], readonly: false)
+        XCTAssertEqual(dict.reverseRefer("絵"), "え")
+        XCTAssertEqual(dict.reverseRefer("柄"), "え")
+        XCTAssertNil(dict.reverseRefer("江"))
+        XCTAssertEqual(dict.reverseRefer("有"), "あr")
+    }
 }

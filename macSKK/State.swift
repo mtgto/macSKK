@@ -95,14 +95,17 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
     /// 未確定文字列の入力開始前のモード。
     /// スラッシュでAbbrevモードに入るときにその前のモードを設定しておき、Abbrevモードから抜けるときにそのモードに戻す
     let prevMode: InputMode?
+    /// 再変換する際に選択していた文字列
+    let reconvertText: String?
 
-    init(isShift: Bool, text: [String], okuri: [Romaji.Moji]? = nil, romaji: String, cursor: Int? = nil, prevMode: InputMode? = nil) {
+    init(isShift: Bool, text: [String], okuri: [Romaji.Moji]? = nil, romaji: String, cursor: Int? = nil, prevMode: InputMode? = nil, reconvertText: String? = nil) {
         self.isShift = isShift
         self.text = text
         self.okuri = okuri
         self.romaji = romaji
         self.cursor = cursor
         self.prevMode = prevMode
+        self.reconvertText = reconvertText
     }
 
     /**

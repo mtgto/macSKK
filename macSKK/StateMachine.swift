@@ -326,6 +326,23 @@ final class StateMachine {
             } else {
                 return false
             }
+        case .reconvert:
+            if let textInput = action.textInput {
+                if let substring = textInput.attributedSubstring(from: textInput.selectedRange()) {
+                    let word = substring.string
+                    // TODO: 言う などのように送り仮名つきであれば "言" で検索する (送り仮名もセットで検索したほうがいい)
+                    if let yomi = Global.dictionary.reverseRefer(word) {
+                        // TODO: いu などのように送り仮名つきの読みかを確認する
+                        state.inputMethod = .composing(
+                            ComposingState(isShift: true,
+                                           text: yomi.map { String($0) },
+                                           romaji: "",
+                                           reconvertText: word))
+                        updateMarkedText()
+                    }
+                }
+            }
+            return true
         case .eisu:
             // 何もしない (OSがIMEの切り替えはしてくれる)
             return true
@@ -383,6 +400,7 @@ final class StateMachine {
                             Action(keyBind: Global.keyBinding.action(event: mappedEvent, inputMethodState: state.inputMethod),
                                    event: mappedEvent,
                                    cursorPosition: action.cursorPosition,
+                                   textInput: action.textInput,
                                    treatAsAlphabet: true),
                             specialState: specialState)
                     }
@@ -697,6 +715,9 @@ final class StateMachine {
             if text.isEmpty || romaji.isEmpty {
                 // 下線テキストをリセットする
                 state.inputMethod = .normal
+                if let reconvertText = composing.reconvertText {
+                    addFixedText(reconvertText)
+                }
                 updateModeIfPrevModeExists()
             } else {
                 state.inputMethod = .composing(ComposingState(isShift: isShift, text: text, okuri: nil, romaji: ""))
@@ -767,7 +788,7 @@ final class StateMachine {
                 updateMarkedText()
             }
             return true
-        case .up, .down, .registerPaste, .eisu, .kana, .toggleKana:
+        case .up, .down, .registerPaste, .eisu, .kana, .toggleKana, .reconvert:
             return true
         case .abbrev, .unregister, .backwardCandidate, .none:
             break
@@ -823,6 +844,7 @@ final class StateMachine {
                     Action(keyBind: Global.keyBinding.action(event: mappedEvent, inputMethodState: state.inputMethod),
                            event: mappedEvent,
                            cursorPosition: action.cursorPosition,
+                           textInput: action.textInput,
                            treatAsAlphabet: true),
                     composing: composing,
                     specialState: specialState
@@ -1143,7 +1165,7 @@ final class StateMachine {
             updateCandidates(selecting: nil)
             updateMarkedText()
             return true
-        case .registerPaste, .delete, .eisu, .kana:
+        case .registerPaste, .delete, .eisu, .kana, .reconvert:
             return true
         case .toggleKana, .toggleAndFixKana, .direct, .zenkaku, .abbrev, .japanese:
             break
