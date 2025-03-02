@@ -148,7 +148,8 @@ struct KeyBindingInputsView: View {
                 }
                 .onChange(of: editingInput) { newEditingInput in
                     if let newEditingInput {
-                        eventMonitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown]) { event in
+                        eventMonitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown]) { originalEvent in
+                            guard let event = originalEvent.asInputMethodKitKeyEvent() else { return originalEvent }
                             let key: Key
                             if let character = event.charactersIgnoringModifiers?.lowercased().first, Key.characters.contains(character) {
                                 key = .character(character)

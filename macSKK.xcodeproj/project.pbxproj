@@ -104,6 +104,7 @@
 		CEB141722A87D16C005E7252 /* DictionaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEB141712A87D16C005E7252 /* DictionaryView.swift */; };
 		CEC061C82ABB0A0100A11614 /* CompletionPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEC061C72ABB0A0100A11614 /* CompletionPanel.swift */; };
 		CEC061CA2ABB0A7900A11614 /* CompletionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEC061C92ABB0A7900A11614 /* CompletionViewModel.swift */; };
+		CEC1BF562D747B8500AAAAAF /* NSEvent+IMK.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEC1BF552D747B8500AAAAAF /* NSEvent+IMK.swift */; };
 		CEC376E82965199500D9C432 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEC376E72965199500D9C432 /* SettingsView.swift */; };
 		CEC376EB2965211200D9C432 /* KeyEventView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEC376EA2965211200D9C432 /* KeyEventView.swift */; };
 		CED0984D2B779E4700F2E844 /* UNNotifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED0984C2B779E4700F2E844 /* UNNotifier.swift */; };
@@ -276,6 +277,7 @@
 		CEB141712A87D16C005E7252 /* DictionaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryView.swift; sourceTree = "<group>"; };
 		CEC061C72ABB0A0100A11614 /* CompletionPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletionPanel.swift; sourceTree = "<group>"; };
 		CEC061C92ABB0A7900A11614 /* CompletionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletionViewModel.swift; sourceTree = "<group>"; };
+		CEC1BF552D747B8500AAAAAF /* NSEvent+IMK.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSEvent+IMK.swift"; sourceTree = "<group>"; };
 		CEC376E72965199500D9C432 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		CEC376EA2965211200D9C432 /* KeyEventView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyEventView.swift; sourceTree = "<group>"; };
 		CED0984C2B779E4700F2E844 /* UNNotifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UNNotifier.swift; sourceTree = "<group>"; };
@@ -442,6 +444,7 @@
 				CED7F51E2AB5F4A7007FC6BD /* Character+Additions.swift */,
 				CE496C902B440892001C623C /* URL+Additions.swift */,
 				CED987402BB953E7001B40F9 /* Data+EucJis2004.swift */,
+				CEC1BF552D747B8500AAAAAF /* NSEvent+IMK.swift */,
 				CE485A892A8FA5C6008271EF /* UserNotificationDelegate.swift */,
 				CE7F9ADA2AB53E31001B1877 /* View */,
 				CEC376E929651DE000D9C432 /* Settings */,
@@ -827,6 +830,7 @@
 				CEF3D86C2B9C022900BD1D3A /* WorkaroundApplicationView.swift in Sources */,
 				CE11C7B52BDD461C00A35F3D /* Global.swift in Sources */,
 				CE84A3DE29571797009394C4 /* Action.swift in Sources */,
+				CEC1BF562D747B8500AAAAAF /* NSEvent+IMK.swift in Sources */,
 				4B8E87D62CE05D0C004E7461 /* Key.swift in Sources */,
 				CED987412BB953E7001B40F9 /* Data+EucJis2004.swift in Sources */,
 				CE485A882A8FA195008271EF /* Release+UNNotification.swift in Sources */,
