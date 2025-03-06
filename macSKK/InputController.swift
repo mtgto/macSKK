@@ -202,11 +202,6 @@ class InputController: IMKInputController {
         if event == nil {
             return false
         }
-        if event.modifierFlags.contains(.shift) {
-            if let charactersIgnoringModifiers = event.charactersIgnoringModifiers {
-                logger.log("charactersIgnoringModifiers = \(charactersIgnoringModifiers, privacy: .public)")
-            }
-        }
         let keyBind = Global.keyBinding.action(event: event, inputMethodState: stateMachine.state.inputMethod)
         if directMode {
             if let keyBind, keyBind == .kana || keyBind == .eisu {
