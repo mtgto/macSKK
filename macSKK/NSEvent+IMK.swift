@@ -1,31 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import Carbon.HIToolbox.Events
+import Carbon.HIToolbox.TextInputSources
+import CoreServices
 import Cocoa
 
 extension NSEvent {
-    static let charactersIgnoringModifiersMap: [UInt16: String] = [
-        UInt16(kVK_ANSI_1): "1",
-        UInt16(kVK_ANSI_2): "2",
-        UInt16(kVK_ANSI_3): "3",
-        UInt16(kVK_ANSI_4): "4",
-        UInt16(kVK_ANSI_5): "5",
-        UInt16(kVK_ANSI_6): "6",
-        UInt16(kVK_ANSI_7): "7",
-        UInt16(kVK_ANSI_8): "8",
-        UInt16(kVK_ANSI_9): "9",
-        UInt16(kVK_ANSI_0): "0",
-        UInt16(kVK_ANSI_LeftBracket): "[",
-        UInt16(kVK_ANSI_RightBracket): "]",
-        UInt16(kVK_ANSI_Minus): "-",
-        UInt16(kVK_ANSI_Equal): "=",
-        UInt16(kVK_ANSI_Semicolon): ";",
-        UInt16(kVK_ANSI_Comma): ",",
-        UInt16(kVK_ANSI_Period): ".",
-        UInt16(kVK_ANSI_Slash): "/",
-        UInt16(kVK_ANSI_Backslash): "\\",
-        UInt16(kVK_ANSI_Quote): "'",
-    ]
     /**
      * キーイベントをIMKInputController.handleの入力イベント形式に変換する。
      *
@@ -45,23 +24,54 @@ extension NSEvent {
             return self
         }
         if modifierFlags.contains(.shift) {
-            if let charactersIgnoringModifiers, let characters {
-                if let converted = Self.charactersIgnoringModifiersMap[keyCode] {
-                    return NSEvent.keyEvent(with: type,
-                                            location: locationInWindow,
-                                            modifierFlags: modifierFlags,
-                                            timestamp: timestamp,
-                                            windowNumber: windowNumber,
-                                            context: nil,
-                                            characters: characters,
-                                            charactersIgnoringModifiers: converted,
-                                            isARepeat: isARepeat,
-                                            keyCode: keyCode)
-                }
+            if let characters, let converted = actualCharactersIgnoringModifiers {
+                return NSEvent.keyEvent(with: type,
+                                        location: locationInWindow,
+                                        modifierFlags: modifierFlags,
+                                        timestamp: timestamp,
+                                        windowNumber: windowNumber,
+                                        context: nil,
+                                        characters: characters,
+                                        charactersIgnoringModifiers: converted,
+                                        isARepeat: isARepeat,
+                                        keyCode: keyCode)
             }
-            // TODO
-            return self
         }
         return self
+    }
+
+    /**
+     * 修飾キーなしで現在のキー配列で入力したときの文字列を返す。
+     * 例えばキー配列をDvorakに変えている場合、Qwerty配列でのSキーの位置を押した場合は "s" ではなく "o" を返す。
+     */
+    var actualCharactersIgnoringModifiers: String? {
+        guard let inputSource = TISCopyCurrentKeyboardLayoutInputSource()?.takeRetainedValue(),
+              let layoutData = TISGetInputSourceProperty(inputSource, kTISPropertyUnicodeKeyLayoutData) else {
+            return nil
+        }
+
+        let keyLayoutPtr = unsafeBitCast(CFDataGetBytePtr(unsafeBitCast(layoutData, to: CFData.self)),
+                                         to: UnsafePointer<UCKeyboardLayout>.self)
+        var deadKeyState: UInt32 = 0
+        let maxStringLength = 4
+        var actualStringLength = 0
+        var unicodeString = [UniChar](repeating: 0, count: maxStringLength)
+
+        let status = UCKeyTranslate(
+            keyLayoutPtr,
+            keyCode,
+            UInt16(kUCKeyActionDown),
+            0,
+            UInt32(LMGetKbdType()),
+            OptionBits(kUCKeyTranslateNoDeadKeysBit),
+            &deadKeyState,
+            maxStringLength,
+            &actualStringLength,
+            &unicodeString
+        )
+
+        guard status == noErr else { return nil }
+
+        return String(utf16CodeUnits: unicodeString, count: actualStringLength)
     }
 }
