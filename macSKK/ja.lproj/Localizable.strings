@@ -97,6 +97,7 @@
 "Reset" = "リセット";
 "Vertical" = "縦方向";
 "Horizontal" = "横方向";
+"Settings" = "設定";
 
 "KeyBindingActionHiragana" = "ひらがなモード";
 "KeyBindingActionTogglekana" = "かなカナモード切り替え";

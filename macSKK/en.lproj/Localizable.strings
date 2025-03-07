@@ -97,6 +97,7 @@
 "Reset" = "Reset";
 "Vertical" = "Vertical";
 "Horizontal" = "Horizontal";
+"Settings" = "Settings";
 
 "KeyBindingActionHiragana" = "Hiragana Mode";
 "KeyBindingActionTogglekana" = "Toggle Kana Mode";

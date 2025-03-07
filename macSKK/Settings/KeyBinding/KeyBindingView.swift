@@ -14,7 +14,7 @@ struct KeyBindingView: View {
 
     var body: some View {
         HStack {
-            Picker("設定", selection: $settingsViewModel.selectedKeyBindingSet) {
+            Picker("Settings", selection: $settingsViewModel.selectedKeyBindingSet) {
                 ForEach(settingsViewModel.keyBindingSets) { keyBindingSet in
                     Text(keyBindingSet.id)
                         .tag(keyBindingSet)
