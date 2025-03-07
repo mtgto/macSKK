@@ -717,6 +717,9 @@ final class StateMachine {
                 state.inputMethod = .normal
                 if let reconvertText = composing.reconvertText {
                     addFixedText(reconvertText)
+                } else if !isShift {
+                    // `n` だけ入力した状態でESC押したときは `ん` を確定させる。Shiftが押されているときは確定させない
+                    addFixedText(composing.string(for: state.inputMode, kanaRule: Global.kanaRule))
                 }
                 updateModeIfPrevModeExists()
             } else {
