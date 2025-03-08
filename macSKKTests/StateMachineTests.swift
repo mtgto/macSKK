@@ -542,18 +542,27 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleNormalCancel() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(5).sink { events in
+        stateMachine.inputMethodEvent.collect(10).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("え")])))
             XCTAssertEqual(events[1], .modeChanged(.hiragana, .zero))
             XCTAssertEqual(events[2], .markedText(MarkedText([.plain("[登録：え]")])))
             XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("え")])))
             XCTAssertEqual(events[4], .markedText(MarkedText([])))
+            XCTAssertEqual(events[5], .markedText(MarkedText([.plain("n")])))
+            XCTAssertEqual(events[6], .fixedText("ん"))
+            XCTAssertEqual(events[7], .markedText(MarkedText([])))
+            XCTAssertEqual(events[8], .markedText(MarkedText([.markerCompose, .plain("n")])))
+            XCTAssertEqual(events[9], .markedText(MarkedText([])))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertFalse(stateMachine.handle(cancelAction))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
         XCTAssertTrue(stateMachine.handle(cancelAction))
+        XCTAssertTrue(stateMachine.handle(cancelAction))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n")))
+        XCTAssertTrue(stateMachine.handle(cancelAction))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n", withShift: true)))
         XCTAssertTrue(stateMachine.handle(cancelAction))
         wait(for: [expectation], timeout: 1.0)
     }
