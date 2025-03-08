@@ -150,7 +150,7 @@ struct KeyBindingInputsView: View {
                     if let newEditingInput {
                         eventMonitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown]) { event in
                             let key: Key
-                            if let character = event.charactersIgnoringModifiers?.lowercased().first, Key.characters.contains(character) {
+                            if let character = event.characters(byApplyingModifiers: [])?.first, Key.characters.contains(character) {
                                 key = .character(character)
                             } else {
                                 key = .code(event.keyCode)
