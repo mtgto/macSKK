@@ -14,11 +14,11 @@ final class ReleaseVersionTests: XCTestCase {
     }
 
     func testInit() {
-        XCTAssertEqual(ReleaseVersion(string: "1.2.30"), ver(1, 2, 30))
-        XCTAssertNil(ReleaseVersion(string: "v1.0.0"), "数字3つ以外つけてはいけない")
-        XCTAssertNil(ReleaseVersion(string: "2.0"), "数字は3つないといけない")
-        XCTAssertNil(ReleaseVersion(string: "0.f.0"), "数字は10進数じゃないといけない")
-        XCTAssertNil(ReleaseVersion(string: "0.1.0-beta1"), "ベータバージョンのような形式は受理しない")
+        XCTAssertEqual(try? ReleaseVersion(string: "1.2.30"), ver(1, 2, 30))
+        XCTAssertNil(try? ReleaseVersion(string: "v1.0.0"), "数字3つ以外つけてはいけない")
+        XCTAssertNil(try? ReleaseVersion(string: "2.0"), "数字は3つないといけない")
+        XCTAssertNil(try? ReleaseVersion(string: "0.f.0"), "数字は10進数じゃないといけない")
+        XCTAssertNil(try? ReleaseVersion(string: "0.1.0-beta1"), "ベータバージョンのような形式は受理しない")
     }
 
     private func ver(_ major: Int = 0, _ minor: Int = 0, _ patch: Int = 0) -> ReleaseVersion {

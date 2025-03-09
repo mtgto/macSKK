@@ -162,7 +162,8 @@ struct macSKKApp: App {
                 Button("User Notification") {
                     let release = Release(version: ReleaseVersion(major: 0, minor: 4, patch: 0),
                                           updated: Date(),
-                                          url: URL(string: "https://github.com/mtgto/macSKK/releases/tag/0.4.0")!)
+                                          url: URL(string: "https://github.com/mtgto/macSKK/releases/tag/0.4.0")!,
+                                          content: "- すばらしい**機能**を実装しました (#9999)\n- バグを修正しました (#10000)")
                     sendPushNotificationForRelease(release)
                 }
                 #endif
@@ -251,7 +252,7 @@ struct macSKKApp: App {
 
     private func setupReleaseFetcher() {
         guard let shortVersionString = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
-              let currentVersion = ReleaseVersion(string: shortVersionString) else {
+              let currentVersion = try? ReleaseVersion(string: shortVersionString) else {
             fatalError("現在のバージョンが不正な状態です")
         }
         fetchReleaseTask = Task.detached(priority: .low) {
