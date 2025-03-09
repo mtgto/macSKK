@@ -3460,6 +3460,8 @@ final class StateMachineTests: XCTestCase {
             return withShift ? .unregister : .backwardCandidate
         case ";":
             return withShift ? nil : .stickyShift
+        case ".":
+            return withShift ? .affix : nil
         case "/":
             return withShift ? nil : .abbrev
         case " ":
