@@ -20,7 +20,7 @@ struct KeyEventView: View {
                 .onAppear {
                     eventMonitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown]) { event in
                         characters = event.characters ?? ""
-                        charactersIgnoringModifiers = event.charactersIgnoringModifiers ?? ""
+                        charactersIgnoringModifiers = event.characters(byApplyingModifiers: []) ?? ""
                         keyCode = event.keyCode.description
                         var modifiers: [String] = []
                         if event.modifierFlags.contains(.capsLock) {
