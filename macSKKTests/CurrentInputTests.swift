@@ -24,11 +24,13 @@ final class CurrentInputTests: XCTestCase {
         let inputShiftQ = CurrentInput(key: .character("q"), modifierFlags: .shift)
         let eventQ = generateKeyEvent(modifierFlags: [], characters: "q")
         let eventShiftQ = generateKeyEvent(modifierFlags: .shift, characters: "q")
-        
+        let affix = generateKeyEvent(modifierFlags: .shift, characters: ">", charactersIgnoringModifiers: ".")
+
         XCTAssertEqual(inputQ, CurrentInput(event: eventQ))
         XCTAssertEqual(inputShiftQ, CurrentInput(event: eventShiftQ))
         XCTAssertNotEqual(inputQ, CurrentInput(event: eventShiftQ))
         XCTAssertNotEqual(inputShiftQ, CurrentInput(event: eventQ))
+        XCTAssertEqual(CurrentInput(event: affix).key, .character("."))
     }
 
     func testCurrentInputKeyCodeWithShift() {

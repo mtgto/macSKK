@@ -63,6 +63,8 @@ struct KeyBinding: Identifiable, Hashable {
         case registerPaste
         /// 選択した文字列を辞書から逆引きして再変換をする。デフォルトはCtrl-/キー
         case reconvert
+        /// 接頭辞・接尾辞の入力。デフォルトは ">" (Shift-.キー)
+        case affix
         /// 英数キー
         /// TODO: カスタマイズできなくする?
         case eisu
@@ -90,6 +92,14 @@ struct KeyBinding: Identifiable, Hashable {
                 }
             case .toggleAndFixKana:
                 if case .composing(_) = inputMethodState {
+                    return true
+                } else {
+                    return false
+                }
+            case .affix:
+                if case .composing(_) = inputMethodState {
+                    return true
+                } else if case .selecting(_) = inputMethodState {
                     return true
                 } else {
                     return false
@@ -303,6 +313,8 @@ struct KeyBinding: Identifiable, Hashable {
                 return KeyBinding(action, [Input(key: .character("y"), modifierFlags: .control)])
             case .reconvert:
                 return KeyBinding(action, [Input(key: .character("/"), modifierFlags: [.control])])
+            case .affix:
+                return KeyBinding(action, [Input(key: .character("."), modifierFlags: .shift)])
             case .eisu:
                 return KeyBinding(action, [Input(key: .code(0x66), modifierFlags: [])])
             case .kana:

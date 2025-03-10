@@ -18,12 +18,9 @@ struct CurrentInput: Equatable {
     }
 
     init(event: NSEvent) {
-        if event.modifierFlags.contains(.shift), let character = event.characters?.lowercased().first, Key.characters.contains(character) {
-            // Shiftを押しながら入力されたキーはキーバインド設定から登録した場合は (NSEvent#charactersIgnoringModifiersが記号のほうを返すため)
-            // .character("!") のように記号のほうをもっているが、IMKInputController#handleに渡されるNSEventの
-            // charactersIgnoringModifiersは記号のほうではない ("!"なら"1"になっている) ため、charactersのほうを見る
+        if let character = event.charactersIgnoringModifiers?.lowercased().first, Key.characters.contains(character) {
             key = .character(character)
-        } else if let character = event.charactersIgnoringModifiers?.lowercased().first, Key.characters.contains(character) {
+        } else if let character = event.characters?.lowercased().first, Key.characters.contains(character) {
             key = .character(character)
         } else {
             key = .code(event.keyCode)
