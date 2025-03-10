@@ -18,6 +18,11 @@ struct SoftwareUpdateView: View {
                                 .padding(.leading)
                         }
                     }
+                    if let latestRelease = settingsViewModel.latestRelease,
+                       let markdown = try? AttributedString(markdown: latestRelease.content,
+                                                            options: AttributedString.MarkdownParsingOptions(interpretedSyntax: .inlineOnlyPreservingWhitespace)) {
+                        Text(markdown).textSelection(.enabled)
+                    }
                     HStack {
                         Spacer()
                         Button("Check For Update") {
@@ -57,7 +62,8 @@ struct SoftwareUpdateView_Previews: PreviewProvider {
         let viewModel = try! SettingsViewModel(dictSettings: [])
         viewModel.latestRelease = Release(version: ReleaseVersion(major: 1, minor: 0, patch: 0),
                                           updated: Date(),
-                                          url: URL(string: "https://example.com")!)
+                                          url: URL(string: "https://example.com")!,
+                                          content: "- すばらしい**機能**を実装しました (#9999)\n- バグを修正しました (#10000)")
         return SoftwareUpdateView(settingsViewModel: viewModel)
     }
 }

@@ -3,8 +3,17 @@
 
 import Foundation
 
-struct Release: Sendable {
+struct Release: Sendable, Decodable {
     let version: ReleaseVersion
     let updated: Date
     let url: URL
+    // HTML形式
+    let content: String
+
+    enum CodingKeys: String, CodingKey {
+        case version = "name"
+        case updated = "published_at"
+        case url = "html_url"
+        case content = "body"
+    }
 }
