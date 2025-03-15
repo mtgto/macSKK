@@ -204,6 +204,25 @@ final class StateTests: XCTestCase {
         XCTAssertEqual(composingState.remain(), ["い"])
     }
 
+    func testComposingUniteOkuri() {
+        var state = ComposingState(isShift: true, text: ["あ", "い"], okuri: nil, romaji: "", cursor: nil).uniteOkuri()
+        XCTAssertEqual(state.text, ["あ", "い"])
+        XCTAssertNil(state.okuri)
+        XCTAssertNil(state.cursor)
+        state = ComposingState(isShift: true, text: ["あ", "い"], okuri: [], romaji: "", cursor: nil).uniteOkuri()
+        XCTAssertEqual(state.text, ["あ", "い"])
+        XCTAssertNil(state.okuri)
+        XCTAssertNil(state.cursor)
+        state = ComposingState(isShift: true, text: ["あ", "い"], okuri: [Romaji.Moji(firstRomaji: "r", kana: "る")], romaji: "", cursor: nil).uniteOkuri()
+        XCTAssertEqual(state.text, ["あ", "い", "る"])
+        XCTAssertNil(state.okuri)
+        XCTAssertNil(state.cursor)
+        state = ComposingState(isShift: true, text: ["あ", "い"], okuri: [Romaji.Moji(firstRomaji: "r", kana: "る")], romaji: "", cursor: 1).uniteOkuri()
+        XCTAssertEqual(state.text, ["あ", "る", "い"]) // カーソルの位置に挿入される
+        XCTAssertNil(state.okuri)
+        XCTAssertEqual(state.cursor, 2) // 送り仮名の分加算される
+    }
+
     func testSelectingStateFixedText() throws {
         let selectingState = SelectingState(
             prev: SelectingState.PrevState(
@@ -428,7 +447,7 @@ final class StateTests: XCTestCase {
     }
 
     func testIMEStateDisplayTextRegister() {
-        let prevComposingState = ComposingState(isShift: true, text: ["あいうえお"], romaji: "")
+        let prevComposingState = ComposingState(isShift: true, text: ["あ", "い", "う", "え", "お"], romaji: "")
         let registerState = RegisterState(prev: RegisterState.PrevState(mode: .hiragana, composing: prevComposingState),
                                           yomi: "あいうえお",
                                           text: "愛上")
@@ -448,7 +467,7 @@ final class StateTests: XCTestCase {
     }
 
     func testIMEStateDisplayTextRegisterCursor() {
-        let prevComposingState = ComposingState(isShift: true, text: ["あいうえお"], romaji: "")
+        let prevComposingState = ComposingState(isShift: true, text: ["あ", "い", "う", "え", "お"], romaji: "")
         let registerState = RegisterState(prev: RegisterState.PrevState(mode: .hiragana, composing: prevComposingState),
                                           yomi: "あいうえお",
                                           text: "愛上",
@@ -469,12 +488,12 @@ final class StateTests: XCTestCase {
     }
 
     func testIMEStateDisplayTextRegisterRecursive() {
-        let firstComposingState = ComposingState(isShift: true, text: ["あいうえお"], romaji: "")
+        let firstComposingState = ComposingState(isShift: true, text: ["あ", "い", "う", "え", "お"], romaji: "")
         let prevRegisterState = RegisterState(prev: RegisterState.PrevState(mode: .hiragana, composing: firstComposingState),
                                               yomi: "あいうえお",
                                               text: "",
                                               cursor: nil)
-        let prevComposingState = ComposingState(isShift: true, text: ["あいうえ"], romaji: "")
+        let prevComposingState = ComposingState(isShift: true, text: ["あ", "い", "う", "え"], romaji: "")
         let registerState = RegisterState(prev: RegisterState.PrevState(mode: .hiragana, composing: prevComposingState),
                                           yomi: "あいうえ",
                                           text: "愛上",
@@ -526,7 +545,7 @@ final class StateTests: XCTestCase {
                 mode: .hiragana,
                 composing: ComposingState(
                     isShift: true,
-                    text: ["だい2"],
+                    text: ["だ", "い", "2"],
                     okuri: nil,
                     romaji: ""
                 )
