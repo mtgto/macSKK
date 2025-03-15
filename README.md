@@ -44,7 +44,7 @@ Universal Binary (Apple Silicon & Intel Mac) でビルドしていますが、�
 
 2023年現在、Mac App Storeでは日本語入力システムを配布することができないため、[Appleのソフトウェア公証](https://support.apple.com/ja-jp/guide/security/sec3ad8e6e53/1/web/1)を受けたアプリケーションバイナリを[GitHub Releases](https://github.com/mtgto/macSKK/releases/latest)で配布しています。dmgファイルをダウンロードしマウントした中にあるpkgファイルからインストールしてください。
 
-もしHomebrew Caskでインストールしたい場合は、 `brew install --cask macss` でインストールできます。詳しくは https://formulae.brew.sh/cask/macskk を参照してください。
+もしHomebrew Caskでインストールしたい場合は、 `brew install --cask macskk` でインストールできます。詳しくは https://formulae.brew.sh/cask/macskk を参照してください。
 
 また独自Cask定義 `brew install --cask mtgto/macskk/macskk` でもインストールできます。Homebrew公式との違いとしてはこちらはGitHub Actionsで作業を自動化しているのでリリース直後にすぐ反映されます。詳しくは https://github.com/mtgto/homebrew-macSKK を参照してください。
 
