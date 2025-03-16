@@ -17,13 +17,13 @@ struct CurrentInput: Equatable {
         self.modifierFlags = modifierFlags
     }
 
+    /**
+     * > Important: keyBindingInputsViewのキーイベントで取れるNSEventのcharactersIgnoringModifiersはシフトで変わる記号 (Shift-1で!など)
+     *              の場合、"!" になっている。そのようなNSEventの場合、本来をKey.characterとして解釈されるべきところで
+     *              Key.codeとして解釈されてしまうため使用しないこと。
+     */
     init(event: NSEvent) {
-        if event.modifierFlags.contains(.shift), let character = event.characters?.lowercased().first, Key.characters.contains(character) {
-            // Shiftを押しながら入力されたキーはキーバインド設定から登録した場合は (NSEvent#charactersIgnoringModifiersが記号のほうを返すため)
-            // .character("!") のように記号のほうをもっているが、IMKInputController#handleに渡されるNSEventの
-            // charactersIgnoringModifiersは記号のほうではない ("!"なら"1"になっている) ため、charactersのほうを見る
-            key = .character(character)
-        } else if let character = event.charactersIgnoringModifiers?.lowercased().first, Key.characters.contains(character) {
+        if let character = event.charactersIgnoringModifiers?.lowercased().first, Key.characters.contains(character) {
             key = .character(character)
         } else {
             key = .code(event.keyCode)
