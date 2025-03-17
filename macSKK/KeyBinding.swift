@@ -214,13 +214,24 @@ struct KeyBinding: Identifiable, Hashable {
 
     // UserDefaultsからのデコード用
     init?(dict: [String: Any]) {
-        guard let actionValue = dict["action"] as? String, let action = Action(stringValue: actionValue),
-        let inputsValue = dict["inputs"] as? Array<[String: Any]> else {
+        guard let actionValue = dict["action"] as? String else {
+            logger.warning("actionの値が不正なため読み込めません")
+            return nil
+        }
+        guard let action = Action(stringValue: actionValue) else {
+            // 未来のmacSKKバージョンで追加されたactionかもしれないので無視して次に進める
+            logger.warning("現在対応していないaction \"\(actionValue, privacy: .public)\" が読み込み中に見つかりました")
+            return nil
+        }
+        guard let inputsValue = dict["inputs"] as? Array<[String: Any]> else {
+            logger.warning("inputsの値が不正なため読み込めません")
             return nil
         }
         let inputs = inputsValue.compactMap({ Input(dict: $0) })
         if inputs.count != inputsValue.count {
-            return nil
+            // 未来のmacSKKバージョンで作成されていてなんらか読み込めないinputの数がおかしいだけかもしれないので
+            // 一応警告ログを出して継続する
+            logger.warning("読み込めないキーバインド設定が \(actionValue, privacy: .public) のキー設定で見つかりました (設定されたキー数: \(inputsValue.count), 読み込めた数: \(inputs.count)")
         }
         self.action = action
         self.inputs = inputs
