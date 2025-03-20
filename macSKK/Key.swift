@@ -17,7 +17,7 @@ enum Key: Hashable, Equatable {
     /// macSKKでkeyCodeベースでなく印字されている文字で取り扱うキーの集合。
     /// Shiftを押しながら入力する記号は含めない。これはIMKInputControllerに渡されるNSEventの
     /// NSEvent#charactersIgnoringModifiersと同じ。
-    static let characters: [Character] = "abcdefghijklmnopqrstuvwxyz1234567890,./;-=`'\\".map { $0 }
+    static let characters: [Character] = "abcdefghijklmnopqrstuvwxyz1234567890,./;-=`'\\@^[]".map { $0 }
 
     /// Inputで管理する修飾キーの集合。ここに含まれてない修飾キーは無視する
     static let allowedModifierFlags: NSEvent.ModifierFlags = [.shift, .control, .function, .option, .command]
