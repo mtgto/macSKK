@@ -273,6 +273,25 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
         }
     }
 
+    /**
+     * 送り仮名を読みに統合して返す。送り仮名は未入力状態に戻す
+     * 例えば yomiが "おく", okuriが ["り"] の場合、yomiが"おくり"、okuriがnilの状態のComposingStateを返す
+     */
+    func uniteOkuri() -> Self {
+        if let okuri {
+            let newState = okuri.reduce(self, { composing, moji in composing.appendText(moji) })
+            let newCursor = cursor.map { $0 + okuri.count }
+            return ComposingState(isShift: newState.isShift,
+                                  text: newState.text,
+                                  okuri: nil,
+                                  romaji: "",
+                                  cursor: newCursor,
+                                  prevMode: newState.prevMode)
+        } else {
+            return self
+        }
+    }
+
     // MARK: - CursorProtocol
     func moveCursorLeft() -> Self {
         let newCursor: Int
