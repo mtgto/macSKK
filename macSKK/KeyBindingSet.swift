@@ -59,8 +59,10 @@ struct KeyBindingSet: Identifiable, Hashable {
         }
         for dict in keyBindings {
             guard let keyBinding = KeyBinding(dict: dict) else {
-                logger.warning("キーバインド \(id, privacy: .public) の読み込みに失敗しました")
-                return nil
+                // 読み込めないKeyBindingは無視して次に進める。
+                // 設定から更新すると読み込めなかったKeyBindingを除いて永続化される。
+                logger.warning("キーバインド \(id, privacy: .public) に読み込めないエントリが見つかりました")
+                continue
             }
             values.append(keyBinding)
         }

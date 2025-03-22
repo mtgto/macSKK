@@ -20,6 +20,9 @@ struct KeyEventView: View {
                 .onAppear {
                     eventMonitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown]) { event in
                         characters = event.characters ?? ""
+                        // event.charactersIgnoringModifiersは IMKInputControllerへの入力とは違って
+                        // Shiftを押しながらだと変わる記号はそのままになっているという違いがある。
+                        // そのためIMKInputControllerに渡されるのに近い「修飾キーがないときの入力」を取得する。
                         charactersIgnoringModifiers = event.characters(byApplyingModifiers: []) ?? ""
                         keyCode = event.keyCode.description
                         var modifiers: [String] = []

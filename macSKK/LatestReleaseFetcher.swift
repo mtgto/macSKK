@@ -25,13 +25,9 @@ actor LatestReleaseFetcher {
         }
 
         lastFetchedDate = Date()
-        let releases = try await updateChecker.fetch()
         lastFetchedDate = Date()
-        guard let latest = releases.first else {
-            logger.error("取得したリリース情報に1つもリリースがありません")
-            throw LatestReleaseFetcherError.invalidData
-        }
-        latestRelease = latest
-        return latest
+        let latestRelease = try await updateChecker.fetch()
+        self.latestRelease = latestRelease
+        return latestRelease
     }
 }

@@ -39,12 +39,22 @@ final class KeyBindingTests: XCTestCase {
     func testEncodeAndDecode() {
         let binding1 = KeyBinding(.abbrev, [KeyBinding.Input(key: .character("/"), modifierFlags: [])])
         let binding2 = KeyBinding(dict: binding1.encode())
-        XCTAssertEqual(binding1.action, binding2!.action)
-        XCTAssertEqual(binding1.inputs, binding2!.inputs)
+        XCTAssertEqual(binding1.action, binding2?.action)
+        XCTAssertEqual(binding1.inputs, binding2?.inputs)
         // キーが不足していたらデコードしない
         XCTAssertNil(KeyBinding(dict: [:]))
         XCTAssertNil(KeyBinding(dict: ["action": "abbrev"]))
         XCTAssertNil(KeyBinding(dict: ["inputs": []]))
+        // actionが文字列でなかったり登録されていないものだったり、inputsが配列でない場合はデコードしない
+        XCTAssertNil(KeyBinding(dict: ["action": 1]))
+        XCTAssertNil(KeyBinding(dict: ["action": "thisIsTest"]))
+        XCTAssertNil(KeyBinding(dict: ["action": "abbrev", "inputs": [:]]))
+        // actionが正常であればinputsが殻でも許容する
+        let binding3 = KeyBinding(.stickyShift, [])
+        let binding4 = KeyBinding(dict: binding3.encode())
+        XCTAssertEqual(binding3.action, binding4?.action)
+        XCTAssertEqual(binding3.inputs, binding4?.inputs)
+        XCTAssertEqual(KeyBinding(dict: ["action": "stickyShift", "inputs": []])?.action, .stickyShift)
     }
 
     func testInputAccepts() {
