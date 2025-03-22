@@ -124,6 +124,7 @@
 "KeyBindingActionUnregister" = "Unregister selected candidate";
 "KeyBindingActionRegisterpaste" = "Paste on register";
 "KeyBindingActionReconvert" = "Reconvert selected text";
+"KeyBindingActionAffix" = "Prefix/Suffix";
 "KeyBindingActionEisu" = "Eisu Key";
 "KeyBindingActionKana" = "Kana Key";
 
