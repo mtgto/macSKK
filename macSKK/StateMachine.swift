@@ -248,7 +248,9 @@ final class StateMachine {
                 switch specialState {
                 case .register(let registerState, let prevRegisterStates):
                     state.inputMode = registerState.prev.mode
-                    state.inputMethod = .composing(registerState.prev.composing)
+                    // 送り仮名がある場合は読みに結合する。例えば `Na I` という入力("な*い")をしてからキャンセルするときは
+                    // `Nai` という入力をしたときの状態に戻す。
+                    state.inputMethod = .composing(registerState.prev.composing.uniteOkuri())
                     if let prevRegisterState = prevRegisterStates.last {
                         state.specialState = .register(prevRegisterState, prev: prevRegisterStates.dropLast())
                     } else {
@@ -984,7 +986,6 @@ final class StateMachine {
     }
 
     @MainActor func handleComposingStartConvert(_ action: Action, composing: ComposingState, specialState: SpecialState?) -> Bool {
-        // skkservから引く場合もあるのでTaskで実行する
         // 未確定ローマ字はn以外は入力されずに削除される. nだけは"ん"として変換する
         // 変換候補がないときは辞書登録へ
         let trimmedComposing = composing.trim(kanaRule: Global.kanaRule)
@@ -1125,7 +1126,9 @@ final class StateMachine {
             fixCurrentSelect()
             return handle(action)
         case .cancel:
-            state.inputMethod = .composing(selecting.prev.composing)
+            // 送り仮名がある場合は読みに結合する。例えば `Na I` という入力("な*い")をしてからキャンセルするときは
+            // `Nai` という入力をしたときの状態に戻す。
+            state.inputMethod = .composing(selecting.prev.composing.uniteOkuri())
             state.inputMode = selecting.prev.mode
             updateCandidates(selecting: nil)
             updateMarkedText()
@@ -1225,7 +1228,9 @@ final class StateMachine {
             state.inputMethod = .selecting(newSelectingState)
         } else {
             updateCandidates(selecting: nil)
-            state.inputMethod = .composing(selecting.prev.composing)
+            // 送り仮名がある場合は読みに結合する。例えば `Na I` という入力("な*い")をしてからキャンセルするときは
+            // `Nai` という入力をしたときの状態に戻す。
+            state.inputMethod = .composing(selecting.prev.composing.uniteOkuri())
             state.inputMode = selecting.prev.mode
         }
         updateMarkedText()
