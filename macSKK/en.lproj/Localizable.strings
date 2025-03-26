@@ -136,3 +136,4 @@
 "SelectingBackspaceDropLastAlways" = "Delete a last character & commit always";
 "Follow Romaji-Kana Rule" = "Follow Romaji-Kana Rule";
 "EnterKey" = "Enter \"%@\"";
+"DuplicatedKeyBindingName" = "Copy of %@";

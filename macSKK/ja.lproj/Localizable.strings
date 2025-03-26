@@ -136,3 +136,4 @@
 "SelectingBackspaceDropLastAlways" = "常に一文字削除して確定";
 "Follow Romaji-Kana Rule" = "ローマ字かな変換ルールに従う";
 "EnterKey" = "\"%@\" を入力";
+"DuplicatedKeyBindingName" = "%@ のコピー";

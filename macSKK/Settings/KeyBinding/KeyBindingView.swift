@@ -44,7 +44,8 @@ struct KeyBindingView: View {
         }
         .padding([.top, .leading, .trailing])
         .sheet(item: $editingKeyBindingSetMode) { mode in
-            KeyBindingSetView(settingsViewModel: settingsViewModel, mode: $editingKeyBindingSetMode, id: settingsViewModel.selectedKeyBindingSet.id)
+            let copyId = String(format: String(localized: "DuplicatedKeyBindingName"), settingsViewModel.selectedKeyBindingSet.id)
+            KeyBindingSetView(settingsViewModel: settingsViewModel, mode: $editingKeyBindingSetMode, id: copyId)
         }
         .confirmationDialog("Delete", isPresented: $isShowingConfirmDeleteAlert) {
             Button("Cancel", role: .cancel) {
