@@ -150,7 +150,14 @@ struct KeyBindingInputsView: View {
                     if let newEditingInput {
                         eventMonitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown]) { event in
                             let key: Key
-                            if let character = event.characters(byApplyingModifiers: [])?.first, Key.characters.contains(character) {
+                            let character = if #available(macOS 14, *) {
+                                event.characters(byApplyingModifiers: [])?.first
+                            } else {
+                                // macOS 13では ``NSEvent/characters(byApplyingModifiers:)`` がnilを返すので使用しない
+                                // https://github.com/mtgto/example-characters-by-applying-modifiers/issues/1
+                                event.charactersWithoutModifiers?.first
+                            }
+                            if let character, Key.characters.contains(character) {
                                 key = .character(character)
                             } else {
                                 key = .code(event.keyCode)

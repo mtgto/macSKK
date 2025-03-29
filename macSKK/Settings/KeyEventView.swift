@@ -23,7 +23,11 @@ struct KeyEventView: View {
                         // event.charactersIgnoringModifiersは IMKInputControllerへの入力とは違って
                         // Shiftを押しながらだと変わる記号はそのままになっているという違いがある。
                         // そのためIMKInputControllerに渡されるのに近い「修飾キーがないときの入力」を取得する。
-                        charactersIgnoringModifiers = event.characters(byApplyingModifiers: []) ?? ""
+                        if #available(macOS 14, *) {
+                            charactersIgnoringModifiers = event.characters(byApplyingModifiers: []) ?? ""
+                        } else {
+                            charactersIgnoringModifiers = event.charactersWithoutModifiers ?? ""
+                        }
                         keyCode = event.keyCode.description
                         var modifiers: [String] = []
                         if event.modifierFlags.contains(.capsLock) {
