@@ -103,6 +103,7 @@
 		CEB088902A7F73B400EFD1E3 /* Pasteboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEB0888F2A7F73B400EFD1E3 /* Pasteboard.swift */; };
 		CEB141702A8773DB005E7252 /* SKK-JISYO.test.utf8 in Resources */ = {isa = PBXBuildFile; fileRef = CEB1416F2A8773DB005E7252 /* SKK-JISYO.test.utf8 */; };
 		CEB141722A87D16C005E7252 /* DictionaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEB141712A87D16C005E7252 /* DictionaryView.swift */; };
+		CEBEE7872D97D25800C73B6D /* NSEvent+CoreService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEBEE7862D97D25800C73B6D /* NSEvent+CoreService.swift */; };
 		CEC061C82ABB0A0100A11614 /* CompletionPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEC061C72ABB0A0100A11614 /* CompletionPanel.swift */; };
 		CEC061CA2ABB0A7900A11614 /* CompletionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEC061C92ABB0A7900A11614 /* CompletionViewModel.swift */; };
 		CEC376E82965199500D9C432 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEC376E72965199500D9C432 /* SettingsView.swift */; };
@@ -275,6 +276,7 @@
 		CEB088952A81353400EFD1E3 /* DictionaryServiceExtention.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DictionaryServiceExtention.h; sourceTree = "<group>"; };
 		CEB1416F2A8773DB005E7252 /* SKK-JISYO.test.utf8 */ = {isa = PBXFileReference; lastKnownFileType = text; path = "SKK-JISYO.test.utf8"; sourceTree = "<group>"; };
 		CEB141712A87D16C005E7252 /* DictionaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryView.swift; sourceTree = "<group>"; };
+		CEBEE7862D97D25800C73B6D /* NSEvent+CoreService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSEvent+CoreService.swift"; sourceTree = "<group>"; };
 		CEC061C72ABB0A0100A11614 /* CompletionPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletionPanel.swift; sourceTree = "<group>"; };
 		CEC061C92ABB0A7900A11614 /* CompletionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletionViewModel.swift; sourceTree = "<group>"; };
 		CEC376E72965199500D9C432 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -443,6 +445,7 @@
 				CE496C902B440892001C623C /* URL+Additions.swift */,
 				CED987402BB953E7001B40F9 /* Data+EucJis2004.swift */,
 				CE485A892A8FA5C6008271EF /* UserNotificationDelegate.swift */,
+				CEBEE7862D97D25800C73B6D /* NSEvent+CoreService.swift */,
 				CE7F9ADA2AB53E31001B1877 /* View */,
 				CEC376E929651DE000D9C432 /* Settings */,
 				CEB088922A81342E00EFD1E3 /* macSKK-Bridging-Header.h */,
@@ -824,6 +827,7 @@
 				CE5ECF362957034B00E7BE7D /* macSKKApp.swift in Sources */,
 				CEC061C82ABB0A0100A11614 /* CompletionPanel.swift in Sources */,
 				CE4CB5CC2AD557D90046FA34 /* NumberEntry.swift in Sources */,
+				CEBEE7872D97D25800C73B6D /* NSEvent+CoreService.swift in Sources */,
 				CEF3D86C2B9C022900BD1D3A /* WorkaroundApplicationView.swift in Sources */,
 				CE11C7B52BDD461C00A35F3D /* Global.swift in Sources */,
 				CE84A3DE29571797009394C4 /* Action.swift in Sources */,
