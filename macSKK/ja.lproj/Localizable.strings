@@ -17,6 +17,7 @@
 "SettingsNoteDictionaries" = "辞書を追加したい場合は辞書フォルダに辞書ファイルを置き、この画面で有効化してください。";
 "SettingsFileDictionariesTitle" = "ファイル辞書";
 "SettingsFileDictionariesSubtitle" = "項目をドラッグすることで優先順位を入れ替え可能です。";
+"SettingsFileDictionariesEmpty" = "ファイル辞書がありません";
 "SettingsNoteDirectMode" = "日本語変換を行いたくないアプリが最前面の状態で、入力メニューから \"(アプリ名)では直接入力\" を選択してください。";
 "SettingsNoteWorkaround" = "設定したいアプリが最前面の状態で、入力メニューからも互換性の設定の有効・無効を設定できます。";
 "SettingsHeaderWorkaroundApplication" = "アプリケーションの互換性の設定";

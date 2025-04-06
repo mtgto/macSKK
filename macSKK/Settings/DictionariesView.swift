@@ -40,30 +40,34 @@ struct DictionariesView: View {
                     Text("SKKServ")
                 }
                 Section {
-                    List {
-                        ForEach($settingsViewModel.dictSettings) { dictSetting in
-                            HStack(alignment: .top) {
-                                Toggle(isOn: dictSetting.enabled) {
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text(dictSetting.id)
-                                            .font(.body)
-                                        Text(loadingStatus(setting: dictSetting.wrappedValue))
-                                            .font(.footnote)
+                    if settingsViewModel.dictSettings.isEmpty {
+                        Text("SettingsFileDictionariesEmpty")
+                    } else {
+                        List {
+                            ForEach($settingsViewModel.dictSettings) { dictSetting in
+                                HStack(alignment: .top) {
+                                    Toggle(isOn: dictSetting.enabled) {
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text(dictSetting.id)
+                                                .font(.body)
+                                            Text(loadingStatus(setting: dictSetting.wrappedValue))
+                                                .font(.footnote)
+                                        }
                                     }
+                                    .toggleStyle(.switch)
+                                    Button {
+                                        selectedDictSetting = dictSetting.wrappedValue
+                                    } label: {
+                                        Image(systemName: "info.circle")
+                                            .resizable()
+                                            .frame(width: 16, height: 16)
+                                    }
+                                    .buttonStyle(.borderless)
                                 }
-                                .toggleStyle(.switch)
-                                Button {
-                                    selectedDictSetting = dictSetting.wrappedValue
-                                } label: {
-                                    Image(systemName: "info.circle")
-                                        .resizable()
-                                        .frame(width: 16, height: 16)
-                                }
-                                .buttonStyle(.borderless)
+                                .padding(EdgeInsets(top: 4, leading: 2, bottom: 4, trailing: 2))
+                            }.onMove { from, to in
+                                settingsViewModel.dictSettings.move(fromOffsets: from, toOffset: to)
                             }
-                            .padding(EdgeInsets(top: 4, leading: 2, bottom: 4, trailing: 2))
-                        }.onMove { from, to in
-                            settingsViewModel.dictSettings.move(fromOffsets: from, toOffset: to)
                         }
                     }
                 } header: {
@@ -131,7 +135,7 @@ struct DictionariesView_Previews: PreviewProvider {
         case dummy
     }
 
-    static var previews: some View {
+    private static func makeSettingsViewModel() -> SettingsViewModel {
         let dictSettings = [
             DictSetting(filename: "SKK-JISYO.L", enabled: true, type: .traditional(.japaneseEUC)),
             DictSetting(filename: "SKK-JISYO.sample.utf-8", enabled: false, type: .traditional(.utf8)),
@@ -145,6 +149,11 @@ struct DictionariesView_Previews: PreviewProvider {
             "SKK-JISYO.dummy": .loading,
             "SKK-JISYO.error": .fail(DictionariesViewPreviewError.dummy)
         ]
-        return DictionariesView(settingsViewModel: settings)
+        return settings
+    }
+
+    static var previews: some View {
+        DictionariesView(settingsViewModel: makeSettingsViewModel())
+        DictionariesView(settingsViewModel: try! SettingsViewModel(dictSettings: [])).previewDisplayName("辞書が空のとき")
     }
 }
