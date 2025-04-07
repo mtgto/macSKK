@@ -346,11 +346,7 @@ class InputController: IMKInputController {
 
     // キー配列を設定する
     private func setCustomInputSource(textInput: any IMKTextInput) {
-        if let inputSourceID = UserDefaults.standard.string(forKey: UserDefaultsKeys.selectedInputSource) {
-            logger.info("InputSourceIDを \(inputSourceID, privacy: .public) に設定します")
-            textInput.overrideKeyboard(withKeyboardNamed: inputSourceID)
-        } else {
-            logger.info("InputSourceIDは選択されていません")
-        }
+        logger.info("InputSourceIDを \(Global.selectedInputSourceId, privacy: .public) に設定します")
+        textInput.overrideKeyboard(withKeyboardNamed: Global.selectedInputSourceId)
     }
 }

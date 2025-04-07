@@ -324,6 +324,7 @@ final class SettingsViewModel: ObservableObject {
         Global.punctuation = Punctuation(comma: comma, period: period)
         Global.ignoreUserDictInPrivateMode.send(ignoreUserDictInPrivateMode)
         Global.candidateListDirection.send(candidateListDirection)
+        Global.selectedInputSourceId = selectedInputSourceId
 
         // SKK-JISYO.Lのようなファイルの読み込みが遅いのでバックグラウンドで処理
         $dictSettings.filter({ !$0.isEmpty }).receive(on: DispatchQueue.global()).sink { dictSettings in
@@ -424,6 +425,7 @@ final class SettingsViewModel: ObservableObject {
             if let selectedInputSource = self?.inputSources.first(where: { $0.id == selectedInputSourceId }) {
                 logger.info("キー配列を \(selectedInputSource.localizedName, privacy: .public) (\(selectedInputSourceId, privacy: .public)) に設定しました")
                 UserDefaults.standard.set(selectedInputSource.id, forKey: UserDefaultsKeys.selectedInputSource)
+                Global.selectedInputSourceId = selectedInputSource.id
             } else {
                 if let self, !self.inputSources.isEmpty {
                     logger.error("キー配列 \(selectedInputSourceId, privacy: .public) が見つかりませんでした")

@@ -43,6 +43,8 @@ import Combine
     static var punctuation: Punctuation = .default
     /// 変換候補パネルの表示方向
     static var candidateListDirection = CurrentValueSubject<CandidateListDirection, Never>(.vertical)
+    /// 現在のキー配列
+    static var selectedInputSourceId: String = InputSource.defaultInputSourceId
     /// 現在のモードを表示するパネル
     private let inputModePanel: InputModePanel
     /// 変換候補を表示するパネル
