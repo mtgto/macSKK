@@ -157,7 +157,7 @@ class InputController: IMKInputController {
             }
         }.store(in: &cancellables)
         stateMachine.yomiEvent.sink { [weak self] yomi in
-            if let self {
+            if let self, Global.showCompletion {
                 if let completion = Global.dictionary.findCompletion(prefix: yomi) {
                     self.stateMachine.completion = (yomi, completion)
                     Global.completionPanel.viewModel.completion = completion

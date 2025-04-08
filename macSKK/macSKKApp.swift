@@ -198,6 +198,7 @@ struct macSKKApp: App {
             UserDefaultsKeys.keyBindingSets: [],
             UserDefaultsKeys.selectedKeyBindingSetId: KeyBindingSet.defaultKeyBindingSet.id,
             UserDefaultsKeys.enterNewLine: false,
+            UserDefaultsKeys.showCompletion: true,
             UserDefaultsKeys.systemDict: SystemDict.Kind.daijirin.rawValue,
             UserDefaultsKeys.selectingBackspace: SelectingBackspace.default.rawValue,
             UserDefaultsKeys.punctuation: Punctuation.default.rawValue,

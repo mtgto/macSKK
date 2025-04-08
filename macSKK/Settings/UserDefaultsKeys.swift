@@ -29,6 +29,8 @@ struct UserDefaultsKeys {
     static let keyBindingSets = "keyBindingSets"
     // Enterキーで変換候補の確定 + 改行も行う
     static let enterNewLine = "enterNewLine"
+    // 補完を表示するか
+    static let showCompletion = "showCompletion"
     // 注釈に使用するシステム辞書のID。SystemDict.Kindで定義。
     static let systemDict = "systemDict"
     // 変換候補選択中のバックスペースの挙動
