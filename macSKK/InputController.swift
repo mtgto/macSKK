@@ -290,15 +290,27 @@ class InputController: IMKInputController {
             logger.warning("setValueの引数clientがIMKTextInputではありません")
             return
         }
-        
-        // カーソル位置あたりを取得する
-        _ = textInput.attributes(forCharacterIndex: 0, lineHeightRectangle: &cursorPosition)
-        windowLevel = NSWindow.Level(rawValue: Int(textInput.windowLevel() + 1))
-        if Global.showInputModePanel && !directMode {
-            Global.inputModePanel.show(at: cursorPosition.origin, mode: inputMode, privateMode: Global.privateMode.value, windowLevel: windowLevel)
-        }
         // キー配列を設定する
         setCustomInputSource(textInput: textInput)
+
+        // 重い処理なのでTaskで非同期実行させる
+        // Safariでアドレスバーを開くときにレインボーサークルになるときがあるなどの対策
+        Task {
+            await MainActor.run {
+                // カーソル位置あたりを取得する
+                _ = textInput.attributes(forCharacterIndex: 0, lineHeightRectangle: &cursorPosition)
+                if cursorPosition.origin == .zero {
+                    return
+                }
+                windowLevel = NSWindow.Level(rawValue: Int(textInput.windowLevel() + 1))
+                if Global.showInputModePanel {
+                    Global.inputModePanel.show(at: cursorPosition.origin,
+                                               mode: inputMode,
+                                               privateMode: Global.privateMode.value,
+                                               windowLevel: windowLevel)
+                }
+            }
+        }
     }
 
     @objc func showSettings() {
