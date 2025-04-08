@@ -78,6 +78,7 @@ macSKKが入力メソッドとして選択されているときに入力メニ�
 | skkserv                     | Dictionary | skkservサーバーへの接続設定             |
 | selectCandidateKeys         | String     | 変換候補から確定するキー配列            |
 | findCompletionFromAllDicts  | Boolean    | ユーザー辞書だけでなくすべての辞書から補完を探すか |
+| showCompletion              | Boolean    | 補完候補を表示するか                    |
 | selectedKeyBindingSetId     | String     | 選択しているキーバインドのセットのID    |
 | keyBindingSets              | Array      | キーバインドのセットの配列              |
 | enterNewLine                | Boolean    | Enterキーで変換候補の確定 + 改行も行う  |

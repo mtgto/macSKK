@@ -247,6 +247,8 @@ final class SettingsViewModel: ObservableObject {
     @Published var selectedKeyBindingSet: KeyBindingSet
     /// Enterキーで変換候補の確定だけでなく改行も行うかどうか
     @Published var enterNewLine: Bool
+    /// 補完を表示するかどうか
+    @Published var showCompletion: Bool
     @Published var systemDict: SystemDict.Kind
     @Published var selectingBackspace: SelectingBackspace
     @Published var period: Punctuation.Period
@@ -309,6 +311,7 @@ final class SettingsViewModel: ObservableObject {
 
         selectCandidateKeys = UserDefaults.standard.string(forKey: UserDefaultsKeys.selectCandidateKeys)!
         enterNewLine = UserDefaults.standard.bool(forKey: UserDefaultsKeys.enterNewLine)
+        showCompletion = UserDefaults.standard.bool(forKey: UserDefaultsKeys.showCompletion)
         selectingBackspace = SelectingBackspace(rawValue: UserDefaults.standard.integer(forKey: UserDefaultsKeys.selectingBackspace)) ?? SelectingBackspace.default
         comma = Punctuation.Comma(rawValue: UserDefaults.standard.integer(forKey: UserDefaultsKeys.punctuation)) ?? .default
         period = Punctuation.Period(rawValue: UserDefaults.standard.integer(forKey: UserDefaultsKeys.punctuation)) ?? .default
@@ -319,6 +322,7 @@ final class SettingsViewModel: ObservableObject {
         Global.keyBinding = selectedKeyBindingSet
         Global.selectCandidateKeys = selectCandidateKeys.lowercased().map { $0 }
         Global.enterNewLine = enterNewLine
+        Global.showCompletion = showCompletion
         Global.systemDict = systemDict
         Global.selectingBackspace = selectingBackspace
         Global.punctuation = Punctuation(comma: comma, period: period)
@@ -486,6 +490,12 @@ final class SettingsViewModel: ObservableObject {
             Global.enterNewLine = enterNewLine
         }.store(in: &cancellables)
 
+        $showCompletion.dropFirst().sink { showCompletion in
+            logger.log("補完候補を表示する設定を\(showCompletion ? "有効" : "無効", privacy: .public)にしました")
+            UserDefaults.standard.set(showCompletion, forKey: UserDefaultsKeys.showCompletion)
+            Global.showCompletion = showCompletion
+        }.store(in: &cancellables)
+
         $systemDict.dropFirst().sink { systemDict in
             logger.log("注釈で使用するシステム辞書を \(systemDict.rawValue, privacy: .public) に変更しました")
             UserDefaults.standard.set(systemDict.rawValue, forKey: UserDefaultsKeys.systemDict)
@@ -559,6 +569,7 @@ final class SettingsViewModel: ObservableObject {
         keyBindingSets = [KeyBindingSet.defaultKeyBindingSet]
         selectedKeyBindingSet = KeyBindingSet.defaultKeyBindingSet
         enterNewLine = false
+        showCompletion = true
         systemDict = .daijirin
         selectingBackspace = SelectingBackspace.default
         comma = Punctuation.default.comma

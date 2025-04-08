@@ -74,6 +74,7 @@
 "Show Input Mode Modal" = "入力モードアイコンを表示";
 "Direction of candidate list" = "変換候補リストの表示方向";
 "Enter Key confirms a candidate and sends a newline" = "Enterキーで変換候補確定後に改行を入力";
+"Show completion" = "補完候補を表示";
 "Insert Blank String" = "空文字挿入";
 "Enabled" = "有効";
 "Disabled" = "無効";

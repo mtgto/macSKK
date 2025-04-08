@@ -75,6 +75,9 @@ struct GeneralView: View {
                     Toggle(isOn: $settingsViewModel.findCompletionFromAllDicts, label: {
                         Text("Find completion from all dictionaries")
                     })
+                    Toggle(isOn: $settingsViewModel.showCompletion, label: {
+                        Text("Show completion")
+                    })
                     Toggle(isOn: $settingsViewModel.ignoreUserDictInPrivateMode, label: {
                         Text("Ignore User Dict in Private Mode")
                     })
