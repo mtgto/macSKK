@@ -45,6 +45,8 @@ import Combine
     static var candidateListDirection = CurrentValueSubject<CandidateListDirection, Never>(.vertical)
     /// 現在のキー配列
     static var selectedInputSourceId: String = InputSource.defaultInputSourceId
+    /// 入力モードのモーダルを表示するかどうか
+    static var showInputModePanel: Bool = true
     /// 現在のモードを表示するパネル
     private let inputModePanel: InputModePanel
     /// 変換候補を表示するパネル

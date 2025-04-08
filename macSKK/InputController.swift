@@ -87,8 +87,7 @@ class InputController: IMKInputController {
                     if !self.directMode {
                         textInput.selectMode(inputMode.rawValue)
                         
-                        let showInputModePanel = UserDefaults.standard.bool(forKey: UserDefaultsKeys.showInputModePanel)
-                        if showInputModePanel {
+                        if Global.showInputModePanel {
                             Global.inputModePanel.show(at: cursorPosition.origin,
                                                        mode: inputMode,
                                                        privateMode: Global.privateMode.value,
@@ -281,6 +280,9 @@ class InputController: IMKInputController {
 
     @MainActor override func setValue(_ value: Any!, forTag tag: Int, client sender: Any!) {
         guard let value = value as? String else { return }
+        if directMode {
+            return
+        }
         guard let inputMode = InputMode(rawValue: value) else { return }
         logger.debug("入力モードが変更されました \(inputMode.rawValue)")
         stateMachine.setMode(inputMode)
@@ -292,8 +294,7 @@ class InputController: IMKInputController {
         // カーソル位置あたりを取得する
         _ = textInput.attributes(forCharacterIndex: 0, lineHeightRectangle: &cursorPosition)
         windowLevel = NSWindow.Level(rawValue: Int(textInput.windowLevel() + 1))
-        let showInputModePanel = UserDefaults.standard.bool(forKey: UserDefaultsKeys.showInputModePanel)
-        if showInputModePanel && !directMode {
+        if Global.showInputModePanel && !directMode {
             Global.inputModePanel.show(at: cursorPosition.origin, mode: inputMode, privateMode: Global.privateMode.value, windowLevel: windowLevel)
         }
         // キー配列を設定する

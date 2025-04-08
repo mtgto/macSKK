@@ -515,6 +515,7 @@ final class SettingsViewModel: ObservableObject {
         
         $showInputIconModal.dropFirst().sink { showInputModePanel in
             UserDefaults.standard.set(showInputModePanel, forKey: UserDefaultsKeys.showInputModePanel)
+            Global.showInputModePanel = showInputModePanel
             logger.log("入力モードアイコンを\(showInputModePanel ? "表示" : "非表示", privacy: .public)に変更しました")
         }.store(in: &cancellables)
 
