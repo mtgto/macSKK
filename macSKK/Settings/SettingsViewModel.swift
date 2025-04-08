@@ -483,6 +483,7 @@ final class SettingsViewModel: ObservableObject {
 
         $enterNewLine.dropFirst().sink { enterNewLine in
             logger.log("Enterキーで変換確定と一緒に改行する設定を\(enterNewLine ? "有効" : "無効", privacy: .public)にしました") 
+            UserDefaults.standard.set(enterNewLine, forKey: UserDefaultsKeys.enterNewLine)
             Global.enterNewLine = enterNewLine
         }.store(in: &cancellables)
 
