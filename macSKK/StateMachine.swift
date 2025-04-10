@@ -13,7 +13,7 @@ enum InputMethodEvent: Equatable {
     /// 登録モード時は "[登録：あああ]ほげ" のように長くなる
     case markedText(MarkedText)
     /// qやlなどにより入力モードを変更する
-    case modeChanged(InputMode, NSRect)
+    case modeChanged(InputMode)
 }
 
 final class StateMachine {
@@ -83,7 +83,7 @@ final class StateMachine {
                 return true
             } else {
                 state.inputMode = .hiragana
-                inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
+                inputMethodEventSubject.send(.modeChanged(.hiragana))
                 if specialState != nil {
                     updateMarkedText()
                 }
@@ -103,14 +103,14 @@ final class StateMachine {
             switch state.inputMode {
             case .hiragana:
                 state.inputMode = .katakana
-                inputMethodEventSubject.send(.modeChanged(.katakana, action.cursorPosition))
+                inputMethodEventSubject.send(.modeChanged(.katakana))
                 if specialState != nil {
                     inputMethodEventSubject.send(.markedText(state.displayText()))
                 }
                 return true
             case .katakana, .hankaku:
                 state.inputMode = .hiragana
-                inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
+                inputMethodEventSubject.send(.modeChanged(.hiragana))
                 if specialState != nil {
                     inputMethodEventSubject.send(.markedText(state.displayText()))
                 }
@@ -122,14 +122,14 @@ final class StateMachine {
             switch state.inputMode {
             case .hiragana, .katakana:
                 state.inputMode = .hankaku
-                inputMethodEventSubject.send(.modeChanged(.hankaku, action.cursorPosition))
+                inputMethodEventSubject.send(.modeChanged(.hankaku))
                 if specialState != nil {
                     inputMethodEventSubject.send(.markedText(state.displayText()))
                 }
                 return true
             case .hankaku:
                 state.inputMode = .hiragana
-                inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
+                inputMethodEventSubject.send(.modeChanged(.hiragana))
                 if specialState != nil {
                     inputMethodEventSubject.send(.markedText(state.displayText()))
                 }
@@ -141,7 +141,7 @@ final class StateMachine {
             switch state.inputMode {
             case .hiragana, .katakana, .hankaku:
                 state.inputMode = .direct
-                inputMethodEventSubject.send(.modeChanged(.direct, action.cursorPosition))
+                inputMethodEventSubject.send(.modeChanged(.direct))
                 if specialState != nil {
                     inputMethodEventSubject.send(.markedText(state.displayText()))
                 }
@@ -153,7 +153,7 @@ final class StateMachine {
             switch state.inputMode {
             case .hiragana, .katakana, .hankaku:
                 state.inputMode = .eisu
-                inputMethodEventSubject.send(.modeChanged(.eisu, action.cursorPosition))
+                inputMethodEventSubject.send(.modeChanged(.eisu))
                 if specialState != nil {
                     inputMethodEventSubject.send(.markedText(state.displayText()))
                 }
@@ -166,7 +166,7 @@ final class StateMachine {
             case .hiragana, .katakana, .hankaku:
                 state.inputMethod = .composing(ComposingState(isShift: true, text: [], okuri: nil, romaji: "", prevMode: state.inputMode))
                 state.inputMode = .direct
-                inputMethodEventSubject.send(.modeChanged(.direct, action.cursorPosition))
+                inputMethodEventSubject.send(.modeChanged(.direct))
                 inputMethodEventSubject.send(.markedText(state.displayText()))
                 return true
             case .eisu, .direct:
@@ -401,7 +401,6 @@ final class StateMachine {
                         return handleNormal(
                             Action(keyBind: Global.keyBinding.action(event: mappedEvent, inputMethodState: state.inputMethod),
                                    event: mappedEvent,
-                                   cursorPosition: action.cursorPosition,
                                    textInput: action.textInput,
                                    treatAsAlphabet: true),
                             specialState: specialState)
@@ -475,7 +474,7 @@ final class StateMachine {
         func updateModeIfPrevModeExists() {
             if let prevMode = composing.prevMode {
                 state.inputMode = prevMode
-                inputMethodEventSubject.send(.modeChanged(prevMode, action.cursorPosition))
+                inputMethodEventSubject.send(.modeChanged(prevMode))
             }
         }
 
@@ -488,7 +487,7 @@ final class StateMachine {
             state.inputMethod = .normal
             addFixedText(composing.string(for: state.inputMode, kanaRule: Global.kanaRule))
             state.inputMode = .hiragana
-            inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
+            inputMethodEventSubject.send(.modeChanged(.hiragana))
             return true
         case .toggleAndFixKana:
             if text.isEmpty {
@@ -498,13 +497,13 @@ final class StateMachine {
                     state.inputMethod = .normal
                     addFixedText(composing.string(for: state.inputMode, kanaRule: Global.kanaRule))
                     state.inputMode = .katakana
-                    inputMethodEventSubject.send(.modeChanged(.katakana, action.cursorPosition))
+                    inputMethodEventSubject.send(.modeChanged(.katakana))
                     return true
                 case .katakana, .hankaku:
                     state.inputMethod = .normal
                     addFixedText(composing.string(for: state.inputMode, kanaRule: Global.kanaRule))
                     state.inputMode = .hiragana
-                    inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
+                    inputMethodEventSubject.send(.modeChanged(.hiragana))
                     return true
                 case .eisu, .direct:
                     break
@@ -540,7 +539,7 @@ final class StateMachine {
                     addFixedText(text.map { $0.toZenkaku() }.joined())
                     // TODO: AquaSKKはAbbrevに入る前のモードに戻しているのでそれに合わせる?
                     state.inputMode = .hiragana
-                    inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
+                    inputMethodEventSubject.send(.modeChanged(.hiragana))
                 } else {
                     // 半角カタカナで確定する。
                     state.inputMethod = .normal
@@ -860,7 +859,6 @@ final class StateMachine {
                 return handleComposing(
                     Action(keyBind: Global.keyBinding.action(event: mappedEvent, inputMethodState: state.inputMethod),
                            event: mappedEvent,
-                           cursorPosition: action.cursorPosition,
                            textInput: action.textInput,
                            treatAsAlphabet: true),
                     composing: composing,
@@ -1014,7 +1012,7 @@ final class StateMachine {
                     prev: prev + [registerState])
                 state.inputMethod = .normal
                 state.inputMode = .hiragana
-                inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
+                inputMethodEventSubject.send(.modeChanged(.hiragana))
             } else {
                 // 単語登録に遷移する
                 state.specialState = .register(
@@ -1024,7 +1022,7 @@ final class StateMachine {
                     prev: [])
                 state.inputMethod = .normal
                 state.inputMode = .hiragana
-                inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
+                inputMethodEventSubject.send(.modeChanged(.hiragana))
             }
         } else {
             let selectingState = SelectingState(
@@ -1032,7 +1030,6 @@ final class StateMachine {
                 yomi: yomiText,
                 candidates: candidateWords,
                 candidateIndex: 0,
-                cursorPosition: action.cursorPosition,
                 remain: composing.remain())
             updateCandidates(selecting: selectingState)
             state.inputMethod = .selecting(selectingState)
@@ -1063,7 +1060,7 @@ final class StateMachine {
                 addFixedText(fixedText)
                 if let prevMode = selecting.prev.composing.prevMode {
                     state.inputMode = prevMode
-                    inputMethodEventSubject.send(.modeChanged(prevMode, action.cursorPosition))
+                    inputMethodEventSubject.send(.modeChanged(prevMode))
                 }
             }
         }
@@ -1263,7 +1260,7 @@ final class StateMachine {
                     prev: [])
                 state.inputMethod = .normal
                 state.inputMode = .hiragana
-                inputMethodEventSubject.send(.modeChanged(.hiragana, action.cursorPosition))
+                inputMethodEventSubject.send(.modeChanged(.hiragana))
             }
             updateCandidates(selecting: nil)
         }
@@ -1375,8 +1372,7 @@ final class StateMachine {
             if selecting.candidateIndex < inlineCandidateCount {
                 candidateEventSubject.send(
                     Candidates(page: nil,
-                               selected: selecting.candidates[selecting.candidateIndex],
-                               cursorPosition: selecting.cursorPosition))
+                               selected: selecting.candidates[selecting.candidateIndex]))
             } else {
                 var start = selecting.candidateIndex - inlineCandidateCount
                 let currentPage = start / displayCandidateCount
@@ -1385,8 +1381,7 @@ final class StateMachine {
                 let candidates = selecting.candidates[start..<min(start + displayCandidateCount, selecting.candidates.count)]
                 candidateEventSubject.send(
                     Candidates(page: Candidates.Page(words: Array(candidates), current: currentPage, total: totalPageCount),
-                               selected: selecting.candidates[selecting.candidateIndex],
-                               cursorPosition: selecting.cursorPosition))
+                               selected: selecting.candidates[selecting.candidateIndex]))
             }
         } else {
             candidateEventSubject.send(nil)

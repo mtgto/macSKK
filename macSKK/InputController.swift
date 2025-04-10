@@ -28,10 +28,6 @@ class InputController: IMKInputController {
     private var directMode: Bool = false
     /// モード変更時に空白文字を一瞬追加するワークアラウンドを適用するかどうか
     private var insertBlankString: Bool = false
-    /// 最後にイベントを受け取ったときのカーソル位置
-    private var cursorPosition: NSRect = .zero
-    /// 最後にイベントを受け取ったときのウィンドウレベル + 1
-    private var windowLevel: NSWindow.Level = .floating
 
     @MainActor override init!(server: IMKServer!, delegate: Any!, client inputClient: Any!) {
         super.init(server: server, delegate: delegate, client: inputClient)
@@ -39,7 +35,6 @@ class InputController: IMKInputController {
         guard let textInput = inputClient as? any IMKTextInput else {
             return
         }
-        windowLevel = NSWindow.Level(rawValue: Int(textInput.windowLevel() + 1))
         if let bundleIdentifier = textInput.bundleIdentifier() {
             targetApp = TargetApplication(bundleIdentifier: bundleIdentifier, localizedName: nil)
             for app in NSRunningApplication.runningApplications(withBundleIdentifier: bundleIdentifier) {
@@ -76,7 +71,7 @@ class InputController: IMKInputController {
                                                 replacementRange: Self.notFoundRange)
                     }
                     textInput.setMarkedText(NSAttributedString(attributedText), selectionRange: cursorRange, replacementRange: Self.notFoundRange)
-                case .modeChanged(let inputMode, let cursorPosition):
+                case .modeChanged(let inputMode):
                     // KittyやAlacrittyなど、q/lによるモード切り替えでq/lが入力されたり、C-jで改行が入力されるのを回避するワークアラウンド
                     // AquaSKKの空文字列挿入を参考にしています。
                     // https://github.com/codefirst/aquaskk/blob/4.7.5/platform/mac/src/server/SKKInputController.mm#L405-L412
@@ -89,10 +84,10 @@ class InputController: IMKInputController {
                         
                         let showInputModePanel = UserDefaults.standard.bool(forKey: UserDefaultsKeys.showInputModePanel)
                         if showInputModePanel {
-                            Global.inputModePanel.show(at: cursorPosition.origin,
+                            Global.inputModePanel.show(at: cursorPosition(for: textInput).origin,
                                                        mode: inputMode,
                                                        privateMode: Global.privateMode.value,
-                                                       windowLevel: windowLevel)
+                                                       windowLevel: windowLevel(for: textInput))
                         }
                     }
                 }
@@ -104,7 +99,7 @@ class InputController: IMKInputController {
                 Global.candidatesPanel.setShowAnnotationPopover(showAnnotation)
                 if let candidates {
                     // 下線のスタイルがthickのときに被らないように1ピクセル下に余白を設ける
-                    var cursorPosition = candidates.cursorPosition.offsetBy(dx: 0, dy: -1)
+                    var cursorPosition = cursorPosition(for: textInput).offsetBy(dx: 0, dy: -1)
                     cursorPosition.size.height += 1
                     Global.candidatesPanel.setCursorPosition(cursorPosition)
 
@@ -113,12 +108,12 @@ class InputController: IMKInputController {
                                                                           currentPage: page.current,
                                                                           totalPageCount: page.total)
                         Global.candidatesPanel.setCandidates(currentCandidates, selected: candidates.selected)
-                        Global.candidatesPanel.show(windowLevel: self.windowLevel)
+                        Global.candidatesPanel.show(windowLevel: windowLevel(for: textInput))
                     } else {
                         if candidates.selected.annotations.isEmpty || !showAnnotation {
                             Global.candidatesPanel.orderOut(nil)
                         } else {
-                            Global.candidatesPanel.show(windowLevel: self.windowLevel)
+                            Global.candidatesPanel.show(windowLevel: windowLevel(for: textInput))
                         }
                         Global.candidatesPanel.setCandidates(.inline, selected: candidates.selected)
                     }
@@ -142,7 +137,7 @@ class InputController: IMKInputController {
             if UserDefaults.standard.bool(forKey: UserDefaultsKeys.showAnnotation) {
                 if let self, let systemAnnotation = SystemDict.lookup(word, for: Global.systemDict), !systemAnnotation.isEmpty {
                     Global.candidatesPanel.setSystemAnnotation(systemAnnotation, for: word)
-                    Global.candidatesPanel.show(windowLevel: self.windowLevel)
+                    Global.candidatesPanel.show(windowLevel: windowLevel(for: textInput))
                 }
             }
         }.store(in: &cancellables)
@@ -161,7 +156,10 @@ class InputController: IMKInputController {
                 if let completion = Global.dictionary.findCompletion(prefix: yomi) {
                     self.stateMachine.completion = (yomi, completion)
                     Global.completionPanel.viewModel.completion = completion
-                    Global.completionPanel.show(at: self.cursorPosition, windowLevel: self.windowLevel)
+                    let cursorPosition = cursorPosition(for: textInput)
+                    if cursorPosition != .zero {
+                        Global.completionPanel.show(at: cursorPosition, windowLevel: windowLevel(for: textInput))
+                    }
                 } else {
                     self.stateMachine.completion = nil
                     Global.completionPanel.orderOut(nil)
@@ -212,20 +210,11 @@ class InputController: IMKInputController {
         }
         // 左下座標基準でwidth=1, height=(通常だとフォントサイズ)のNSRect
         let textInput = sender as? any IMKTextInput
-        if let textInput {
-            // カーソル位置あたりを取得する
-            // TODO: 単語登録中など、現在のカーソル位置が0ではないときはそれに合わせて座標を取得したい
-            // forCharacterIndexを0以外で取得しようとすると取得できないことがあるためひとまず断念
-            _ = textInput.attributes(forCharacterIndex: 0, lineHeightRectangle: &cursorPosition)
-            windowLevel = NSWindow.Level(rawValue: Int(textInput.windowLevel() + 1))
-        } else {
-            logger.log("IMKTextInputが取得できません")
-        }
         if keyBind == nil && event.charactersIgnoringModifiers == nil {
             return stateMachine.handleUnhandledEvent(event)
         }
 
-        return stateMachine.handle(Action(keyBind: keyBind, event: event, cursorPosition: cursorPosition, textInput: textInput))
+        return stateMachine.handle(Action(keyBind: keyBind, event: event, textInput: textInput))
     }
 
     @MainActor override func menu() -> NSMenu! {
@@ -289,12 +278,15 @@ class InputController: IMKInputController {
             return
         }
         
-        // カーソル位置あたりを取得する
-        _ = textInput.attributes(forCharacterIndex: 0, lineHeightRectangle: &cursorPosition)
-        windowLevel = NSWindow.Level(rawValue: Int(textInput.windowLevel() + 1))
         let showInputModePanel = UserDefaults.standard.bool(forKey: UserDefaultsKeys.showInputModePanel)
         if showInputModePanel && !directMode {
-            Global.inputModePanel.show(at: cursorPosition.origin, mode: inputMode, privateMode: Global.privateMode.value, windowLevel: windowLevel)
+            let cursorPosition = cursorPosition(for: textInput)
+            if cursorPosition != .zero {
+                Global.inputModePanel.show(at: cursorPosition.origin,
+                                           mode: inputMode,
+                                           privateMode: Global.privateMode.value,
+                                           windowLevel: windowLevel(for: textInput))
+            }
         }
         // キー配列を設定する
         setCustomInputSource(textInput: textInput)
@@ -333,7 +325,7 @@ class InputController: IMKInputController {
     #if DEBUG
     @objc func showPanel() {
         let point = NSPoint(x: 100, y: 500)
-        Global.inputModePanel.show(at: point, mode: .hiragana, privateMode: Global.privateMode.value, windowLevel: windowLevel)
+        Global.inputModePanel.show(at: point, mode: .hiragana, privateMode: Global.privateMode.value, windowLevel: .floating)
     }
     #endif
 
@@ -352,5 +344,19 @@ class InputController: IMKInputController {
         } else {
             logger.info("InputSourceIDは選択されていません")
         }
+    }
+
+    /// 現在のカーソル位置。正常に取得できない場合はNSRect.zeroになっている。
+    private func cursorPosition(for textInput: any IMKTextInput) -> NSRect {
+        // TODO: 単語登録中など、現在のカーソル位置が0ではないときはそれに合わせて座標を取得したい
+        // forCharacterIndexを0以外で取得しようとすると取得できないことがあるためひとまず断念
+        var cursorPosition: NSRect = .zero
+        _ = textInput.attributes(forCharacterIndex: 0, lineHeightRectangle: &cursorPosition)
+        return cursorPosition
+    }
+
+    /// 変換候補パネルや補完候補などを表示するべきウィンドウレベル。
+    private func windowLevel(for textInput: any IMKTextInput) -> NSWindow.Level {
+        NSWindow.Level(rawValue: Int(textInput.windowLevel() + 1))
     }
 }
