@@ -403,8 +403,6 @@ struct SelectingState: Equatable, MarkedTextProtocol {
     /// 変換候補
     let candidates: [Candidate]
     var candidateIndex: Int = 0
-    /// カーソル位置。この位置を基に変換候補パネルを表示する
-    let cursorPosition: NSRect
     /// カーソル位置より後のテキスト部分。ひらがな(Abbrevモード以外) or 英数(Abbrevモード)の配列
     let remain: [String]?
 
@@ -414,7 +412,6 @@ struct SelectingState: Equatable, MarkedTextProtocol {
             yomi: yomi,
             candidates: candidates,
             candidateIndex: candidateIndex + diff,
-            cursorPosition: cursorPosition,
             remain: remain)
     }
 
@@ -687,7 +684,6 @@ struct Candidates: Equatable {
     /// パネル形式のときの現在ページと最大ページ数。インライン変換中はnil
     let page: Page?
     let selected: Candidate
-    let cursorPosition: NSRect
 }
 
 struct IMEState {

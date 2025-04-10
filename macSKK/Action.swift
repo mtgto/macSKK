@@ -8,16 +8,13 @@ struct Action {
     let keyBind: KeyBinding.Action?
     /// キーイベント
     let event: NSEvent
-    /// 現在のカーソル位置。正常に取得できない場合はNSRect.zeroになっているかも?
-    let cursorPosition: NSRect
     let textInput: (any IMKTextInput)?
     /// ``Romaji/convertKeyEvent(_:)`` によって変換されたNSEventから生成されたアクションかどうか.
     let treatAsAlphabet: Bool
 
-    init(keyBind: KeyBinding.Action?, event: NSEvent, cursorPosition: NSRect, textInput: (any IMKTextInput)? = nil, treatAsAlphabet: Bool = false) {
+    init(keyBind: KeyBinding.Action?, event: NSEvent, textInput: (any IMKTextInput)? = nil, treatAsAlphabet: Bool = false) {
         self.keyBind = keyBind
         self.event = event
-        self.cursorPosition = cursorPosition
         self.textInput = textInput
         self.treatAsAlphabet = treatAsAlphabet
     }
