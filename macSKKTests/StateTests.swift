@@ -231,7 +231,6 @@ final class StateTests: XCTestCase {
             yomi: "あ",
             candidates: [Candidate("亜")],
             candidateIndex: 0,
-            cursorPosition: .zero,
             remain: nil
         )
         XCTAssertEqual(selectingState.fixedText(dropLast: false), "亜")
@@ -252,7 +251,6 @@ final class StateTests: XCTestCase {
             yomi: "あ",
             candidates: [Candidate("有")],
             candidateIndex: 0,
-            cursorPosition: .zero,
             remain: nil
         )
         XCTAssertEqual(selectingState.fixedText(dropLast: false), "有る")
@@ -265,14 +263,12 @@ final class StateTests: XCTestCase {
                                             yomi: "お",
                                             candidates: [Candidate("尾")],
                                             candidateIndex: 0,
-                                            cursorPosition: .zero,
                                             remain: nil)
         XCTAssertEqual(selectingState.markedTextElements(inputMode: .hiragana), [.markerSelect, .emphasized("尾")])
         selectingState = SelectingState(prev: SelectingState.PrevState(mode: .hiragana, composing: composingState),
                                             yomi: "お",
                                             candidates: [Candidate("尾")],
                                             candidateIndex: 0,
-                                            cursorPosition: .zero,
                                             remain: ["か", "き"])
         XCTAssertEqual(selectingState.markedTextElements(inputMode: .hiragana), [.markerSelect, .emphasized("尾"), .cursor, .plain("かき")])
     }
@@ -290,7 +286,6 @@ final class StateTests: XCTestCase {
             yomi: "お",
             candidates: [Candidate("尾")],
             candidateIndex: 0,
-            cursorPosition: .zero,
             remain: nil
         )
         XCTAssertEqual(selectingState.okuri, nil)
@@ -308,7 +303,6 @@ final class StateTests: XCTestCase {
             yomi: "あ",
             candidates: [Candidate("有")],
             candidateIndex: 0,
-            cursorPosition: .zero,
             remain: nil
         )
         XCTAssertEqual(selectingState.okuri, "る")
@@ -326,7 +320,6 @@ final class StateTests: XCTestCase {
             yomi: "あ",
             candidates: [Candidate("有")],
             candidateIndex: 0,
-            cursorPosition: .zero,
             remain: nil
         )
         XCTAssertNil(selectingState.okuri)
@@ -399,7 +392,6 @@ final class StateTests: XCTestCase {
             yomi: "あ",
             candidates: [Candidate("有")],
             candidateIndex: 0,
-            cursorPosition: .zero,
             remain: nil
         )
         var state = UnregisterState(
@@ -436,7 +428,6 @@ final class StateTests: XCTestCase {
                                             yomi: "い",
                                             candidates: [Candidate("井")],
                                             candidateIndex: 0,
-                                            cursorPosition: .zero,
                                             remain: nil)
         let state = IMEState(inputMode: .hiragana,
                              inputMethod: .selecting(selectingState),
@@ -456,7 +447,6 @@ final class StateTests: XCTestCase {
                                             yomi: "お",
                                             candidates: [Candidate("尾")],
                                             candidateIndex: 0,
-                                            cursorPosition: .zero,
                                             remain: nil)
         let state = IMEState(inputMode: .hiragana,
                              inputMethod: .selecting(selectingState),
@@ -477,7 +467,6 @@ final class StateTests: XCTestCase {
                                             yomi: "お",
                                             candidates: [Candidate("尾")],
                                             candidateIndex: 0,
-                                            cursorPosition: .zero,
                                             remain: nil)
         let state = IMEState(inputMode: .hiragana,
                              inputMethod: .selecting(selectingState),
@@ -503,7 +492,6 @@ final class StateTests: XCTestCase {
                                             yomi: "お",
                                             candidates: [Candidate("尾")],
                                             candidateIndex: 0,
-                                            cursorPosition: .zero,
                                             remain: nil)
         let state = IMEState(inputMode: .hiragana,
                              inputMethod: .selecting(selectingState),
@@ -527,7 +515,6 @@ final class StateTests: XCTestCase {
             yomi: "あr",
             candidates: [Candidate("有")],
             candidateIndex: 0,
-            cursorPosition: .zero,
             remain: nil
         )
         let unregisterState = UnregisterState(prev: UnregisterState.PrevState(mode: .hiragana, selecting: prevSelectingState), text: "yes")
@@ -553,7 +540,6 @@ final class StateTests: XCTestCase {
             yomi: "だい2",
             candidates: [Candidate("第2", original: Candidate.Original(midashi: "だい#", word: "第#"))],
             candidateIndex: 0,
-            cursorPosition: .zero,
             remain: nil
         )
         let unregisterState = UnregisterState(prev: UnregisterState.PrevState(mode: .hiragana, selecting: prevSelectingState), text: "yes")

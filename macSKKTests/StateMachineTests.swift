@@ -124,14 +124,14 @@ final class StateMachineTests: XCTestCase {
         stateMachine.inputMethodEvent.collect(10).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.plain("n")])))
             XCTAssertEqual(events[1], .fixedText("ん"))
-            XCTAssertEqual(events[2], .modeChanged(.katakana, .zero))
+            XCTAssertEqual(events[2], .modeChanged(.katakana))
             XCTAssertEqual(events[3], .markedText(MarkedText([.plain("n")])))
             XCTAssertEqual(events[4], .fixedText("ン"))
-            XCTAssertEqual(events[5], .modeChanged(.hiragana, .zero))
-            XCTAssertEqual(events[6], .modeChanged(.hankaku, .zero))
+            XCTAssertEqual(events[5], .modeChanged(.hiragana))
+            XCTAssertEqual(events[6], .modeChanged(.hankaku))
             XCTAssertEqual(events[7], .markedText(MarkedText([.plain("n")])))
             XCTAssertEqual(events[8], .fixedText("ﾝ"))
-            XCTAssertEqual(events[9], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[9], .modeChanged(.hiragana))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n")))
@@ -163,7 +163,7 @@ final class StateMachineTests: XCTestCase {
         Global.kanaRule = try! Romaji(source: [";,っ", ":,<shift>;"].joined(separator: "\n"))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(3).sink { events in
-            XCTAssertEqual(events[0], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[0], .modeChanged(.hiragana))
             XCTAssertEqual(events[1], .fixedText("っ"))
             XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("っ")])))
             expectation.fulfill()
@@ -172,7 +172,7 @@ final class StateMachineTests: XCTestCase {
         XCTAssertFalse(stateMachine.handle(printableKeyEventAction(character: ":", characterIgnoringModifier: ";", withShift: true)))
         XCTAssertTrue(stateMachine.handle(hiraganaAction))
         // 非StickyShiftでシフトなしで ";" 入力時は "っ" が入力される
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: nil, event: generateNSEvent(character: ";", characterIgnoringModifiers: ";"), cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyBind: nil, event: generateNSEvent(character: ";", characterIgnoringModifiers: ";"))))
         // ひらがなモード時はローマ字かな変換テーブルが参照され "っ" がシフトを押しながら入力されたとする
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ":", characterIgnoringModifier: ";", withShift: true)))
         wait(for: [expectation], timeout: 1.0)
@@ -320,9 +320,9 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleNormalUnregisteredKeyEventWithModifiers() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         // キーバインドとして登録されてないC-kはhandleはfalseを返す
-        XCTAssertFalse(stateMachine.handle(Action(keyBind: nil, event: generateNSEvent(character: "k", characterIgnoringModifiers: "k", modifierFlags: .control), cursorPosition: .zero)))
+        XCTAssertFalse(stateMachine.handle(Action(keyBind: nil, event: generateNSEvent(character: "k", characterIgnoringModifiers: "k", modifierFlags: .control))))
         // Cmd-cもhandleせずfalseを返す
-        XCTAssertFalse(stateMachine.handle(Action(keyBind: nil, event: generateNSEvent(character: "c", characterIgnoringModifiers: "c", modifierFlags: .command), cursorPosition: .zero)))
+        XCTAssertFalse(stateMachine.handle(Action(keyBind: nil, event: generateNSEvent(character: "c", characterIgnoringModifiers: "c", modifierFlags: .command))))
     }
 
     @MainActor func testHandleNormalNoAlphabetEisu() {
@@ -385,7 +385,7 @@ final class StateMachineTests: XCTestCase {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(5).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
-            XCTAssertEqual(events[1], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[1], .modeChanged(.hiragana))
             XCTAssertEqual(events[2], .markedText(MarkedText([.plain("[登録：あ]")])))
             XCTAssertEqual(events[3], .markedText(MarkedText([.plain("[登録：あ]"), .plain("い")])))
             XCTAssertEqual(events[4], .markedText(MarkedText([.plain("[登録：あ]"), .plain("い"), .markerCompose, .plain("う")])))
@@ -424,24 +424,23 @@ final class StateMachineTests: XCTestCase {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .direct))
         // zキーをStickyShiftにカスタマイズしているという設定。directモードなのでなにもしない
         XCTAssertFalse(stateMachine.handle(Action(keyBind: .stickyShift,
-                                                 event: generateNSEvent(character: "z", characterIgnoringModifiers: "z"),
-                                                 cursorPosition: .zero)))
+                                                 event: generateNSEvent(character: "z", characterIgnoringModifiers: "z"))))
     }
 
     @MainActor func testHandleNormalCtrlJ() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .direct))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(10).sink { events in
-            XCTAssertEqual(events[0], .modeChanged(.hiragana, .zero))
-            XCTAssertEqual(events[1], .modeChanged(.hiragana, .zero), "複数回CtrlJ打ったときにイベントは毎回発生する")
-            XCTAssertEqual(events[2], .modeChanged(.direct, .zero))
-            XCTAssertEqual(events[3], .modeChanged(.hiragana, .zero))
-            XCTAssertEqual(events[4], .modeChanged(.eisu, .zero))
-            XCTAssertEqual(events[5], .modeChanged(.hiragana, .zero))
-            XCTAssertEqual(events[6], .modeChanged(.katakana, .zero))
-            XCTAssertEqual(events[7], .modeChanged(.hiragana, .zero))
-            XCTAssertEqual(events[8], .modeChanged(.hankaku, .zero))
-            XCTAssertEqual(events[9], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[0], .modeChanged(.hiragana))
+            XCTAssertEqual(events[1], .modeChanged(.hiragana), "複数回CtrlJ打ったときにイベントは毎回発生する")
+            XCTAssertEqual(events[2], .modeChanged(.direct))
+            XCTAssertEqual(events[3], .modeChanged(.hiragana))
+            XCTAssertEqual(events[4], .modeChanged(.eisu))
+            XCTAssertEqual(events[5], .modeChanged(.hiragana))
+            XCTAssertEqual(events[6], .modeChanged(.katakana))
+            XCTAssertEqual(events[7], .modeChanged(.hiragana))
+            XCTAssertEqual(events[8], .modeChanged(.hankaku))
+            XCTAssertEqual(events[9], .modeChanged(.hiragana))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(hiraganaAction))
@@ -461,10 +460,10 @@ final class StateMachineTests: XCTestCase {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
-            XCTAssertEqual(events[0], .modeChanged(.hankaku, .zero))
-            XCTAssertEqual(events[1], .modeChanged(.hiragana, .zero))
-            XCTAssertEqual(events[2], .modeChanged(.hankaku, .zero))
-            XCTAssertEqual(events[3], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[0], .modeChanged(.hankaku))
+            XCTAssertEqual(events[1], .modeChanged(.hiragana))
+            XCTAssertEqual(events[2], .modeChanged(.hankaku))
+            XCTAssertEqual(events[3], .modeChanged(.hiragana))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(hankakuKanaAction))
@@ -478,10 +477,10 @@ final class StateMachineTests: XCTestCase {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
-            XCTAssertEqual(events[0], .modeChanged(.katakana, .zero))
-            XCTAssertEqual(events[1], .modeChanged(.hiragana, .zero))
-            XCTAssertEqual(events[2], .modeChanged(.hankaku, .zero))
-            XCTAssertEqual(events[3], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[0], .modeChanged(.katakana))
+            XCTAssertEqual(events[1], .modeChanged(.hiragana))
+            XCTAssertEqual(events[2], .modeChanged(.hankaku))
+            XCTAssertEqual(events[3], .modeChanged(.hiragana))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
@@ -495,11 +494,11 @@ final class StateMachineTests: XCTestCase {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(9).sink { events in
-            XCTAssertEqual(events[0], .modeChanged(.direct, .zero))
-            XCTAssertEqual(events[1], .modeChanged(.hiragana, .zero))
-            XCTAssertEqual(events[2], .modeChanged(.eisu, .zero))
+            XCTAssertEqual(events[0], .modeChanged(.direct))
+            XCTAssertEqual(events[1], .modeChanged(.hiragana))
+            XCTAssertEqual(events[2], .modeChanged(.eisu))
             XCTAssertEqual(events[3], .fixedText("Ｑ"))
-            XCTAssertEqual(events[4], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[4], .modeChanged(.hiragana))
             XCTAssertEqual(events[5], .markedText(MarkedText([.markerCompose])))
             XCTAssertEqual(events[6], .markedText(MarkedText([.markerCompose, .plain("あ")])))
             XCTAssertEqual(events[7], .fixedText("あ"))
@@ -528,9 +527,9 @@ final class StateMachineTests: XCTestCase {
         let expectation = XCTestExpectation()
         stateMachine = StateMachine(initialState: IMEState(inputMode: .katakana))
         stateMachine.inputMethodEvent.collect(3).sink { events in
-            XCTAssertEqual(events[0], .modeChanged(.hankaku, .zero))
-            XCTAssertEqual(events[1], .modeChanged(.hiragana, .zero))
-            XCTAssertEqual(events[2], .modeChanged(.hankaku, .zero))
+            XCTAssertEqual(events[0], .modeChanged(.hankaku))
+            XCTAssertEqual(events[1], .modeChanged(.hiragana))
+            XCTAssertEqual(events[2], .modeChanged(.hankaku))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(hankakuKanaAction))
@@ -544,7 +543,7 @@ final class StateMachineTests: XCTestCase {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(10).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("え")])))
-            XCTAssertEqual(events[1], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[1], .modeChanged(.hiragana))
             XCTAssertEqual(events[2], .markedText(MarkedText([.plain("[登録：え]")])))
             XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("え")])))
             XCTAssertEqual(events[4], .markedText(MarkedText([])))
@@ -589,7 +588,7 @@ final class StateMachineTests: XCTestCase {
         XCTAssertFalse(stateMachine.handle(downKeyAction))
         XCTAssertFalse(stateMachine.handle(upKeyAction))
         // シフトキーを押しながら矢印キーを押したときも矢印アクションとして扱われ、falseが返る
-        let shiftRightKeyAction = Action(keyBind: .right, event: generateNSEvent(character: "\u{63235}", characterIgnoringModifiers: "\u{63235}", modifierFlags: [.function, .numericPad, .shift]), cursorPosition: .zero)
+        let shiftRightKeyAction = Action(keyBind: .right, event: generateNSEvent(character: "\u{63235}", characterIgnoringModifiers: "\u{63235}", modifierFlags: [.function, .numericPad, .shift]))
         XCTAssertFalse(stateMachine.handle(shiftRightKeyAction))
     }
 
@@ -604,7 +603,7 @@ final class StateMachineTests: XCTestCase {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(12).sink { events in
-            XCTAssertEqual(events[0], .modeChanged(.direct, .zero))
+            XCTAssertEqual(events[0], .modeChanged(.direct))
             XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose])))
             XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("a")])))
             XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("al")])))
@@ -636,17 +635,17 @@ final class StateMachineTests: XCTestCase {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(12).sink { events in
-            XCTAssertEqual(events[0], .modeChanged(.katakana, .zero))
-            XCTAssertEqual(events[1], .modeChanged(.direct, .zero))
+            XCTAssertEqual(events[0], .modeChanged(.katakana))
+            XCTAssertEqual(events[1], .modeChanged(.direct))
             XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose])))
             XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("a")])))
             XCTAssertEqual(events[4], .fixedText("a"))
-            XCTAssertEqual(events[5], .modeChanged(.katakana, .zero))
-            XCTAssertEqual(events[6], .modeChanged(.hankaku, .zero))
-            XCTAssertEqual(events[7], .modeChanged(.direct, .zero))
+            XCTAssertEqual(events[5], .modeChanged(.katakana))
+            XCTAssertEqual(events[6], .modeChanged(.hankaku))
+            XCTAssertEqual(events[7], .modeChanged(.direct))
             XCTAssertEqual(events[8], .markedText(MarkedText([.markerCompose])))
             XCTAssertEqual(events[9], .markedText(MarkedText([.markerCompose, .plain("b")])))
-            XCTAssertEqual(events[10], .modeChanged(.hankaku, .zero))
+            XCTAssertEqual(events[10], .modeChanged(.hankaku))
             XCTAssertEqual(events[11], .markedText(MarkedText([])))
             expectation.fulfill()
         }.store(in: &cancellables)
@@ -665,12 +664,12 @@ final class StateMachineTests: XCTestCase {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(6).sink { events in
-            XCTAssertEqual(events[0], .modeChanged(.direct, .zero))
+            XCTAssertEqual(events[0], .modeChanged(.direct))
             XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose])))
             XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("a")])))
             XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("apple")])))
             XCTAssertEqual(events[4], .fixedText("apple"))
-            XCTAssertEqual(events[5], .modeChanged(.hiragana, .zero)) // abbrevモードでTab補完して確定したとき前のモードに戻す
+            XCTAssertEqual(events[5], .modeChanged(.hiragana)) // abbrevモードでTab補完して確定したとき前のモードに戻す
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "/")))
@@ -693,7 +692,7 @@ final class StateMachineTests: XCTestCase {
             character: "Ω",
             characterIgnoringModifiers: "z",
             modifierFlags: [.option])
-        let action = Action(keyBind: nil, event: event, cursorPosition: .zero)
+        let action = Action(keyBind: nil, event: event)
 
         XCTAssertTrue(stateMachine.handle(action))
         wait(for: [expectation], timeout: 1.0)
@@ -707,10 +706,10 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("お")])))
             XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("おn")])))
             XCTAssertEqual(events[2], .fixedText("オン"))
-            XCTAssertEqual(events[3], .modeChanged(.katakana, .zero))
+            XCTAssertEqual(events[3], .modeChanged(.katakana))
             XCTAssertEqual(events[4], .markedText(MarkedText([.markerCompose, .plain("n")])))
             XCTAssertEqual(events[5], .fixedText("ン"))
-            XCTAssertEqual(events[6], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[6], .modeChanged(.hiragana))
             expectation.fulfill()
         }.store(in: &cancellables)
         stateMachine.yomiEvent.collect(2).sink { events in
@@ -735,7 +734,7 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("v")])))
             XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("ゔ")])))
             XCTAssertEqual(events[2], .fixedText("ヴ"))
-            XCTAssertEqual(events[3], .modeChanged(.katakana, .zero))
+            XCTAssertEqual(events[3], .modeChanged(.katakana))
             XCTAssertEqual(events[4], .markedText(MarkedText([.markerCompose, .plain("v")])))
             XCTAssertEqual(events[5], .markedText(MarkedText([.markerCompose, .plain("ヴ")])))
             expectation.fulfill()
@@ -761,7 +760,7 @@ final class StateMachineTests: XCTestCase {
         let expectation = XCTestExpectation()
         expectation.expectedFulfillmentCount = 2
         stateMachine.inputMethodEvent.collect(7).sink { events in
-            XCTAssertEqual(events[0], .modeChanged(.katakana, .zero))
+            XCTAssertEqual(events[0], .modeChanged(.katakana))
             XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("s")])))
             XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("ソ")])))
             XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("ソt")])))
@@ -945,7 +944,7 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("と")])))
             XCTAssertEqual(events[3], .markedText(MarkedText([.markerSelect, .emphasized("戸")])))
             XCTAssertEqual(events[4], .markedText(MarkedText([.markerSelect, .emphasized("都")])))
-            XCTAssertEqual(events[5], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[5], .modeChanged(.hiragana))
             XCTAssertEqual(events[6], .markedText(MarkedText([.plain("[登録：と]")])))
             expectation.fulfill()
         }.store(in: &cancellables)
@@ -967,7 +966,7 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
             XCTAssertEqual(events[1], .markedText(MarkedText([.markerSelect, .emphasized("亜")])))
             XCTAssertEqual(events[2], .markedText(MarkedText([.markerSelect, .emphasized("阿")])))
-            XCTAssertEqual(events[3], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[3], .modeChanged(.hiragana))
             XCTAssertEqual(events[4], .markedText(MarkedText([.plain("[登録：あ>]")])))
             expectation.fulfill()
         }.store(in: &cancellables)
@@ -1001,7 +1000,7 @@ final class StateMachineTests: XCTestCase {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(5).sink { events in
-            XCTAssertEqual(events[0], .modeChanged(.direct, .zero))
+            XCTAssertEqual(events[0], .modeChanged(.direct))
             XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose])))
             XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("A")])))
             XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("A>")])), "Abbrev入力時は>で接頭辞変換しない")
@@ -1021,7 +1020,7 @@ final class StateMachineTests: XCTestCase {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
-            XCTAssertEqual(events[0], .modeChanged(.direct, .zero))
+            XCTAssertEqual(events[0], .modeChanged(.direct))
             XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose])))
             XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("/")])))
             XCTAssertEqual(events[3], .markedText(MarkedText([.markerSelect, .emphasized("／")])))
@@ -1037,15 +1036,15 @@ final class StateMachineTests: XCTestCase {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(9).sink { events in
-            XCTAssertEqual(events[0], .modeChanged(.direct, .zero))
+            XCTAssertEqual(events[0], .modeChanged(.direct))
             XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose])))
             // AbbrevモードでBackspaceしたときは直前のモードに戻る (cancelと同じ)
-            XCTAssertEqual(events[2], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[2], .modeChanged(.hiragana))
             XCTAssertEqual(events[3], .markedText(MarkedText([])))
-            XCTAssertEqual(events[4], .modeChanged(.katakana, .zero))
-            XCTAssertEqual(events[5], .modeChanged(.direct, .zero))
+            XCTAssertEqual(events[4], .modeChanged(.katakana))
+            XCTAssertEqual(events[5], .modeChanged(.direct))
             XCTAssertEqual(events[6], .markedText(MarkedText([.markerCompose])))
-            XCTAssertEqual(events[7], .modeChanged(.katakana, .zero))
+            XCTAssertEqual(events[7], .modeChanged(.katakana))
             XCTAssertEqual(events[8], .markedText(MarkedText([])))
             expectation.fulfill()
         }.store(in: &cancellables)
@@ -1070,7 +1069,7 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[4], .markedText(MarkedText([.markerCompose, .plain(">あ")])))
             XCTAssertEqual(events[5], .markedText(MarkedText([.markerSelect, .emphasized("亜")])))
             XCTAssertEqual(events[6], .markedText(MarkedText([.markerSelect, .emphasized("阿")])))
-            XCTAssertEqual(events[7], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[7], .modeChanged(.hiragana))
             XCTAssertEqual(events[8], .markedText(MarkedText([.plain("[登録：>あ]")])))
             expectation.fulfill()
         }.store(in: &cancellables)
@@ -1146,7 +1145,7 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("と*r")])))
             XCTAssertEqual(events[4], .markedText(MarkedText([.markerSelect, .emphasized("取る")])))
             XCTAssertEqual(events[5], .markedText(MarkedText([.markerSelect, .emphasized("撮る")])))
-            XCTAssertEqual(events[6], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[6], .modeChanged(.hiragana))
             XCTAssertEqual(events[7], .markedText(MarkedText([.plain("[登録：と*る]")])))
             expectation.fulfill()
         }.store(in: &cancellables)
@@ -1175,7 +1174,7 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[5], .markedText(MarkedText([.markerCompose, .plain("とらw")])))
             XCTAssertEqual(events[6], .markedText(MarkedText([.markerSelect, .emphasized("捕わ")])))
             XCTAssertEqual(events[7], .markedText(MarkedText([.markerSelect, .emphasized("捉わ")])))
-            XCTAssertEqual(events[8], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[8], .modeChanged(.hiragana))
             XCTAssertEqual(events[9], .markedText(MarkedText([.plain("[登録：とら*わ]")])))
             expectation.fulfill()
         }.store(in: &cancellables)
@@ -1205,7 +1204,7 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[4], .markedText(MarkedText([.markerCompose, .plain("と*ry")])))
             XCTAssertEqual(events[5], .markedText(MarkedText([.markerSelect, .emphasized("取りゃ")])))
             XCTAssertEqual(events[6], .markedText(MarkedText([.markerSelect, .emphasized("撮りゃ")])))
-            XCTAssertEqual(events[7], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[7], .modeChanged(.hiragana))
             XCTAssertEqual(events[8], .markedText(MarkedText([.plain("[登録：と*りゃ]")])))
             expectation.fulfill()
         }.store(in: &cancellables)
@@ -1252,7 +1251,7 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("かn")])))
             XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("かん*z")])))
             XCTAssertEqual(events[4], .markedText(MarkedText([.markerSelect, .emphasized("感じ")])))
-            XCTAssertEqual(events[5], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[5], .modeChanged(.hiragana))
             XCTAssertEqual(events[6], .markedText(MarkedText([.plain("[登録：かん*じ]")])))
             expectation.fulfill()
         }.store(in: &cancellables)
@@ -1463,7 +1462,7 @@ final class StateMachineTests: XCTestCase {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(6).sink { events in
-            XCTAssertEqual(events[0], .modeChanged(.direct, .zero))
+            XCTAssertEqual(events[0], .modeChanged(.direct))
             XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose])))
             XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("a")])))
             XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("ab")])))
@@ -1486,12 +1485,12 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose])))
             XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("お")])))
             XCTAssertEqual(events[2], .fixedText("お"))
-            XCTAssertEqual(events[3], .modeChanged(.hiragana, .zero))
-            XCTAssertEqual(events[4], .modeChanged(.katakana, .zero))
+            XCTAssertEqual(events[3], .modeChanged(.hiragana))
+            XCTAssertEqual(events[4], .modeChanged(.katakana))
             XCTAssertEqual(events[5], .markedText(MarkedText([.markerCompose])))
             XCTAssertEqual(events[6], .markedText(MarkedText([.markerCompose, .plain("オ")])))
             XCTAssertEqual(events[7], .fixedText("オ"))
-            XCTAssertEqual(events[8], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[8], .modeChanged(.hiragana))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ";")))
@@ -1510,7 +1509,7 @@ final class StateMachineTests: XCTestCase {
         stateMachine.inputMethodEvent.collect(4).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("え")])))
             XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("えr")])))
-            XCTAssertEqual(events[2], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[2], .modeChanged(.hiragana))
             XCTAssertEqual(events[3], .markedText(MarkedText([.plain("[登録：え*る]")])))
             expectation.fulfill()
         }.store(in: &cancellables)
@@ -1562,13 +1561,11 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
         // zキーをStickyShiftにカスタマイズしているという設定
         XCTAssertTrue(stateMachine.handle(Action(keyBind: .stickyShift,
-                                                 event: generateNSEvent(character: "z", characterIgnoringModifiers: "z"),
-                                                 cursorPosition: .zero)))
+                                                 event: generateNSEvent(character: "z", characterIgnoringModifiers: "z"))))
         XCTAssertTrue(stateMachine.handle(backspaceAction))
         XCTAssertTrue(stateMachine.handle(backspaceAction))
         XCTAssertTrue(stateMachine.handle(Action(keyBind: .stickyShift,
-                                                 event: generateNSEvent(character: "z", characterIgnoringModifiers: "z"),
-                                                 cursorPosition: .zero)))
+                                                 event: generateNSEvent(character: "z", characterIgnoringModifiers: "z"))))
         wait(for: [expectation], timeout: 1.0)
     }
 
@@ -1594,7 +1591,7 @@ final class StateMachineTests: XCTestCase {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(3).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
-            XCTAssertEqual(events[1], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[1], .modeChanged(.hiragana))
             XCTAssertEqual(events[2], .markedText(MarkedText([.plain("[登録：あ*っ]")])))
             expectation.fulfill()
         }.store(in: &cancellables)
@@ -1655,7 +1652,7 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("ぇ")])))
             XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("ぇb")])))
             XCTAssertEqual(events[3], .fixedText("ぇ"))
-            XCTAssertEqual(events[4], .modeChanged(.direct, .zero))
+            XCTAssertEqual(events[4], .modeChanged(.direct))
             expectation.fulfill()
         }.store(in: &cancellables)
         // 変換候補選択画面で登録解除へ遷移するキー。Normalではなにも起きない
@@ -1892,7 +1889,7 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
             XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("あい")])))
             XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("あ"), .cursor, .plain("い")])))
-            XCTAssertEqual(events[3], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[3], .modeChanged(.hiragana))
             XCTAssertEqual(events[4], .markedText(MarkedText([.plain("[登録：あ]")])), "カーソル前までの文字列を登録時の読みとして使用する")
             expectation.fulfill()
         }.store(in: &cancellables)
@@ -2041,12 +2038,12 @@ final class StateMachineTests: XCTestCase {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(6).sink { events in
-            XCTAssertEqual(events[0], .modeChanged(.direct, .zero))
+            XCTAssertEqual(events[0], .modeChanged(.direct))
             XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose])))
             XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("n")])))
             XCTAssertEqual(events[3], .markedText(MarkedText([.markerSelect, .emphasized("美")])))
             XCTAssertEqual(events[4], .fixedText("美"))
-            XCTAssertEqual(events[5], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[5], .modeChanged(.hiragana))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "/")))
@@ -2084,9 +2081,9 @@ final class StateMachineTests: XCTestCase {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
         // キーバインドとして登録されてないC-kはhandleはtrueを返して無視する
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: nil, event: generateNSEvent(character: "k", characterIgnoringModifiers: "k", modifierFlags: .control), cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyBind: nil, event: generateNSEvent(character: "k", characterIgnoringModifiers: "k", modifierFlags: .control))))
         // Cmd-cもhandleせずtrueを返して無視する
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: nil, event: generateNSEvent(character: "c", characterIgnoringModifiers: "c", modifierFlags: .command), cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyBind: nil, event: generateNSEvent(character: "c", characterIgnoringModifiers: "c", modifierFlags: .command))))
     }
 
     @MainActor func testHandleRegisteringEnter() {
@@ -2096,7 +2093,7 @@ final class StateMachineTests: XCTestCase {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(9).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
-            XCTAssertEqual(events[1], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[1], .modeChanged(.hiragana))
             XCTAssertEqual(events[2], .markedText(MarkedText([.plain("[登録：あ]")])))
             XCTAssertEqual(events[3], .markedText(MarkedText([.plain("[登録：あ]"), .plain("s")])))
             XCTAssertEqual(events[4], .markedText(MarkedText([.plain("[登録：あ]"), .plain("そ")])))
@@ -2123,7 +2120,7 @@ final class StateMachineTests: XCTestCase {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
-            XCTAssertEqual(events[1], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[1], .modeChanged(.hiragana))
             XCTAssertEqual(events[2], .markedText(MarkedText([.plain("[登録：あ]")])))
             XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("あ")])), "空文字列を登録しようとしたらキャンセル扱いとする")
             expectation.fulfill()
@@ -2140,11 +2137,11 @@ final class StateMachineTests: XCTestCase {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(8).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
-            XCTAssertEqual(events[1], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[1], .modeChanged(.hiragana))
             XCTAssertEqual(events[2], .markedText(MarkedText([.plain("[登録：あ]")])))
             XCTAssertEqual(events[3], .markedText(MarkedText([.plain("[登録：あ]"), .markerCompose])))
             XCTAssertEqual(events[4], .markedText(MarkedText([.plain("[登録：あ]")])))
-            XCTAssertEqual(events[5], .modeChanged(.direct, .zero))
+            XCTAssertEqual(events[5], .modeChanged(.direct))
             XCTAssertEqual(events[6], .markedText(MarkedText([.plain("[登録：あ]")])))
             XCTAssertEqual(events[7], .markedText(MarkedText([.plain("[登録：あ]"), .plain(";")])))
             expectation.fulfill()
@@ -2163,7 +2160,7 @@ final class StateMachineTests: XCTestCase {
         stateMachine.inputMethodEvent.collect(4).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
             XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("あ*")])))
-            XCTAssertEqual(events[2], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[2], .modeChanged(.hiragana))
             XCTAssertEqual(events[3], .markedText(MarkedText([.plain("[登録：あ]")])), "送り仮名が未入力時は見出しに送り仮名を表示しない")
             expectation.fulfill()
         }.store(in: &cancellables)
@@ -2178,7 +2175,7 @@ final class StateMachineTests: XCTestCase {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(15).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("い")])))
-            XCTAssertEqual(events[1], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[1], .modeChanged(.hiragana))
             XCTAssertEqual(events[2], .markedText(MarkedText([.plain("[登録：い*う]")])))
             XCTAssertEqual(events[3], .markedText(MarkedText([.plain("[登録：い*う]")])))  // .left
             XCTAssertEqual(events[4], .markedText(MarkedText([.plain("[登録：い*う]")])))  // .right
@@ -2216,7 +2213,7 @@ final class StateMachineTests: XCTestCase {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(7).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("い")])))
-            XCTAssertEqual(events[1], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[1], .modeChanged(.hiragana))
             XCTAssertEqual(events[2], .markedText(MarkedText([.plain("[登録：い]")])))
             XCTAssertEqual(events[3], .markedText(MarkedText([.plain("[登録：い]"), .plain("う")])))
             XCTAssertEqual(events[4], .markedText(MarkedText([.plain("[登録：い]"), .plain("うえ")])))
@@ -2238,7 +2235,7 @@ final class StateMachineTests: XCTestCase {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(7).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("い")])))
-            XCTAssertEqual(events[1], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[1], .modeChanged(.hiragana))
             XCTAssertEqual(events[2], .markedText(MarkedText([.plain("[登録：い]")])))
             XCTAssertEqual(events[3], .markedText(MarkedText([.plain("[登録：い]"), .plain("う")])))
             XCTAssertEqual(events[4], .markedText(MarkedText([.plain("[登録：い]"), .plain("うえ")])))
@@ -2260,7 +2257,7 @@ final class StateMachineTests: XCTestCase {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(7).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("い")])))
-            XCTAssertEqual(events[1], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[1], .modeChanged(.hiragana))
             XCTAssertEqual(events[2], .markedText(MarkedText([.plain("[登録：い]")])))
             XCTAssertEqual(events[3], .markedText(MarkedText([.plain("[登録：い]"), .plain("う")])))
             XCTAssertEqual(events[4], .markedText(MarkedText([.plain("[登録：い]"), .plain("う"), .markerCompose, .plain("え")])))
@@ -2282,7 +2279,7 @@ final class StateMachineTests: XCTestCase {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("い")])))
-            XCTAssertEqual(events[1], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[1], .modeChanged(.hiragana))
             XCTAssertEqual(events[2], .markedText(MarkedText([.plain("[登録：い*う]")])))
             XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("いう")])))
             expectation.fulfill()
@@ -2298,10 +2295,10 @@ final class StateMachineTests: XCTestCase {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(9).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("い")])))
-            XCTAssertEqual(events[1], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[1], .modeChanged(.hiragana))
             XCTAssertEqual(events[2], .markedText(MarkedText([.plain("[登録：い]")])))
             XCTAssertEqual(events[3], .markedText(MarkedText([.plain("[登録：い]"), .markerCompose, .plain("う")])))
-            XCTAssertEqual(events[4], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[4], .modeChanged(.hiragana))
             XCTAssertEqual(events[5], .markedText(MarkedText([.plain("[[登録：う]]")])))
             XCTAssertEqual(events[6], .markedText(MarkedText([.plain("[[登録：う]]"), .plain("え")])))
             XCTAssertEqual(events[7], .markedText(MarkedText([.plain("[登録：い]"), .plain("え")])))
@@ -2325,11 +2322,11 @@ final class StateMachineTests: XCTestCase {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(12).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("い")])))
-            XCTAssertEqual(events[1], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[1], .modeChanged(.hiragana))
             XCTAssertEqual(events[2], .markedText(MarkedText([.plain("[登録：い]")])))
             XCTAssertEqual(events[3], .markedText(MarkedText([.plain("[登録：い]"), .plain("う")])))
             XCTAssertEqual(events[4], .markedText(MarkedText([.plain("[登録：い]"), .plain("う"), .markerCompose, .plain("え")])))
-            XCTAssertEqual(events[5], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[5], .modeChanged(.hiragana))
             XCTAssertEqual(events[6], .markedText(MarkedText([.plain("[[登録：え*お]]")])))
             XCTAssertEqual(events[7], .markedText(MarkedText([.plain("[[登録：え*お]]"), .plain("b")])))
             XCTAssertEqual(events[8], .markedText(MarkedText([.plain("[[登録：え*お]]"), .plain("ば")])))
@@ -2356,16 +2353,16 @@ final class StateMachineTests: XCTestCase {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(3).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("い")])))
-            XCTAssertEqual(events[1], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[1], .modeChanged(.hiragana))
             XCTAssertEqual(events[2], .markedText(MarkedText([.plain("[登録：い]")])))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
         // キーバインドとして登録されてないC-kはhandleは単語登録中はtrueを返す (未確定文字列がないときはfalseを返す)
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: nil, event: generateNSEvent(character: "k", characterIgnoringModifiers: "k", modifierFlags: .control), cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyBind: nil, event: generateNSEvent(character: "k", characterIgnoringModifiers: "k", modifierFlags: .control))))
         // Cmd-cも処理せずtrueを返す
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: nil, event: generateNSEvent(character: "c", characterIgnoringModifiers: "c", modifierFlags: .command), cursorPosition: .zero)))
+        XCTAssertTrue(stateMachine.handle(Action(keyBind: nil, event: generateNSEvent(character: "c", characterIgnoringModifiers: "c", modifierFlags: .command))))
         wait(for: [expectation], timeout: 1.0)
     }
 
@@ -2375,7 +2372,7 @@ final class StateMachineTests: XCTestCase {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(7).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("い")])))
-            XCTAssertEqual(events[1], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[1], .modeChanged(.hiragana))
             XCTAssertEqual(events[2], .markedText(MarkedText([.plain("[登録：い]")])))
             XCTAssertEqual(events[3], .markedText(MarkedText([.plain("[登録：い]"), .markerCompose, .plain("あ")])))
             XCTAssertEqual(events[4], .markedText(MarkedText([.plain("[登録：い]"), .markerSelect, .emphasized("亜")])))
@@ -2406,7 +2403,7 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("も")])))
             XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("もn")])))
             XCTAssertEqual(events[4], .markedText(MarkedText([.markerSelect, .emphasized("門")])))
-            XCTAssertEqual(events[5], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[5], .modeChanged(.hiragana))
             XCTAssertEqual(events[6], .markedText(MarkedText([.plain("[登録：もん]")])))
             XCTAssertEqual(events[7], .markedText(MarkedText([.markerCompose, .plain("もん")])))
             expectation.fulfill()
@@ -2426,7 +2423,7 @@ final class StateMachineTests: XCTestCase {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(3).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("い")])))
-            XCTAssertEqual(events[1], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[1], .modeChanged(.hiragana))
             XCTAssertEqual(events[2], .markedText(MarkedText([.plain("[登録：い]")])))
             expectation.fulfill()
         }.store(in: &cancellables)
@@ -2443,7 +2440,7 @@ final class StateMachineTests: XCTestCase {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("い")])))
-            XCTAssertEqual(events[1], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[1], .modeChanged(.hiragana))
             XCTAssertEqual(events[2], .markedText(MarkedText([.plain("[登録：い]")])))
             XCTAssertEqual(events[3], .markedText(MarkedText([.plain("[登録：い]"), .plain("クリップボード")])))
             expectation.fulfill()
@@ -2462,7 +2459,7 @@ final class StateMachineTests: XCTestCase {
         stateMachine.inputMethodEvent.collect(6).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
             XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("あ*k")])))
-            XCTAssertEqual(events[2], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[2], .modeChanged(.hiragana))
             XCTAssertEqual(events[3], .markedText(MarkedText([.plain("[登録：あ*け]")])))
             XCTAssertEqual(events[4], .markedText(MarkedText([.plain("[登録：あ*け]"), .plain("い")])))
             XCTAssertEqual(events[5], .fixedText("いけ"), "辞書登録後は単語登録時に使用した送り仮名つきで確定する")
@@ -2482,7 +2479,7 @@ final class StateMachineTests: XCTestCase {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(5).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
-            XCTAssertEqual(events[1], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[1], .modeChanged(.hiragana))
             XCTAssertEqual(events[2], .markedText(MarkedText([.plain("[登録：あ]")])))
             XCTAssertEqual(events[3], .markedText(MarkedText([.plain("[登録：あ]"), .markerCompose, .plain("い")])))
             XCTAssertEqual(events[4], .markedText(MarkedText([.plain("[登録：あ]"), .plain("い")])))
@@ -2864,7 +2861,7 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[7], .markedText(MarkedText([.markerSelect, .emphasized("N")])))
             XCTAssertEqual(events[8], .markedText(MarkedText([.markerSelect, .emphasized("V")])), "Mの9個先のVを表示")
             XCTAssertEqual(events[9], .markedText(MarkedText([.markerSelect, .emphasized("W")])))
-            XCTAssertEqual(events[10], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[10], .modeChanged(.hiragana))
             XCTAssertEqual(events[11], .markedText(MarkedText([.plain("[登録：あ]")])))
             expectation.fulfill()
         }.store(in: &cancellables)
@@ -2920,7 +2917,7 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[7], .markedText(MarkedText([.markerSelect, .emphasized("N")])))
             XCTAssertEqual(events[8], .markedText(MarkedText([.markerSelect, .emphasized("V")])), "Mの9個先のVを表示")
             XCTAssertEqual(events[9], .markedText(MarkedText([.markerSelect, .emphasized("W")])))
-            XCTAssertEqual(events[10], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[10], .modeChanged(.hiragana))
             XCTAssertEqual(events[11], .markedText(MarkedText([.plain("[登録：あ]")])))
             expectation.fulfill()
         }.store(in: &cancellables)
@@ -3230,7 +3227,7 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("う")])))
             XCTAssertEqual(events[1], .markedText(MarkedText([.markerSelect, .emphasized("雨")])))
             XCTAssertEqual(events[2], .fixedText("雨"))
-            XCTAssertEqual(events[3], .modeChanged(.katakana, .zero))
+            XCTAssertEqual(events[3], .modeChanged(.katakana))
             expectation.fulfill()
         }.store(in: &cancellables)
 
@@ -3317,7 +3314,7 @@ final class StateMachineTests: XCTestCase {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(4).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("お")])))
-            XCTAssertEqual(events[1], .modeChanged(.hiragana, .zero))
+            XCTAssertEqual(events[1], .modeChanged(.hiragana))
             XCTAssertEqual(events[2], .markedText(MarkedText([.plain("[登録：お]")])))
             XCTAssertEqual(events[3], .markedText(MarkedText([])))
             expectation.fulfill()
@@ -3368,90 +3365,90 @@ final class StateMachineTests: XCTestCase {
 
     // Ctrl-jを押した
     var hiraganaAction: Action {
-        Action(keyBind: .hiragana, event: generateNSEvent(character: "j", characterIgnoringModifiers: "j", modifierFlags: .control), cursorPosition: .zero)
+        Action(keyBind: .hiragana, event: generateNSEvent(character: "j", characterIgnoringModifiers: "j", modifierFlags: .control))
     }
     // Ctrl-qを押した
     var hankakuKanaAction: Action {
-        Action(keyBind: .hankakuKana, event: generateNSEvent(character: "q", characterIgnoringModifiers: "q", modifierFlags: .control), cursorPosition: .zero)
+        Action(keyBind: .hankakuKana, event: generateNSEvent(character: "q", characterIgnoringModifiers: "q", modifierFlags: .control))
     }
     // エンターキーを押した
     var enterAction: Action {
-        Action(keyBind: .enter, event: generateNSEvent(character: "\r", characterIgnoringModifiers: "\r"), cursorPosition: .zero)
+        Action(keyBind: .enter, event: generateNSEvent(character: "\r", characterIgnoringModifiers: "\r"))
     }
     // タブキーを押した
     var tabAction: Action {
-        Action(keyBind: .tab, event: generateNSEvent(character: "\t", characterIgnoringModifiers: "\t"), cursorPosition: .zero)
+        Action(keyBind: .tab, event: generateNSEvent(character: "\t", characterIgnoringModifiers: "\t"))
     }
     // Ctrl-gキーを押した
     var cancelAction: Action {
-        Action(keyBind: .cancel, event: generateNSEvent(character: "g", characterIgnoringModifiers: "g", modifierFlags: .control), cursorPosition: .zero)
+        Action(keyBind: .cancel, event: generateNSEvent(character: "g", characterIgnoringModifiers: "g", modifierFlags: .control))
     }
     // Ctrl-aキーを押した
     var startOfLineAction: Action {
-        Action(keyBind: .startOfLine, event: generateNSEvent(character: "a", characterIgnoringModifiers: "a", modifierFlags: .control), cursorPosition: .zero)
+        Action(keyBind: .startOfLine, event: generateNSEvent(character: "a", characterIgnoringModifiers: "a", modifierFlags: .control))
     }
     // Ctrl-eキーを押した
     var endOfLineAction: Action {
-        Action(keyBind: .endOfLine, event: generateNSEvent(character: "e", characterIgnoringModifiers: "e", modifierFlags: .control), cursorPosition: .zero)
+        Action(keyBind: .endOfLine, event: generateNSEvent(character: "e", characterIgnoringModifiers: "e", modifierFlags: .control))
     }
     // Ctrl-yキーを押した
     var registerPasteAction: Action {
-        Action(keyBind: .registerPaste, event: generateNSEvent(character: "y", characterIgnoringModifiers: "y", modifierFlags: .control), cursorPosition: .zero)
+        Action(keyBind: .registerPaste, event: generateNSEvent(character: "y", characterIgnoringModifiers: "y", modifierFlags: .control))
     }
     // 矢印の上キーを押した
     var upKeyAction: Action {
-        Action(keyBind: .up, event: generateNSEvent(character: "\u{63232}", characterIgnoringModifiers: "\u{63232}", modifierFlags: [.function, .numericPad]), cursorPosition: .zero)
+        Action(keyBind: .up, event: generateNSEvent(character: "\u{63232}", characterIgnoringModifiers: "\u{63232}", modifierFlags: [.function, .numericPad]))
     }
     // 矢印の下キーを押した
     var downKeyAction: Action {
-        Action(keyBind: .down, event: generateNSEvent(character: "\u{63233}", characterIgnoringModifiers: "\u{63233}", modifierFlags: [.function, .numericPad]), cursorPosition: .zero)
+        Action(keyBind: .down, event: generateNSEvent(character: "\u{63233}", characterIgnoringModifiers: "\u{63233}", modifierFlags: [.function, .numericPad]))
     }
     // Ctrl-nキーを押した
     var ctrlNAction: Action {
-        Action(keyBind: .endOfLine, event: generateNSEvent(character: "n", characterIgnoringModifiers: "n", modifierFlags: .control), cursorPosition: .zero)
+        Action(keyBind: .endOfLine, event: generateNSEvent(character: "n", characterIgnoringModifiers: "n", modifierFlags: .control))
     }
     // 矢印の左キーを押した
     var leftKeyAction: Action {
-        Action(keyBind: .left, event: generateNSEvent(character: "\u{63234}", characterIgnoringModifiers: "\u{63234}", modifierFlags: [.function, .numericPad]), cursorPosition: .zero)
+        Action(keyBind: .left, event: generateNSEvent(character: "\u{63234}", characterIgnoringModifiers: "\u{63234}", modifierFlags: [.function, .numericPad]))
     }
     // 矢印の右キーを押した
     var rightKeyAction: Action {
-        Action(keyBind: .right, event: generateNSEvent(character: "\u{63235}", characterIgnoringModifiers: "\u{63235}", modifierFlags: [.function, .numericPad]), cursorPosition: .zero)
+        Action(keyBind: .right, event: generateNSEvent(character: "\u{63235}", characterIgnoringModifiers: "\u{63235}", modifierFlags: [.function, .numericPad]))
     }
     // Backspaceを押した
     var backspaceAction: Action {
-        Action(keyBind: .backspace, event: generateNSEvent(character: "\u{127}", characterIgnoringModifiers: "\u{127}"), cursorPosition: .zero)
+        Action(keyBind: .backspace, event: generateNSEvent(character: "\u{127}", characterIgnoringModifiers: "\u{127}"))
     }
     // Deleteを押した
     var deleteAction: Action {
-        Action(keyBind: .delete, event: generateNSEvent(character: "\u{f728}", characterIgnoringModifiers: "\u{f728}", modifierFlags: .function), cursorPosition: .zero)
+        Action(keyBind: .delete, event: generateNSEvent(character: "\u{f728}", characterIgnoringModifiers: "\u{f728}", modifierFlags: .function))
     }
     // 英数キーを押した
     var eisuKeyAction: Action {
-        Action(keyBind: .eisu, event: generateNSEvent(character: "\u{10}", characterIgnoringModifiers: "\u{10}"), cursorPosition: .zero)
+        Action(keyBind: .eisu, event: generateNSEvent(character: "\u{10}", characterIgnoringModifiers: "\u{10}"))
     }
     // かなキーを押した
     var kanaKeyAction: Action {
-        Action(keyBind: .kana, event: generateNSEvent(character: "\u{10}", characterIgnoringModifiers: "\u{10}"), cursorPosition: .zero)
+        Action(keyBind: .kana, event: generateNSEvent(character: "\u{10}", characterIgnoringModifiers: "\u{10}"))
     }
     // PageDownキーを押した
     var pagedownKeyAction: Action {
-        Action(keyBind: nil, event: generateNSEvent(character: "\u{f72d}", characterIgnoringModifiers: "\u{f72d}", modifierFlags: .function), cursorPosition: .zero)
+        Action(keyBind: nil, event: generateNSEvent(character: "\u{f72d}", characterIgnoringModifiers: "\u{f72d}", modifierFlags: .function))
     }
 
     // NormalモードまたはSelectingモードでqキーを押した
     var toggleKanaAction: Action {
-        Action(keyBind: .toggleKana, event: generateNSEvent(character: "q", characterIgnoringModifiers: "q"), cursorPosition: .zero)
+        Action(keyBind: .toggleKana, event: generateNSEvent(character: "q", characterIgnoringModifiers: "q"))
     }
 
     // Composingモードでqキーを押した
     var toggleAndFixKanaAction: Action {
-        Action(keyBind: .toggleAndFixKana, event: generateNSEvent(character: "q", characterIgnoringModifiers: "q"), cursorPosition: .zero)
+        Action(keyBind: .toggleAndFixKana, event: generateNSEvent(character: "q", characterIgnoringModifiers: "q"))
     }
 
     // Ctrl-uキーを押した
     var reconvertAction: Action {
-        Action(keyBind: .reconvert, event: generateNSEvent(character: "/", characterIgnoringModifiers: "/", modifierFlags: [.control]), cursorPosition: .zero)
+        Action(keyBind: .reconvert, event: generateNSEvent(character: "/", characterIgnoringModifiers: "/", modifierFlags: [.control]))
     }
 
     private func printableKeyEventAction(character: Character, characterIgnoringModifier: Character? = nil, withShift: Bool = false) -> Action {
@@ -3462,14 +3459,12 @@ final class StateMachineTests: XCTestCase {
                     keyBind: keyBind(character: characterIgnoringModifiers, withShift: withShift),
                     event: generateNSEvent(character: character,
                                            characterIgnoringModifiers: characterIgnoringModifier,
-                                           modifierFlags: [.shift]),
-                    cursorPosition: .zero
+                                           modifierFlags: [.shift])
                 )
             } else {
                 return Action(
                     keyBind: keyBind(character: characterIgnoringModifiers, withShift: withShift),
-                    event: generateKeyEventWithShift(character: character),
-                    cursorPosition: .zero
+                    event: generateKeyEventWithShift(character: character)
                 )
             }
         } else {
@@ -3477,8 +3472,7 @@ final class StateMachineTests: XCTestCase {
                 keyBind: keyBind(character: characterIgnoringModifiers, withShift: withShift),
                 event: generateNSEvent(
                     character: character,
-                    characterIgnoringModifiers: characterIgnoringModifier ?? character),
-                cursorPosition: .zero
+                    characterIgnoringModifiers: characterIgnoringModifier ?? character)
             )
         }
     }
