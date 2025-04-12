@@ -415,11 +415,6 @@ final class SettingsViewModel: ObservableObject {
             }
             .store(in: &cancellables)
 
-        // 空以外のdictSettingsがセットされたときに一回だけ実行する
-        $dictSettings.filter({ !$0.isEmpty }).first().sink { [weak self] _ in
-            self?.setupNotification()
-        }.store(in: &cancellables)
-
         $selectedInputSourceId.removeDuplicates().sink { [weak self] selectedInputSourceId in
             if let selectedInputSource = self?.inputSources.first(where: { $0.id == selectedInputSourceId }) {
                 logger.info("キー配列を \(selectedInputSource.localizedName, privacy: .public) (\(selectedInputSourceId, privacy: .public)) に設定しました")
@@ -621,8 +616,6 @@ final class SettingsViewModel: ObservableObject {
      * enabled=falseでfileDictsに追加されてしまい、読み込みスキップされたというログがでてしまうため。
      */
     func setupNotification() {
-        assert(dictSettings.isEmpty, "dictSettingsが空の状態でsetupNotificationしようとしました。バグと思われます。")
-
         NotificationCenter.default.publisher(for: notificationNameDictFileDidAppear).receive(on: RunLoop.main)
             .sink { [weak self] notification in
                 if let self, let url = notification.object as? URL {

@@ -236,6 +236,8 @@ struct macSKKApp: App {
             return
         }
         settingsViewModel.dictSettings = dictSettings
+        // 辞書フォルダの監視をセットアップ
+        settingsViewModel.setupNotification()
     }
 
     // UNNotificationの設定
