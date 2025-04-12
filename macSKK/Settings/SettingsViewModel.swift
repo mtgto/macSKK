@@ -491,7 +491,7 @@ final class SettingsViewModel: ObservableObject {
         }.store(in: &cancellables)
 
         $showCompletion.dropFirst().sink { showCompletion in
-            logger.log("補完候補を表示する設定を\(showCompletion ? "有効" : "無効", privacy: .public)にしました")
+            logger.log("補完候補表示を\(showCompletion ? "表示" : "非表示", privacy: .public)に変更しました")
             UserDefaults.standard.set(showCompletion, forKey: UserDefaultsKeys.showCompletion)
             Global.showCompletion = showCompletion
         }.store(in: &cancellables)
