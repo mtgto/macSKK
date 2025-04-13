@@ -75,6 +75,7 @@
 "Show Input Mode Modal" = "Show Input Mode Modal";
 "Direction of candidate list" = "Direction of candidate list";
 "Enter Key confirms a candidate and sends a newline" = "Enter Key confirms a candidate and sends a newline";
+"Show Completion" = "Show Completion";
 "Insert Blank String" = "Insert Blank String";
 "Enabled" = "Enabled";
 "Disabled" = "Disabled";
