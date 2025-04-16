@@ -104,16 +104,10 @@ final class StateMachine {
             case .hiragana:
                 state.inputMode = .katakana
                 inputMethodEventSubject.send(.modeChanged(.katakana))
-                if specialState != nil {
-                    inputMethodEventSubject.send(.markedText(state.displayText()))
-                }
                 return true
             case .katakana, .hankaku:
                 state.inputMode = .hiragana
                 inputMethodEventSubject.send(.modeChanged(.hiragana))
-                if specialState != nil {
-                    inputMethodEventSubject.send(.markedText(state.displayText()))
-                }
                 return true
             case .eisu, .direct:
                 break
