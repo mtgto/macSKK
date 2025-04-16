@@ -191,7 +191,12 @@ final class StateMachine {
                         } else {
                             state.specialState = nil
                         }
-                        state.inputMode = registerState.prev.mode
+                        if let prevMode = registerState.prev.composing.prevMode {
+                            // Abbrevモードの終了時の戻り先が指定されていれば、そちらに戻る
+                            state.inputMode = prevMode
+                        } else {
+                            state.inputMode = registerState.prev.mode
+                        }
                         if let okuri = registerState.okuri {
                             addFixedText(registerState.text + okuri)
                         } else {
@@ -204,7 +209,13 @@ final class StateMachine {
                         let word = unregisterState.prev.selecting.candidates[
                             unregisterState.prev.selecting.candidateIndex]
                         _ = Global.dictionary.delete(yomi: unregisterState.prev.selecting.yomi, word: word.word)
-                        state.inputMode = unregisterState.prev.mode
+
+                        if let prevMode = unregisterState.prev.selecting.prev.composing.prevMode {
+                            // Abbrevモードの終了時の戻り先が指定されていれば、そちらに戻る
+                            state.inputMode = prevMode
+                        } else {
+                            state.inputMode = unregisterState.prev.mode
+                        }
                         state.inputMethod = .normal
                         state.specialState = nil
                         updateMarkedText()
