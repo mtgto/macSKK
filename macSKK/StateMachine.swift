@@ -1247,6 +1247,9 @@ final class StateMachine {
                         composing: selecting.prev.composing),
                     yomi: selecting.yomi),
                 prev: prev + [registerState])
+                state.inputMethod = .normal
+                state.inputMode = .hiragana
+                inputMethodEventSubject.send(.modeChanged(.hiragana))
             } else if specialState != nil {
                 state.inputMethod = .normal
                 state.inputMode = selecting.prev.mode
