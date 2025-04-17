@@ -206,7 +206,11 @@ final class StateMachine {
                         _ = Global.dictionary.delete(yomi: unregisterState.prev.selecting.yomi, word: word.word)
                         state.inputMode = unregisterState.prev.mode
                         state.inputMethod = .normal
-                        state.specialState = nil
+                        if let prev {
+                            state.specialState = .register(prev.0, prev: prev.1)
+                        } else {
+                            state.specialState = nil
+                        }
                         updateMarkedText()
                     } else {
                         state.inputMode = unregisterState.prev.mode
