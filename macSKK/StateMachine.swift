@@ -187,9 +187,16 @@ final class StateMachine {
                         }
                         if let prevMode = registerState.prev.composing.prevMode {
                             // Abbrevモードの終了時の戻り先が指定されていれば、そちらに戻る
-                            state.inputMode = prevMode
+                            if state.inputMode != prevMode {
+                                state.inputMode = prevMode
+                                inputMethodEventSubject.send(.modeChanged(prevMode))
+                            }
                         } else {
-                            state.inputMode = registerState.prev.mode
+                            let prevMode = registerState.prev.mode
+                            if state.inputMode != prevMode {
+                                state.inputMode = prevMode
+                                inputMethodEventSubject.send(.modeChanged(prevMode))
+                            }
                         }
                         if let okuri = registerState.okuri {
                             addFixedText(registerState.text + okuri)
@@ -206,9 +213,16 @@ final class StateMachine {
 
                         if let prevMode = unregisterState.prev.selecting.prev.composing.prevMode {
                             // Abbrevモードの終了時の戻り先が指定されていれば、そちらに戻る
-                            state.inputMode = prevMode
+                            if state.inputMode != prevMode {
+                                state.inputMode = prevMode
+                                inputMethodEventSubject.send(.modeChanged(prevMode))
+                            }
                         } else {
-                            state.inputMode = unregisterState.prev.mode
+                            let prevMode = unregisterState.prev.mode
+                            if state.inputMode != prevMode {
+                                state.inputMode = unregisterState.prev.mode
+                                inputMethodEventSubject.send(.modeChanged(prevMode))
+                            }
                         }
                         state.inputMethod = .normal
                         state.specialState = nil
