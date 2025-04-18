@@ -104,16 +104,10 @@ final class StateMachine {
             case .hiragana:
                 state.inputMode = .katakana
                 inputMethodEventSubject.send(.modeChanged(.katakana))
-                if specialState != nil {
-                    inputMethodEventSubject.send(.markedText(state.displayText()))
-                }
                 return true
             case .katakana, .hankaku:
                 state.inputMode = .hiragana
                 inputMethodEventSubject.send(.modeChanged(.hiragana))
-                if specialState != nil {
-                    inputMethodEventSubject.send(.markedText(state.displayText()))
-                }
                 return true
             case .eisu, .direct:
                 break
@@ -191,7 +185,19 @@ final class StateMachine {
                         } else {
                             state.specialState = nil
                         }
-                        state.inputMode = registerState.prev.mode
+                        if let prevMode = registerState.prev.composing.prevMode {
+                            // Abbrevモードの終了時の戻り先が指定されていれば、そちらに戻る
+                            if state.inputMode != prevMode {
+                                state.inputMode = prevMode
+                                inputMethodEventSubject.send(.modeChanged(prevMode))
+                            }
+                        } else {
+                            let prevMode = registerState.prev.mode
+                            if state.inputMode != prevMode {
+                                state.inputMode = prevMode
+                                inputMethodEventSubject.send(.modeChanged(prevMode))
+                            }
+                        }
                         if let okuri = registerState.okuri {
                             addFixedText(registerState.text + okuri)
                         } else {
@@ -204,7 +210,20 @@ final class StateMachine {
                         let word = unregisterState.prev.selecting.candidates[
                             unregisterState.prev.selecting.candidateIndex]
                         _ = Global.dictionary.delete(yomi: unregisterState.prev.selecting.yomi, word: word.word)
-                        state.inputMode = unregisterState.prev.mode
+
+                        if let prevMode = unregisterState.prev.selecting.prev.composing.prevMode {
+                            // Abbrevモードの終了時の戻り先が指定されていれば、そちらに戻る
+                            if state.inputMode != prevMode {
+                                state.inputMode = prevMode
+                                inputMethodEventSubject.send(.modeChanged(prevMode))
+                            }
+                        } else {
+                            let prevMode = unregisterState.prev.mode
+                            if state.inputMode != prevMode {
+                                state.inputMode = unregisterState.prev.mode
+                                inputMethodEventSubject.send(.modeChanged(prevMode))
+                            }
+                        }
                         state.inputMethod = .normal
                         state.specialState = nil
                         updateMarkedText()
