@@ -6,22 +6,10 @@
 	<string>net.mtgto.inputmethod.macSKK_Connection</string>
 	<key>InputMethodServerControllerClass</key>
 	<string>InputController</string>
-	<key>TISInputSourceID</key>
-	<string>net.mtgto.inputmethod.macSKK</string>
 	<key>TISIntendedLanguage</key>
 	<string>ja</string>
 	<key>TISIconIsTemplate</key>
 	<true/>
-	<key>net.mtgto.inputmethod.macSKK.ascii</key>
-	<string>ABC (macSKK)</string>
-	<key>net.mtgto.inputmethod.macSKK.hiragana</key>
-	<string>Hiragana (macSKK)</string>
-	<key>net.mtgto.inputmethod.macSKK.katakana</key>
-	<string>Katakana (macSKK)</string>
-	<key>net.mtgto.inputmethod.macSKK.hankaku</key>
-	<string>Hankaku (macSKK)</string>
-	<key>net.mtgto.inputmethod.macSKK.eisu</key>
-	<string>Eisu (macSKK)</string>
 	<key>ComponentInputModeDict</key>
 	<dict>
 		<key>tsInputModeListKey</key>
