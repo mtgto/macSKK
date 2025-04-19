@@ -2450,6 +2450,35 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    @MainActor func testHandleRegisteringRecursiveDelete() {
+        Global.dictionary.setEntries(["あ": [Word("亜")]])
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(10).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("い")])))
+            XCTAssertEqual(events[1], .modeChanged(.hiragana))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.plain("[登録：い]")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.plain("[登録：い]"), .markerCompose, .plain("あ")])))
+            XCTAssertEqual(events[4], .markedText(MarkedText([.plain("[登録：い]"), .markerSelect, .emphasized("亜")])))
+            XCTAssertEqual(events[5], .markedText(MarkedText([.plain("あ /亜/ を削除します(yes/no)")])))
+            XCTAssertEqual(events[6], .markedText(MarkedText([.plain("あ /亜/ を削除します(yes/no)"), .plain("y")])))
+            XCTAssertEqual(events[7], .markedText(MarkedText([.plain("あ /亜/ を削除します(yes/no)"), .plain("ye")])))
+            XCTAssertEqual(events[8], .markedText(MarkedText([.plain("あ /亜/ を削除します(yes/no)"), .plain("yes")])))
+            XCTAssertEqual(events[9], .markedText(MarkedText([.plain("[登録：い]")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "x", withShift: true)))
+        "yes".forEach { character in
+            XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: character)))
+        }
+        XCTAssertTrue(stateMachine.handle(enterAction))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     @MainActor func testHandleRegisteringUnregisteredKeyEventWithModifiers() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
