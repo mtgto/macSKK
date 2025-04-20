@@ -25,7 +25,7 @@ class InputController: IMKInputController {
     /// 変換候補として選択されている単語を流すストリーム
     private let selectedWord = PassthroughSubject<Word.Word?, Never>()
     /// 入力モードを表示するときに流すストリーム。非同期処理するために使用。
-    private let displayInputModePanel = PassthroughSubject<(InputMode, NSPoint, NSWindow.Level), Never>()
+    private let displayInputModePanel = PassthroughSubject<InputMode, Never>()
     /// 入力を処理しないで直接入力させるかどうか
     private var directMode: Bool = false
     /// モード変更時に空白文字を一瞬追加するワークアラウンドを適用するかどうか
@@ -86,7 +86,7 @@ class InputController: IMKInputController {
                         
                         let showInputModePanel = UserDefaults.standard.bool(forKey: UserDefaultsKeys.showInputModePanel)
                         if showInputModePanel {
-                            displayInputModePanel.send((inputMode, cursorPosition(for: textInput).origin, windowLevel(for: textInput)))
+                            displayInputModePanel.send(inputMode)
                         }
                     }
                 }
@@ -171,11 +171,13 @@ class InputController: IMKInputController {
             .throttle(for: 0.1, scheduler: DispatchQueue.main, latest: true)
             .subscribe(on: DispatchQueue.global())
             .receive(on: DispatchQueue.main)
-            .sink { (inputMode, cursorPosition, windowLevel) in
-                Global.inputModePanel.show(at: cursorPosition,
-                                           mode: inputMode,
-                                           privateMode: Global.privateMode.value,
-                                           windowLevel: windowLevel)
+            .sink { [weak self] inputMode in
+                if let self {
+                    Global.inputModePanel.show(at: cursorPosition(for: textInput).origin,
+                                               mode: inputMode,
+                                               privateMode: Global.privateMode.value,
+                                               windowLevel: windowLevel(for: textInput))
+                }
             }.store(in: &cancellables)
 
         stateMachine.inlineCandidateCount = UserDefaults.standard.integer(forKey: UserDefaultsKeys.inlineCandidateCount)
@@ -291,12 +293,9 @@ class InputController: IMKInputController {
         
         let showInputModePanel = UserDefaults.standard.bool(forKey: UserDefaultsKeys.showInputModePanel)
         if showInputModePanel && !directMode {
-            let cursorPosition = cursorPosition(for: textInput)
-            if cursorPosition != .zero {
-                // Safariでアドレスバーに移動するときなど、処理が固まることがあるので非同期で実行する
-                // ただしIMKTextInputへのアクセスはsetValue内で同期で行う必要がある
-                displayInputModePanel.send((inputMode, cursorPosition.origin, windowLevel(for: textInput)))
-            }
+            // Safariでアドレスバーに移動するときなど、処理が固まることがあるので非同期で実行する
+            // ただしIMKTextInputへのアクセスはsetValue内で同期で行う必要がある
+            displayInputModePanel.send(inputMode)
         }
         // キー配列を設定する
         setCustomInputSource(textInput: textInput)
