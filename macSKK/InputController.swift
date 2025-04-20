@@ -282,10 +282,17 @@ class InputController: IMKInputController {
         if showInputModePanel && !directMode {
             let cursorPosition = cursorPosition(for: textInput)
             if cursorPosition != .zero {
-                Global.inputModePanel.show(at: cursorPosition.origin,
-                                           mode: inputMode,
-                                           privateMode: Global.privateMode.value,
-                                           windowLevel: windowLevel(for: textInput))
+                let windowLevel = windowLevel(for: textInput)
+                // Safariでアドレスバーに移動するときなど、処理が固まることがあるので非同期で実行する
+                // ただしIMKTextInputへのアクセスはsetValue内で同期で行う必要がある
+                Task {
+                    await MainActor.run {
+                        Global.inputModePanel.show(at: cursorPosition.origin,
+                                                   mode: inputMode,
+                                                   privateMode: Global.privateMode.value,
+                                                   windowLevel: windowLevel)
+                    }
+                }
             }
         }
         // キー配列を設定する
