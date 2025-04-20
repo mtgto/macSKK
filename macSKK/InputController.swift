@@ -24,6 +24,8 @@ class InputController: IMKInputController {
     private static let notFoundRange = NSRange(location: NSNotFound, length: NSNotFound)
     /// 変換候補として選択されている単語を流すストリーム
     private let selectedWord = PassthroughSubject<Word.Word?, Never>()
+    /// 入力モードを表示するときに流すストリーム。非同期処理するために使用。
+    private let displayInputModePanel = PassthroughSubject<(InputMode, NSPoint, NSWindow.Level), Never>()
     /// 入力を処理しないで直接入力させるかどうか
     private var directMode: Bool = false
     /// モード変更時に空白文字を一瞬追加するワークアラウンドを適用するかどうか
@@ -84,10 +86,7 @@ class InputController: IMKInputController {
                         
                         let showInputModePanel = UserDefaults.standard.bool(forKey: UserDefaultsKeys.showInputModePanel)
                         if showInputModePanel {
-                            Global.inputModePanel.show(at: cursorPosition(for: textInput).origin,
-                                                       mode: inputMode,
-                                                       privateMode: Global.privateMode.value,
-                                                       windowLevel: windowLevel(for: textInput))
+                            displayInputModePanel.send((inputMode, cursorPosition(for: textInput).origin, windowLevel(for: textInput)))
                         }
                     }
                 }
@@ -166,6 +165,18 @@ class InputController: IMKInputController {
                 }
             }
         }.store(in: &cancellables)
+        // Safariでアドレスバーに移動するときなど、処理が固まることがあるので非同期で実行する
+        // https://github.com/mtgto/macSKK/issues/336
+        displayInputModePanel
+            .throttle(for: 0.1, scheduler: DispatchQueue.main, latest: true)
+            .subscribe(on: DispatchQueue.global())
+            .receive(on: DispatchQueue.main)
+            .sink { (inputMode, cursorPosition, windowLevel) in
+                Global.inputModePanel.show(at: cursorPosition,
+                                           mode: inputMode,
+                                           privateMode: Global.privateMode.value,
+                                           windowLevel: windowLevel)
+            }.store(in: &cancellables)
 
         stateMachine.inlineCandidateCount = UserDefaults.standard.integer(forKey: UserDefaultsKeys.inlineCandidateCount)
         NotificationCenter.default.publisher(for: notificationNameInlineCandidateCount)
@@ -282,17 +293,9 @@ class InputController: IMKInputController {
         if showInputModePanel && !directMode {
             let cursorPosition = cursorPosition(for: textInput)
             if cursorPosition != .zero {
-                let windowLevel = windowLevel(for: textInput)
                 // Safariでアドレスバーに移動するときなど、処理が固まることがあるので非同期で実行する
                 // ただしIMKTextInputへのアクセスはsetValue内で同期で行う必要がある
-                Task {
-                    await MainActor.run {
-                        Global.inputModePanel.show(at: cursorPosition.origin,
-                                                   mode: inputMode,
-                                                   privateMode: Global.privateMode.value,
-                                                   windowLevel: windowLevel)
-                    }
-                }
+                displayInputModePanel.send((inputMode, cursorPosition.origin, windowLevel(for: textInput)))
             }
         }
         // キー配列を設定する
