@@ -289,8 +289,9 @@ A. Karabiner-Elementsで `C-j` をかなキーに置換することで対応す�
 
 ### Q. Ghosttyでq/lキーでモードを切り替えてもq/lが入力されてしまう / `C-j` を押すと改行されてしまう
 
-https://zenn.dev/mtgto/articles/macskk-karabiner-settings-for-ghostty を参考にしてください。
-q, lは「空文字挿入」ワークアラウンドも効かなかったのでKarabiner-Elementsでq, lキーをIMEのモード変換に置き換えるのがよさそうです。
+Ghostty v1.1.0で、q/lなどで入力モードが変更されたかどうかをGhostty側で判定してくれるようになりました。ただしOS側の現在の入力モードが変わったかどうかをチェックしているため、切り替え前と切り替え後の入力モードを両方ともmacOSのキーボード設定で有効にしておく必要があります。
+例えばmacSKKの「ひらがな」だけを入れている場合、qでカタカナモードに変更してもOSでの入力モードは「macSKKのひらがな」のままと認識されてしまいqがそのまま入力されてしまいます。同様にmacSKKの「ABC」を入れていないと、lを入力してもモードが変わってないとGhosttyには解釈されてlがそのまま入力されてしまいます。
+https://zenn.dev/mtgto/articles/macskk-karabiner-settings-for-ghostty も参考にしてください。
 
 ### Q. アプリによってq/lキーでモードを切り替えてもq/lが入力されてしまう / `C-j`で改行されてしまう
 
@@ -304,6 +305,17 @@ v0.20.0ではKitty, LINE, Alacrittyについて「空文字挿入」というワ
 
 `日本語` の設定で入力モードの英字を有効にしてから `ABC`,  `日本語` の順に削除するとmacSKKだけにしたりできるようです。
 参考: https://zenn.dev/yoshiyoshifujii/articles/78798db6472bf4
+
+### Q. ターミナルで `キーボード入力のセキュリティを保護` iTerm2で `Secure Keyboard Entry` を有効にすると入力メニューで無効化される
+
+macOSの日本語入力システムは、ユーザーライブラリ (`~/Library`) とシステムライブラリ (`/Library`) の二種類の配置場所があるのですが、 `Secure Keyboard Entry` が有効なアプリケーション内で日本語入力システムを使用できるようにするにはシステムライブラリにインストールされている必要があるようです。
+
+参考: https://github.com/mtgto/macSKK/issues/351
+
+今後システムライブラリへのインストールが可能にできるように検討します。申し訳ありませんが以下のいずれかの方法を検討してください。
+
+1. macSKK.appをシステムライブラリ内の `Input Methods` フォルダ (`/Library/Input Methods`) に移動してからOS再起動をする
+2. `Secure Keyboard Entry` を有効にするときは別の日本語入力システムを使用する
 
 ## 開発
 
