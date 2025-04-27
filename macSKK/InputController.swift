@@ -24,8 +24,10 @@ class InputController: IMKInputController {
     private static let notFoundRange = NSRange(location: NSNotFound, length: NSNotFound)
     /// 変換候補として選択されている単語を流すストリーム
     private let selectedWord = PassthroughSubject<Word.Word?, Never>()
-    /// 入力モードを表示するときに流すストリーム。非同期処理するために使用。
+    /// 入力モードを表示するときに流すストリーム。
     private let displayInputModePanel = PassthroughSubject<InputMode, Never>()
+    /// setValueで呼ばれたときに流すストリーム。非同期処理するために使用。
+    private let inputModeChangedOutside = PassthroughSubject<InputMode, Never>().throttle(for: 0.1, scheduler: DispatchQueue.global(), latest: true)
     /// 入力を処理しないで直接入力させるかどうか
     private var directMode: Bool = false
     /// モード変更時に空白文字を一瞬追加するワークアラウンドを適用するかどうか
@@ -168,8 +170,7 @@ class InputController: IMKInputController {
         // Safariでアドレスバーに移動するときなど、処理が固まることがあるので非同期で実行する
         // https://github.com/mtgto/macSKK/issues/336
         displayInputModePanel
-            .throttle(for: 0.1, scheduler: DispatchQueue.main, latest: true)
-            .subscribe(on: DispatchQueue.global())
+            .merge(with: inputModeChangedOutside)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] inputMode in
                 if let self {
