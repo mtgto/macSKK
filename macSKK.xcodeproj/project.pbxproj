@@ -130,6 +130,7 @@
 		CEF08257296D8CBD00646366 /* CandidatesPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF08256296D8CBD00646366 /* CandidatesPanel.swift */; };
 		CEF0825B296D8FF000646366 /* CandidatesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF0825A296D8FF000646366 /* CandidatesView.swift */; };
 		CEF0825D296DB58600646366 /* CandidatesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF0825C296DB58600646366 /* CandidatesViewModel.swift */; };
+		CEF16CEA2DBF21B500EF20A3 /* kana-rule-azik.conf in Resources */ = {isa = PBXBuildFile; fileRef = CEF16CE92DBF21B500EF20A3 /* kana-rule-azik.conf */; };
 		CEF3D86C2B9C022900BD1D3A /* WorkaroundApplicationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF3D86B2B9C022900BD1D3A /* WorkaroundApplicationView.swift */; };
 		CEF3D8742B9EF0C000BD1D3A /* SKKServClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF3D8732B9EF0C000BD1D3A /* SKKServClient.swift */; };
 		CEF3D8782B9EF0C000BD1D3A /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF3D8772B9EF0C000BD1D3A /* main.swift */; };
@@ -304,6 +305,7 @@
 		CEF08256296D8CBD00646366 /* CandidatesPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CandidatesPanel.swift; sourceTree = "<group>"; };
 		CEF0825A296D8FF000646366 /* CandidatesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CandidatesView.swift; sourceTree = "<group>"; };
 		CEF0825C296DB58600646366 /* CandidatesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CandidatesViewModel.swift; sourceTree = "<group>"; };
+		CEF16CE92DBF21B500EF20A3 /* kana-rule-azik.conf */ = {isa = PBXFileReference; lastKnownFileType = text; path = "kana-rule-azik.conf"; sourceTree = "<group>"; };
 		CEF3D86B2B9C022900BD1D3A /* WorkaroundApplicationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkaroundApplicationView.swift; sourceTree = "<group>"; };
 		CEF3D8712B9EF0C000BD1D3A /* SKKServClient.xpc */ = {isa = PBXFileReference; explicitFileType = "wrapper.xpc-service"; includeInIndex = 0; path = SKKServClient.xpc; sourceTree = BUILT_PRODUCTS_DIR; };
 		CEF3D8732B9EF0C000BD1D3A /* SKKServClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServClient.swift; sourceTree = "<group>"; };
@@ -462,6 +464,7 @@
 				CE6DBAC62A85BF3E00F5A227 /* Localizable.strings */,
 				CEB0888B2A7F342000EFD1E3 /* Credits.rtf */,
 				CE3E44A62B52AFB400105798 /* kana-rule.conf */,
+				CEF16CE92DBF21B500EF20A3 /* kana-rule-azik.conf */,
 				CE5ECF3B2957034D00E7BE7D /* Preview Content */,
 			);
 			path = macSKK;
@@ -722,6 +725,7 @@
 				CE1A014A2C5931D60034FA7D /* direct.tiff in Resources */,
 				CE1A01492C5931D60034FA7D /* katakana.tiff in Resources */,
 				CE1A014B2C5931D60034FA7D /* hankaku.tiff in Resources */,
+				CEF16CEA2DBF21B500EF20A3 /* kana-rule-azik.conf in Resources */,
 				CEB0888C2A7F342000EFD1E3 /* Credits.rtf in Resources */,
 				CE1A014C2C5931D60034FA7D /* eisu.tiff in Resources */,
 				CE5ECF3D2957034D00E7BE7D /* Preview Assets.xcassets in Resources */,
