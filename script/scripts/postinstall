@@ -1,5 +1,5 @@
 #!/bin/bash -eu
 asns=$(/usr/bin/lsappinfo find bundleID=net.mtgto.inputmethod.macSKK)
 if [[ "$asns" = ASN* ]]; then
-  osascript -e 'tell application id "net.mtgto.inputmethod.macSKK" to quit'
+  /usr/bin/osascript -e 'tell application id "net.mtgto.inputmethod.macSKK" to quit'
 fi

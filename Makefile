@@ -29,7 +29,7 @@ APP_PKG_ID := net.mtgto.inputmethod.macSKK.app
 DICT_PKG_ID := net.mtgto.inputmethod.macSKK.dict
 PRODUCT_SIGN_ID := "Developer ID Installer"
 
-.PHONY: all $(DICT)
+.PHONY: all
 
 $(XCARCHIVE):
 	xcodebuild -project macSKK.xcodeproj -scheme macSKK -configuration Release CODE_SIGN_IDENTITY="Developer ID Application" DEVELOPMENT_TEAM=$(APPLE_TEAM_ID) OTHER_CODE_SIGN_FLAGS="--timestamp --options=runtime" CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO CODE_SIGN_STYLE=Manual -archivePath $(XCARCHIVE) archive
@@ -57,7 +57,7 @@ $(APP_PKG): $(APP)
 	cp -r $< $(WORKDIR)/app/Library/Input\ Methods
 	pkgbuild --root $(WORKDIR)/app --component-plist script/app.plist --identifier $(APP_PKG_ID) --version $(VERSION) --install-location / --scripts $(SCRIPTSDIR) $(APP_PKG)
 
-$(INSTALLER_PKG): $(APP_PKG) $(DICT_PKG)
+$(INSTALLER_PKG): $(APP_PKG)
 	mkdir -p $(WORKDIR)/pkg
 	sed -e "s/%TITLE%/macSKK $(VERSION)/" script/distribution.xml.template > script/distribution.xml
 	productbuild --distribution script/distribution.xml --resources script --package-path $(WORKDIR) $(UNSIGNED_PKG)
