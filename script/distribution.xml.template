@@ -6,7 +6,7 @@
     <title>%TITLE%</title>
     <welcome file="welcome.rtf"/>
     <license file="license.rtf"/>
-    <domains enable_localSystem="true" enable_anywhere="false" enable_currentUserHome="false"/>
+    <domains enable_localSystem="true" enable_anywhere="false" enable_currentUserHome="true"/>
     <options customize="never" require-scripts="false" hostArchitectures="x86_64,arm64"/>
     <choices-outline>
         <line choice="default" />
