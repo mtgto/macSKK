@@ -41,7 +41,6 @@
 "Filename" = "Filename";
 "Dictionary Setting" = "Dictionary Setting";
 "Encoding" = "Encoding";
-"Unable to change encoding SKK-JISYO.L" = "Unable to change encoding of SKK-JISYO.L because it's bundled with macSKK.";
 "UNNewVersionTitle" = "A new version is available";
 "UNNewVersionBody" = "macSKK %@ is now available.";
 "UNUserDictReadErrorTitle" = "Error";
