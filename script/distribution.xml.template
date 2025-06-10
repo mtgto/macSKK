@@ -6,16 +6,12 @@
     <title>%TITLE%</title>
     <welcome file="welcome.rtf"/>
     <license file="license.rtf"/>
-    <domains enable_localSystem="false" enable_anywhere="false" enable_currentUserHome="true"/>
-    <options customize="allow" require-scripts="false" hostArchitectures="x86_64,arm64"/>
+    <domains enable_localSystem="true" enable_anywhere="false" enable_currentUserHome="true"/>
+    <options customize="never" require-scripts="false" hostArchitectures="x86_64,arm64"/>
     <choices-outline>
         <line choice="default" />
-        <line choice="skk-jisyo-l" />
     </choices-outline>
     <choice id="default" title="macSKK" enabled="false">
         <pkg-ref id="net.mtgto.inputmethod.macSKK.app">app.pkg</pkg-ref>
-    </choice>
-    <choice id="skk-jisyo-l" title="SKK-JISYO.L" start_selected="true" description="SKK辞書のうちもっとも大きなものです">
-        <pkg-ref id="net.mtgto.inputmethod.macSKK.dict">dict.pkg</pkg-ref>
     </choice>
 </installer-gui-script>
