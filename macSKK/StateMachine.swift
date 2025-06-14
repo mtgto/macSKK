@@ -418,6 +418,11 @@ final class StateMachine {
                         state.inputMethod = .composing(
                             ComposingState(isShift: true, text: moji.kana.map { String($0) }, romaji: result.input))
                         updateMarkedText()
+                    } else if enableMarkedTextWorkaround {
+                        // 確定文字を未確定文字列として入力するワークアラウンド
+                        state.inputMethod = .composing(
+                            ComposingState(isShift: false, text: moji.kana.map { String($0) }, romaji: ""))
+                        updateMarkedText()
                     } else {
                         addFixedText(moji.string(for: state.inputMode))
                     }
@@ -911,7 +916,7 @@ final class StateMachine {
                             state.inputMethod = .composing(composing.appendText(moji).resetRomaji().with(isShift: true))
                         } else {
                             state.inputMethod = .normal
-                            addFixedText(moji.string(for: state.inputMode))
+                            addFixedText(text.joined() + moji.string(for: state.inputMode))
                             return true
                         }
                     } else {

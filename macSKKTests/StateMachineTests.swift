@@ -87,12 +87,13 @@ final class StateMachineTests: XCTestCase {
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(3).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.plain("あ")]))) // 未確定文字列で"あ"を表示
-            XCTAssertEqual(events[1], .fixedText("あ"))
-            XCTAssertEqual(events[2], .markedText(MarkedText([.plain("t")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.plain("あt")])))
+            XCTAssertEqual(events[2], .fixedText("あと"))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
         wait(for: [expectation], timeout: 1.0)
     }
 
