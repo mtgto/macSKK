@@ -39,13 +39,17 @@ final class StateMachine {
     var inlineCandidateCount: Int
     /// 変換候補パネルに一度に表示する変換候補の数
     let displayCandidateCount = 9
+    /// 1文字で確定するローマ字やq/lなどのモード変更などで未確定文字列を一度表示するワークグラウンドが有効かどうか
+    /// VSCodeのターミナルやHyperなどaiueoで直接入力されてしまう環境向け
+    var enableMarkedTextWorkaround: Bool
 
-    init(initialState: IMEState = IMEState(), inlineCandidateCount: Int = 3) {
+    init(initialState: IMEState = IMEState(), inlineCandidateCount: Int = 3, enableMarkedTextWorkaround: Bool = false) {
         state = initialState
         inputMethodEvent = inputMethodEventSubject.eraseToAnyPublisher()
         candidateEvent = candidateEventSubject.removeDuplicates().eraseToAnyPublisher()
         yomiEvent = yomiEventSubject.removeDuplicates().eraseToAnyPublisher()
         self.inlineCandidateCount = inlineCandidateCount
+        self.enableMarkedTextWorkaround = enableMarkedTextWorkaround
     }
 
     /// `Action`をハンドルした場合には`true`、しなかった場合は`false`を返す

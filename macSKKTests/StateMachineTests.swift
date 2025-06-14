@@ -81,6 +81,21 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    @MainActor func testHandleNormalRomajiEnableMarkedTextWorkaround() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        stateMachine.enableMarkedTextWorkaround = true
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(3).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.plain("あ")]))) // 未確定文字列で"あ"を表示
+            XCTAssertEqual(events[1], .fixedText("あ"))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.plain("t")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t")))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     @MainActor func testHandleNormalNAndHyphen() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
