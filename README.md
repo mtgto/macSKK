@@ -51,8 +51,8 @@ Universal Binary (Apple Silicon & Intel Mac) でビルドしていますが、�
 macSKKのインストール後に、システム設定→キーボード→入力ソースから「ひらがな」(アイコンは`▼あ`)と「ABC」(アイコンは`▼A`)を追加してください。カタカナ、全角英数、半角カナは追加しても追加しなくても問題ありません。
 もしインストール直後に表示されなかったり、バージョンアップしても反映されない場合はログアウト & ログインを試してみてください。
 
-SKK辞書は `~/Library/Containers/net.mtgto.inputmethod.macSKK/Data/Documents/Dictionaries` に配置してください。
-その後、入力メニュー→環境設定を開き、辞書設定で使用する辞書を有効に切り替えてください。EUC-JPでないエンコーディングの場合はiボタンからエンコーディングを切り替えてください。現在はEUC-JP (EUC-JIS-2004を含む) とUTF-8に対応しています。辞書ファイルの形式はYAML形式、JSON形式なども提案されていますが現在は未対応です。
+SKK辞書は `~/Library/Containers/net.mtgto.inputmethod.macSKK/Data/Documents/Dictionaries` に配置してください。まずは https://github.com/skk-dev/dict の `SKK-JISYO.L` から使ってみるとよいでしょう。
+その後、macOSメニューバーの入力メニュー→環境設定を開き、辞書設定で使用する辞書を有効に切り替えてください。EUC-JPでないエンコーディングの場合はiボタンからエンコーディングを切り替えてください。現在はEUC-JP (EUC-JIS-2004を含む) とUTF-8に対応しています。辞書ファイルの形式はYAML形式、JSON形式なども提案されていますが現在はJSON形式のみ対応しておりYAML形式には未対応です。
 
 辞書の削除は上記フォルダから辞書ファイルをゴミ箱に移動するかファイルを削除してください。macSKKが自動で無効化します。
 
