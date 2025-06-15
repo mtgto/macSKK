@@ -916,7 +916,7 @@ final class StateMachine {
                             state.inputMethod = .composing(composing.appendText(moji).resetRomaji().with(isShift: true))
                         } else {
                             state.inputMethod = .normal
-                            addFixedText(text.joined() + moji.string(for: state.inputMode))
+                            addFixedText(moji.string(for: state.inputMode))
                             return true
                         }
                     } else {
