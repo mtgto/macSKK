@@ -85,13 +85,15 @@ final class StateMachineTests: XCTestCase {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         stateMachine.enableMarkedTextWorkaround = true
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(4).sink { events in
+        stateMachine.inputMethodEvent.collect(8).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.plain("あ")]))) // 未確定文字列で"あ"を表示
             XCTAssertEqual(events[1], .fixedText("あ"))
             XCTAssertEqual(events[2], .markedText(MarkedText([.plain("い")]))) // あは確定し、未確定文字列で"い"を表示
             XCTAssertEqual(events[3], .fixedText("い")) // Enterでも確定する
             XCTAssertEqual(events[4], .markedText(MarkedText([.plain("う")])))
             XCTAssertEqual(events[5], .fixedText("う")) // ESCでも確定する
+            XCTAssertEqual(events[6], .markedText(MarkedText([.plain("え")])))
+            XCTAssertEqual(events[7], .fixedText("え")) // Backspaceでも確定する
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
@@ -99,6 +101,8 @@ final class StateMachineTests: XCTestCase {
         XCTAssertFalse(stateMachine.handle(enterAction))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u")))
         XCTAssertFalse(stateMachine.handle(cancelAction))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e")))
+        XCTAssertFalse(stateMachine.handle(backspaceAction))
         wait(for: [expectation], timeout: 1.0)
     }
 

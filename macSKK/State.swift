@@ -368,6 +368,7 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
         if isShift {
             result.append(.markerCompose)
         }
+        // TODO: isShiftのときにfixedWorkarondTextは使えないようにしたほうがいいかも
         if let fixedWorkaroundText {
             result.append(.plain(fixedWorkaroundText.displayText))
         }

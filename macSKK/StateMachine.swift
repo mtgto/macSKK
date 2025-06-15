@@ -420,8 +420,9 @@ final class StateMachine {
                         updateMarkedText()
                     } else if enableMarkedTextWorkaround {
                         // 確定文字を未確定文字列として入力するワークアラウンド
+                        let text = moji.string(for: state.inputMode)
                         state.inputMethod = .composing(
-                            ComposingState(isShift: false, text: moji.kana.map { String($0) }, romaji: ""))
+                            ComposingState(isShift: false, text: [], romaji: "", fixedWorkaroundText: FixedWorkaroundText(text: text, displayText: text)))
                         updateMarkedText()
                     } else {
                         addFixedText(moji.string(for: state.inputMode))
@@ -485,6 +486,14 @@ final class StateMachine {
         let event = action.event
         let input = event.charactersIgnoringModifiers
         let converted: Romaji.ConvertedMoji?
+
+        // xterm.jsワークアラウンド。
+        // specialStateはnilじゃなければならない (specialStateがあるときはfixedWorkaroundTextを使ってはいけない)
+        if let fixedWorkaroundText = composing.fixedWorkaroundText, specialState == nil {
+            addFixedText(fixedWorkaroundText.text)
+            state.inputMethod = .normal
+            return handleNormal(action, specialState: nil)
+        }
 
         // ローマ字かな変換ルールで変換できる場合、そちらを優先する ("z " で全角スペース、"zl" で右矢印など)
         // Controlが押されているときは変換しない (s + Ctrl-a だと "さ" にはせずCtrl-aを優先する)
