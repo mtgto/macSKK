@@ -76,6 +76,7 @@
 "Enter Key confirms a candidate and sends a newline" = "Enter Key confirms a candidate and sends a newline";
 "Show Completion" = "Show Completion";
 "Insert Blank String" = "Insert Blank String";
+"Use Temporary MarkedText" = "Use Temporary MarkedText";
 "Enabled" = "Enabled";
 "Disabled" = "Disabled";
 "Add…" = "Add…";

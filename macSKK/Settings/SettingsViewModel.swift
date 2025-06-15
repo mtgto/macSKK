@@ -146,7 +146,10 @@ struct DirectModeApplication: Identifiable, Equatable {
 struct WorkaroundApplication: Identifiable, Equatable {
     typealias ID = String
     let bundleIdentifier: String
+    /// 空文字挿入が有効か
     let insertBlankString: Bool
+    /// 1キーからなる確定文字列の入力時に未確定入力状態を経由するか
+    let useTemporaryMarkedText: Bool
     var icon: NSImage?
     var displayName: String?
 
@@ -154,6 +157,14 @@ struct WorkaroundApplication: Identifiable, Equatable {
 
     static func ==(lhs: Self, rhs: Self) -> Bool {
         return lhs.id == rhs.id
+    }
+
+    func with(insertBlankString: Bool) -> Self {
+        return WorkaroundApplication(bundleIdentifier: bundleIdentifier, insertBlankString: insertBlankString, useTemporaryMarkedText: useTemporaryMarkedText)
+    }
+
+    func with(useTemporaryMarkedText: Bool) -> Self {
+        return WorkaroundApplication(bundleIdentifier: bundleIdentifier, insertBlankString: insertBlankString, useTemporaryMarkedText: useTemporaryMarkedText)
     }
 }
 
@@ -280,10 +291,15 @@ final class SettingsViewModel: ObservableObject {
         annotationFontSize = UserDefaults.standard.integer(forKey: UserDefaultsKeys.annotationFontSize)
         findCompletionFromAllDicts = UserDefaults.standard.bool(forKey: UserDefaultsKeys.findCompletionFromAllDicts)
         workaroundApplications = UserDefaults.standard.array(forKey: UserDefaultsKeys.workarounds)?.compactMap { workaround in
-            if let workaround = workaround as? Dictionary<String, Any>, let bundleIdentifier = workaround["bundleIdentifier"] as? String, let insertBlankString = workaround["insertBlankString"] as? Bool {
-                WorkaroundApplication(bundleIdentifier: bundleIdentifier, insertBlankString: insertBlankString)
+            if let workaround = workaround as? Dictionary<String, Any>, let bundleIdentifier = workaround["bundleIdentifier"] as? String,
+               let insertBlankString = workaround["insertBlankString"] as? Bool {
+                // useTemporaryMarkedTextはv2.1+ で追加された
+                let useTemporaryMarkedText = workaround["useTemporaryMarkedText"] as? Bool ?? false
+                return WorkaroundApplication(bundleIdentifier: bundleIdentifier,
+                                             insertBlankString: insertBlankString,
+                                             useTemporaryMarkedText: useTemporaryMarkedText)
             } else {
-                nil
+                return nil
             }
         } ?? []
         guard let skkservDictSettingDict = UserDefaults.standard.dictionary(forKey: UserDefaultsKeys.skkservClient),
@@ -406,14 +422,35 @@ final class SettingsViewModel: ObservableObject {
 
         NotificationCenter.default.publisher(for: notificationNameToggleInsertBlankString)
             .sink { [weak self] notification in
-                // 現状はワークアラウンドの種類が空文字挿入しかないのでBundle Identifierでただ検索している
                 if let self, let bundleIdentifier = notification.object as? String {
                     if let index = self.workaroundApplications.firstIndex(where: { $0.bundleIdentifier == bundleIdentifier }) {
-                        logger.log("Bundle Identifier \"\(bundleIdentifier, privacy: .public)\" の空文字挿入の互換性が解除されました。")
-                        self.workaroundApplications.remove(at: index)
+                        let workaroundApplication = self.workaroundApplications[index]
+                        let newInsertBlankString = !workaroundApplication.insertBlankString
+                        logger.log("Bundle Identifier \"\(bundleIdentifier, privacy: .public)\" の空文字挿入の互換性が\(newInsertBlankString ? "設定" : "解除", privacy: .public)されました。")
+                        self.workaroundApplications[index] = self.workaroundApplications[index].with(insertBlankString: newInsertBlankString)
                     } else {
                         logger.log("Bundle Identifier \"\(bundleIdentifier, privacy: .public)\" の空文字挿入の互換性が設定されました。")
-                        self.workaroundApplications.append(WorkaroundApplication(bundleIdentifier: bundleIdentifier, insertBlankString: true))
+                        self.workaroundApplications.append(WorkaroundApplication(bundleIdentifier: bundleIdentifier,
+                                                                                 insertBlankString: true,
+                                                                                 useTemporaryMarkedText: false))
+                    }
+                }
+            }
+            .store(in: &cancellables)
+
+        NotificationCenter.default.publisher(for: notificationNameToggleUseTemporaryMarkedText)
+            .sink { [weak self] notification in
+                if let self, let bundleIdentifier = notification.object as? String {
+                    if let index = self.workaroundApplications.firstIndex(where: { $0.bundleIdentifier == bundleIdentifier }) {
+                        let workaroundApplication = self.workaroundApplications[index]
+                        let newUseTemporaryMarkedText = !workaroundApplication.useTemporaryMarkedText
+                        logger.log("Bundle Identifier \"\(bundleIdentifier, privacy: .public)\" の仮の未確定文字列使用の互換性が\(newUseTemporaryMarkedText ? "設定" : "解除", privacy: .public)されました。")
+                        self.workaroundApplications[index] = self.workaroundApplications[index].with(useTemporaryMarkedText: newUseTemporaryMarkedText)
+                    } else {
+                        logger.log("Bundle Identifier \"\(bundleIdentifier, privacy: .public)\" の仮の未確定文字列使用の互換性が設定されました。")
+                        self.workaroundApplications.append(WorkaroundApplication(bundleIdentifier: bundleIdentifier,
+                                                                                 insertBlankString: false,
+                                                                                 useTemporaryMarkedText: true))
                     }
                 }
             }

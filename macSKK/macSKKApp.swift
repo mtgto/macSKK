@@ -12,6 +12,8 @@ let logger: Logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: 
 let notificationNameToggleDirectMode = Notification.Name("toggleDirectMode")
 // 空文字挿入のワークアラウンドの有効無効を切り替えたいときに通知される通知の名前。
 let notificationNameToggleInsertBlankString = Notification.Name("toggleInsertBlankString")
+// 仮の未確定文字列のワークアラウンドの有効無効を切り替えたいときに通知される通知の名前。
+let notificationNameToggleUseTemporaryMarkedText = Notification.Name("toggleUseTemporaryMarkedText")
 // 設定画面を開きたいときに通知される通知の名前
 let notificationNameOpenSettings = Notification.Name("openSettings")
 // インラインで表示する変換候補の数を変更したときに通知される通知の名前

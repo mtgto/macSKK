@@ -9,6 +9,7 @@ struct WorkaroundView: View {
     // 編集中のアプリケーション設定
     @State var bundleIdentifier: String = ""
     @State var insertBlankString: Bool = true
+    @State var useTemporaryMarkedText: Bool = true
 
     var body: some View {
         let applications = settingsViewModel.workaroundApplications
@@ -35,6 +36,7 @@ struct WorkaroundView: View {
                                         .font(.body)
                                     Group {
                                         Text("Insert Blank String") + Text(": ") + Text(application.insertBlankString ? "Enabled" : "Disabled")
+                                        Text("Use Temporary MarkedText") + Text(": ") + Text(application.useTemporaryMarkedText ? "Enabled" : "Disabled")
                                     }.font(.footnote)
                                 }
                                 Spacer()
@@ -78,6 +80,7 @@ struct WorkaroundView: View {
             WorkaroundApplicationView(settingsViewModel: settingsViewModel,
                                       bundleIdentifier: $bundleIdentifier,
                                       insertBlankString: $insertBlankString,
+                                      useTemporaryMarkedText: $useTemporaryMarkedText,
                                       isShowingSheet: $isShowingSheet)
         }
     }
@@ -87,8 +90,13 @@ struct WorkaroundView: View {
     WorkaroundView(settingsViewModel: try! SettingsViewModel(workaroundApplications: [
         WorkaroundApplication(bundleIdentifier: "net.mtgto.inputmethod.macSKK",
                               insertBlankString: true,
+                              useTemporaryMarkedText: true,
                               icon: NSImage(named: "AppIcon"), displayName: "macSKK"),
-        WorkaroundApplication(bundleIdentifier: "net.mtgto.inputmethod.macSKK.not-resolved", insertBlankString: false, icon: nil, displayName: nil)
+        WorkaroundApplication(bundleIdentifier: "net.mtgto.inputmethod.macSKK.not-resolved",
+                              insertBlankString: false,
+                              useTemporaryMarkedText: false,
+                              icon: nil,
+                              displayName: nil)
     ]))
 }
 

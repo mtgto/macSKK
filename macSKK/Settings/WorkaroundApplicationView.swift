@@ -7,6 +7,7 @@ struct WorkaroundApplicationView: View {
     @StateObject var settingsViewModel: SettingsViewModel
     @Binding var bundleIdentifier: String
     @Binding var insertBlankString: Bool
+    @Binding var useTemporaryMarkedText: Bool
     @Binding var isShowingSheet: Bool
 
     var body: some View {
@@ -28,7 +29,9 @@ struct WorkaroundApplicationView: View {
                     .keyboardShortcut(.cancelAction)
                     Button {
                         settingsViewModel.workaroundApplications.append(
-                            WorkaroundApplication(bundleIdentifier: bundleIdentifier, insertBlankString: insertBlankString))
+                            WorkaroundApplication(bundleIdentifier: bundleIdentifier,
+                                                  insertBlankString: insertBlankString,
+                                                  useTemporaryMarkedText: useTemporaryMarkedText))
                         isShowingSheet = false
                     } label: {
                         Text("Add")
@@ -47,5 +50,6 @@ struct WorkaroundApplicationView: View {
     WorkaroundApplicationView(settingsViewModel: try! SettingsViewModel(),
                               bundleIdentifier: .constant("net.mtgto.inputmethod.macSKK"),
                               insertBlankString: .constant(true),
+                              useTemporaryMarkedText: .constant(true),
                               isShowingSheet: .constant(true))
 }

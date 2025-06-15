@@ -76,6 +76,7 @@
 "Enter Key confirms a candidate and sends a newline" = "Enterキーで変換候補確定後に改行を入力";
 "Show Completion" = "補完候補を表示";
 "Insert Blank String" = "空文字挿入";
+"Use Temporary MarkedText" = "仮の未確定文字列を使用";
 "Enabled" = "有効";
 "Disabled" = "無効";
 "Add…" = "追加…";
