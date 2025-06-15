@@ -3,6 +3,7 @@
 "MenuItemPrivateMode" = "プライベートモード";
 "MenuItemDirectInput" = "\"%@\"では直接入力";
 "MenuItemInsertBlankString" = "空文字挿入 (互換性)";
+"MenuItemTreadFirstCharacterAsMarkedText" = "1文字目を未確定扱い (互換性)";
 "SettingsNameGeneral" = "一般";
 "SettingsNameDictionaries" = "辞書";
 "SettingsNameKeyBinding" = "キーバインド";
@@ -76,7 +77,7 @@
 "Enter Key confirms a candidate and sends a newline" = "Enterキーで変換候補確定後に改行を入力";
 "Show Completion" = "補完候補を表示";
 "Insert Blank String" = "空文字挿入";
-"Use Temporary MarkedText" = "仮の未確定文字列を使用";
+"Treat First Character as Marked Text" = "1文字目を常に未確定扱い";
 "Enabled" = "有効";
 "Disabled" = "無効";
 "Add…" = "追加…";

@@ -32,6 +32,8 @@ class InputController: IMKInputController {
     private var directMode: Bool = false
     /// モード変更時に空白文字を一瞬追加するワークアラウンドを適用するかどうか
     private var insertBlankString: Bool = false
+    /// 1文字目を常に未確定扱いするワークアラウンドを適用するかどうか
+    private var treatFirstCharacterAsMarkedText: Bool = false
 
     @MainActor override init!(server: IMKServer!, delegate: Any!, client inputClient: Any!) {
         super.init(server: server, delegate: delegate, client: inputClient)
@@ -152,6 +154,13 @@ class InputController: IMKInputController {
                 self?.insertBlankString = bundleIdentifiers.contains(bundleIdentifier)
             }
         }.store(in: &cancellables)
+        Global.treatFirstCharacterAsMarkedTextBundleIdentifiers.sink { [weak self] bundleIdentifiers in
+            if let self, let bundleIdentifier = self.targetApp.bundleIdentifier {
+                let enabled = bundleIdentifiers.contains(bundleIdentifier)
+                self.treatFirstCharacterAsMarkedText = enabled
+                self.stateMachine.enableMarkedTextWorkaround = enabled
+            }
+        }.store(in: &cancellables)
         stateMachine.yomiEvent.sink { [weak self] yomi in
             if let self, Global.showCompletion {
                 if let completion = Global.dictionary.findCompletion(prefix: yomi) {
@@ -254,6 +263,9 @@ class InputController: IMKInputController {
             let insertBlankStringMenuItem = NSMenuItem(title: String(localized: "MenuItemInsertBlankString", comment: "空文字挿入 (互換性)"), action: #selector(toggleInsertBlankString), keyEquivalent: "")
             insertBlankStringMenuItem.state = insertBlankString ? .on : .off
             preferenceMenu.addItem(insertBlankStringMenuItem)
+            let treatFirstCharacterAsMarkedTextMenuItem = NSMenuItem(title: String(localized: "MenuItemTreadFirstCharacterAsMarkedText"), action: #selector(toggleTreatFirstCharacterAsMarkedText), keyEquivalent: "")
+            treatFirstCharacterAsMarkedTextMenuItem.state = treatFirstCharacterAsMarkedText ? .on : .off
+            preferenceMenu.addItem(treatFirstCharacterAsMarkedTextMenuItem)
         }
         #if DEBUG
         // デバッグ用
@@ -329,6 +341,13 @@ class InputController: IMKInputController {
     @objc func toggleInsertBlankString() {
         if let bundleIdentifier = targetApp.bundleIdentifier {
             NotificationCenter.default.post(name: notificationNameToggleInsertBlankString, object: bundleIdentifier)
+        }
+    }
+
+    /// 現在最前面にあるアプリで、ワークアラウンドの1文字目を常に未確定扱いするかの有効無効を切り替える
+    @objc func toggleTreatFirstCharacterAsMarkedText() {
+        if let bundleIdentifier = targetApp.bundleIdentifier {
+            NotificationCenter.default.post(name: notificationNameToggleTreatFirstCharacterAsMarkedText, object: bundleIdentifier)
         }
     }
 

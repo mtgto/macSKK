@@ -148,8 +148,8 @@ struct WorkaroundApplication: Identifiable, Equatable {
     let bundleIdentifier: String
     /// 空文字挿入が有効か
     let insertBlankString: Bool
-    /// 1キーからなる確定文字列の入力時に未確定入力状態を経由するか
-    let useTemporaryMarkedText: Bool
+    /// 1文字目を常に未確定扱いするか
+    let treatFirstCharacterAsMarkedText: Bool
     var icon: NSImage?
     var displayName: String?
 
@@ -160,11 +160,19 @@ struct WorkaroundApplication: Identifiable, Equatable {
     }
 
     func with(insertBlankString: Bool) -> Self {
-        return WorkaroundApplication(bundleIdentifier: bundleIdentifier, insertBlankString: insertBlankString, useTemporaryMarkedText: useTemporaryMarkedText)
+        return WorkaroundApplication(bundleIdentifier: bundleIdentifier,
+                                     insertBlankString: insertBlankString,
+                                     treatFirstCharacterAsMarkedText: treatFirstCharacterAsMarkedText,
+                                     icon: icon,
+                                     displayName: displayName)
     }
 
-    func with(useTemporaryMarkedText: Bool) -> Self {
-        return WorkaroundApplication(bundleIdentifier: bundleIdentifier, insertBlankString: insertBlankString, useTemporaryMarkedText: useTemporaryMarkedText)
+    func with(treatFirstCharacterAsMarkedText: Bool) -> Self {
+        return WorkaroundApplication(bundleIdentifier: bundleIdentifier,
+                                     insertBlankString: insertBlankString,
+                                     treatFirstCharacterAsMarkedText: treatFirstCharacterAsMarkedText,
+                                     icon: icon,
+                                     displayName: displayName)
     }
 }
 
@@ -293,11 +301,11 @@ final class SettingsViewModel: ObservableObject {
         workaroundApplications = UserDefaults.standard.array(forKey: UserDefaultsKeys.workarounds)?.compactMap { workaround in
             if let workaround = workaround as? Dictionary<String, Any>, let bundleIdentifier = workaround["bundleIdentifier"] as? String,
                let insertBlankString = workaround["insertBlankString"] as? Bool {
-                // useTemporaryMarkedTextはv2.1+ で追加された
-                let useTemporaryMarkedText = workaround["useTemporaryMarkedText"] as? Bool ?? false
+                // treatFirstCharacterAsMarkedTextはv2.1+ で追加された
+                let treatFirstCharacterAsMarkedText = workaround["treatFirstCharacterAsMarkedText"] as? Bool ?? false
                 return WorkaroundApplication(bundleIdentifier: bundleIdentifier,
                                              insertBlankString: insertBlankString,
-                                             useTemporaryMarkedText: useTemporaryMarkedText)
+                                             treatFirstCharacterAsMarkedText: treatFirstCharacterAsMarkedText)
             } else {
                 return nil
             }
@@ -398,12 +406,17 @@ final class SettingsViewModel: ObservableObject {
         .store(in: &cancellables)
 
         $workaroundApplications.dropFirst().sink { applications in
-            let settings = applications.map { ["bundleIdentifier": $0.bundleIdentifier, "insertBlankString": $0.insertBlankString] }
+            let settings = applications.map { [
+                "bundleIdentifier": $0.bundleIdentifier,
+                "insertBlankString": $0.insertBlankString,
+                "treatFirstCharacterAsMarkedText": $0.treatFirstCharacterAsMarkedText,
+            ] }
             UserDefaults.standard.set(settings, forKey: UserDefaultsKeys.workarounds)
         }.store(in: &cancellables)
 
         $workaroundApplications.sink { applications in
             Global.insertBlankStringBundleIdentifiers.send(applications.filter { $0.insertBlankString }.map { $0.bundleIdentifier })
+            Global.treatFirstCharacterAsMarkedTextBundleIdentifiers.send(applications.filter { $0.treatFirstCharacterAsMarkedText }.map { $0.bundleIdentifier })
         }.store(in: &cancellables)
 
         NotificationCenter.default.publisher(for: notificationNameToggleDirectMode)
@@ -432,25 +445,25 @@ final class SettingsViewModel: ObservableObject {
                         logger.log("Bundle Identifier \"\(bundleIdentifier, privacy: .public)\" の空文字挿入の互換性が設定されました。")
                         self.workaroundApplications.append(WorkaroundApplication(bundleIdentifier: bundleIdentifier,
                                                                                  insertBlankString: true,
-                                                                                 useTemporaryMarkedText: false))
+                                                                                 treatFirstCharacterAsMarkedText: false))
                     }
                 }
             }
             .store(in: &cancellables)
 
-        NotificationCenter.default.publisher(for: notificationNameToggleUseTemporaryMarkedText)
+        NotificationCenter.default.publisher(for: notificationNameToggleTreatFirstCharacterAsMarkedText)
             .sink { [weak self] notification in
                 if let self, let bundleIdentifier = notification.object as? String {
                     if let index = self.workaroundApplications.firstIndex(where: { $0.bundleIdentifier == bundleIdentifier }) {
                         let workaroundApplication = self.workaroundApplications[index]
-                        let newUseTemporaryMarkedText = !workaroundApplication.useTemporaryMarkedText
-                        logger.log("Bundle Identifier \"\(bundleIdentifier, privacy: .public)\" の仮の未確定文字列使用の互換性が\(newUseTemporaryMarkedText ? "設定" : "解除", privacy: .public)されました。")
-                        self.workaroundApplications[index] = self.workaroundApplications[index].with(useTemporaryMarkedText: newUseTemporaryMarkedText)
+                        let newUseTemporaryMarkedText = !workaroundApplication.treatFirstCharacterAsMarkedText
+                        logger.log("Bundle Identifier \"\(bundleIdentifier, privacy: .public)\" の1文字目を常に未確定扱いする互換性が\(newUseTemporaryMarkedText ? "設定" : "解除", privacy: .public)されました。")
+                        self.workaroundApplications[index] = self.workaroundApplications[index].with(treatFirstCharacterAsMarkedText: newUseTemporaryMarkedText)
                     } else {
-                        logger.log("Bundle Identifier \"\(bundleIdentifier, privacy: .public)\" の仮の未確定文字列使用の互換性が設定されました。")
+                        logger.log("Bundle Identifier \"\(bundleIdentifier, privacy: .public)\" の1文字目を常に未確定扱いする互換性が設定されました。")
                         self.workaroundApplications.append(WorkaroundApplication(bundleIdentifier: bundleIdentifier,
                                                                                  insertBlankString: false,
-                                                                                 useTemporaryMarkedText: true))
+                                                                                 treatFirstCharacterAsMarkedText: true))
                     }
                 }
             }
@@ -715,6 +728,22 @@ final class SettingsViewModel: ObservableObject {
     func updateWorkaroundApplication(index: Int, displayName: String, icon: NSImage) {
         workaroundApplications[index].displayName = displayName
         workaroundApplications[index].icon = icon
+    }
+
+    /// 互換性設定を追加 or 更新する
+    func upsertWorkaroundApplication(bundleIdentifier: String, insertBlankString: Bool, treatFirstCharacterAsMarkedText: Bool) {
+        if let index = workaroundApplications.firstIndex(where: { $0.bundleIdentifier == bundleIdentifier }) {
+            let application = workaroundApplications[index]
+            workaroundApplications[index] = WorkaroundApplication(bundleIdentifier: application.bundleIdentifier,
+                                                                  insertBlankString: insertBlankString,
+                                                                  treatFirstCharacterAsMarkedText: treatFirstCharacterAsMarkedText,
+                                                                  icon: application.icon,
+                                                                  displayName: application.displayName)
+        } else {
+            workaroundApplications.append(WorkaroundApplication(bundleIdentifier: bundleIdentifier,
+                                                                insertBlankString: insertBlankString,
+                                                                treatFirstCharacterAsMarkedText: treatFirstCharacterAsMarkedText))
+        }
     }
 
     /// 選択中のKeyBindingSetのキーバインドを更新する

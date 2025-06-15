@@ -7,7 +7,7 @@ struct WorkaroundApplicationView: View {
     @StateObject var settingsViewModel: SettingsViewModel
     @Binding var bundleIdentifier: String
     @Binding var insertBlankString: Bool
-    @Binding var useTemporaryMarkedText: Bool
+    @Binding var treatFirstCharacterAsMarkedText: Bool
     @Binding var isShowingSheet: Bool
 
     var body: some View {
@@ -15,6 +15,8 @@ struct WorkaroundApplicationView: View {
             Section {
                 TextField("Bundle Identifier", text: $bundleIdentifier)
                 Toggle("Insert Blank String", isOn: $insertBlankString)
+                    .toggleStyle(.switch)
+                Toggle("Treat First Character as Marked Text", isOn: $treatFirstCharacterAsMarkedText)
                     .toggleStyle(.switch)
             } header: {
                 Text("SettingsHeaderWorkaroundApplication")
@@ -28,13 +30,12 @@ struct WorkaroundApplicationView: View {
                     }
                     .keyboardShortcut(.cancelAction)
                     Button {
-                        settingsViewModel.workaroundApplications.append(
-                            WorkaroundApplication(bundleIdentifier: bundleIdentifier,
-                                                  insertBlankString: insertBlankString,
-                                                  useTemporaryMarkedText: useTemporaryMarkedText))
+                        settingsViewModel.upsertWorkaroundApplication(bundleIdentifier: bundleIdentifier,
+                                                                      insertBlankString: insertBlankString,
+                                                                      treatFirstCharacterAsMarkedText: treatFirstCharacterAsMarkedText)
                         isShowingSheet = false
                     } label: {
-                        Text("Add")
+                        Text(settingsViewModel.workaroundApplications.contains(where: { $0.bundleIdentifier == bundleIdentifier })  ? "Done" : "Add")
                     }
                     .keyboardShortcut(.defaultAction)
                     .disabled(bundleIdentifier.isEmpty)
@@ -50,6 +51,6 @@ struct WorkaroundApplicationView: View {
     WorkaroundApplicationView(settingsViewModel: try! SettingsViewModel(),
                               bundleIdentifier: .constant("net.mtgto.inputmethod.macSKK"),
                               insertBlankString: .constant(true),
-                              useTemporaryMarkedText: .constant(true),
+                              treatFirstCharacterAsMarkedText: .constant(true),
                               isShowingSheet: .constant(true))
 }

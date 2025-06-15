@@ -12,8 +12,8 @@ let logger: Logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: 
 let notificationNameToggleDirectMode = Notification.Name("toggleDirectMode")
 // 空文字挿入のワークアラウンドの有効無効を切り替えたいときに通知される通知の名前。
 let notificationNameToggleInsertBlankString = Notification.Name("toggleInsertBlankString")
-// 仮の未確定文字列のワークアラウンドの有効無効を切り替えたいときに通知される通知の名前。
-let notificationNameToggleUseTemporaryMarkedText = Notification.Name("toggleUseTemporaryMarkedText")
+// 1文字目を常に未確定扱いするワークアラウンドの有効無効を切り替えたいときに通知される通知の名前。
+let notificationNameToggleTreatFirstCharacterAsMarkedText = Notification.Name("toggleTreatFirstCharacterAsMarkedText")
 // 設定画面を開きたいときに通知される通知の名前
 let notificationNameOpenSettings = Notification.Name("openSettings")
 // インラインで表示する変換候補の数を変更したときに通知される通知の名前
@@ -182,9 +182,10 @@ struct macSKKApp: App {
             UserDefaultsKeys.inlineCandidateCount: 3,
             UserDefaultsKeys.selectCandidateKeys: "123456789",
             UserDefaultsKeys.workarounds: [
-                ["bundleIdentifier": "net.kovidgoyal.kitty", "insertBlankString": true],
-                ["bundleIdentifier": "jp.naver.line.mac", "insertBlankString": true],
-                ["bundleIdentifier": "org.alacritty", "insertBlankString": true],
+                ["bundleIdentifier": "net.kovidgoyal.kitty", "insertBlankString": true, "treatFirstCharacterAsMarkedText": false],
+                ["bundleIdentifier": "jp.naver.line.mac", "insertBlankString": true, "treatFirstCharacterAsMarkedText": false],
+                ["bundleIdentifier": "org.alacritty", "insertBlankString": true, "treatFirstCharacterAsMarkedText": false],
+                ["bundleIdentifier": "co.zeit.hyper", "insertBlankString": false, "treatFirstCharacterAsMarkedText": true],
             ],
             // NSFont.preferredFont(forTextStyle: .body).pointSize と同じサイズ
             UserDefaultsKeys.candidatesFontSize: 13,

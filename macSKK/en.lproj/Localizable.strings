@@ -3,6 +3,7 @@
 "MenuItemPrivateMode" = "Private mode";
 "MenuItemDirectInput" = "Direct input from \"%@\"";
 "MenuItemInsertBlankString" = "Insert Blank String for Workaround";
+"MenuItemTreadFirstCharacterAsMarkedText" = "Treat First Char as Marked for Workaround";
 "SettingsNameGeneral" = "General";
 "SettingsNameDictionaries" = "Dictionaries";
 "SettingsNameKeyBinding" = "Key Bindings";
@@ -76,7 +77,7 @@
 "Enter Key confirms a candidate and sends a newline" = "Enter Key confirms a candidate and sends a newline";
 "Show Completion" = "Show Completion";
 "Insert Blank String" = "Insert Blank String";
-"Use Temporary MarkedText" = "Use Temporary MarkedText";
+"Treat First Character as Marked Text" = "Treat First Character as Marked Text";
 "Enabled" = "Enabled";
 "Disabled" = "Disabled";
 "Add…" = "Add…";
