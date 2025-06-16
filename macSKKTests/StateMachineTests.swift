@@ -85,7 +85,7 @@ final class StateMachineTests: XCTestCase {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         stateMachine.enableMarkedTextWorkaround = true
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(8).sink { events in
+        stateMachine.inputMethodEvent.collect(11).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.plain("あ")]))) // 未確定文字列で"あ"を表示
             XCTAssertEqual(events[1], .fixedText("あ"))
             XCTAssertEqual(events[2], .markedText(MarkedText([.plain("い")]))) // あは確定し、未確定文字列で"い"を表示
@@ -94,15 +94,20 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[5], .fixedText("う")) // ESCでも確定する
             XCTAssertEqual(events[6], .markedText(MarkedText([.plain("え")])))
             XCTAssertEqual(events[7], .fixedText("え")) // Backspaceでも確定する
+            XCTAssertEqual(events[8], .markedText(MarkedText([.plain("。")]))) // 母音以外も1文字で登録されているキーは対象
+            XCTAssertEqual(events[9], .fixedText("。")) // 他のアルファベットキーでも確定する
+            XCTAssertEqual(events[10], .markedText(MarkedText([.plain("k")])))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
-        XCTAssertFalse(stateMachine.handle(enterAction))
+        XCTAssertTrue(stateMachine.handle(enterAction)) // 未確定文字列の確定だけして改行させないようにtrueを返す
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u")))
         XCTAssertFalse(stateMachine.handle(cancelAction))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e")))
         XCTAssertFalse(stateMachine.handle(backspaceAction))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ".")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "k")))
         wait(for: [expectation], timeout: 1.0)
     }
 

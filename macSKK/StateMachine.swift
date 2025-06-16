@@ -492,7 +492,12 @@ final class StateMachine {
         if let fixedWorkaroundText = composing.fixedWorkaroundText, specialState == nil {
             addFixedText(fixedWorkaroundText.text)
             state.inputMethod = .normal
-            return handleNormal(action, specialState: nil)
+            if case .enter = action.keyBind {
+                // Enterキーは単に未確定文字列の確定として使用する
+                return true
+            } else {
+                return handleNormal(action, specialState: nil)
+            }
         }
 
         // ローマ字かな変換ルールで変換できる場合、そちらを優先する ("z " で全角スペース、"zl" で右矢印など)
