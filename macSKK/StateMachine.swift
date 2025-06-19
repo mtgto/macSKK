@@ -110,6 +110,11 @@ final class StateMachine {
                 inputMethodEventSubject.send(.modeChanged(.katakana))
                 if specialState != nil {
                     inputMethodEventSubject.send(.markedText(state.displayText()))
+                } else if enableMarkedTextWorkaround {
+                    // 確定文字を未確定文字列として入力するワークアラウンド
+                    state.inputMethod = .composing(
+                        ComposingState(isShift: false, text: [], romaji: "", fixedWorkaroundText: FixedWorkaroundText(text: "", displayText: "[カナ]")))
+                    updateMarkedText()
                 }
                 return true
             case .katakana, .hankaku:
@@ -117,6 +122,11 @@ final class StateMachine {
                 inputMethodEventSubject.send(.modeChanged(.hiragana))
                 if specialState != nil {
                     inputMethodEventSubject.send(.markedText(state.displayText()))
+                } else if enableMarkedTextWorkaround {
+                    // 確定文字を未確定文字列として入力するワークアラウンド
+                    state.inputMethod = .composing(
+                        ComposingState(isShift: false, text: [], romaji: "", fixedWorkaroundText: FixedWorkaroundText(text: "", displayText: "[かな]")))
+                    updateMarkedText()
                 }
                 return true
             case .eisu, .direct:
@@ -148,6 +158,11 @@ final class StateMachine {
                 inputMethodEventSubject.send(.modeChanged(.direct))
                 if specialState != nil {
                     inputMethodEventSubject.send(.markedText(state.displayText()))
+                } else if enableMarkedTextWorkaround {
+                    // 確定文字を未確定文字列として入力するワークアラウンド
+                    state.inputMethod = .composing(
+                        ComposingState(isShift: false, text: [], romaji: "", fixedWorkaroundText: FixedWorkaroundText(text: "", displayText: "[英数]")))
+                    updateMarkedText()
                 }
                 return true
             case .eisu, .direct:
@@ -489,14 +504,16 @@ final class StateMachine {
 
         // xterm.jsワークアラウンド。
         // specialStateはnilじゃなければならない (specialStateがあるときはfixedWorkaroundTextを使ってはいけない)
-        if let fixedWorkaroundText = composing.fixedWorkaroundText, specialState == nil {
+        if let fixedWorkaroundText = composing.fixedWorkaroundText, enableMarkedTextWorkaround && specialState == nil {
             addFixedText(fixedWorkaroundText.text)
             state.inputMethod = .normal
             if case .enter = action.keyBind {
                 // Enterキーは単に未確定文字列の確定として使用する
                 return true
             } else {
-                return handleNormal(action, specialState: nil)
+                let keyBind = Global.keyBinding.action(event: event, inputMethodState: .normal)
+                let newAction = action.with(keyBind: keyBind)
+                return handleNormal(newAction, specialState: nil)
             }
         }
 

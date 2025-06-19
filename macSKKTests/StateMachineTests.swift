@@ -111,6 +111,29 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    @MainActor func testHandleNormalChangeModeEnableMarkedTextWorkaround() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        stateMachine.enableMarkedTextWorkaround = true
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(9).sink { events in
+            XCTAssertEqual(events[0], .modeChanged(.katakana))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.plain("[カナ]")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([])))
+            XCTAssertEqual(events[3], .modeChanged(.hiragana))
+            XCTAssertEqual(events[4], .markedText(MarkedText([.plain("[かな]")])))
+            XCTAssertEqual(events[5], .markedText(MarkedText([])))
+            XCTAssertEqual(events[6], .modeChanged(.direct))
+            XCTAssertEqual(events[7], .markedText(MarkedText([.plain("[英数]")])))
+            XCTAssertEqual(events[8], .markedText(MarkedText([])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "l")))
+        XCTAssertFalse(stateMachine.handle(printableKeyEventAction(character: "q")))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     @MainActor func testHandleNormalNAndHyphen() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
