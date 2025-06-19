@@ -300,7 +300,7 @@ final class SettingsViewModel: ObservableObject {
         findCompletionFromAllDicts = UserDefaults.standard.bool(forKey: UserDefaultsKeys.findCompletionFromAllDicts)
         workaroundApplications = UserDefaults.standard.array(forKey: UserDefaultsKeys.workarounds)?.compactMap { workaround in
             if let workaround = workaround as? Dictionary<String, Any>, let bundleIdentifier = workaround["bundleIdentifier"] as? String,
-               let insertBlankString = workaround["insertBlankString"] as? Bool {
+                let insertBlankString = workaround["insertBlankString"] as? Bool {
                 // treatFirstCharacterAsMarkedTextはv2.1+ で追加された
                 let treatFirstCharacterAsMarkedText = workaround["treatFirstCharacterAsMarkedText"] as? Bool ?? false
                 return WorkaroundApplication(bundleIdentifier: bundleIdentifier,
