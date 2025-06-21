@@ -6,6 +6,7 @@
 "MenuItemTreadFirstCharacterAsMarkedText" = "1文字目を未確定扱い (互換性)";
 "SettingsNameGeneral" = "一般";
 "SettingsNameDictionaries" = "辞書";
+"SettingsNameDateConversion" = "日付変換";
 "SettingsNameKeyBinding" = "キーバインド";
 "SettingsNameSoftwareUpdate" = "ソフトウェアアップデート";
 "SettingsNameDirectMode" = "直接入力";
@@ -101,6 +102,10 @@
 "Vertical" = "縦方向";
 "Horizontal" = "横方向";
 "Settings" = "設定";
+"Conversion Candidates" = "変換候補";
+"Format" = "書式";
+"Locale" = "地域";
+"Calendar" = "暦法";
 
 "KeyBindingActionHiragana" = "ひらがなモード";
 "KeyBindingActionTogglekana" = "かなカナモード切り替え";
@@ -140,3 +145,8 @@
 "Follow Romaji-Kana Rule" = "ローマ字かな変換ルールに従う";
 "EnterKey" = "\"%@\" を入力";
 "DuplicatedKeyBindingName" = "%@ のコピー";
+
+"LocaleJa_Jp" = "日本";
+"LocaleEn_Us" = "アメリカ合衆国";
+"CalendarGregorian" = "西暦";
+"CalendarJapanese" = "和暦";

@@ -272,12 +272,18 @@ final class SettingsViewModel: ObservableObject {
     @Published var selectingBackspace: SelectingBackspace
     @Published var period: Punctuation.Period
     @Published var comma: Punctuation.Comma
-    // プライベートモード時に変換候補にユーザー辞書を無視するかどうか
+    /// プライベートモード時に変換候補にユーザー辞書を無視するかどうか
     @Published var ignoreUserDictInPrivateMode: Bool
-    // 入力モードのモーダルを表示するかどうか
+    /// 入力モードのモーダルを表示するかどうか
     @Published var showInputIconModal: Bool
-    // 変換候補リストの表示方向
+    /// 変換候補リストの表示方向
     @Published var candidateListDirection: CandidateListDirection
+    /// 日時変換の読みリスト
+    @Published var dateTimeYomis: [String]
+    /// 日時変換の変換後のリスト。DateTimeFormatter.dateFormat互換形式。
+    /// 和暦・西暦の選択用にLocaleも選択可能。曜日のためにCalendarも選択可能。
+    /// 現在は localeは `"ja_JP"`, calendarは `Calender(identifier: .japanese)` 固定。
+    @Published var dateTimeConvertions: [DateConversion]
 
     // 辞書ディレクトリ
     let dictionariesDirectoryUrl: URL
@@ -342,6 +348,11 @@ final class SettingsViewModel: ObservableObject {
         ignoreUserDictInPrivateMode = UserDefaults.standard.bool(forKey: UserDefaultsKeys.ignoreUserDictInPrivateMode)
         showInputIconModal = UserDefaults.standard.bool(forKey: UserDefaultsKeys.showInputModePanel)
         candidateListDirection = CandidateListDirection(rawValue: UserDefaults.standard.integer(forKey: UserDefaultsKeys.candidateListDirection)) ?? .vertical
+        dateTimeYomis = UserDefaults.standard.array(forKey: UserDefaultsKeys.dateTimeYomis) as? [String] ?? []
+        dateTimeConvertions = UserDefaults.standard.array(forKey: UserDefaultsKeys.dateTimeConvertions)?.compactMap({ dict in
+            guard let dict = dict as? [String: Any] else { return nil }
+            return DateConversion(dict: dict)
+        }) ?? []
 
         Global.keyBinding = selectedKeyBindingSet
         Global.selectCandidateKeys = selectCandidateKeys.lowercased().map { $0 }
@@ -578,6 +589,10 @@ final class SettingsViewModel: ObservableObject {
             Global.candidateListDirection.send(candidateListDirection)
         }.store(in: &cancellables)
 
+        $dateTimeYomis.sink { dateTimeYomis in
+            debugPrint("現在の読みは \(dateTimeYomis.joined(separator: ", "))")
+        }.store(in: &cancellables)
+
         NotificationCenter.default.publisher(for: notificationNameDictLoad).receive(on: RunLoop.main).sink { [weak self] notification in
             if let loadEvent = notification.object as? DictLoadEvent, let self {
                 if let userDict = Global.dictionary.userDict as? FileDict, userDict.id == loadEvent.id {
@@ -623,6 +638,11 @@ final class SettingsViewModel: ObservableObject {
         ignoreUserDictInPrivateMode = false
         showInputIconModal = true
         candidateListDirection = .vertical
+        dateTimeYomis = ["today", "きょう"]
+        dateTimeConvertions = [
+            DateConversion(format: "yyyy-MM-dd", locale: .enUS, calendar: .gregorian),
+            DateConversion(format: "Gy年M月d日(E)", locale: .jaJP, calendar: .japanese),
+        ]
     }
 
     // DictionaryViewのPreviewProvider用
@@ -718,6 +738,15 @@ final class SettingsViewModel: ObservableObject {
         let release = try await LatestReleaseFetcher.shared.fetch()
         latestRelease = release
         return release
+    }
+
+    func addDateConversion(format: String, locale: DateConversion.DateConversionLocale, calendar: DateConversion.DateConversionCalendar) {
+        dateTimeConvertions.append(DateConversion(format: format, locale: locale, calendar: calendar))
+    }
+
+    func updateDateConversion(id: UUID, format: String, locale: DateConversion.DateConversionLocale, calendar: DateConversion.DateConversionCalendar) {
+        guard let index = dateTimeConvertions.firstIndex(where: { $0.id == id }) else { return }
+        dateTimeConvertions[index] = DateConversion(id: id, format: format, locale: locale, calendar: calendar)
     }
 
     func updateDirectModeApplication(index: Int, displayName: String, icon: NSImage) {

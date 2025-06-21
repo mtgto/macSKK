@@ -44,4 +44,7 @@ struct UserDefaultsKeys {
     static let showInputModePanel = "showInputModePanel"
     // 候補リストの表示方向
     static let candidateListDirection = "candidateListDirection"
+    static let dateTimeYomis = "dateTimeYomis"
+    // 日時変換の変換後のリスト
+    static let dateTimeConvertions = "dateTimeConvertions"
 }

@@ -103,6 +103,10 @@
 		CEB088902A7F73B400EFD1E3 /* Pasteboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEB0888F2A7F73B400EFD1E3 /* Pasteboard.swift */; };
 		CEB141702A8773DB005E7252 /* SKK-JISYO.test.utf8 in Resources */ = {isa = PBXBuildFile; fileRef = CEB1416F2A8773DB005E7252 /* SKK-JISYO.test.utf8 */; };
 		CEB141722A87D16C005E7252 /* DictionaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEB141712A87D16C005E7252 /* DictionaryView.swift */; };
+		CEB52CBC2E0795CB0025542F /* ListFooterControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEB52CBB2E0795CB0025542F /* ListFooterControls.swift */; };
+		CEB52CC62E080B030025542F /* DateConversionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEB52CC32E080B030025542F /* DateConversionsView.swift */; };
+		CEB52CC82E0C10F20025542F /* DateConversion.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEB52CC72E0974AF0025542F /* DateConversion.swift */; };
+		CEB52CCA2E0D64B10025542F /* DateConversionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEB52CC92E0D64B10025542F /* DateConversionView.swift */; };
 		CEBEE7872D97D25800C73B6D /* NSEvent+CoreService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEBEE7862D97D25800C73B6D /* NSEvent+CoreService.swift */; };
 		CEC061C82ABB0A0100A11614 /* CompletionPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEC061C72ABB0A0100A11614 /* CompletionPanel.swift */; };
 		CEC061CA2ABB0A7900A11614 /* CompletionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEC061C92ABB0A7900A11614 /* CompletionViewModel.swift */; };
@@ -277,6 +281,10 @@
 		CEB088952A81353400EFD1E3 /* DictionaryServiceExtention.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DictionaryServiceExtention.h; sourceTree = "<group>"; };
 		CEB1416F2A8773DB005E7252 /* SKK-JISYO.test.utf8 */ = {isa = PBXFileReference; lastKnownFileType = text; path = "SKK-JISYO.test.utf8"; sourceTree = "<group>"; };
 		CEB141712A87D16C005E7252 /* DictionaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryView.swift; sourceTree = "<group>"; };
+		CEB52CBB2E0795CB0025542F /* ListFooterControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListFooterControls.swift; sourceTree = "<group>"; };
+		CEB52CC32E080B030025542F /* DateConversionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateConversionsView.swift; sourceTree = "<group>"; };
+		CEB52CC72E0974AF0025542F /* DateConversion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateConversion.swift; sourceTree = "<group>"; };
+		CEB52CC92E0D64B10025542F /* DateConversionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateConversionView.swift; sourceTree = "<group>"; };
 		CEBEE7862D97D25800C73B6D /* NSEvent+CoreService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSEvent+CoreService.swift"; sourceTree = "<group>"; };
 		CEC061C72ABB0A0100A11614 /* CompletionPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletionPanel.swift; sourceTree = "<group>"; };
 		CEC061C92ABB0A7900A11614 /* CompletionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletionViewModel.swift; sourceTree = "<group>"; };
@@ -442,6 +450,7 @@
 				CED7CA3B2A839603004EF988 /* UpdateChecker.swift */,
 				CE1B006B2BA54D9800C830FD /* SKKServService.swift */,
 				CED0984C2B779E4700F2E844 /* UNNotifier.swift */,
+				CEB52CC72E0974AF0025542F /* DateConversion.swift */,
 				CEA78FAB2960401F00B67E25 /* String+Transform.swift */,
 				CED7F51E2AB5F4A7007FC6BD /* Character+Additions.swift */,
 				CE496C902B440892001C623C /* URL+Additions.swift */,
@@ -512,6 +521,7 @@
 		CE7F9ADA2AB53E31001B1877 /* View */ = {
 			isa = PBXGroup;
 			children = (
+				CEB52CBB2E0795CB0025542F /* ListFooterControls.swift */,
 				CEF08239296BCDB000646366 /* InputModePanel.swift */,
 				CEF0825C296DB58600646366 /* CandidatesViewModel.swift */,
 				CEF08256296D8CBD00646366 /* CandidatesPanel.swift */,
@@ -527,6 +537,15 @@
 			path = View;
 			sourceTree = "<group>";
 		};
+		CEB52CC42E080B030025542F /* DateConversion */ = {
+			isa = PBXGroup;
+			children = (
+				CEB52CC32E080B030025542F /* DateConversionsView.swift */,
+				CEB52CC92E0D64B10025542F /* DateConversionView.swift */,
+			);
+			path = DateConversion;
+			sourceTree = "<group>";
+		};
 		CEC376E929651DE000D9C432 /* Settings */ = {
 			isa = PBXGroup;
 			children = (
@@ -535,11 +554,12 @@
 				CEADA44E2B1357090026E2BD /* GeneralView.swift */,
 				CE6DBACC2A864A3B00F5A227 /* DictionariesView.swift */,
 				CEB141712A87D16C005E7252 /* DictionaryView.swift */,
+				CEB52CC42E080B030025542F /* DateConversion */,
 				CE1B00692BA5490E00C830FD /* SKKServDictView.swift */,
+				CEE3717429653112000DB2C3 /* SoftwareUpdateView.swift */,
 				CE97887A2A9B93EB00F9B196 /* DirectModeView.swift */,
 				CED098502B95F32600F2E844 /* WorkaroundView.swift */,
 				CEF3D86B2B9C022900BD1D3A /* WorkaroundApplicationView.swift */,
-				CEE3717429653112000DB2C3 /* SoftwareUpdateView.swift */,
 				CE496C8B2B43968A001C623C /* LogView.swift */,
 				CEC376EA2965211200D9C432 /* KeyEventView.swift */,
 				CE40D9A02A6D0C2F00D44799 /* SystemDictView.swift */,
@@ -799,6 +819,7 @@
 			files = (
 				CEB141722A87D16C005E7252 /* DictionaryView.swift in Sources */,
 				CEE2D9772A99FE1B00A4CD76 /* Word.swift in Sources */,
+				CEB52CBC2E0795CB0025542F /* ListFooterControls.swift in Sources */,
 				CEC061CA2ABB0A7900A11614 /* CompletionViewModel.swift in Sources */,
 				CEF0825D296DB58600646366 /* CandidatesViewModel.swift in Sources */,
 				CE7F9ADC2AB53E53001B1877 /* CompletionView.swift in Sources */,
@@ -806,6 +827,7 @@
 				CED7CA5B2A83DE7F004EF988 /* SettingsViewModel.swift in Sources */,
 				CE5EB6AF2AAC0DEB00389B98 /* MemoryDict.swift in Sources */,
 				CEA78FAC2960401F00B67E25 /* String+Transform.swift in Sources */,
+				CEB52CC62E080B030025542F /* DateConversionsView.swift in Sources */,
 				CED7F51F2AB5F4A7007FC6BD /* Character+Additions.swift in Sources */,
 				CE2157662B2EA985006E4C41 /* UserDefaultsKeys.swift in Sources */,
 				CE84A3B929570C37009394C4 /* InputController.swift in Sources */,
@@ -857,8 +879,10 @@
 				CE11C7BD2BE47D5D00A35F3D /* KeyBindingView.swift in Sources */,
 				CE49A27A2C245F6400D53CFE /* KeyBindingSetView.swift in Sources */,
 				CE39DB212A8DFD8F00BC619F /* MarkedText.swift in Sources */,
+				CEB52CCA2E0D64B10025542F /* DateConversionView.swift in Sources */,
 				CE40D9A32A6D0C3900D44799 /* SystemDict.swift in Sources */,
 				CE49A27C2C26F61700D53CFE /* KeyBindingInputsView.swift in Sources */,
+				CEB52CC82E0C10F20025542F /* DateConversion.swift in Sources */,
 				CE5EB6AD2AAC0DE000389B98 /* FileDict.swift in Sources */,
 				CEB0888E2A7F393600EFD1E3 /* AnnotationView.swift in Sources */,
 				CEC376E82965199500D9C432 /* SettingsView.swift in Sources */,
