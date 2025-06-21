@@ -36,6 +36,7 @@ Universal Binary (Apple Silicon & Intel Mac) でビルドしていますが、�
 - [x] [自動更新確認](#バージョンの自動チェック)
   - Network Outgoingが可能なXPCプロセスを作成し、GitHub Releasesから情報を定期的に取得して新しいバージョンが見つかったらNotification Centerに表示する
 - [x] 辞書のJSON形式への対応
+- [x] xterm.jsを利用するアプリケーションでaiueoでひらがなが入力できない問題のワークアラウンド対応 (VSCode Terminal, Hyperなど)
 - [ ] iCloudにマイ辞書を保存して他環境と共有できるようにする
 - [ ] マイ辞書の暗号化
   - 編集したい場合は生データでのエクスポート & インポートできるようにする
@@ -312,10 +313,13 @@ macOSの日本語入力システムは、ユーザーライブラリ (`~/Library
 
 参考: https://github.com/mtgto/macSKK/issues/351
 
-今後システムライブラリへのインストールが可能にできるように検討します。申し訳ありませんが以下のいずれかの方法を検討してください。
+v2.0.0からシステムライブラリへのインストールが可能にできるように変更しました。システムライブラリへのインストールをお試しください。
 
-1. macSKK.appをシステムライブラリ内の `Input Methods` フォルダ (`/Library/Input Methods`) に移動してからOS再起動をする
-2. `Secure Keyboard Entry` を有効にするときは別の日本語入力システムを使用する
+### Q. Visual Studio Code (vscode) のターミナルやClaude Code拡張で`aiueo`がひらがなにならない・`q`や`l`のモード変更でキーが入力されてしまう
+
+xterm.js利用の問題と思われます。 https://github.com/mtgto/macSKK/issues/356
+
+入力メニューにある「1文字目を未確定扱い (互換性)」を有効にすることで `aiueo` のようなローマ字1文字からなるひらがなの入力ができるようになります。あくまで一時的な回避策 (ワークアラウンド) なので、`aiueo` のあとは他の文字を打つかEnterが押されないと入力が確定されないままとなります。
 
 ## 開発
 

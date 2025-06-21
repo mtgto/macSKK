@@ -1,6 +1,16 @@
 # CHANGELOG
 
+## v2.1.0 (2025-06-21)
+
+- xterm.js向けワークアラウンドで1文字目を常に未確定文字列にできるようにする (#362)
+
 ## v2.0.0 (2025-06-14)
+
+v2.0.0からシステムディレクトリ (`/Library/Input Methods`) へインストール可能に変更しました。
+これまで通りユーザーディレクトリも選択できますが、基本的にはシステムディレクトリを推奨します。
+詳しくは [#360](https://github.com/mtgto/macSKK/issues/360)
+
+それに伴いSKK-JISYO.Lをインストーラーに同梱していたのを終了しました。初めてmacSKKを使う場合は [skk-dev/dict](https://github.com/skk-dev/dict) から `SKK-JISYO.L` をダウンロードして `~/Library/Containers/net.mtgto.inputmethod.macSKK/Data/Documents/Dictionaries` に配置してください。
 
 - GitHub Actions環境をXcode 16.4に変更 (before 16.3) (#358)
 - SKK-JISYO.Lの特別扱いをやめる (#355)
