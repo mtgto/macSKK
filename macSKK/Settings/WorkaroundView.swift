@@ -9,6 +9,7 @@ struct WorkaroundView: View {
     // 編集中のアプリケーション設定
     @State var bundleIdentifier: String = ""
     @State var insertBlankString: Bool = true
+    @State var treatFirstCharacterAsMarkedText: Bool = true
 
     var body: some View {
         let applications = settingsViewModel.workaroundApplications
@@ -35,7 +36,10 @@ struct WorkaroundView: View {
                                         .font(.body)
                                     Group {
                                         Text("Insert Blank String") + Text(": ") + Text(application.insertBlankString ? "Enabled" : "Disabled")
-                                    }.font(.footnote)
+                                        Text("Treat First Character as Marked Text") + Text(": ") + Text(application.treatFirstCharacterAsMarkedText ? "Enabled" : "Disabled")
+                                    }
+                                    .font(.footnote)
+                                    .fontWeight(.light)
                                 }
                                 Spacer()
                                 Button {
@@ -46,6 +50,17 @@ struct WorkaroundView: View {
                                 } label: {
                                     Text("Delete")
                                 }
+                                Button {
+                                    bundleIdentifier = application.bundleIdentifier
+                                    insertBlankString = application.insertBlankString
+                                    treatFirstCharacterAsMarkedText = application.treatFirstCharacterAsMarkedText
+                                    isShowingSheet = true
+                                } label: {
+                                    Image(systemName: "info.circle")
+                                        .resizable()
+                                        .frame(width: 16, height: 16)
+                                }
+                                .buttonStyle(.borderless)
                             }
                             .padding(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
                             .onAppear {
@@ -61,7 +76,8 @@ struct WorkaroundView: View {
                     } footer: {
                         Button {
                             bundleIdentifier = ""
-                            insertBlankString = true
+                            insertBlankString = false
+                            treatFirstCharacterAsMarkedText = false
                             isShowingSheet = true
                         } label: {
                             Text("Add…")
@@ -78,6 +94,7 @@ struct WorkaroundView: View {
             WorkaroundApplicationView(settingsViewModel: settingsViewModel,
                                       bundleIdentifier: $bundleIdentifier,
                                       insertBlankString: $insertBlankString,
+                                      treatFirstCharacterAsMarkedText: $treatFirstCharacterAsMarkedText,
                                       isShowingSheet: $isShowingSheet)
         }
     }
@@ -87,8 +104,13 @@ struct WorkaroundView: View {
     WorkaroundView(settingsViewModel: try! SettingsViewModel(workaroundApplications: [
         WorkaroundApplication(bundleIdentifier: "net.mtgto.inputmethod.macSKK",
                               insertBlankString: true,
+                              treatFirstCharacterAsMarkedText: true,
                               icon: NSImage(named: "AppIcon"), displayName: "macSKK"),
-        WorkaroundApplication(bundleIdentifier: "net.mtgto.inputmethod.macSKK.not-resolved", insertBlankString: false, icon: nil, displayName: nil)
+        WorkaroundApplication(bundleIdentifier: "net.mtgto.inputmethod.macSKK.not-resolved",
+                              insertBlankString: false,
+                              treatFirstCharacterAsMarkedText: false,
+                              icon: nil,
+                              displayName: nil)
     ]))
 }
 

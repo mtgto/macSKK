@@ -31,4 +31,8 @@ struct Action {
     func characters() -> String? {
         return event.characters
     }
+
+    func with(keyBind: KeyBinding.Action?) -> Self {
+        Action(keyBind: keyBind, event: event, textInput: textInput, treatAsAlphabet: treatAsAlphabet)
+    }
 }

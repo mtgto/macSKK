@@ -39,13 +39,17 @@ final class StateMachine {
     var inlineCandidateCount: Int
     /// 変換候補パネルに一度に表示する変換候補の数
     let displayCandidateCount = 9
+    /// 1文字で確定するローマ字やq/lなどのモード変更などで未確定文字列を一度表示するワークグラウンドが有効かどうか
+    /// xterm.jsを利用しているVSCodeのターミナルやHyperなどaiueoで直接入力されてしまう環境向け
+    var enableMarkedTextWorkaround: Bool
 
-    init(initialState: IMEState = IMEState(), inlineCandidateCount: Int = 3) {
+    init(initialState: IMEState = IMEState(), inlineCandidateCount: Int = 3, enableMarkedTextWorkaround: Bool = false) {
         state = initialState
         inputMethodEvent = inputMethodEventSubject.eraseToAnyPublisher()
         candidateEvent = candidateEventSubject.removeDuplicates().eraseToAnyPublisher()
         yomiEvent = yomiEventSubject.removeDuplicates().eraseToAnyPublisher()
         self.inlineCandidateCount = inlineCandidateCount
+        self.enableMarkedTextWorkaround = enableMarkedTextWorkaround
     }
 
     /// `Action`をハンドルした場合には`true`、しなかった場合は`false`を返す
@@ -106,6 +110,11 @@ final class StateMachine {
                 inputMethodEventSubject.send(.modeChanged(.katakana))
                 if specialState != nil {
                     inputMethodEventSubject.send(.markedText(state.displayText()))
+                } else if enableMarkedTextWorkaround {
+                    // 確定文字を未確定文字列として入力するワークアラウンド
+                    state.inputMethod = .composing(
+                        ComposingState(isShift: false, text: [], romaji: "", fixedWorkaroundText: FixedWorkaroundText(text: "", displayText: "[カナ]")))
+                    updateMarkedText()
                 }
                 return true
             case .katakana, .hankaku:
@@ -113,6 +122,11 @@ final class StateMachine {
                 inputMethodEventSubject.send(.modeChanged(.hiragana))
                 if specialState != nil {
                     inputMethodEventSubject.send(.markedText(state.displayText()))
+                } else if enableMarkedTextWorkaround {
+                    // 確定文字を未確定文字列として入力するワークアラウンド
+                    state.inputMethod = .composing(
+                        ComposingState(isShift: false, text: [], romaji: "", fixedWorkaroundText: FixedWorkaroundText(text: "", displayText: "[かな]")))
+                    updateMarkedText()
                 }
                 return true
             case .eisu, .direct:
@@ -144,6 +158,11 @@ final class StateMachine {
                 inputMethodEventSubject.send(.modeChanged(.direct))
                 if specialState != nil {
                     inputMethodEventSubject.send(.markedText(state.displayText()))
+                } else if enableMarkedTextWorkaround {
+                    // 確定文字を未確定文字列として入力するワークアラウンド
+                    state.inputMethod = .composing(
+                        ComposingState(isShift: false, text: [], romaji: "", fixedWorkaroundText: FixedWorkaroundText(text: "", displayText: "[英数]")))
+                    updateMarkedText()
                 }
                 return true
             case .eisu, .direct:
@@ -414,6 +433,12 @@ final class StateMachine {
                         state.inputMethod = .composing(
                             ComposingState(isShift: true, text: moji.kana.map { String($0) }, romaji: result.input))
                         updateMarkedText()
+                    } else if enableMarkedTextWorkaround {
+                        // 確定文字を未確定文字列として入力するワークアラウンド
+                        let text = moji.string(for: state.inputMode)
+                        state.inputMethod = .composing(
+                            ComposingState(isShift: false, text: [], romaji: "", fixedWorkaroundText: FixedWorkaroundText(text: text, displayText: text)))
+                        updateMarkedText()
                     } else {
                         addFixedText(moji.string(for: state.inputMode))
                     }
@@ -476,6 +501,23 @@ final class StateMachine {
         let event = action.event
         let input = event.charactersIgnoringModifiers
         let converted: Romaji.ConvertedMoji?
+
+        // xterm.jsを利用したアプリでaiueoなどの1文字で確定するひらがなが入力できなかったり、
+        // qやlのモード変更でそのまま入力されてしまう問題のワークアラウンド。
+        // すでにmarkedTextがあるときは問題が起きないため、specialStateはnilじゃなければならない
+        // (specialStateがあるときはfixedWorkaroundTextを使ってはいけない)
+        if let fixedWorkaroundText = composing.fixedWorkaroundText, enableMarkedTextWorkaround && specialState == nil {
+            addFixedText(fixedWorkaroundText.text)
+            state.inputMethod = .normal
+            if case .enter = action.keyBind {
+                // Enterキーは単に未確定文字列の確定として使用する
+                return true
+            } else {
+                let keyBind = Global.keyBinding.action(event: event, inputMethodState: .normal)
+                let newAction = action.with(keyBind: keyBind)
+                return handleNormal(newAction, specialState: nil)
+            }
+        }
 
         // ローマ字かな変換ルールで変換できる場合、そちらを優先する ("z " で全角スペース、"zl" で右矢印など)
         // Controlが押されているときは変換しない (s + Ctrl-a だと "さ" にはせずCtrl-aを優先する)

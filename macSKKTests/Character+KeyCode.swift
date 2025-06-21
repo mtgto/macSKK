@@ -65,6 +65,8 @@ extension Character {
             return UInt16(kVK_ANSI_Slash)
         case " ":
             return UInt16(kVK_Space)
+        case "\u{127}":
+            return UInt16(kVK_Delete)
         default:
             return nil
         }

@@ -81,6 +81,59 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    @MainActor func testHandleNormalRomajiEnableMarkedTextWorkaround() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        stateMachine.enableMarkedTextWorkaround = true
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(11).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.plain("あ")]))) // 未確定文字列で"あ"を表示
+            XCTAssertEqual(events[1], .fixedText("あ"))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.plain("い")]))) // あは確定し、未確定文字列で"い"を表示
+            XCTAssertEqual(events[3], .fixedText("い")) // Enterでも確定する
+            XCTAssertEqual(events[4], .markedText(MarkedText([.plain("う")])))
+            XCTAssertEqual(events[5], .fixedText("う")) // ESCでも確定する
+            XCTAssertEqual(events[6], .markedText(MarkedText([.plain("え")])))
+            XCTAssertEqual(events[7], .fixedText("え")) // Backspaceでも確定する
+            XCTAssertEqual(events[8], .markedText(MarkedText([.plain("。")]))) // 母音以外も1文字で登録されているキーは対象
+            XCTAssertEqual(events[9], .fixedText("。")) // 他のアルファベットキーでも確定する
+            XCTAssertEqual(events[10], .markedText(MarkedText([.plain("k")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
+        XCTAssertTrue(stateMachine.handle(enterAction)) // 未確定文字列の確定だけして改行させないようにtrueを返す
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u")))
+        XCTAssertFalse(stateMachine.handle(cancelAction))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e")))
+        XCTAssertFalse(stateMachine.handle(backspaceAction))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ".")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "k")))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    @MainActor func testHandleNormalChangeModeEnableMarkedTextWorkaround() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        stateMachine.enableMarkedTextWorkaround = true
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(9).sink { events in
+            XCTAssertEqual(events[0], .modeChanged(.katakana))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.plain("[カナ]")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([])))
+            XCTAssertEqual(events[3], .modeChanged(.hiragana))
+            XCTAssertEqual(events[4], .markedText(MarkedText([.plain("[かな]")])))
+            XCTAssertEqual(events[5], .markedText(MarkedText([])))
+            XCTAssertEqual(events[6], .modeChanged(.direct))
+            XCTAssertEqual(events[7], .markedText(MarkedText([.plain("[英数]")])))
+            XCTAssertEqual(events[8], .markedText(MarkedText([])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "l")))
+        XCTAssertFalse(stateMachine.handle(printableKeyEventAction(character: "q")))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     @MainActor func testHandleNormalNAndHyphen() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()

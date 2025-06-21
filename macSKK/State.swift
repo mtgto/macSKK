@@ -79,11 +79,21 @@ protocol SpecialStateProtocol: CursorProtocol {
     func dropForward() -> Self
 }
 
+/**
+ * 確定済みの文字列だが次の文字が入力されるかEnter/Escなど押されるまで未確定文字列として表示する文字列。
+ * xterm.jsを利用したアプリでaiueoなどの1文字で確定するひらがなが入力できなかったり、
+ * qやlのモード変更でそのまま入力されてしまう問題のワークアラウンドのために利用する。
+ */
+struct FixedWorkaroundText: Equatable {
+    let text: String
+    let displayText: String
+}
+
 /// 入力中の未確定文字列の定義
 struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
     /// (Sticky)Shiftによる未確定入力中かどうか。先頭に▽ついてる状態。
     let isShift: Bool
-    /// かな/カナならかなになっているひらがなの文字列、abbrevなら入力した文字列.
+    /// 辞書の読み部分となる文字列。かな/カナならかなになっているひらがなの文字列、abbrevなら入力した文字列
     let text: [String]
     /// (Sticky)Shiftが押されたあとに入力されてかなになっている文字列。送り仮名モードになってなければnil
     /// StickyShiftが押されたり送り仮名をバックスペースで削除して送り仮名モードだけど送り仮名が空のときは空配列
@@ -97,8 +107,12 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
     let prevMode: InputMode?
     /// 再変換する際に選択していた文字列
     let reconvertText: String?
+    /// 確定済みの文字列だが次の文字が入力されるかEnter/Escなど押されるまで未確定文字列として表示する文字列。
+    /// xterm.jsを利用したアプリでaiueoなどの1文字で確定するひらがなが入力できなかったり、
+    /// qやlのモード変更でそのまま入力されてしまう問題のワークアラウンドのために利用する。
+    let fixedWorkaroundText: FixedWorkaroundText?
 
-    init(isShift: Bool, text: [String], okuri: [Romaji.Moji]? = nil, romaji: String, cursor: Int? = nil, prevMode: InputMode? = nil, reconvertText: String? = nil) {
+    init(isShift: Bool, text: [String], okuri: [Romaji.Moji]? = nil, romaji: String, cursor: Int? = nil, prevMode: InputMode? = nil, reconvertText: String? = nil, fixedWorkaroundText: FixedWorkaroundText? = nil) {
         self.isShift = isShift
         self.text = text
         self.okuri = okuri
@@ -106,6 +120,7 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
         self.cursor = cursor
         self.prevMode = prevMode
         self.reconvertText = reconvertText
+        self.fixedWorkaroundText = fixedWorkaroundText
     }
 
     /**
@@ -354,6 +369,10 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
 
         if isShift {
             result.append(.markerCompose)
+        }
+        // TODO: isShiftのときにfixedWorkarondTextは使えないようにしたほうがいいかも
+        if let fixedWorkaroundText {
+            result.append(.plain(fixedWorkaroundText.displayText))
         }
         if let okuri {
             okuriDisplayText = "*" + okuri.map { $0.string(for: inputMode) }.joined() + romaji
