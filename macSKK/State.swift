@@ -81,7 +81,8 @@ protocol SpecialStateProtocol: CursorProtocol {
 
 /**
  * 確定済みの文字列だが次の文字が入力されるかEnter/Escなど押されるまで未確定文字列として表示する文字列。
- * xterm.jsなどでaiueoなどの1文字で確定するひらがなが入力できない問題のワークアラウンドのために利用する。
+ * xterm.jsを利用したアプリでaiueoなどの1文字で確定するひらがなが入力できなかったり、
+ * qやlのモード変更でそのまま入力されてしまう問題のワークアラウンドのために利用する。
  */
 struct FixedWorkaroundText: Equatable {
     let text: String
@@ -107,7 +108,8 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
     /// 再変換する際に選択していた文字列
     let reconvertText: String?
     /// 確定済みの文字列だが次の文字が入力されるかEnter/Escなど押されるまで未確定文字列として表示する文字列。
-    /// xterm.jsなどでaiueoなどの1文字で確定するひらがなが入力できない問題のワークアラウンドのために利用する。
+    /// xterm.jsを利用したアプリでaiueoなどの1文字で確定するひらがなが入力できなかったり、
+    /// qやlのモード変更でそのまま入力されてしまう問題のワークアラウンドのために利用する。
     let fixedWorkaroundText: FixedWorkaroundText?
 
     init(isShift: Bool, text: [String], okuri: [Romaji.Moji]? = nil, romaji: String, cursor: Int? = nil, prevMode: InputMode? = nil, reconvertText: String? = nil, fixedWorkaroundText: FixedWorkaroundText? = nil) {

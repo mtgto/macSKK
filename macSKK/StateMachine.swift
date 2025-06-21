@@ -40,7 +40,7 @@ final class StateMachine {
     /// 変換候補パネルに一度に表示する変換候補の数
     let displayCandidateCount = 9
     /// 1文字で確定するローマ字やq/lなどのモード変更などで未確定文字列を一度表示するワークグラウンドが有効かどうか
-    /// VSCodeのターミナルやHyperなどaiueoで直接入力されてしまう環境向け
+    /// xterm.jsを利用しているVSCodeのターミナルやHyperなどaiueoで直接入力されてしまう環境向け
     var enableMarkedTextWorkaround: Bool
 
     init(initialState: IMEState = IMEState(), inlineCandidateCount: Int = 3, enableMarkedTextWorkaround: Bool = false) {
@@ -502,8 +502,10 @@ final class StateMachine {
         let input = event.charactersIgnoringModifiers
         let converted: Romaji.ConvertedMoji?
 
-        // xterm.jsワークアラウンド。
-        // specialStateはnilじゃなければならない (specialStateがあるときはfixedWorkaroundTextを使ってはいけない)
+        // xterm.jsを利用したアプリでaiueoなどの1文字で確定するひらがなが入力できなかったり、
+        // qやlのモード変更でそのまま入力されてしまう問題のワークアラウンド。
+        // すでにmarkedTextがあるときは問題が起きないため、specialStateはnilじゃなければならない
+        // (specialStateがあるときはfixedWorkaroundTextを使ってはいけない)
         if let fixedWorkaroundText = composing.fixedWorkaroundText, enableMarkedTextWorkaround && specialState == nil {
             addFixedText(fixedWorkaroundText.text)
             state.inputMethod = .normal
