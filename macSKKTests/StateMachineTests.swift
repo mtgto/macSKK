@@ -115,7 +115,7 @@ final class StateMachineTests: XCTestCase {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         stateMachine.enableMarkedTextWorkaround = true
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(9).sink { events in
+        stateMachine.inputMethodEvent.collect(11).sink { events in
             XCTAssertEqual(events[0], .modeChanged(.katakana))
             XCTAssertEqual(events[1], .markedText(MarkedText([.plain("[カナ]")])))
             XCTAssertEqual(events[2], .markedText(MarkedText([])))
@@ -125,12 +125,15 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[6], .modeChanged(.direct))
             XCTAssertEqual(events[7], .markedText(MarkedText([.plain("[英数]")])))
             XCTAssertEqual(events[8], .markedText(MarkedText([])))
+            XCTAssertEqual(events[9], .modeChanged(.hiragana))
+            XCTAssertEqual(events[10], .markedText(MarkedText([.plain("[かな]")])))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "l")))
         XCTAssertFalse(stateMachine.handle(printableKeyEventAction(character: "q")))
+        XCTAssertTrue(stateMachine.handle(hiraganaAction))
         wait(for: [expectation], timeout: 1.0)
     }
 
