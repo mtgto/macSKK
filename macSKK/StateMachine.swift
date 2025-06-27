@@ -90,6 +90,11 @@ final class StateMachine {
                 inputMethodEventSubject.send(.modeChanged(.hiragana))
                 if specialState != nil {
                     updateMarkedText()
+                } else if enableMarkedTextWorkaround {
+                    // 確定文字を未確定文字列として入力するワークアラウンド
+                    state.inputMethod = .composing(
+                        ComposingState(isShift: false, text: [], romaji: "", fixedWorkaroundText: FixedWorkaroundText(text: "", displayText: "[かな]")))
+                    updateMarkedText()
                 }
                 return true
             }
