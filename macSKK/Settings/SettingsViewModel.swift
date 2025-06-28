@@ -589,8 +589,16 @@ final class SettingsViewModel: ObservableObject {
             Global.candidateListDirection.send(candidateListDirection)
         }.store(in: &cancellables)
 
-        $dateTimeYomis.sink { dateTimeYomis in
-            debugPrint("現在の読みは \(dateTimeYomis.joined(separator: ", "))")
+        $dateTimeYomis.dropFirst().sink { dateTimeYomis in
+            UserDefaults.standard.set(dateTimeYomis, forKey: UserDefaultsKeys.dateTimeYomis)
+            logger.log("日付変換の読みリストを更新しました: \(dateTimeYomis.joined(separator: ", "), privacy: .public)")
+            Global.dateYomis = dateTimeYomis
+        }.store(in: &cancellables)
+
+        $dateTimeConvertions.dropFirst().sink { dateTimeConvertions in
+            UserDefaults.standard.set(dateTimeConvertions.map({ $0.encode() }), forKey: UserDefaultsKeys.dateTimeConvertions)
+            logger.log("日付変更の変換候補を更新しました")
+            Global.dateConversions = dateTimeConvertions
         }.store(in: &cancellables)
 
         NotificationCenter.default.publisher(for: notificationNameDictLoad).receive(on: RunLoop.main).sink { [weak self] notification in

@@ -47,6 +47,10 @@ import Combine
     static var punctuation: Punctuation = .default
     /// 変換候補パネルの表示方向
     static var candidateListDirection = CurrentValueSubject<CandidateListDirection, Never>(.vertical)
+    /// 日付変換の読み
+    static var dateYomis: [String] = []
+    /// 日付変換の変換候補
+    static var dateConversions: [DateConversion] = []
     /// 現在のモードを表示するパネル
     private let inputModePanel: InputModePanel
     /// 変換候補を表示するパネル

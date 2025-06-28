@@ -72,6 +72,24 @@ final class UserDictTests: XCTestCase {
         XCTAssertTrue(userDict.delete(yomi: "い", word: "井"))
     }
 
+    @MainActor func testReferDictsDateConversion() throws {
+        let userDict = try UserDict(dicts: [],
+                                    userDictEntries: [:],
+                                    privateMode: CurrentValueSubject<Bool, Never>(false),
+                                    ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
+                                    findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false))
+        Global.dateYomis = ["today", "きょう"]
+        Global.dateConversions = [
+            DateConversion(format: "YYYY/MM/dd", locale: .enUS, calendar: .gregorian),
+            DateConversion(format: "Gy年M月d日", locale: .jaJP, calendar: .japanese),
+        ]
+        let candidates = userDict.referDicts("today")
+        XCTAssertEqual(candidates.count, 2)
+        // 現在時間で変わるので正規表現マッチ。現在時間をDIできるようにしてもいいかも。
+        XCTAssertNotNil(candidates[0].word.wholeMatch(of: /\d{4}\/\d{2}\/\d{2}/))
+        XCTAssertNotNil(candidates[1].word.wholeMatch(of: /令和\d{1,}年\d{1,2}月\d{1,2}日/))
+    }
+
     func testFindCompletionPrivateMode() throws {
         let privateMode = CurrentValueSubject<Bool, Never>(true)
         let ignoreUserDictInPrivateMode = CurrentValueSubject<Bool, Never>(false)
