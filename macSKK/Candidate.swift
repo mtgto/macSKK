@@ -40,6 +40,14 @@ struct Candidate: Hashable {
     private(set) var annotations: [Annotation]
 
     /**
+     * 確定時にユーザー辞書に保存するべきかどうか。
+     * デフォルトはtrue。日付変換の場合はfalse。
+     * プライベートモード時はこの値にかかわらず保存されない。
+     */
+    let saveToUserDict: Bool
+
+
+    /**
      * 辞書に登録されている読み。
      */
     func toMidashiString(yomi: String) -> String {
@@ -53,10 +61,11 @@ struct Candidate: Hashable {
         original?.word ?? word
     }
 
-    init(_ word: Word.Word, annotations: [Annotation] = [], original: Original? = nil) {
+    init(_ word: Word.Word, annotations: [Annotation] = [], original: Original? = nil, saveToUserDict: Bool = true) {
         self.word = word
         self.annotations = annotations
         self.original = original
+        self.saveToUserDict = saveToUserDict
     }
 
     func hash(into hasher: inout Hasher) {

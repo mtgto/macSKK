@@ -17,7 +17,7 @@ struct DateConversionsView: View {
 
     init(settingsViewModel: SettingsViewModel) {
         _settingsViewModel = StateObject(wrappedValue: settingsViewModel)
-        _yomis = State(initialValue: settingsViewModel.dateTimeYomis)
+        _yomis = State(initialValue: settingsViewModel.dateYomis)
     }
 
     var body: some View {
@@ -38,7 +38,7 @@ struct DateConversionsView: View {
                                     if yomis[index].isEmpty {
                                         yomis.remove(at: index)
                                     } else {
-                                        settingsViewModel.dateTimeYomis = yomis
+                                        settingsViewModel.dateYomis = yomis
                                     }
                                 }
                             }
@@ -50,14 +50,14 @@ struct DateConversionsView: View {
                     }, removeAction: {
                         if let selectedYomiIndex {
                             yomis.remove(at: selectedYomiIndex)
-                            settingsViewModel.dateTimeYomis = yomis
+                            settingsViewModel.dateYomis = yomis
                         }
                     })
                 } header: {
                     Text("Yomi")
                 }
                 Section {
-                    List(settingsViewModel.dateTimeConvertions, selection: $selectedDateConversionId) { dateConversion in
+                    List(settingsViewModel.dateConvertions, selection: $selectedDateConversionId) { dateConversion in
                         Text(dateConversion.dateFormatter.string(for: Date()) ?? dateConversion.format)
                             .padding(.vertical, 4.0)
                     }
@@ -66,7 +66,7 @@ struct DateConversionsView: View {
                         isShowingEditingDateConversion = true
                     }, removeAction: {
                         if let selectedDateConversionId {
-                            settingsViewModel.dateTimeConvertions.removeAll { $0.id == selectedDateConversionId }
+                            settingsViewModel.dateConvertions.removeAll { $0.id == selectedDateConversionId }
                         }
                     })
                     .contextMenu(forSelectionType: UUID.self, menu: { _ in }) { dataConversionIds in
@@ -81,7 +81,7 @@ struct DateConversionsView: View {
             }
             .formStyle(.grouped)
         }.sheet(isPresented: $isShowingEditingDateConversion) {
-            let dateConversion = settingsViewModel.dateTimeConvertions.first(where: { $0.id == editingDateConversionId })
+            let dateConversion = settingsViewModel.dateConvertions.first(where: { $0.id == editingDateConversionId })
             DateConversionView(settingsViewModel: settingsViewModel,
                                id: $editingDateConversionId,
                                format: dateConversion?.format ?? "",

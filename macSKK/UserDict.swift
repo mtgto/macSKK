@@ -111,7 +111,7 @@ class UserDict: NSObject, DictProtocol {
             let date = Date()
             let candidates = Global.dateConversions.compactMap { conversion -> Candidate? in
                 guard let word = conversion.dateFormatter.string(for: date) else { return nil }
-                return Candidate(word, original: Candidate.Original(midashi: yomi, word: conversion.format))
+                return Candidate(word, saveToUserDict: false)
             }
             result = candidates
         }

@@ -85,6 +85,7 @@ final class UserDictTests: XCTestCase {
         ]
         let candidates = userDict.referDicts("today")
         XCTAssertEqual(candidates.count, 2)
+        XCTAssertTrue(candidates.allSatisfy({ $0.saveToUserDict == false }))
         // 現在時間で変わるので正規表現マッチ。現在時間をDIできるようにしてもいいかも。
         XCTAssertNotNil(candidates[0].word.wholeMatch(of: /\d{4}\/\d{2}\/\d{2}/))
         XCTAssertNotNil(candidates[1].word.wholeMatch(of: /令和\d{1,}年\d{1,2}月\d{1,2}日/))
