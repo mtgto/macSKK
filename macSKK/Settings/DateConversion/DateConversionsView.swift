@@ -49,24 +49,24 @@ struct DateConversionsView: View {
                 }
                 Section {
                     List(selection: $selectedDateConversionId) {
-                        ForEach(settingsViewModel.dateConvertions) { dateConversion in
+                        ForEach(settingsViewModel.dateConversions) { dateConversion in
                             Text(dateConversion.dateFormatter.string(for: Date()) ?? dateConversion.format)
                                 .padding(.vertical, 4.0)
                         }
                         .onMove { (indexSet, destination) in
-                            settingsViewModel.dateConvertions.move(fromOffsets: indexSet, toOffset: destination)
+                            settingsViewModel.dateConversions.move(fromOffsets: indexSet, toOffset: destination)
                         }
                     }
                     .listFooterControls(addAction: {
                         isAddingDateConversionSheet = true
                     }, removeAction: {
                         if let selectedDateConversionId {
-                            settingsViewModel.dateConvertions.removeAll { $0.id == selectedDateConversionId }
+                            settingsViewModel.dateConversions.removeAll { $0.id == selectedDateConversionId }
                         }
                     })
                     .contextMenu(forSelectionType: UUID.self, menu: { _ in }) { dataConversionIds in
-                        if let id = dataConversionIds.first, let dateConvertion = settingsViewModel.dateConvertions.first(where: { $0.id == id }) {
-                            editingDateConversion = dateConvertion
+                        if let id = dataConversionIds.first, let dateConversion = settingsViewModel.dateConversions.first(where: { $0.id == id }) {
+                            editingDateConversion = dateConversion
                         }
                     }
                 } header: {

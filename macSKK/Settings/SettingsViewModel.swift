@@ -283,7 +283,7 @@ final class SettingsViewModel: ObservableObject {
     /// 日時変換の変換後のリスト。DateTimeFormatter.dateFormat互換形式。
     /// 和暦・西暦の選択用にLocaleも選択可能。曜日のためにCalendarも選択可能。
     /// 現在は localeは `"ja_JP"`, calendarは `Calender(identifier: .japanese)` 固定。
-    @Published var dateConvertions: [DateConversion]
+    @Published var dateConversions: [DateConversion]
 
     // 辞書ディレクトリ
     let dictionariesDirectoryUrl: URL
@@ -348,15 +348,15 @@ final class SettingsViewModel: ObservableObject {
         ignoreUserDictInPrivateMode = UserDefaults.standard.bool(forKey: UserDefaultsKeys.ignoreUserDictInPrivateMode)
         showInputIconModal = UserDefaults.standard.bool(forKey: UserDefaultsKeys.showInputModePanel)
         candidateListDirection = CandidateListDirection(rawValue: UserDefaults.standard.integer(forKey: UserDefaultsKeys.candidateListDirection)) ?? .vertical
-        if let dateYomisDict = UserDefaults.standard.array(forKey: UserDefaultsKeys.dateYomis) as? [[String: Any]] {
-            dateYomis = dateYomisDict.compactMap { DateConversion.Yomi(dict: $0) }
+        if let dateConversionDict = UserDefaults.standard.dictionary(forKey: UserDefaultsKeys.dateConversions),
+           let dateConversionsRaw = dateConversionDict["conversions"] as? [[String: Any]],
+           let dateYomisRaw = dateConversionDict["yomis"] as? [[String: Any]] {
+            dateYomis = dateYomisRaw.compactMap({ DateConversion.Yomi(dict: $0) })
+            dateConversions = dateConversionsRaw.compactMap({ DateConversion(dict: $0) })
         } else {
             dateYomis = []
+            dateConversions = []
         }
-        dateConvertions = UserDefaults.standard.array(forKey: UserDefaultsKeys.dateConvertions)?.compactMap({ dict in
-            guard let dict = dict as? [String: Any] else { return nil }
-            return DateConversion(dict: dict)
-        }) ?? []
 
         Global.keyBinding = selectedKeyBindingSet
         Global.selectCandidateKeys = selectCandidateKeys.lowercased().map { $0 }
@@ -368,7 +368,7 @@ final class SettingsViewModel: ObservableObject {
         Global.ignoreUserDictInPrivateMode.send(ignoreUserDictInPrivateMode)
         Global.candidateListDirection.send(candidateListDirection)
         Global.dateYomis = dateYomis
-        Global.dateConversions = dateConvertions
+        Global.dateConversions = dateConversions
 
         // SKK-JISYO.Lのようなファイルの読み込みが遅いのでバックグラウンドで処理
         $dictSettings.filter({ !$0.isEmpty }).receive(on: DispatchQueue.global()).sink { dictSettings in
@@ -595,16 +595,16 @@ final class SettingsViewModel: ObservableObject {
             Global.candidateListDirection.send(candidateListDirection)
         }.store(in: &cancellables)
 
-        $dateYomis.dropFirst().sink { dateYomis in
-            UserDefaults.standard.set(dateYomis.map { $0.encode() }, forKey: UserDefaultsKeys.dateYomis)
+        $dateYomis.dropFirst().sink { [weak self] dateYomis in
+            self?.saveDateConversions()
             logger.log("日付変換の読みリストを更新しました")
             Global.dateYomis = dateYomis
         }.store(in: &cancellables)
 
-        $dateConvertions.dropFirst().sink { dateConvertions in
-            UserDefaults.standard.set(dateConvertions.map({ $0.encode() }), forKey: UserDefaultsKeys.dateConvertions)
+        $dateConversions.dropFirst().sink { [weak self] dateConversions in
+            self?.saveDateConversions()
             logger.log("日付変更の変換候補を更新しました")
-            Global.dateConversions = dateConvertions
+            Global.dateConversions = dateConversions
         }.store(in: &cancellables)
 
         NotificationCenter.default.publisher(for: notificationNameDictLoad).receive(on: RunLoop.main).sink { [weak self] notification in
@@ -657,7 +657,7 @@ final class SettingsViewModel: ObservableObject {
             DateConversion.Yomi(yomi: "tomorrow", relative: .tomorrow),
             DateConversion.Yomi(yomi: "yesterday", relative: .yesterday),
         ]
-        dateConvertions = [
+        dateConversions = [
             DateConversion(format: "yyyy-MM-dd", locale: .enUS, calendar: .gregorian),
             DateConversion(format: "Gy年M月d日(E)", locale: .jaJP, calendar: .japanese),
         ]
@@ -759,12 +759,12 @@ final class SettingsViewModel: ObservableObject {
     }
 
     func addDateConversion(format: String, locale: DateConversion.DateConversionLocale, calendar: DateConversion.DateConversionCalendar) {
-        dateConvertions.append(DateConversion(format: format, locale: locale, calendar: calendar))
+        dateConversions.append(DateConversion(format: format, locale: locale, calendar: calendar))
     }
 
     func updateDateConversion(id: UUID, format: String, locale: DateConversion.DateConversionLocale, calendar: DateConversion.DateConversionCalendar) {
-        guard let index = dateConvertions.firstIndex(where: { $0.id == id }) else { return }
-        dateConvertions[index] = DateConversion(id: id, format: format, locale: locale, calendar: calendar)
+        guard let index = dateConversions.firstIndex(where: { $0.id == id }) else { return }
+        dateConversions[index] = DateConversion(id: id, format: format, locale: locale, calendar: calendar)
     }
 
     func updateDirectModeApplication(index: Int, displayName: String, icon: NSImage) {
@@ -831,5 +831,13 @@ final class SettingsViewModel: ObservableObject {
                 self.inputSources = inputSources
             }
         }
+    }
+
+    func saveDateConversions() {
+        let dict = [
+            "yomis": dateYomis.map { $0.encode() },
+            "conversions": dateConversions.map({ $0.encode() }),
+        ]
+        UserDefaults.standard.set(dict, forKey: UserDefaultsKeys.dateConversions)
     }
 }

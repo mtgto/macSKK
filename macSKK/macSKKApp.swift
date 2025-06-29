@@ -207,16 +207,18 @@ struct macSKKApp: App {
             UserDefaultsKeys.ignoreUserDictInPrivateMode: false,
             UserDefaultsKeys.showInputModePanel: true,
             UserDefaultsKeys.candidateListDirection: CandidateListDirection.vertical.rawValue,
-            UserDefaultsKeys.dateYomis: [
-                ["yomi": "today", "relative": "now"],
-                ["yomi": "yesterday", "relative": "yesterday"],
-                ["yomi": "tomorrow", "relative": "tomorrow"],
-            ],
-            UserDefaultsKeys.dateConvertions: [
-                ["format": "yyyy/MM/dd", "locale": "en_US", "calendar": "gregorian"],
-                ["format": "yyyy-MM-dd", "locale": "en_US", "calendar": "gregorian"],
-                ["format": "yyyy年M月d日", "locale": "en_US", "calendar": "gregorian"],
-                ["format": "Gy年M月d日", "locale": "ja_JP", "calendar": "japanese"],
+            UserDefaultsKeys.dateConversions: [
+                "yomis": [
+                    ["yomi": "today", "relative": "now"],
+                    ["yomi": "yesterday", "relative": "yesterday"],
+                    ["yomi": "tomorrow", "relative": "tomorrow"],
+                ],
+                "conversions": [
+                    ["format": "yyyy/MM/dd", "locale": "en_US", "calendar": "gregorian"],
+                    ["format": "yyyy-MM-dd", "locale": "en_US", "calendar": "gregorian"],
+                    ["format": "yyyy年M月d日", "locale": "en_US", "calendar": "gregorian"],
+                    ["format": "Gy年M月d日", "locale": "ja_JP", "calendar": "japanese"],
+                ],
             ],
         ])
     }
