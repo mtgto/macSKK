@@ -10,11 +10,10 @@ struct DateConversionView: View {
     @State var format: String
     @State var locale: DateConversion.DateConversionLocale
     @State var calendar: DateConversion.DateConversionCalendar
-    // この編集画面を開いているかどうか
-    @Binding var isShowingSheet: Bool
     let dateFormatter = DateFormatter()
     let current = Date()
     @State var preview = ""
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         VStack {
@@ -54,7 +53,7 @@ struct DateConversionView: View {
             HStack {
                 Spacer()
                 Button("Cancel", role: .cancel) {
-                    isShowingSheet = false
+                    dismiss()
                 }
                 Button {
                     if let id {
@@ -62,7 +61,7 @@ struct DateConversionView: View {
                     } else {
                         settingsViewModel.addDateConversion(format: format, locale: locale, calendar: calendar)
                     }
-                    isShowingSheet = false
+                    dismiss()
                 } label: {
                     Text("Done")
                 }
@@ -84,6 +83,5 @@ struct DateConversionView: View {
                        id: .constant(nil),
                        format: "yyyy-MM-dd",
                        locale: .enUS,
-                       calendar: .gregorian,
-                       isShowingSheet: .constant(true))
+                       calendar: .gregorian)
 }

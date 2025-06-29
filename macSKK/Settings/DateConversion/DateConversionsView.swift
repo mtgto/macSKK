@@ -74,8 +74,7 @@ struct DateConversionsView: View {
                                id: $editingDateConversionId,
                                format: dateConversion?.format ?? "",
                                locale: dateConversion?.locale ?? .enUS,
-                               calendar: dateConversion?.calendar ?? .gregorian,
-                               isShowingSheet: $isShowingEditingDateConversion)
+                               calendar: dateConversion?.calendar ?? .gregorian)
         }
         .sheet(isPresented: $isShowingAddYomiSheet) {
             DateYomiView(settingsViewModel: settingsViewModel)
