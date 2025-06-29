@@ -96,6 +96,12 @@ struct DateConversion: Identifiable {
             case now
             case yesterday
             case tomorrow
+
+            var localized: String {
+                // CodingKeyのstringValueを使う
+                // String#capitalizedは先頭以外の大文字を小文字に変換するのでLocalized.stringsでのキーに注意
+                String(localized: LocalizedStringResource(stringLiteral: "DateYomiRelative\(rawValue.capitalized)"))
+            }
         }
 
         let yomi: String

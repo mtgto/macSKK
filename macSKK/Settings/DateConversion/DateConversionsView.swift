@@ -14,6 +14,7 @@ struct DateConversionsView: View {
     @State var isShowingEditingDateConversion: Bool = false
     // 作成・編集している変換候補
     @State var editingDateConversionId: UUID? = nil
+    @State var isShowingAddYomiSheet: Bool = false
     @Environment(\.defaultMinListRowHeight) var defaultMinListRowHeight
 
     init(settingsViewModel: SettingsViewModel) {
@@ -30,13 +31,11 @@ struct DateConversionsView: View {
                         }
                     }
                     .listFooterControls(addAction: {
-                        // yomis.append("")
-                        // focusedYomiIndex = yomis.count - 1
+                        isShowingAddYomiSheet = true
                     }, removeAction: {
-                        // if let selectedYomiIndex {
-                        //     yomis.remove(at: selectedYomiIndex)
-                        //     settingsViewModel.dateYomis = yomis
-                        // }
+                        if let selectedYomiIndex {
+                            settingsViewModel.dateYomis.remove(at: selectedYomiIndex)
+                        }
                     })
                 } header: {
                     Text("Yomi")
@@ -73,6 +72,9 @@ struct DateConversionsView: View {
                                locale: dateConversion?.locale ?? .enUS,
                                calendar: dateConversion?.calendar ?? .gregorian,
                                isShowingSheet: $isShowingEditingDateConversion)
+        }
+        .sheet(isPresented: $isShowingAddYomiSheet) {
+            DateYomiView(settingsViewModel: settingsViewModel)
         }
     }
 }
