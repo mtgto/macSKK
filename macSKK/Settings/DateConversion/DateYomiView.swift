@@ -5,8 +5,9 @@ import SwiftUI
 struct DateYomiView: View {
     @Environment(\.dismiss) var dismiss
     @ObservedObject var settingsViewModel: SettingsViewModel
-    @State private var yomi: String = ""
-    @State private var relative: DateConversion.Yomi.RelativeTime = .now
+    @Binding var id: UUID?
+    @State var yomi: String
+    @State var relative: DateConversion.Yomi.RelativeTime
 
     var body: some View {
         VStack {
@@ -27,8 +28,12 @@ struct DateYomiView: View {
                     dismiss()
                 }
                 Button {
-                    let newYomi = DateConversion.Yomi(yomi: yomi, relative: relative)
-                    settingsViewModel.dateYomis.append(newYomi)
+                    if let id, let index = settingsViewModel.dateYomis.firstIndex(where: { $0.id == id }) {
+                        settingsViewModel.dateYomis[index] = DateConversion.Yomi(id: id, yomi: yomi, relative: relative)
+                    } else {
+                        let newYomi = DateConversion.Yomi(yomi: yomi, relative: relative)
+                        settingsViewModel.dateYomis.append(newYomi)
+                    }
                     dismiss()
                 } label: {
                     Text("Done")
@@ -43,5 +48,8 @@ struct DateYomiView: View {
 }
 
 #Preview {
-    DateYomiView(settingsViewModel: try! SettingsViewModel())
+    DateYomiView(settingsViewModel: try! SettingsViewModel(),
+                 id: .constant(nil),
+                 yomi: "today",
+                 relative: .now)
 }

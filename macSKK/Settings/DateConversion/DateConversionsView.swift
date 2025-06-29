@@ -6,20 +6,17 @@ import SwiftUI
 struct DateConversionsView: View {
     @StateObject var settingsViewModel: SettingsViewModel
     
-    @State var selectedYomiId: UUID? = nil
-    @State var editingYomi: String?
-    @FocusState var focusedYomiIndex: Int?
-    @State var selectedDateConversionId: UUID? = nil
+    @State private var selectedYomiId: UUID?
+    @State private var selectedDateConversionId: UUID?
+    // 読みの作成・編集画面を開いているかどうか
+    @State var isShowingEditingYomiSheet: Bool = false
     // 変換候補の作成・編集画面を開いているかどうか
-    @State var isShowingEditingDateConversion: Bool = false
+    @State var isShowingEditingDateConversionSheet: Bool = false
     // 作成・編集している変換候補
     @State var editingDateConversionId: UUID? = nil
-    @State var isShowingAddYomiSheet: Bool = false
+    // 作成・編集している変換候補
+    @State var editingYomiId: UUID? = nil
     @Environment(\.defaultMinListRowHeight) var defaultMinListRowHeight
-
-    init(settingsViewModel: SettingsViewModel) {
-        _settingsViewModel = StateObject(wrappedValue: settingsViewModel)
-    }
 
     var body: some View {
         VStack(alignment: .leading) {
@@ -35,12 +32,18 @@ struct DateConversionsView: View {
                         }
                     }
                     .listFooterControls(addAction: {
-                        isShowingAddYomiSheet = true
+                        isShowingEditingYomiSheet = true
                     }, removeAction: {
                         if let selectedYomiId {
                             settingsViewModel.dateYomis.removeAll { $0.id == selectedYomiId }
                         }
                     })
+                    .contextMenu(forSelectionType: UUID.self, menu: { _ in }) { dataYomiIds in
+                        if let id = dataYomiIds.first {
+                            editingYomiId = id
+                            isShowingEditingYomiSheet = true
+                        }
+                    }
                 } header: {
                     Text("Yomi")
                 }
@@ -51,7 +54,7 @@ struct DateConversionsView: View {
                     }
                     .listFooterControls(addAction: {
                         editingDateConversionId = nil
-                        isShowingEditingDateConversion = true
+                        isShowingEditingDateConversionSheet = true
                     }, removeAction: {
                         if let selectedDateConversionId {
                             settingsViewModel.dateConvertions.removeAll { $0.id == selectedDateConversionId }
@@ -60,7 +63,7 @@ struct DateConversionsView: View {
                     .contextMenu(forSelectionType: UUID.self, menu: { _ in }) { dataConversionIds in
                         if let id = dataConversionIds.first {
                             editingDateConversionId = id
-                            isShowingEditingDateConversion = true
+                            isShowingEditingDateConversionSheet = true
                         }
                     }
                 } header: {
@@ -68,16 +71,21 @@ struct DateConversionsView: View {
                 }
             }
             .formStyle(.grouped)
-        }.sheet(isPresented: $isShowingEditingDateConversion) {
+        }
+        .sheet(isPresented: $isShowingEditingYomiSheet) {
+            let dateYomi = settingsViewModel.dateYomis.first(where: { $0.id == editingYomiId })
+            DateYomiView(settingsViewModel: settingsViewModel,
+                         id: $editingYomiId,
+                         yomi: dateYomi?.yomi ?? "",
+                         relative: dateYomi?.relative ?? .now)
+        }
+        .sheet(isPresented: $isShowingEditingDateConversionSheet) {
             let dateConversion = settingsViewModel.dateConvertions.first(where: { $0.id == editingDateConversionId })
             DateConversionView(settingsViewModel: settingsViewModel,
                                id: $editingDateConversionId,
                                format: dateConversion?.format ?? "",
                                locale: dateConversion?.locale ?? .enUS,
                                calendar: dateConversion?.calendar ?? .gregorian)
-        }
-        .sheet(isPresented: $isShowingAddYomiSheet) {
-            DateYomiView(settingsViewModel: settingsViewModel)
         }
     }
 }
