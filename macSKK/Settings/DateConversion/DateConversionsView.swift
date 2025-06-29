@@ -48,9 +48,14 @@ struct DateConversionsView: View {
                     Text("Yomi")
                 }
                 Section {
-                    List(settingsViewModel.dateConvertions, selection: $selectedDateConversionId) { dateConversion in
-                        Text(dateConversion.dateFormatter.string(for: Date()) ?? dateConversion.format)
-                            .padding(.vertical, 4.0)
+                    List(selection: $selectedDateConversionId) {
+                        ForEach(settingsViewModel.dateConvertions) { dateConversion in
+                            Text(dateConversion.dateFormatter.string(for: Date()) ?? dateConversion.format)
+                                .padding(.vertical, 4.0)
+                        }
+                        .onMove { (indexSet, destination) in
+                            settingsViewModel.dateConvertions.move(fromOffsets: indexSet, toOffset: destination)
+                        }
                     }
                     .listFooterControls(addAction: {
                         isAddingDateConversionSheet = true
