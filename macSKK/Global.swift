@@ -48,7 +48,7 @@ import Combine
     /// 変換候補パネルの表示方向
     static var candidateListDirection = CurrentValueSubject<CandidateListDirection, Never>(.vertical)
     /// 日付変換の読み
-    static var dateYomis: [String] = []
+    static var dateYomis: [DateConversion.Yomi] = []
     /// 日付変換の変換候補
     static var dateConversions: [DateConversion] = []
     /// 現在のモードを表示するパネル

@@ -89,4 +89,49 @@ struct DateConversion: Identifiable {
             "calendar": calendar.rawValue,
         ]
     }
+
+    /// 日付変換の読み部分。通常の読みに加えて現在時間からの差分を持つ
+    struct Yomi: Hashable {
+        enum RelativeTime: String, CaseIterable {
+            case now
+            case yesterday
+            case tomorrow
+        }
+
+        let yomi: String
+        let relative: RelativeTime
+
+        init(yomi: String, relative: RelativeTime) {
+            self.yomi = yomi
+            self.relative = relative
+        }
+
+        // UserDefaultsからのデコード用
+        init?(dict: [String: Any]) {
+            guard let yomi = dict["yomi"] as? String,
+                let relativeString = dict["relative"] as? String,
+                let relative = RelativeTime(rawValue: relativeString)
+            else { return nil }
+            self.yomi = yomi
+            self.relative = relative
+        }
+
+        func encode() -> [String: Any] {
+            return [
+                "yomi": yomi,
+                "relative": relative.rawValue,
+            ]
+        }
+
+        var timeInterval: TimeInterval {
+            switch relative {
+            case .now:
+                return 0
+            case .yesterday:
+                return -24 * 60 * 60
+            case .tomorrow:
+                return 24 * 60 * 60
+            }
+        }
+    }
 }

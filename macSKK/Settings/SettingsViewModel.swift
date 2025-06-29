@@ -279,7 +279,7 @@ final class SettingsViewModel: ObservableObject {
     /// 変換候補リストの表示方向
     @Published var candidateListDirection: CandidateListDirection
     /// 日時変換の読みリスト
-    @Published var dateYomis: [String]
+    @Published var dateYomis: [DateConversion.Yomi]
     /// 日時変換の変換後のリスト。DateTimeFormatter.dateFormat互換形式。
     /// 和暦・西暦の選択用にLocaleも選択可能。曜日のためにCalendarも選択可能。
     /// 現在は localeは `"ja_JP"`, calendarは `Calender(identifier: .japanese)` 固定。
@@ -348,7 +348,11 @@ final class SettingsViewModel: ObservableObject {
         ignoreUserDictInPrivateMode = UserDefaults.standard.bool(forKey: UserDefaultsKeys.ignoreUserDictInPrivateMode)
         showInputIconModal = UserDefaults.standard.bool(forKey: UserDefaultsKeys.showInputModePanel)
         candidateListDirection = CandidateListDirection(rawValue: UserDefaults.standard.integer(forKey: UserDefaultsKeys.candidateListDirection)) ?? .vertical
-        dateYomis = UserDefaults.standard.array(forKey: UserDefaultsKeys.dateYomis) as? [String] ?? []
+        if let dateYomisDict = UserDefaults.standard.array(forKey: UserDefaultsKeys.dateYomis) as? [[String: Any]] {
+            dateYomis = dateYomisDict.compactMap { DateConversion.Yomi(dict: $0) }
+        } else {
+            dateYomis = []
+        }
         dateConvertions = UserDefaults.standard.array(forKey: UserDefaultsKeys.dateConvertions)?.compactMap({ dict in
             guard let dict = dict as? [String: Any] else { return nil }
             return DateConversion(dict: dict)
@@ -592,8 +596,8 @@ final class SettingsViewModel: ObservableObject {
         }.store(in: &cancellables)
 
         $dateYomis.dropFirst().sink { dateYomis in
-            UserDefaults.standard.set(dateYomis, forKey: UserDefaultsKeys.dateYomis)
-            logger.log("日付変換の読みリストを更新しました: \(dateYomis.joined(separator: ", "), privacy: .public)")
+            UserDefaults.standard.set(dateYomis.map { $0.encode() }, forKey: UserDefaultsKeys.dateYomis)
+            logger.log("日付変換の読みリストを更新しました")
             Global.dateYomis = dateYomis
         }.store(in: &cancellables)
 
@@ -648,7 +652,11 @@ final class SettingsViewModel: ObservableObject {
         ignoreUserDictInPrivateMode = false
         showInputIconModal = true
         candidateListDirection = .vertical
-        dateYomis = ["today", "きょう"]
+        dateYomis = [
+            DateConversion.Yomi(yomi: "today", relative: .now),
+            DateConversion.Yomi(yomi: "tomorrow", relative: .tomorrow),
+            DateConversion.Yomi(yomi: "yesterday", relative: .yesterday),
+        ]
         dateConvertions = [
             DateConversion(format: "yyyy-MM-dd", locale: .enUS, calendar: .gregorian),
             DateConversion(format: "Gy年M月d日(E)", locale: .jaJP, calendar: .japanese),

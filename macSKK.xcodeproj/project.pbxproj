@@ -16,6 +16,7 @@
 		CE06CA2B2AAC171B00E80E5E /* FileDictTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE06CA292AAC171B00E80E5E /* FileDictTests.swift */; };
 		CE06CA2D2AAC172F00E80E5E /* empty.txt in Resources */ = {isa = PBXBuildFile; fileRef = CE06CA2C2AAC172F00E80E5E /* empty.txt */; };
 		CE06CA342AAC199500E80E5E /* UserDict+Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE06CA332AAC199500E80E5E /* UserDict+Utilities.swift */; };
+		CE0EDA302E10C77E00F96F9A /* DateYomiView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE0EDA2F2E10C77E00F96F9A /* DateYomiView.swift */; };
 		CE118EE52CE0B4DE00A7C300 /* KeyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE118EE42CE0B4DB00A7C300 /* KeyTests.swift */; };
 		CE11C7B52BDD461C00A35F3D /* Global.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE11C7B42BDD461C00A35F3D /* Global.swift */; };
 		CE11C7BD2BE47D5D00A35F3D /* KeyBindingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE11C7BC2BE47D5D00A35F3D /* KeyBindingView.swift */; };
@@ -191,6 +192,7 @@
 		CE06CA292AAC171B00E80E5E /* FileDictTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileDictTests.swift; sourceTree = "<group>"; };
 		CE06CA2C2AAC172F00E80E5E /* empty.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = empty.txt; sourceTree = "<group>"; };
 		CE06CA332AAC199500E80E5E /* UserDict+Utilities.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UserDict+Utilities.swift"; sourceTree = "<group>"; };
+		CE0EDA2F2E10C77E00F96F9A /* DateYomiView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateYomiView.swift; sourceTree = "<group>"; };
 		CE118EE42CE0B4DB00A7C300 /* KeyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyTests.swift; sourceTree = "<group>"; };
 		CE11C7B42BDD461C00A35F3D /* Global.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Global.swift; sourceTree = "<group>"; };
 		CE11C7BC2BE47D5D00A35F3D /* KeyBindingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyBindingView.swift; sourceTree = "<group>"; };
@@ -542,6 +544,7 @@
 			children = (
 				CEB52CC32E080B030025542F /* DateConversionsView.swift */,
 				CEB52CC92E0D64B10025542F /* DateConversionView.swift */,
+				CE0EDA2F2E10C77E00F96F9A /* DateYomiView.swift */,
 			);
 			path = DateConversion;
 			sourceTree = "<group>";
@@ -820,6 +823,7 @@
 				CEB141722A87D16C005E7252 /* DictionaryView.swift in Sources */,
 				CEE2D9772A99FE1B00A4CD76 /* Word.swift in Sources */,
 				CEB52CBC2E0795CB0025542F /* ListFooterControls.swift in Sources */,
+				CE0EDA302E10C77E00F96F9A /* DateYomiView.swift in Sources */,
 				CEC061CA2ABB0A7900A11614 /* CompletionViewModel.swift in Sources */,
 				CEF0825D296DB58600646366 /* CandidatesViewModel.swift in Sources */,
 				CE7F9ADC2AB53E53001B1877 /* CompletionView.swift in Sources */,

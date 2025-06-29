@@ -207,7 +207,11 @@ struct macSKKApp: App {
             UserDefaultsKeys.ignoreUserDictInPrivateMode: false,
             UserDefaultsKeys.showInputModePanel: true,
             UserDefaultsKeys.candidateListDirection: CandidateListDirection.vertical.rawValue,
-            UserDefaultsKeys.dateYomis: ["today"],
+            UserDefaultsKeys.dateYomis: [
+                ["yomi": "today", "relative": "now"],
+                ["yomi": "yesterday", "relative": "yesterday"],
+                ["yomi": "tomorrow", "relative": "tomorrow"],
+            ],
             UserDefaultsKeys.dateConvertions: [
                 ["format": "yyyy/MM/dd", "locale": "en_US", "calendar": "gregorian"],
                 ["format": "yyyy-MM-dd", "locale": "en_US", "calendar": "gregorian"],

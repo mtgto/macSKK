@@ -2,9 +2,10 @@
 
 import SwiftUI
 
+// 日付変換設定画面
 struct DateConversionsView: View {
     @StateObject var settingsViewModel: SettingsViewModel
-    @State var yomis: [String]
+    
     @State var selectedYomiIndex: Int? = nil
     @State var editingYomi: String?
     @FocusState var focusedYomiIndex: Int?
@@ -17,41 +18,25 @@ struct DateConversionsView: View {
 
     init(settingsViewModel: SettingsViewModel) {
         _settingsViewModel = StateObject(wrappedValue: settingsViewModel)
-        _yomis = State(initialValue: settingsViewModel.dateYomis)
     }
 
     var body: some View {
         VStack(alignment: .leading) {
             Form {
                 Section {
-                    List(selection: $selectedYomiIndex) {
-                        ForEach(yomis.indices, id: \.self) { index in
-                            TextField("", text: Binding(
-                                get: { yomis[index] },
-                                set: { newValue in yomis[index] = newValue })
-                            )
-                            .padding(.vertical, 4.0)
-                            .tag(index)
-                            .focused($focusedYomiIndex, equals: index)
-                            .onChange(of: focusedYomiIndex) { newValue in
-                                if newValue == nil {
-                                    if yomis[index].isEmpty {
-                                        yomis.remove(at: index)
-                                    } else {
-                                        settingsViewModel.dateYomis = yomis
-                                    }
-                                }
-                            }
+                    List {
+                        ForEach(settingsViewModel.dateYomis, id: \.self) { yomi in
+                            Text(yomi.yomi)
                         }
                     }
                     .listFooterControls(addAction: {
-                        yomis.append("")
-                        focusedYomiIndex = yomis.count - 1
+                        // yomis.append("")
+                        // focusedYomiIndex = yomis.count - 1
                     }, removeAction: {
-                        if let selectedYomiIndex {
-                            yomis.remove(at: selectedYomiIndex)
-                            settingsViewModel.dateYomis = yomis
-                        }
+                        // if let selectedYomiIndex {
+                        //     yomis.remove(at: selectedYomiIndex)
+                        //     settingsViewModel.dateYomis = yomis
+                        // }
                     })
                 } header: {
                     Text("Yomi")
