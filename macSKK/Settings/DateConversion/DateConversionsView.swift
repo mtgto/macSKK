@@ -6,7 +6,7 @@ import SwiftUI
 struct DateConversionsView: View {
     @StateObject var settingsViewModel: SettingsViewModel
     
-    @State var selectedYomiIndex: Int? = nil
+    @State var selectedYomiId: UUID? = nil
     @State var editingYomi: String?
     @FocusState var focusedYomiIndex: Int?
     @State var selectedDateConversionId: UUID? = nil
@@ -25,16 +25,20 @@ struct DateConversionsView: View {
         VStack(alignment: .leading) {
             Form {
                 Section {
-                    List {
-                        ForEach(settingsViewModel.dateYomis, id: \.self) { yomi in
+                    List(selection: $selectedYomiId) {
+                        ForEach(settingsViewModel.dateYomis) { yomi in
                             Text(yomi.yomi)
+                                .padding(.vertical, 4.0)
+                        }
+                        .onMove { (indexSet, destination) in
+                            settingsViewModel.dateYomis.move(fromOffsets: indexSet, toOffset: destination)
                         }
                     }
                     .listFooterControls(addAction: {
                         isShowingAddYomiSheet = true
                     }, removeAction: {
-                        if let selectedYomiIndex {
-                            settingsViewModel.dateYomis.remove(at: selectedYomiIndex)
+                        if let selectedYomiId {
+                            settingsViewModel.dateYomis.removeAll { $0.id == selectedYomiId }
                         }
                     })
                 } header: {

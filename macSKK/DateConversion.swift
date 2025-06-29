@@ -91,7 +91,7 @@ struct DateConversion: Identifiable {
     }
 
     /// 日付変換の読み部分。通常の読みに加えて現在時間からの差分を持つ
-    struct Yomi: Hashable {
+    struct Yomi: Identifiable, Hashable {
         enum RelativeTime: String, CaseIterable {
             case now
             case yesterday
@@ -104,10 +104,12 @@ struct DateConversion: Identifiable {
             }
         }
 
+        let id: UUID
         let yomi: String
         let relative: RelativeTime
 
-        init(yomi: String, relative: RelativeTime) {
+        init(id: UUID = UUID(), yomi: String, relative: RelativeTime) {
+            self.id = id
             self.yomi = yomi
             self.relative = relative
         }
@@ -118,8 +120,7 @@ struct DateConversion: Identifiable {
                 let relativeString = dict["relative"] as? String,
                 let relative = RelativeTime(rawValue: relativeString)
             else { return nil }
-            self.yomi = yomi
-            self.relative = relative
+            self.init(yomi: yomi, relative: relative)
         }
 
         func encode() -> [String: Any] {
