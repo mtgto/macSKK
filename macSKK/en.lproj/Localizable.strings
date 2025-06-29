@@ -6,6 +6,7 @@
 "MenuItemTreadFirstCharacterAsMarkedText" = "Treat First Char as Marked for Workaround";
 "SettingsNameGeneral" = "General";
 "SettingsNameDictionaries" = "Dictionaries";
+"SettingsNameDateConversion" = "Date Conversion";
 "SettingsNameKeyBinding" = "Key Bindings";
 "SettingsNameSoftwareUpdate" = "Software Update";
 "SettingsNameDirectMode" = "Direct Mode";
@@ -101,6 +102,11 @@
 "Vertical" = "Vertical";
 "Horizontal" = "Horizontal";
 "Settings" = "Settings";
+"Relative Time" = "Relative Time";
+"Conversion Candidates" = "Conversion Candidates";
+"Format" = "Format";
+"Locale" = "Locale";
+"Calendar" = "Calendar";
 
 "KeyBindingActionHiragana" = "Hiragana Mode";
 "KeyBindingActionTogglekana" = "Toggle Kana Mode";
@@ -140,3 +146,11 @@
 "Follow Romaji-Kana Rule" = "Follow Romaji-Kana Rule";
 "EnterKey" = "Enter \"%@\"";
 "DuplicatedKeyBindingName" = "Copy of %@";
+
+"LocaleJa_Jp" = "Japan";
+"LocaleEn_Us" = "US";
+"CalendarGregorian" = "Gregorian";
+"CalendarJapanese" = "Japanese";
+"DateYomiRelativeNow" = "Now";
+"DateYomiRelativeTomorrow" = "Tomorrow";
+"DateYomiRelativeYesterday" = "Yesterday";

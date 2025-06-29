@@ -107,6 +107,14 @@ class UserDict: NSObject, DictProtocol {
      */
     @MainActor func referDicts(_ yomi: String, option: DictReferringOption? = nil) -> [Candidate] {
         var result: [Candidate] = []
+        if let dateConversionYomi = Global.dateYomis.first(where: { $0.yomi == yomi }) {
+            let date = Date(timeIntervalSinceNow: dateConversionYomi.timeInterval)
+            let candidates = Global.dateConversions.compactMap { conversion -> Candidate? in
+                guard let word = conversion.dateFormatter.string(for: date) else { return nil }
+                return Candidate(word, saveToUserDict: false)
+            }
+            result = candidates
+        }
         var candidates = refer(yomi, option: option).map { word in
             let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
             return Candidate(word.word, annotations: annotations)

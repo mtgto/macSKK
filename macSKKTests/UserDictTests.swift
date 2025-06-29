@@ -72,6 +72,42 @@ final class UserDictTests: XCTestCase {
         XCTAssertTrue(userDict.delete(yomi: "い", word: "井"))
     }
 
+    @MainActor func testReferDictsDateConversion() throws {
+        let userDict = try UserDict(dicts: [],
+                                    userDictEntries: [:],
+                                    privateMode: CurrentValueSubject<Bool, Never>(false),
+                                    ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
+                                    findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false))
+        Global.dateYomis = [
+            .init(yomi: "today", relative: .now),
+            .init(yomi: "yesterday", relative: .yesterday),
+            .init(yomi: "tomorrow", relative: .tomorrow),
+            .init(yomi: "きょう", relative: .now),
+        ]
+        Global.dateConversions = [
+            DateConversion(format: "YYYY/MM/dd", locale: .enUS, calendar: .gregorian),
+            DateConversion(format: "Gy年M月d日", locale: .jaJP, calendar: .japanese),
+        ]
+        let candidatesToday = userDict.referDicts("today")
+        XCTAssertEqual(candidatesToday.count, 2)
+        XCTAssertTrue(candidatesToday.allSatisfy({ $0.saveToUserDict == false }))
+        // 現在時間で変わるので正規表現マッチ。現在時間をDIできるようにしてもいいかも。
+        XCTAssertNotNil(candidatesToday[0].word.wholeMatch(of: /\d{4}\/\d{2}\/\d{2}/))
+        XCTAssertNotNil(candidatesToday[1].word.wholeMatch(of: /令和\d{1,}年\d{1,2}月\d{1,2}日/))
+
+        let candidatesYesterday = userDict.referDicts("yesterday")
+        XCTAssertEqual(candidatesYesterday.count, 2)
+        XCTAssertTrue(candidatesYesterday.allSatisfy({ $0.saveToUserDict == false }))
+        XCTAssertNotNil(candidatesYesterday[0].word.wholeMatch(of: /\d{4}\/\d{2}\/\d{2}/))
+        XCTAssertNotNil(candidatesYesterday[1].word.wholeMatch(of: /令和\d{1,}年\d{1,2}月\d{1,2}日/))
+
+        let candidatesTomorrow = userDict.referDicts("tomorrow")
+        XCTAssertEqual(candidatesTomorrow.count, 2)
+        XCTAssertTrue(candidatesTomorrow.allSatisfy({ $0.saveToUserDict == false }))
+        XCTAssertNotNil(candidatesTomorrow[0].word.wholeMatch(of: /\d{4}\/\d{2}\/\d{2}/))
+        XCTAssertNotNil(candidatesTomorrow[1].word.wholeMatch(of: /令和\d{1,}年\d{1,2}月\d{1,2}日/))
+    }
+
     func testFindCompletionPrivateMode() throws {
         let privateMode = CurrentValueSubject<Bool, Never>(true)
         let ignoreUserDictInPrivateMode = CurrentValueSubject<Bool, Never>(false)
