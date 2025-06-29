@@ -12,6 +12,7 @@
 		4B8E87D82CE068A0004E7461 /* CurrentInputTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B8E87D72CE0689D004E7461 /* CurrentInputTests.swift */; };
 		94DB63242D329CBF005250B8 /* HorizontalCandidatesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DB63222D329CBF005250B8 /* HorizontalCandidatesView.swift */; };
 		94DB63252D329CBF005250B8 /* VerticalCandidatesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DB63232D329CBF005250B8 /* VerticalCandidatesView.swift */; };
+		B3C350D6E32E35775AE1FF56 /* DateConversionYomiTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 073E79CEC2123C051D8BB83B /* DateConversionYomiTests.swift */; };
 		CE0326A02C5D1DD6000FF691 /* SKK-JISYO.test.json in Resources */ = {isa = PBXBuildFile; fileRef = CE03269F2C5D1DD6000FF691 /* SKK-JISYO.test.json */; };
 		CE06CA2B2AAC171B00E80E5E /* FileDictTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE06CA292AAC171B00E80E5E /* FileDictTests.swift */; };
 		CE06CA2D2AAC172F00E80E5E /* empty.txt in Resources */ = {isa = PBXBuildFile; fileRef = CE06CA2C2AAC172F00E80E5E /* empty.txt */; };
@@ -183,6 +184,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		073E79CEC2123C051D8BB83B /* DateConversionYomiTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateConversionYomiTests.swift; sourceTree = "<group>"; };
 		4B8E87D32CE05C3F004E7461 /* CurrentInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentInput.swift; sourceTree = "<group>"; };
 		4B8E87D52CE05D0A004E7461 /* Key.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Key.swift; sourceTree = "<group>"; };
 		4B8E87D72CE0689D004E7461 /* CurrentInputTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentInputTests.swift; sourceTree = "<group>"; };
@@ -510,6 +512,7 @@
 				CE49A2772C19E07800D53CFE /* KeyBindingSetTests.swift */,
 				CED7CA3D2A8397E4004EF988 /* UpdateCheckerTests.swift */,
 				CE6DBA902A846C1700F5A227 /* ReleaseVersionTests.swift */,
+				073E79CEC2123C051D8BB83B /* DateConversionYomiTests.swift */,
 				CEA78FAD2961BA1D00B67E25 /* String+TransformTests.swift */,
 				CE8DFE082CBEAA1F00A24230 /* Character+AdditionsTests.swift */,
 				CE496C942B440BBD001C623C /* Data+EucJis2004Tests.swift */,
@@ -726,8 +729,6 @@
 				ja,
 			);
 			mainGroup = CE5ECF292957034B00E7BE7D;
-			packageReferences = (
-			);
 			productRefGroup = CE5ECF332957034B00E7BE7D /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -924,6 +925,7 @@
 				CE6DBA912A846C1700F5A227 /* ReleaseVersionTests.swift in Sources */,
 				CE39FA952BEB942B00E293F0 /* Character+KeyCode.swift in Sources */,
 				CEA78FAE2961BA1D00B67E25 /* String+TransformTests.swift in Sources */,
+				B3C350D6E32E35775AE1FF56 /* DateConversionYomiTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
