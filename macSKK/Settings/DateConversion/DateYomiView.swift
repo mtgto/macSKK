@@ -5,7 +5,7 @@ import SwiftUI
 struct DateYomiView: View {
     @Environment(\.dismiss) var dismiss
     @ObservedObject var settingsViewModel: SettingsViewModel
-    @Binding var id: UUID?
+    let id: UUID?
     @State var yomi: String
     @State var relative: DateConversion.Yomi.RelativeTime
 
@@ -49,7 +49,7 @@ struct DateYomiView: View {
 
 #Preview {
     DateYomiView(settingsViewModel: try! SettingsViewModel(),
-                 id: .constant(nil),
+                 id: nil,
                  yomi: "today",
                  relative: .now)
 }

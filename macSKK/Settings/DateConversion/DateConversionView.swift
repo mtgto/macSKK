@@ -6,7 +6,7 @@ import SwiftUI
 struct DateConversionView: View {
     @StateObject var settingsViewModel: SettingsViewModel
     // 新規ならnil、編集なら編集中のDateConversionのid
-    @Binding var id: UUID?
+    let id: UUID?
     @State var format: String
     @State var locale: DateConversion.DateConversionLocale
     @State var calendar: DateConversion.DateConversionCalendar
@@ -80,7 +80,7 @@ struct DateConversionView: View {
 
 #Preview {
     DateConversionView(settingsViewModel: try! SettingsViewModel(),
-                       id: .constant(nil),
+                       id: nil,
                        format: "yyyy-MM-dd",
                        locale: .enUS,
                        calendar: .gregorian)
