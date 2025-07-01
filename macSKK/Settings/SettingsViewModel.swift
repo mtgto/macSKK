@@ -367,8 +367,6 @@ final class SettingsViewModel: ObservableObject {
         Global.punctuation = Punctuation(comma: comma, period: period)
         Global.ignoreUserDictInPrivateMode.send(ignoreUserDictInPrivateMode)
         Global.candidateListDirection.send(candidateListDirection)
-        Global.dateYomis = dateYomis
-        Global.dateConversions = dateConversions
 
         // SKK-JISYO.Lのようなファイルの読み込みが遅いのでバックグラウンドで処理
         $dictSettings.filter({ !$0.isEmpty }).receive(on: DispatchQueue.global()).sink { dictSettings in
@@ -598,13 +596,13 @@ final class SettingsViewModel: ObservableObject {
         $dateYomis.dropFirst().sink { [weak self] dateYomis in
             self?.saveDateConversions()
             logger.log("日付変換の読みリストを更新しました")
-            Global.dateYomis = dateYomis
+            Global.dictionary.dateYomis = dateYomis
         }.store(in: &cancellables)
 
         $dateConversions.dropFirst().sink { [weak self] dateConversions in
             self?.saveDateConversions()
             logger.log("日付変更の変換候補を更新しました")
-            Global.dateConversions = dateConversions
+            Global.dictionary.dateConversions = dateConversions
         }.store(in: &cancellables)
 
         NotificationCenter.default.publisher(for: notificationNameDictLoad).receive(on: RunLoop.main).sink { [weak self] notification in

@@ -14,7 +14,9 @@ final class UserDictTests: XCTestCase {
                                     userDictEntries: ["い": [Word("井"), Word("伊")]],
                                     privateMode: CurrentValueSubject<Bool, Never>(false),
                                     ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
-                                    findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false))
+                                    findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false),
+                                    dateYomis: [],
+                                    dateConversions: [])
         XCTAssertEqual(userDict.refer("い").map { $0.word }, ["井", "伊", "胃", "意"])
     }
 
@@ -25,7 +27,9 @@ final class UserDictTests: XCTestCase {
                                     userDictEntries: [:],
                                     privateMode: CurrentValueSubject<Bool, Never>(false),
                                     ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
-                                    findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false))
+                                    findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false),
+                                    dateYomis: [],
+                                    dateConversions: [])
         XCTAssertEqual(userDict.refer("い").map({ $0.word }), ["胃", "伊", "胃", "意"], "dict1, dict2に胃が1つずつある")
         XCTAssertEqual(userDict.refer("い").compactMap({ $0.annotation?.dictId }), ["dict1", "dict2"])
         XCTAssertEqual(userDict.referDicts("い").map({ $0.word }), ["胃", "伊", "意"])
@@ -45,7 +49,9 @@ final class UserDictTests: XCTestCase {
                                                       "し": [Word("士")]],
                                     privateMode: CurrentValueSubject<Bool, Never>(false),
                                     ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
-                                    findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false))
+                                    findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false),
+                                    dateYomis: [],
+                                    dateConversions: [])
         XCTAssertEqual(userDict.refer("あき", option: nil), [Word("安芸"), Word("秋")])
         XCTAssertEqual(userDict.refer("あき", option: .prefix), [Word("飽き"), Word("空き")])
         XCTAssertEqual(userDict.refer("あき", option: .suffix), [])
@@ -60,7 +66,9 @@ final class UserDictTests: XCTestCase {
                                     userDictEntries: ["い": [Word("位")]],
                                     privateMode: privateMode,
                                     ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
-                                    findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false))
+                                    findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false),
+                                    dateYomis: [],
+                                    dateConversions: [])
         let word = Word("井")
         XCTAssertEqual(userDict.refer("い").map { $0.word }, ["位"])
         privateMode.send(true)
@@ -77,17 +85,17 @@ final class UserDictTests: XCTestCase {
                                     userDictEntries: [:],
                                     privateMode: CurrentValueSubject<Bool, Never>(false),
                                     ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
-                                    findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false))
-        Global.dateYomis = [
-            .init(yomi: "today", relative: .now),
-            .init(yomi: "yesterday", relative: .yesterday),
-            .init(yomi: "tomorrow", relative: .tomorrow),
-            .init(yomi: "きょう", relative: .now),
-        ]
-        Global.dateConversions = [
-            DateConversion(format: "YYYY/MM/dd", locale: .enUS, calendar: .gregorian),
-            DateConversion(format: "Gy年M月d日", locale: .jaJP, calendar: .japanese),
-        ]
+                                    findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false),
+                                    dateYomis:  [
+                                        .init(yomi: "today", relative: .now),
+                                        .init(yomi: "yesterday", relative: .yesterday),
+                                        .init(yomi: "tomorrow", relative: .tomorrow),
+                                        .init(yomi: "きょう", relative: .now),
+                                    ],
+                                    dateConversions: [
+                                        DateConversion(format: "YYYY/MM/dd", locale: .enUS, calendar: .gregorian),
+                                        DateConversion(format: "Gy年M月d日", locale: .jaJP, calendar: .japanese),
+                                    ])
         let candidatesToday = userDict.referDicts("today")
         XCTAssertEqual(candidatesToday.count, 2)
         XCTAssertTrue(candidatesToday.allSatisfy({ $0.saveToUserDict == false }))
@@ -117,7 +125,9 @@ final class UserDictTests: XCTestCase {
                                     userDictEntries: ["にふ": [Word("二歩")]],
                                     privateMode: privateMode,
                                     ignoreUserDictInPrivateMode: ignoreUserDictInPrivateMode,
-                                    findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false))
+                                    findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false),
+                                    dateYomis: [],
+                                    dateConversions: [])
         // プライベートモード時はユーザー辞書から検索する
         XCTAssertEqual(userDict.findCompletion(prefix: "に"), "にふ")
         ignoreUserDictInPrivateMode.send(true)
@@ -138,7 +148,9 @@ final class UserDictTests: XCTestCase {
                                     userDictEntries: ["にふ": [Word("二歩")]],
                                     privateMode: privateMode,
                                     ignoreUserDictInPrivateMode: ignoreUserDictInPrivateMode,
-                                    findCompletionFromAllDicts: findCompletionFromAllDicts)
+                                    findCompletionFromAllDicts: findCompletionFromAllDicts,
+                                    dateYomis: [],
+                                    dateConversions: [])
         XCTAssertEqual(userDict.findCompletion(prefix: "に"), "にふ")
         XCTAssertNil(userDict.findCompletion(prefix: "にほ"))
         XCTAssertNil(userDict.findCompletion(prefix: "にほん"))
@@ -148,5 +160,22 @@ final class UserDictTests: XCTestCase {
         XCTAssertEqual(userDict.findCompletion(prefix: "にほ"), "にほん")
         XCTAssertEqual(userDict.findCompletion(prefix: "にほん"), "にほんご")
         XCTAssertNil(userDict.findCompletion(prefix: "にほんご"))
+    }
+
+    func testFindCompletionDateYomi() throws {
+        let userDict = try UserDict(dicts: [],
+                                    userDictEntries: ["tower": [Word("塔")]],
+                                    privateMode: CurrentValueSubject<Bool, Never>(false),
+                                    ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
+                                    findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false),
+                                    dateYomis: [
+                                        .init(yomi: "today", relative: .now),
+                                        .init(yomi: "yesterday", relative: .yesterday),
+                                        .init(yomi: "tomorrow", relative: .tomorrow),
+                                    ],
+                                    dateConversions: [])
+        XCTAssertEqual(userDict.findCompletion(prefix: "to"), "tower")
+        XCTAssertEqual(userDict.findCompletion(prefix: "tod"), "today")
+        XCTAssertEqual(userDict.findCompletion(prefix: "y"), "yesterday")
     }
 }

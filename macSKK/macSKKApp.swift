@@ -65,7 +65,9 @@ struct macSKKApp: App {
             Global.dictionary = try UserDict(dicts: [],
                                              privateMode: Global.privateMode,
                                              ignoreUserDictInPrivateMode: Global.ignoreUserDictInPrivateMode,
-                                             findCompletionFromAllDicts: Global.findCompletionFromAllDicts)
+                                             findCompletionFromAllDicts: Global.findCompletionFromAllDicts,
+                                             dateYomis: settingsViewModel.dateYomis,
+                                             dateConversions: settingsViewModel.dateConversions)
             settingsWindowController = NSWindowController(window: settingsWindow)
             self.settingsViewModel = settingsViewModel
             settingsWindowController.windowFrameAutosaveName = "Settings"
