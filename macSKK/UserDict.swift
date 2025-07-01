@@ -260,6 +260,9 @@ class UserDict: NSObject, DictProtocol {
      * - 数値変換用の読みは補完候補としない
      */
     func findCompletion(prefix: String) -> String? {
+        if prefix.isEmpty {
+            return nil
+        }
         if !privateMode.value || !ignoreUserDictInPrivateMode.value {
             if let userDict {
                 if let completion = userDict.findCompletion(prefix: prefix) {

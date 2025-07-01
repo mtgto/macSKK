@@ -151,6 +151,7 @@ final class UserDictTests: XCTestCase {
                                     findCompletionFromAllDicts: findCompletionFromAllDicts,
                                     dateYomis: [],
                                     dateConversions: [])
+        XCTAssertNil(userDict.findCompletion(prefix: "")) // 空文字列にはnilを返す
         XCTAssertEqual(userDict.findCompletion(prefix: "に"), "にふ")
         XCTAssertNil(userDict.findCompletion(prefix: "にほ"))
         XCTAssertNil(userDict.findCompletion(prefix: "にほん"))
@@ -174,6 +175,7 @@ final class UserDictTests: XCTestCase {
                                         .init(yomi: "tomorrow", relative: .tomorrow),
                                     ],
                                     dateConversions: [])
+        XCTAssertNil(userDict.findCompletion(prefix: "")) // 空文字列にはnilを返す
         XCTAssertEqual(userDict.findCompletion(prefix: "to"), "tower")
         XCTAssertEqual(userDict.findCompletion(prefix: "tod"), "today")
         XCTAssertEqual(userDict.findCompletion(prefix: "y"), "yesterday")
