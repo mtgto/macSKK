@@ -211,6 +211,9 @@ struct macSKKApp: App {
             UserDefaultsKeys.candidateListDirection: CandidateListDirection.vertical.rawValue,
             UserDefaultsKeys.dateConversions: [
                 "yomis": [
+                    ["yomi": "きょう", "relative": "now"],
+                    ["yomi": "きのう", "relative": "yesterday"],
+                    ["yomi": "あした", "relative": "tomorrow"],
                     ["yomi": "today", "relative": "now"],
                     ["yomi": "yesterday", "relative": "yesterday"],
                     ["yomi": "tomorrow", "relative": "tomorrow"],
