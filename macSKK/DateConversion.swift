@@ -79,6 +79,10 @@ struct DateConversion: Identifiable {
             let locale = DateConversionLocale(rawValue: localeString),
             let calendar = DateConversionCalendar(rawValue: calendarString)
         else { return nil }
+        if format.isEmpty {
+            logger.warning("書式が空の日付変換候補は無視されます")
+            return nil
+        }
         self.init(format: format, locale: locale, calendar: calendar)
     }
 
@@ -120,6 +124,10 @@ struct DateConversion: Identifiable {
                 let relativeString = dict["relative"] as? String,
                 let relative = RelativeTime(rawValue: relativeString)
             else { return nil }
+            if yomi.isEmpty {
+                logger.warning("書式が空の日付変換の読みは無視されます")
+                return nil
+            }
             self.init(yomi: yomi, relative: relative)
         }
 

@@ -757,12 +757,20 @@ final class SettingsViewModel: ObservableObject {
     }
 
     func addDateConversion(format: String, locale: DateConversion.DateConversionLocale, calendar: DateConversion.DateConversionCalendar) {
-        dateConversions.append(DateConversion(format: format, locale: locale, calendar: calendar))
+        if format.isEmpty {
+            logger.error("書式が空の日付変換候補は追加できません")
+        } else {
+            dateConversions.append(DateConversion(format: format, locale: locale, calendar: calendar))
+        }
     }
 
     func updateDateConversion(id: UUID, format: String, locale: DateConversion.DateConversionLocale, calendar: DateConversion.DateConversionCalendar) {
-        guard let index = dateConversions.firstIndex(where: { $0.id == id }) else { return }
-        dateConversions[index] = DateConversion(id: id, format: format, locale: locale, calendar: calendar)
+        if format.isEmpty {
+            logger.error("書式が空の日付変換候補は更新できません")
+        } else {
+            guard let index = dateConversions.firstIndex(where: { $0.id == id }) else { return }
+            dateConversions[index] = DateConversion(id: id, format: format, locale: locale, calendar: calendar)
+        }
     }
 
     func updateDirectModeApplication(index: Int, displayName: String, icon: NSImage) {
