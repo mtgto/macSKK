@@ -1119,7 +1119,7 @@
 				CODE_SIGN_ENTITLEMENTS = macSKK/macSKK.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 69;
+				CURRENT_PROJECT_VERSION = 70;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"macSKK/Preview Content\"";
 				DEVELOPMENT_TEAM = W3A6B7FDC7;
@@ -1133,7 +1133,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 2.1.1;
+				MARKETING_VERSION = 2.2.0;
 				OTHER_SWIFT_FLAGS = "-enable-upcoming-feature ExistentialAny";
 				PRODUCT_BUNDLE_IDENTIFIER = net.mtgto.inputmethod.macSKK;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1154,7 +1154,7 @@
 				CODE_SIGN_ENTITLEMENTS = macSKK/macSKK.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 69;
+				CURRENT_PROJECT_VERSION = 70;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"macSKK/Preview Content\"";
 				DEVELOPMENT_TEAM = W3A6B7FDC7;
@@ -1169,7 +1169,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 2.1.1;
+				MARKETING_VERSION = 2.2.0;
 				OTHER_SWIFT_FLAGS = "-enable-upcoming-feature ExistentialAny";
 				PRODUCT_BUNDLE_IDENTIFIER = net.mtgto.inputmethod.macSKK;
 				PRODUCT_NAME = "$(TARGET_NAME)";

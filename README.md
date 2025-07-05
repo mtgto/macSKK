@@ -90,6 +90,7 @@ macSKKが入力メソッドとして選択されているときに入力メニ�
 | ignoreUserDictInPrivateMode | Boolean    | プライベートモードでユーザー辞書を無視するか |
 | showInputModePanel          | Boolean    | 入力モードをモーダル表示するか          |
 | candidateListDirection      | Number     | 変換候補リストの表示方向                |
+| dateConversions             | Dictionary | 日付変換の読みと変換候補                |
 
 ## 機能
 
@@ -230,7 +231,7 @@ skkservサーバーをSKK辞書として使用することができます (macSK
 
 手動で行うには、システム設定→キーボード→入力ソースから「ひらがな」「ABC」を削除後、以下のファイルを削除してください。
 
-- `~/Library/Input Methods/macSKK.app`
+- `/Library/Input Methods/macSKK.app`
 - `~/Library/Containers/net.mtgto.inputmethod.macSKK`
 
 ## FAQ
@@ -294,6 +295,12 @@ Ghostty v1.1.0で、q/lなどで入力モードが変更されたかどうかを
 例えばmacSKKの「ひらがな」だけを入れている場合、qでカタカナモードに変更してもOSでの入力モードは「macSKKのひらがな」のままと認識されてしまいqがそのまま入力されてしまいます。同様にmacSKKの「ABC」を入れていないと、lを入力してもモードが変わってないとGhosttyには解釈されてlがそのまま入力されてしまいます。
 https://zenn.dev/mtgto/articles/macskk-karabiner-settings-for-ghostty も参考にしてください。
 
+### Q. Visual Studio Code (vscode) のターミナルやClaude Code拡張で`aiueo`がひらがなにならない・`q`や`l`のモード変更でキーが入力されてしまう
+
+xterm.js利用の問題と思われます。 https://github.com/mtgto/macSKK/issues/356
+
+入力メニューにある「1文字目を未確定扱い (互換性)」を有効にすることで `aiueo` のようなローマ字1文字からなるひらがなの入力ができるようになります。あくまで一時的な回避策 (ワークアラウンド) なので、`aiueo` のあとは他の文字を打つかEnterが押されないと入力が確定されないままとなります。
+
 ### Q. アプリによってq/lキーでモードを切り替えてもq/lが入力されてしまう / `C-j`で改行されてしまう
 
 https://github.com/mtgto/macSKK/issues/119 と同じ問題と思われます。
@@ -314,12 +321,6 @@ macOSの日本語入力システムは、ユーザーライブラリ (`~/Library
 参考: https://github.com/mtgto/macSKK/issues/351
 
 v2.0.0からシステムライブラリへのインストールが可能にできるように変更しました。システムライブラリへのインストールをお試しください。
-
-### Q. Visual Studio Code (vscode) のターミナルやClaude Code拡張で`aiueo`がひらがなにならない・`q`や`l`のモード変更でキーが入力されてしまう
-
-xterm.js利用の問題と思われます。 https://github.com/mtgto/macSKK/issues/356
-
-入力メニューにある「1文字目を未確定扱い (互換性)」を有効にすることで `aiueo` のようなローマ字1文字からなるひらがなの入力ができるようになります。あくまで一時的な回避策 (ワークアラウンド) なので、`aiueo` のあとは他の文字を打つかEnterが押されないと入力が確定されないままとなります。
 
 ## 開発
 
