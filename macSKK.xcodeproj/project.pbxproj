@@ -10,6 +10,7 @@
 		4B8E87D42CE05C40004E7461 /* CurrentInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B8E87D32CE05C3F004E7461 /* CurrentInput.swift */; };
 		4B8E87D62CE05D0C004E7461 /* Key.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B8E87D52CE05D0A004E7461 /* Key.swift */; };
 		4B8E87D82CE068A0004E7461 /* CurrentInputTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B8E87D72CE0689D004E7461 /* CurrentInputTests.swift */; };
+		5ED234BA230E39DFF095D272 /* DateConversionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F65BF39CED3AABCF59AA6C58 /* DateConversionTests.swift */; };
 		94DB63242D329CBF005250B8 /* HorizontalCandidatesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DB63222D329CBF005250B8 /* HorizontalCandidatesView.swift */; };
 		94DB63252D329CBF005250B8 /* VerticalCandidatesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DB63232D329CBF005250B8 /* VerticalCandidatesView.swift */; };
 		B3C350D6E32E35775AE1FF56 /* DateConversionYomiTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 073E79CEC2123C051D8BB83B /* DateConversionYomiTests.swift */; };
@@ -325,6 +326,7 @@
 		CEF3D8772B9EF0C000BD1D3A /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		CEF3D8792B9EF0C000BD1D3A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CEF3D87A2B9EF0C000BD1D3A /* SKKServClient.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SKKServClient.entitlements; sourceTree = "<group>"; };
+		F65BF39CED3AABCF59AA6C58 /* DateConversionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateConversionTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -512,6 +514,7 @@
 				CE49A2772C19E07800D53CFE /* KeyBindingSetTests.swift */,
 				CED7CA3D2A8397E4004EF988 /* UpdateCheckerTests.swift */,
 				CE6DBA902A846C1700F5A227 /* ReleaseVersionTests.swift */,
+				F65BF39CED3AABCF59AA6C58 /* DateConversionTests.swift */,
 				073E79CEC2123C051D8BB83B /* DateConversionYomiTests.swift */,
 				CEA78FAD2961BA1D00B67E25 /* String+TransformTests.swift */,
 				CE8DFE082CBEAA1F00A24230 /* Character+AdditionsTests.swift */,
@@ -926,6 +929,7 @@
 				CE39FA952BEB942B00E293F0 /* Character+KeyCode.swift in Sources */,
 				CEA78FAE2961BA1D00B67E25 /* String+TransformTests.swift in Sources */,
 				B3C350D6E32E35775AE1FF56 /* DateConversionYomiTests.swift in Sources */,
+				5ED234BA230E39DFF095D272 /* DateConversionTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
