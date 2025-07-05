@@ -5,7 +5,13 @@ import XCTest
 @testable import macSKK
 
 final class DateConversionYomiTests: XCTestCase {
-    func testEncodeAndDecode() throws {
+    func testInit() {
+        XCTAssertNotNil(DateConversion.Yomi(dict: ["yomi": "きょう", "relative": "tomorrow"]))
+        XCTAssertNil(DateConversion.Yomi(dict: ["yomi": "", "relative": "tomorrow"])) // 読みが空文字列
+        XCTAssertNil(DateConversion.Yomi(dict: ["yomi": "きょう", "relative": "xxxx"])) // 現在との差分が不正
+    }
+
+    func testEncodeAndDecode() {
         // Test with yomi and relative
         let yomi = DateConversion.Yomi(dict: ["yomi": "きょう", "relative": "tomorrow"])
         XCTAssertNotNil(yomi)
@@ -17,7 +23,7 @@ final class DateConversionYomiTests: XCTestCase {
         XCTAssertNotEqual(decoded!.id, yomi!.id) // idは毎回再生成されるので一致しない
     }
 
-    func testTimeInterval() throws {
+    func testTimeInterval() {
         let nowYomi = DateConversion.Yomi(yomi: "きょう", relative: .now)
         XCTAssertEqual(nowYomi.timeInterval, 0)
 
