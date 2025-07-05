@@ -65,7 +65,9 @@ struct macSKKApp: App {
             Global.dictionary = try UserDict(dicts: [],
                                              privateMode: Global.privateMode,
                                              ignoreUserDictInPrivateMode: Global.ignoreUserDictInPrivateMode,
-                                             findCompletionFromAllDicts: Global.findCompletionFromAllDicts)
+                                             findCompletionFromAllDicts: Global.findCompletionFromAllDicts,
+                                             dateYomis: settingsViewModel.dateYomis,
+                                             dateConversions: settingsViewModel.dateConversions)
             settingsWindowController = NSWindowController(window: settingsWindow)
             self.settingsViewModel = settingsViewModel
             settingsWindowController.windowFrameAutosaveName = "Settings"
@@ -207,6 +209,22 @@ struct macSKKApp: App {
             UserDefaultsKeys.ignoreUserDictInPrivateMode: false,
             UserDefaultsKeys.showInputModePanel: true,
             UserDefaultsKeys.candidateListDirection: CandidateListDirection.vertical.rawValue,
+            UserDefaultsKeys.dateConversions: [
+                "yomis": [
+                    ["yomi": "きょう", "relative": "now"],
+                    ["yomi": "きのう", "relative": "yesterday"],
+                    ["yomi": "あした", "relative": "tomorrow"],
+                    ["yomi": "today", "relative": "now"],
+                    ["yomi": "yesterday", "relative": "yesterday"],
+                    ["yomi": "tomorrow", "relative": "tomorrow"],
+                ],
+                "conversions": [
+                    ["format": "yyyy/MM/dd", "locale": "en_US", "calendar": "gregorian"],
+                    ["format": "yyyy-MM-dd", "locale": "en_US", "calendar": "gregorian"],
+                    ["format": "yyyy年M月d日", "locale": "en_US", "calendar": "gregorian"],
+                    ["format": "Gy年M月d日", "locale": "ja_JP", "calendar": "japanese"],
+                ],
+            ],
         ])
     }
 

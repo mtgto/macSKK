@@ -2848,7 +2848,9 @@ final class StateMachineTests: XCTestCase {
         Global.dictionary = try UserDict(dicts: [dict],
                                          privateMode: CurrentValueSubject<Bool, Never>(false),
                                          ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
-                                         findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false))
+                                         findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false),
+                                         dateYomis: [],
+                                         dateConversions: [])
         Global.dictionary.setEntries([:])
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
@@ -2872,7 +2874,9 @@ final class StateMachineTests: XCTestCase {
         Global.dictionary = try UserDict(dicts: [dict],
                                          privateMode: CurrentValueSubject<Bool, Never>(false),
                                          ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
-                                         findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false))
+                                         findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false),
+                                         dateYomis: [],
+                                         dateConversions: [])
         Global.dictionary.setEntries([:])
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
@@ -2899,7 +2903,9 @@ final class StateMachineTests: XCTestCase {
         Global.dictionary = try UserDict(dicts: [dict],
                                          privateMode: CurrentValueSubject<Bool, Never>(false),
                                          ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
-                                         findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false))
+                                         findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false),
+                                         dateYomis: [],
+                                         dateConversions: [])
         Global.dictionary.setEntries([:])
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
@@ -3439,7 +3445,9 @@ final class StateMachineTests: XCTestCase {
                                          userDictEntries: [:],
                                          privateMode: privateMode,
                                          ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
-                                         findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false))
+                                         findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false),
+                                         dateYomis: [],
+                                         dateConversions: [])
 
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()

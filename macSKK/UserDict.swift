@@ -21,6 +21,10 @@ class UserDict: NSObject, DictProtocol {
     var userDict: (any DictProtocol)?
     /// 有効になっている辞書。優先度が高い順。
     var dicts: [any DictProtocol]
+    /// 日付変換の読み
+    var dateYomis: [DateConversion.Yomi]
+    /// 日付変換の変換候補
+    var dateConversions: [DateConversion]
     private let savePublisher = PassthroughSubject<Void, Never>()
     private let privateMode: CurrentValueSubject<Bool, Never>
     /// プライベートモード時に変換候補にユーザー辞書を無視するかどうか
@@ -33,11 +37,13 @@ class UserDict: NSObject, DictProtocol {
     let presentedItemURL: URL?
     let presentedItemOperationQueue: OperationQueue = OperationQueue()
 
-    init(dicts: [any DictProtocol], userDictEntries: [String: [Word]]? = nil, privateMode: CurrentValueSubject<Bool, Never>, ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>, findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>) throws {
+    init(dicts: [any DictProtocol], userDictEntries: [String: [Word]]? = nil, privateMode: CurrentValueSubject<Bool, Never>, ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>, findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>, dateYomis: [DateConversion.Yomi], dateConversions: [DateConversion]) throws {
         self.dicts = dicts
         self.privateMode = privateMode
         self.ignoreUserDictInPrivateMode = ignoreUserDictInPrivateMode
         self.findCompletionFromAllDicts = findCompletionFromAllDicts
+        self.dateYomis = dateYomis
+        self.dateConversions = dateConversions
         dictionariesDirectoryURL = try FileManager.default.url(
             for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false
         ).appending(path: "Dictionaries")
@@ -107,6 +113,14 @@ class UserDict: NSObject, DictProtocol {
      */
     @MainActor func referDicts(_ yomi: String, option: DictReferringOption? = nil) -> [Candidate] {
         var result: [Candidate] = []
+        if let dateConversionYomi = dateYomis.first(where: { $0.yomi == yomi }) {
+            let date = Date(timeIntervalSinceNow: dateConversionYomi.timeInterval)
+            let candidates = dateConversions.compactMap { conversion -> Candidate? in
+                guard let word = conversion.dateFormatter.string(for: date) else { return nil }
+                return Candidate(word, saveToUserDict: false)
+            }
+            result = candidates
+        }
         var candidates = refer(yomi, option: option).map { word in
             let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
             return Candidate(word.word, annotations: annotations)
@@ -240,17 +254,24 @@ class UserDict: NSObject, DictProtocol {
      *
      * - prefixが空文字列ならnilを返す
      * - ユーザー辞書の送りなしの読みのうち、最近変換したものから選択する。
-     *   - ユーザー辞書に存在しない場合は、有効になっている辞書から優先度順に検索する
+     *   - ユーザー辞書に存在しない場合は、日付変換の読みから選択する
+     * - ユーザー辞書にも日付変換の読みにも候補にない場合は有効になっている辞書から優先度順に検索する
      * - prefixと読みが完全に一致する場合は補完候補とはしない
      * - 数値変換用の読みは補完候補としない
      */
     func findCompletion(prefix: String) -> String? {
+        if prefix.isEmpty {
+            return nil
+        }
         if !privateMode.value || !ignoreUserDictInPrivateMode.value {
             if let userDict {
                 if let completion = userDict.findCompletion(prefix: prefix) {
                     return completion
                 }
             }
+        }
+        if let dateYomi = dateYomis.first(where: { $0.yomi.hasPrefix(prefix)}) {
+            return dateYomi.yomi
         }
         if findCompletionFromAllDicts.value {
             for dict in dicts {
