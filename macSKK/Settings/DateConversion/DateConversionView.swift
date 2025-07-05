@@ -4,52 +4,48 @@ import SwiftUI
 
 // 日付の変換候補の編集画面
 struct DateConversionView: View {
+    struct Inputs {
+        var format: String
+        var locale: DateConversion.DateConversionLocale
+        var calendar: DateConversion.DateConversionCalendar
+        let dateFormatter = DateFormatter()
+        let current = Date()
+        var formatted: String {
+            dateFormatter.dateFormat = format
+            dateFormatter.locale = locale.locale
+            dateFormatter.calendar = calendar.calendar
+            return dateFormatter.string(from: current)
+        }
+    }
     @StateObject var settingsViewModel: SettingsViewModel
     // 新規ならnil、編集なら編集中のDateConversionのid
     let id: UUID?
-    @State var format: String
-    @State var locale: DateConversion.DateConversionLocale
-    @State var calendar: DateConversion.DateConversionCalendar
-    let dateFormatter = DateFormatter()
-    let current = Date()
-    @State var preview = ""
+    @State var inputs: Inputs
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         VStack {
             Form {
-                TextField("Format", text: $format, prompt: Text("YYYY/MM/dd"))
-                Picker("Locale", selection: $locale) {
+                TextField("Format", text: $inputs.format, prompt: Text("YYYY/MM/dd"))
+                Picker("Locale", selection: $inputs.locale) {
                     ForEach(DateConversion.DateConversionLocale.allCases, id: \.rawValue) { locale in
                         Text(locale.localized).tag(locale)
                     }
                 }
-                Picker("Calendar", selection: $calendar) {
+                Picker("Calendar", selection: $inputs.calendar) {
                     ForEach(DateConversion.DateConversionCalendar.allCases, id: \.rawValue) { calendar in
                         Text(calendar.localized).tag(calendar)
                     }
                 }
                 HStack(alignment: .center) {
                     Spacer()
-                    Text(preview)
+                    Text(inputs.formatted)
                         .font(.callout)
                         .fontWeight(.light)
                     Spacer()
                 }
             }
             .formStyle(.grouped)
-            .onChange(of: format) { newValue in
-                dateFormatter.dateFormat = newValue
-                preview = dateFormatter.string(from: current)
-            }
-            .onChange(of: locale) { newValue in
-                dateFormatter.locale = newValue.locale
-                preview = dateFormatter.string(from: current)
-            }
-            .onChange(of: calendar) { newValue in
-                dateFormatter.calendar = newValue.calendar
-                preview = dateFormatter.string(from: current)
-            }
             HStack {
                 Spacer()
                 Button("Cancel", role: .cancel) {
@@ -57,31 +53,28 @@ struct DateConversionView: View {
                 }
                 Button {
                     if let id {
-                        settingsViewModel.updateDateConversion(id: id, format: format, locale: locale, calendar: calendar)
+                        settingsViewModel.updateDateConversion(id: id, format: inputs.format, locale: inputs.locale, calendar: inputs.calendar)
                     } else {
-                        settingsViewModel.addDateConversion(format: format, locale: locale, calendar: calendar)
+                        settingsViewModel.addDateConversion(format: inputs.format, locale: inputs.locale, calendar: inputs.calendar)
                     }
                     dismiss()
                 } label: {
                     Text("Done")
                 }
                 .keyboardShortcut(.defaultAction)
-                .disabled(format.isEmpty)
+                .disabled(inputs.format.isEmpty)
             }
             .padding()
-        }.onAppear {
-            dateFormatter.dateFormat = format
-            dateFormatter.calendar = calendar.calendar
-            dateFormatter.locale = locale.locale
-            preview = dateFormatter.string(from: current)
         }
     }
 }
 
 #Preview {
-    DateConversionView(settingsViewModel: try! SettingsViewModel(),
-                       id: nil,
-                       format: "yyyy-MM-dd",
-                       locale: .enUS,
-                       calendar: .gregorian)
+    DateConversionView(
+        settingsViewModel: try! SettingsViewModel(),
+        id: nil,
+        inputs: DateConversionView.Inputs(
+            format: "yyyy-MM-dd",
+            locale: .enUS,
+            calendar: .gregorian))
 }

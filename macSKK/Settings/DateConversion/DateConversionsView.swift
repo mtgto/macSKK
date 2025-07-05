@@ -88,18 +88,22 @@ struct DateConversionsView: View {
                          relative: dateYomi.relative)
         }
         .sheet(isPresented: $isAddingDateConversionSheet) {
-            DateConversionView(settingsViewModel: settingsViewModel,
-                               id: nil,
-                               format: "",
-                               locale: .enUS,
-                               calendar: .gregorian)
+            DateConversionView(
+                settingsViewModel: settingsViewModel,
+                id: nil,
+                inputs: DateConversionView.Inputs(
+                    format: "",
+                    locale: .enUS,
+                    calendar: .gregorian))
         }
         .sheet(item: $editingDateConversion) { dateConversion in
-            DateConversionView(settingsViewModel: settingsViewModel,
-                               id: dateConversion.id,
-                               format: dateConversion.format,
-                               locale: dateConversion.locale,
-                               calendar: dateConversion.calendar)
+            DateConversionView(
+                settingsViewModel: settingsViewModel,
+                id: dateConversion.id,
+                inputs: DateConversionView.Inputs(
+                    format: dateConversion.format,
+                    locale: dateConversion.locale,
+                    calendar: dateConversion.calendar))
         }
     }
 }
