@@ -594,13 +594,17 @@ final class SettingsViewModel: ObservableObject {
         }.store(in: &cancellables)
 
         $dateYomis.dropFirst().sink { [weak self] dateYomis in
-            self?.saveDateConversions()
+            if let self {
+                self.saveDateConversions(dateYomis: dateYomis, dateConversions: self.dateConversions)
+            }
             logger.log("日付変換の読みリストを更新しました")
             Global.dictionary.dateYomis = dateYomis
         }.store(in: &cancellables)
 
         $dateConversions.dropFirst().sink { [weak self] dateConversions in
-            self?.saveDateConversions()
+            if let self {
+                self.saveDateConversions(dateYomis: self.dateYomis, dateConversions: dateConversions)
+            }
             logger.log("日付変更の変換候補を更新しました")
             Global.dictionary.dateConversions = dateConversions
         }.store(in: &cancellables)
@@ -839,7 +843,7 @@ final class SettingsViewModel: ObservableObject {
         }
     }
 
-    func saveDateConversions() {
+    func saveDateConversions(dateYomis: [DateConversion.Yomi], dateConversions: [DateConversion]) {
         let dict = [
             "yomis": dateYomis.map { $0.encode() },
             "conversions": dateConversions.map({ $0.encode() }),
