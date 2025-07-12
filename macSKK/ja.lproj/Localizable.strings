@@ -23,6 +23,7 @@
 "SettingsNoteDirectMode" = "日本語変換を行いたくないアプリが最前面の状態で、入力メニューから \"(アプリ名)では直接入力\" を選択してください。";
 "SettingsNoteWorkaround" = "設定したいアプリが最前面の状態で、入力メニューからも互換性の設定の有効・無効を設定できます。";
 "SettingsHeaderWorkaroundApplication" = "アプリケーションの互換性の設定";
+"SettingsDateConversionSubtitle" = "項目をドラッグすることで変換順序を入れ替え可能です。";
 "LoadingStatusLoaded %lld" = "%lld エントリ";
 "LoadingStatusLoaded %lld WithError %lld" = "%lld エントリ (%lld行の読み込みエラー)";
 "LoadingStatusLoading" = "読み込み中…";
