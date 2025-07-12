@@ -60,6 +60,7 @@ struct DateConversionView: View {
                     dismiss()
                 } label: {
                     Text("Done")
+                        .padding([.leading, .trailing])
                 }
                 .keyboardShortcut(.defaultAction)
                 .disabled(inputs.format.isEmpty)

@@ -71,6 +71,9 @@ struct DateConversionsView: View {
                     }
                 } header: {
                     Text("Conversion Candidates")
+                    Text("SettingsDateConversionSubtitle")
+                        .font(.subheadline)
+                        .fontWeight(.light)
                 }
             }
             .formStyle(.grouped)

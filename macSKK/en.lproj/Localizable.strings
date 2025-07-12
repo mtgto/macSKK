@@ -23,6 +23,7 @@
 "SettingsNoteDirectMode" = "Set Front-Most to target app and select \"Direct input from (AppName)\" in Input Menu.";
 "SettingsNoteWorkaround" = "you can enable/disable workaround settings from the Input Menu when the target app is in Front-Most.";
 "SettingsHeaderWorkaroundApplication" = "Workaround settings for the application";
+"SettingsDateConversionSubtitle" = "You can reorder the conversions by drag & drop";
 "LoadingStatusLoaded %lld" = "%lld entries";
 "LoadingStatusLoaded %lld WithError %lld" = "%lld entries (%lld lines of parsing error)";
 "LoadingStatusLoading" = "Loading…";
