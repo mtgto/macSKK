@@ -132,7 +132,7 @@ struct SKKServDictView: View {
             .padding()
             Spacer()
         }
-        .frame(width: 480, height: 400)
+        .frame(width: 480, height: 450)
     }
 
     private func showError(_ error: any Error) {

@@ -373,7 +373,7 @@ final class SettingsViewModel: ObservableObject {
             if setting.enabled {
                 let destination = SKKServDestination(host: setting.address, port: setting.port, encoding: setting.encoding)
                 logger.log("skkserv辞書を設定します")
-                Global.skkservDict = SKKServDict(destination: destination)
+                Global.skkservDict = SKKServDict(destination: destination, saveToUserDict: setting.saveToUserDict)
             } else {
                 logger.log("skkserv辞書は無効化されています")
                 Global.skkservDict = nil
