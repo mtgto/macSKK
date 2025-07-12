@@ -89,6 +89,7 @@
 "Address" = "Address";
 "TCP Port" = "TCP Port No.";
 "Response Encoding" = "Response Encoding";
+"Save conversion history to User Dictionary" = "Save conversion history to User Dictionary";
 "Yomi" = "Yomi";
 "Find Candidates" = "Find Candidates";
 "Find Completions" = "Find Completions";
