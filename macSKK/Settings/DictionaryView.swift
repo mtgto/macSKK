@@ -7,6 +7,7 @@ struct DictionaryView: View {
     @Binding var dictSetting: DictSetting?
     let filename: String
     @State var encoding: String.Encoding
+    @State var saveToUserDict: Bool
 
     var body: some View {
         VStack {
@@ -24,6 +25,9 @@ struct DictionaryView: View {
                     .disabled(
                         dictSetting?.type == .json
                     )
+                    Toggle(isOn: $saveToUserDict) {
+                        Text("Save conversion history to User Dictionary")
+                    }
                 }
             }
             .formStyle(.grouped)
@@ -35,6 +39,7 @@ struct DictionaryView: View {
                         if case .traditional = dictSetting.type {
                             dictSetting.type = .traditional(encoding)
                         }
+                        dictSetting.saveToUserDict = saveToUserDict
                     }
                     // このビューを閉じる
                     dictSetting = nil
@@ -56,12 +61,14 @@ struct DictionaryView_Previews: PreviewProvider {
         DictionaryView(
             dictSetting: .constant(nil),
             filename: "SKK-JISYO.sample.utf-8",
-            encoding: .utf8
-        ).previewDisplayName("SKK-JISYO.sample.utf-8")        
+            encoding: .utf8,
+            saveToUserDict: false,
+        ).previewDisplayName("SKK-JISYO.sample.utf-8")
         DictionaryView(
             dictSetting: .constant(nil),
             filename: "SKK-JISYO.L",
-            encoding: .japaneseEUC
+            encoding: .japaneseEUC,
+            saveToUserDict: true,
         ).previewDisplayName("SKK-JISYO.L")
     }
 }
