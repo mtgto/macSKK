@@ -50,6 +50,7 @@ class FileDict: NSObject, DictProtocol, Identifiable {
      * 読み込み専用で保存しないかどうか
      */
     private let readonly: Bool
+    let saveToUserDict: Bool
 
     /// シリアライズ時に先頭に付ける
     static let headers = [";; -*- mode: fundamental; coding: utf-8 -*-"]
@@ -78,7 +79,7 @@ class FileDict: NSObject, DictProtocol, Identifiable {
         return queue
     }()
 
-    init(contentsOf fileURL: URL, type: FileDictType, readonly: Bool) throws {
+    init(contentsOf fileURL: URL, type: FileDictType, readonly: Bool, saveToUserDict: Bool) throws {
         // iCloud Documents使うときには辞書フォルダが複数になりうるけど、それまではひとまずファイル名をIDとして使う
         self.id = fileURL.lastPathComponent
         self.fileURL = fileURL
@@ -86,6 +87,7 @@ class FileDict: NSObject, DictProtocol, Identifiable {
         self.dict = MemoryDict(entries: [:], readonly: readonly)
         self.version = NSFileVersion.currentVersionOfItem(at: fileURL)
         self.readonly = readonly
+        self.saveToUserDict = saveToUserDict
         super.init()
         load()
         NSFileCoordinator.addFilePresenter(self)

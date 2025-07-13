@@ -7,7 +7,7 @@ import Combine
 @testable import macSKK
 
 final class UserDictTests: XCTestCase {
-    func testRefer() throws {
+    @MainActor func testRefer() throws {
         let dict1 = MemoryDict(entries: ["い": [Word("胃"), Word("伊")]], readonly: true)
         let dict2 = MemoryDict(entries: ["い": [Word("胃"), Word("意")]], readonly: true)
         let userDict = try UserDict(dicts: [dict1, dict2],
@@ -17,10 +17,11 @@ final class UserDictTests: XCTestCase {
                                     findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false),
                                     dateYomis: [],
                                     dateConversions: [])
-        XCTAssertEqual(userDict.refer("い").map { $0.word }, ["井", "伊", "胃", "意"])
+        XCTAssertEqual(userDict.refer("い").map { $0.word }, ["井", "伊"], "UserDictのエントリだけを返す")
+        XCTAssertEqual(userDict.referDicts("い").map { $0.word }, ["井", "伊", "胃", "意"])
     }
 
-    @MainActor func testReferMergeAnnotation() throws {
+    @MainActor func testReferDictsMergeAnnotation() throws {
         let dict1 = MemoryDict(entries: ["い": [Word("胃", annotation: Annotation(dictId: "dict1", text: "d1ann")), Word("伊")]], readonly: true)
         let dict2 = MemoryDict(entries: ["い": [Word("胃", annotation: Annotation(dictId: "dict2", text: "d2ann")), Word("意")]], readonly: true)
         let userDict = try UserDict(dicts: [dict1, dict2],
@@ -30,13 +31,11 @@ final class UserDictTests: XCTestCase {
                                     findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false),
                                     dateYomis: [],
                                     dateConversions: [])
-        XCTAssertEqual(userDict.refer("い").map({ $0.word }), ["胃", "伊", "胃", "意"], "dict1, dict2に胃が1つずつある")
-        XCTAssertEqual(userDict.refer("い").compactMap({ $0.annotation?.dictId }), ["dict1", "dict2"])
         XCTAssertEqual(userDict.referDicts("い").map({ $0.word }), ["胃", "伊", "意"])
-        XCTAssertEqual(userDict.referDicts("い").map({ $0.annotations.map({ $0.dictId }) }), [["dict1", "dict2"], [], []])
+        XCTAssertEqual(userDict.referDicts("い").map({ $0.annotations.map({ $0.dictId }) }), [["dict1", "dict2"], [], []], "dict1, dict2に胃が1つずつある")
     }
 
-    func testReferWithOption() throws {
+    @MainActor func testReferDictsWithOption() throws {
         let dict = MemoryDict(entries: ["あき>": [Word("空き")],
                                         "あき": [Word("秋")],
                                         ">し": [Word("氏")],
@@ -52,12 +51,12 @@ final class UserDictTests: XCTestCase {
                                     findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false),
                                     dateYomis: [],
                                     dateConversions: [])
-        XCTAssertEqual(userDict.refer("あき", option: nil), [Word("安芸"), Word("秋")])
-        XCTAssertEqual(userDict.refer("あき", option: .prefix), [Word("飽き"), Word("空き")])
-        XCTAssertEqual(userDict.refer("あき", option: .suffix), [])
-        XCTAssertEqual(userDict.refer("し", option: nil), [Word("士"), Word("詩")])
-        XCTAssertEqual(userDict.refer("し", option: .suffix), [Word("詞"), Word("氏")])
-        XCTAssertEqual(userDict.refer("し", option: .prefix), [])
+        XCTAssertEqual(userDict.referDicts("あき", option: nil), [Candidate("安芸"), Candidate("秋")])
+        XCTAssertEqual(userDict.referDicts("あき", option: .prefix), [Candidate("飽き"), Candidate("空き")])
+        XCTAssertEqual(userDict.referDicts("あき", option: .suffix), [])
+        XCTAssertEqual(userDict.referDicts("し", option: nil), [Candidate("士"), Candidate("詩")])
+        XCTAssertEqual(userDict.referDicts("し", option: .suffix), [Candidate("詞"), Candidate("氏")])
+        XCTAssertEqual(userDict.referDicts("し", option: .prefix), [])
     }
 
     func testPrivateMode() throws {

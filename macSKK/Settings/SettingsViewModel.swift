@@ -289,7 +289,7 @@ final class SettingsViewModel: ObservableObject {
                         let fileURL = dictionariesDirectoryUrl.appendingPathComponent(dictSetting.filename)
                         do {
                             logger.log("SKK辞書 \(dictSetting.filename, privacy: .public) を読み込みます")
-                            let fileDict = try FileDict(contentsOf: fileURL, type: dictSetting.type, readonly: true)
+                            let fileDict = try FileDict(contentsOf: fileURL, type: dictSetting.type, readonly: true, saveToUserDict: dictSetting.saveToUserDict)
                             logger.log("SKK辞書 \(dictSetting.filename, privacy: .public) から \(fileDict.entryCount) エントリ読み込みました")
                             return fileDict
                         } catch {
