@@ -50,6 +50,7 @@ class FileDict: NSObject, DictProtocol, Identifiable {
      * 読み込み専用で保存しないかどうか
      */
     private let readonly: Bool
+    /// この辞書から返した変換候補をユーザー辞書に保存するかどうか
     let saveToUserDict: Bool
 
     /// シリアライズ時に先頭に付ける
@@ -84,7 +85,7 @@ class FileDict: NSObject, DictProtocol, Identifiable {
         self.id = fileURL.lastPathComponent
         self.fileURL = fileURL
         self.type = type
-        self.dict = MemoryDict(entries: [:], readonly: readonly)
+        self.dict = MemoryDict(entries: [:], readonly: readonly, saveToUserDict: saveToUserDict)
         self.version = NSFileVersion.currentVersionOfItem(at: fileURL)
         self.readonly = readonly
         self.saveToUserDict = saveToUserDict

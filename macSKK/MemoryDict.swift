@@ -28,9 +28,12 @@ struct MemoryDict: DictProtocol {
     private(set) var okuriNashiYomis: [String] = []
     /// 送りありの読みの配列。最近変換したものが後に登場する。
     private(set) var okuriAriYomis: [String] = []
+    /// この辞書から返した変換候補をユーザー辞書に保存するかどうか
+    let saveToUserDict: Bool
 
-    init(dictId: FileDict.ID, source: String, readonly: Bool) {
+    init(dictId: FileDict.ID, source: String, readonly: Bool, saveToUserDict: Bool = true) {
         self.readonly = readonly
+        self.saveToUserDict = saveToUserDict
         var dict: [String: [Word]] = [:]
         var okuriNashiYomis: [String] = []
         var okuriAriYomis: [String] = []
@@ -67,9 +70,10 @@ struct MemoryDict: DictProtocol {
         self.okuriAriYomis = okuriAriYomis.reversed()
     }
 
-    init(entries: [String: [Word]], readonly: Bool) {
+    init(entries: [String: [Word]], readonly: Bool, saveToUserDict: Bool = true) {
         self.readonly = readonly
         self.entries = entries
+        self.saveToUserDict = saveToUserDict
         failedEntryCount = 0
         for yomi in entries.keys {
             if yomi.isOkuriAri {
@@ -80,12 +84,13 @@ struct MemoryDict: DictProtocol {
         }
     }
 
-    init(okuriAriEntries: [String: [Word]], okuriNashiEntries: [String: [Word]], readonly: Bool) {
+    init(okuriAriEntries: [String: [Word]], okuriNashiEntries: [String: [Word]], readonly: Bool, saveToUserDict: Bool = true) {
         self.readonly = readonly
         self.entries = okuriAriEntries.merging(okuriNashiEntries) { current, _  in current }
         failedEntryCount = 0
         okuriAriYomis = Array(okuriAriEntries.keys)
         okuriNashiYomis = Array(okuriNashiEntries.keys)
+        self.saveToUserDict = saveToUserDict
     }
 
     var entryCount: Int { return entries.count }

@@ -32,6 +32,7 @@ class UserDict: NSObject, DictProtocol {
     // ユーザー辞書だけでなくすべての辞書から補完候補を検索するか？
     private let findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>
     private var cancellables: Set<AnyCancellable> = []
+    let saveToUserDict = true
 
     // MARK: NSFilePresenter
     let presentedItemURL: URL?
@@ -115,7 +116,7 @@ class UserDict: NSObject, DictProtocol {
         var result: [Candidate] = []
         func wordToCandidate(_ word: Word, saveToUserDict: Bool) -> Candidate {
             let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
-            return Candidate(word.word, annotations: annotations, saveToUserDict: true)
+            return Candidate(word.word, annotations: annotations, saveToUserDict: saveToUserDict)
         }
         var candidates = refer(yomi, option: option).map { word in
             let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
@@ -131,16 +132,11 @@ class UserDict: NSObject, DictProtocol {
         }
         // ユーザー辞書、それ以外の辞書の順に参照する
         candidates.append(contentsOf: refer(yomi, option: option).map { word in
-            return wordToCandidate(word, saveToUserDict: true)
+            return wordToCandidate(word, saveToUserDict: saveToUserDict)
         })
         dicts.forEach { dict in
-            let saveToUserDict = if let dict = dict as? FileDict {
-                dict.saveToUserDict
-            } else {
-                true
-            }
             candidates.append(contentsOf: dict.refer(yomi, option: option).map {
-                wordToCandidate($0, saveToUserDict: saveToUserDict)
+                wordToCandidate($0, saveToUserDict: dict.saveToUserDict)
             })
         }
         // ひとまずskkservを辞書として使う場合はファイル辞書より後に追加する
@@ -162,14 +158,9 @@ class UserDict: NSObject, DictProtocol {
                     return Candidate(convertedWord,
                                      annotations: annotations,
                                      original: Candidate.Original(midashi: midashi, word: word.word),
-                                     saveToUserDict: true)
+                                     saveToUserDict: saveToUserDict)
                 })
                 dicts.forEach { dict in
-                    let saveToUserDict = if let dict = dict as? FileDict {
-                        dict.saveToUserDict
-                    } else {
-                        true
-                    }
                     candidates.append(contentsOf: dict.refer(midashi, option: option).compactMap { word in
                         guard let numberCandidate = try? NumberCandidate(yomi: word.word) else { return nil }
                         guard let convertedWord = numberCandidate.toString(yomi: numberYomi) else { return nil }
@@ -177,7 +168,7 @@ class UserDict: NSObject, DictProtocol {
                         return Candidate(convertedWord,
                                          annotations: annotations,
                                          original: Candidate.Original(midashi: midashi, word: word.word),
-                                         saveToUserDict: saveToUserDict)
+                                         saveToUserDict: dict.saveToUserDict)
                     })
                 }
             }

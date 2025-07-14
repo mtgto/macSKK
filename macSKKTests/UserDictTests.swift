@@ -8,8 +8,8 @@ import Combine
 
 final class UserDictTests: XCTestCase {
     @MainActor func testRefer() throws {
-        let dict1 = MemoryDict(entries: ["い": [Word("胃"), Word("伊")]], readonly: true)
-        let dict2 = MemoryDict(entries: ["い": [Word("胃"), Word("意")]], readonly: true)
+        let dict1 = MemoryDict(entries: ["い": [Word("胃"), Word("伊"), Word("位")]], readonly: true, saveToUserDict: false)
+        let dict2 = MemoryDict(entries: ["い": [Word("胃"), Word("意")]], readonly: true, saveToUserDict: true)
         let userDict = try UserDict(dicts: [dict1, dict2],
                                     userDictEntries: ["い": [Word("井"), Word("伊")]],
                                     privateMode: CurrentValueSubject<Bool, Never>(false),
@@ -18,11 +18,12 @@ final class UserDictTests: XCTestCase {
                                     dateYomis: [],
                                     dateConversions: [])
         XCTAssertEqual(userDict.refer("い").map { $0.word }, ["井", "伊"], "UserDictのエントリだけを返す")
-        XCTAssertEqual(userDict.referDicts("い").map { $0.word }, ["井", "伊", "胃", "意"])
+        XCTAssertEqual(userDict.referDicts("い").map { $0.word }, ["井", "伊", "胃", "位", "意"])
+        XCTAssertEqual(userDict.referDicts("い").map { $0.saveToUserDict }, [true, true, true, false, true])
     }
 
     @MainActor func testReferDictsMergeAnnotation() throws {
-        let dict1 = MemoryDict(entries: ["い": [Word("胃", annotation: Annotation(dictId: "dict1", text: "d1ann")), Word("伊")]], readonly: true)
+        let dict1 = MemoryDict(entries: ["い": [Word("胃", annotation: Annotation(dictId: "dict1", text: "d1ann")), Word("伊")]], readonly: true, saveToUserDict: true)
         let dict2 = MemoryDict(entries: ["い": [Word("胃", annotation: Annotation(dictId: "dict2", text: "d2ann")), Word("意")]], readonly: true)
         let userDict = try UserDict(dicts: [dict1, dict2],
                                     userDictEntries: [:],
