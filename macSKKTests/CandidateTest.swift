@@ -6,17 +6,12 @@ import XCTest
 @testable import macSKK
 
 final class CandidateTest: XCTestCase {
-    func testAppendAnnotations() throws {
-        var candidate = Candidate("注釈")
-        XCTAssertEqual(candidate.annotations, [])
-        let annotation1 = Annotation(dictId: "d1", text: "a1")
-        candidate.appendAnnotations([annotation1])
-        XCTAssertEqual(candidate.annotations, [annotation1])
-        let annotation2 = Annotation(dictId: "d2", text: "a1")
-        candidate.appendAnnotations([annotation2])
-        XCTAssertEqual(candidate.annotations, [annotation1], "注釈が同じテキストなら追加されない")
-        let annotation3 = Annotation(dictId: "d3", text: "a3")
-        candidate.appendAnnotations([annotation3])
-        XCTAssertEqual(candidate.annotations, [annotation1, annotation3])
+    func testMerge() throws {
+        let candidate1 = Candidate("言葉", annotations: [Annotation(dictId: "d1", text: "a1")], saveToUserDict: false)
+        let candidate2 = try candidate1.merge(Candidate("言葉", annotations: [Annotation(dictId: "d2", text: "a1")], saveToUserDict: false))
+        XCTAssertEqual(candidate2.annotations.count, 1) // 同じ表記をもつ注釈はマージされる
+        let candidate3 = try candidate2.merge(Candidate("言葉", annotations: [Annotation(dictId: "d3", text: "a3")], saveToUserDict: false))
+        XCTAssertEqual(candidate3.annotations, [Annotation(dictId: "d1", text: "a1"), Annotation(dictId: "d3", text: "a3")])
+        XCTAssertThrowsError(try candidate1.merge(Candidate("違う言葉"))) // wordが異なるCandidate同士のマージはエラーが発生する
     }
 }

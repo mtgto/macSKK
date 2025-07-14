@@ -176,7 +176,11 @@ class UserDict: NSObject, DictProtocol {
         for candidate in candidates {
             if let index = result.firstIndex(where: { $0.word == candidate.word }) {
                 // 注釈だけマージする
-                result[index].appendAnnotations(candidate.annotations)
+                do {
+                    result[index] = try result[index].merge(candidate)
+                } catch {
+                    logger.error("異なる変換結果をもつ変換候補同士をマージしようとしました。バグと思われます。")
+                }
             } else {
                 result.append(candidate)
             }
