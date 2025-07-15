@@ -82,7 +82,7 @@ final class UserDictTests: XCTestCase {
 
     @MainActor func testReferDictsDateConversion() throws {
         let userDict = try UserDict(dicts: [],
-                                    userDictEntries: [:],
+                                    userDictEntries: ["きょう": [Word("今日")]],
                                     privateMode: CurrentValueSubject<Bool, Never>(false),
                                     ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
                                     findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false),
@@ -114,6 +114,10 @@ final class UserDictTests: XCTestCase {
         XCTAssertTrue(candidatesTomorrow.allSatisfy({ $0.saveToUserDict == false }))
         XCTAssertNotNil(candidatesTomorrow[0].word.wholeMatch(of: /\d{4}\/\d{2}\/\d{2}/))
         XCTAssertNotNil(candidatesTomorrow[1].word.wholeMatch(of: /令和\d{1,}年\d{1,2}月\d{1,2}日/))
+
+        let candidatesKyou = userDict.referDicts("きょう")
+        XCTAssertEqual(candidatesKyou.count, 3)
+        XCTAssertEqual(candidatesKyou.first?.word, "今日") // ユーザー辞書の方が日付変換より前
     }
 
     func testFindCompletionPrivateMode() throws {
