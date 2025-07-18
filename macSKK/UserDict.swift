@@ -129,7 +129,7 @@ class UserDict: NSObject, DictProtocol {
         if let skkservDict = Global.skkservDict {
             let skkservCandidates: [Candidate] = skkservDict.refer(yomi, option: option).map { word in
                 let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
-                return Candidate(word.word, annotations: annotations)
+                return Candidate(word.word, annotations: annotations, saveToUserDict: skkservDict.saveToUserDict)
             }
             candidates.append(contentsOf: skkservCandidates)
         }

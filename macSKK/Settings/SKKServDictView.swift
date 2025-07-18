@@ -24,6 +24,10 @@ struct SKKServDictView: View {
                         }
                     }
                     .pickerStyle(.radioGroup)
+                    Toggle(isOn: $settingsViewModel.skkservDictSetting.saveToUserDict) {
+                        Text("Save conversion history to User Dictionary")
+                    }
+                    .toggleStyle(.switch)
                 } header: {
                     Text("SKKServDictTitle")
                 }
@@ -128,7 +132,7 @@ struct SKKServDictView: View {
             .padding()
             Spacer()
         }
-        .frame(width: 480, height: 400)
+        .frame(width: 480, height: 450)
     }
 
     private func showError(_ error: any Error) {
@@ -158,7 +162,12 @@ struct SKKServDictView: View {
 }
 
 #Preview {
-    let setting = SKKServDictSetting(enabled: true, address: "127.0.0.1", port: 1178, encoding: .japaneseEUC)
+    let setting = SKKServDictSetting(
+        enabled: true,
+        address: "127.0.0.1",
+        port: 1178,
+        encoding: .japaneseEUC,
+        saveToUserDict: true)
     return SKKServDictView(settingsViewModel: try! SettingsViewModel(skkservDictSetting: setting),
                     isShowSheet: .constant(true), information: "skkservが応答していません")
 }

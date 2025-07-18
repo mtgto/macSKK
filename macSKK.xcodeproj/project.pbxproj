@@ -90,6 +90,8 @@
 		CE84A3ED295DA818009394C4 /* MemoryDictTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE84A3EC295DA818009394C4 /* MemoryDictTests.swift */; };
 		CE8DFE092CBEAA2900A24230 /* Character+AdditionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE8DFE082CBEAA1F00A24230 /* Character+AdditionsTests.swift */; };
 		CE97887B2A9B93EB00F9B196 /* DirectModeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE97887A2A9B93EB00F9B196 /* DirectModeView.swift */; };
+		CEA253942E228E2000618E64 /* SKKServDictSettingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA253932E228E2000618E64 /* SKKServDictSettingTests.swift */; };
+		CEA253962E2290AC00618E64 /* SKKServDictSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA253952E2290AC00618E64 /* SKKServDictSetting.swift */; };
 		CEA78FAA295EBCAC00B67E25 /* StateMachineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA78FA9295EBCAC00B67E25 /* StateMachineTests.swift */; };
 		CEA78FAC2960401F00B67E25 /* String+Transform.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA78FAB2960401F00B67E25 /* String+Transform.swift */; };
 		CEA78FAE2961BA1D00B67E25 /* String+TransformTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA78FAD2961BA1D00B67E25 /* String+TransformTests.swift */; };
@@ -268,6 +270,8 @@
 		CE84A3EC295DA818009394C4 /* MemoryDictTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryDictTests.swift; sourceTree = "<group>"; };
 		CE8DFE082CBEAA1F00A24230 /* Character+AdditionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Character+AdditionsTests.swift"; sourceTree = "<group>"; };
 		CE97887A2A9B93EB00F9B196 /* DirectModeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectModeView.swift; sourceTree = "<group>"; };
+		CEA253932E228E2000618E64 /* SKKServDictSettingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServDictSettingTests.swift; sourceTree = "<group>"; };
+		CEA253952E2290AC00618E64 /* SKKServDictSetting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServDictSetting.swift; sourceTree = "<group>"; };
 		CEA78FA9295EBCAC00B67E25 /* StateMachineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateMachineTests.swift; sourceTree = "<group>"; };
 		CEA78FAB2960401F00B67E25 /* String+Transform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Transform.swift"; sourceTree = "<group>"; };
 		CEA78FAD2961BA1D00B67E25 /* String+TransformTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+TransformTests.swift"; sourceTree = "<group>"; };
@@ -519,6 +523,7 @@
 				CEA78FAD2961BA1D00B67E25 /* String+TransformTests.swift */,
 				CE8DFE082CBEAA1F00A24230 /* Character+AdditionsTests.swift */,
 				CE496C942B440BBD001C623C /* Data+EucJis2004Tests.swift */,
+				CEA253932E228E2000618E64 /* SKKServDictSettingTests.swift */,
 				CE06CA332AAC199500E80E5E /* UserDict+Utilities.swift */,
 				CE39FA942BEB942B00E293F0 /* Character+KeyCode.swift */,
 				CED7CA572A83BFE9004EF988 /* fixture */,
@@ -559,6 +564,7 @@
 			isa = PBXGroup;
 			children = (
 				CED7CA5A2A83DE7F004EF988 /* SettingsViewModel.swift */,
+				CEA253952E2290AC00618E64 /* SKKServDictSetting.swift */,
 				CEC376E72965199500D9C432 /* SettingsView.swift */,
 				CEADA44E2B1357090026E2BD /* GeneralView.swift */,
 				CE6DBACC2A864A3B00F5A227 /* DictionariesView.swift */,
@@ -882,6 +888,7 @@
 				CEADA44F2B1357090026E2BD /* GeneralView.swift in Sources */,
 				CE84A3DC2957174D009394C4 /* State.swift in Sources */,
 				CE496C8C2B43968A001C623C /* LogView.swift in Sources */,
+				CEA253962E2290AC00618E64 /* SKKServDictSetting.swift in Sources */,
 				CEE3717529653112000DB2C3 /* SoftwareUpdateView.swift in Sources */,
 				CE496C912B440892001C623C /* URL+Additions.swift in Sources */,
 				CE11C7BD2BE47D5D00A35F3D /* KeyBindingView.swift in Sources */,
@@ -913,6 +920,7 @@
 				CE84A3E9295DA504009394C4 /* RomajiTests.swift in Sources */,
 				CE4CB5CE2AD55DF90046FA34 /* NumberEntryTests.swift in Sources */,
 				CE49A2782C19E07800D53CFE /* KeyBindingSetTests.swift in Sources */,
+				CEA253942E228E2000618E64 /* SKKServDictSettingTests.swift in Sources */,
 				CEADA44D2B025A8A0026E2BD /* EntryTests.swift in Sources */,
 				CEA78FAA295EBCAC00B67E25 /* StateMachineTests.swift in Sources */,
 				CE496C952B440BBD001C623C /* Data+EucJis2004Tests.swift in Sources */,

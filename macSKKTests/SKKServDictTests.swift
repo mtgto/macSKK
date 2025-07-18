@@ -19,13 +19,13 @@ final class SKKServDictTests: XCTestCase {
 
     func testRefer() async throws {
         let service = MockedSKKServService(response: "1/変換/返還/")
-        let dict = SKKServDict(destination: destination, service: service)
+        let dict = SKKServDict(destination: destination, service: service, saveToUserDict: false)
         XCTAssertEqual(dict.refer("へんかん", option: nil).map { $0.word }, ["変換", "返還"])
     }
 
     func testReferNotFound() async throws {
         let service = MockedSKKServService(response: "4へんかん")
-        let dict = SKKServDict(destination: destination, service: service)
+        let dict = SKKServDict(destination: destination, service: service, saveToUserDict: false)
         XCTAssertEqual(dict.refer("へんかん", option: nil).map { $0.word }, [])
     }
 }

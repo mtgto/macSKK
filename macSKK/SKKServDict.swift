@@ -12,10 +12,13 @@ import Foundation
 struct SKKServDict {
     private let destination: SKKServDestination
     private let service: any SKKServServiceProtocol
+    /// 変換履歴をユーザー辞書に保存するかどうか
+    let saveToUserDict: Bool
 
-    init(destination: SKKServDestination, service: any SKKServServiceProtocol = SKKServService()) {
+    init(destination: SKKServDestination, service: any SKKServServiceProtocol = SKKServService(), saveToUserDict: Bool) {
         self.destination = destination
         self.service = service
+        self.saveToUserDict = saveToUserDict
     }
 
     /**
