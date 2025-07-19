@@ -297,6 +297,9 @@ final class SettingsViewModel: ObservableObject {
                             logger.log("SKK辞書 \(dictSetting.filename, privacy: .public) の読み込みに失敗しました!: \(error)")
                             return nil
                         }
+                    } else if let dict, dictSetting.saveToUserDict != dict.saveToUserDict {
+                        logger.log("SKK辞書 \(dictSetting.filename, privacy: .public) の変換候補をユーザー辞書に保存する設定を\(dictSetting.saveToUserDict ? "有効" : "無効", privacy: .public)に変更しました")
+                        return dict.with(saveToUserDict: dictSetting.saveToUserDict)
                     } else {
                         return dict
                     }

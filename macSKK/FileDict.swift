@@ -94,6 +94,22 @@ class FileDict: NSObject, DictProtocol, Identifiable {
         NSFileCoordinator.addFilePresenter(self)
     }
 
+    private init(id: String, fileURL: URL, type: FileDictType, dict: MemoryDict, readonly: Bool, saveToUserDict: Bool, version: NSFileVersion?, hasUnsavedChanges: Bool) {
+        self.id = id
+        self.fileURL = fileURL
+        self.type = type
+        self.dict = dict
+        self.readonly = readonly
+        self.saveToUserDict = saveToUserDict
+        self.version = version
+        self.hasUnsavedChanges = hasUnsavedChanges
+    }
+
+    func with(saveToUserDict: Bool) -> FileDict {
+        FileDict(id: id, fileURL: fileURL, type: type, dict: dict, readonly: readonly, saveToUserDict: saveToUserDict,
+                 version: version, hasUnsavedChanges: hasUnsavedChanges)
+    }
+
     func load() {
         let operation = BlockOperation {
             var coordinationError: NSError?

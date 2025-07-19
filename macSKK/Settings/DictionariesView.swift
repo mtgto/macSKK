@@ -87,8 +87,9 @@ struct DictionariesView: View {
             .formStyle(.grouped)
             .sheet(item: $selectedDictSetting) { dictSetting in
                 DictionaryView(
-                    dictSetting: $selectedDictSetting,
+                    settingsViewModel: settingsViewModel,
                     filename: dictSetting.filename,
+                    canChangeEncoding: dictSetting.type != .json,
                     encoding: dictSetting.type.encoding,
                     saveToUserDict: dictSetting.saveToUserDict,
                 )
