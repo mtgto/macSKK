@@ -79,4 +79,9 @@ protocol DictProtocol {
      * - 数値変換用の読みは補完候補としない
      */
     func findCompletion(prefix: String) -> String?
+
+    /**
+     * この辞書から返した変換候補をユーザー辞書に保存するかどうか
+     */
+    var saveToUserDict: Bool { get }
 }

@@ -12,7 +12,7 @@ final class FileDictTests: XCTestCase {
 
     func testLoadContainsBom() throws {
         let fileURL = Bundle(for: Self.self).url(forResource: "utf8-bom", withExtension: "txt")!
-        let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: true)
+        let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: true, saveToUserDict: true)
         XCTAssertEqual(dict.dict.entries, ["ゆにこーど": [Word("ユニコード")]])
     }
 
@@ -28,7 +28,7 @@ final class FileDictTests: XCTestCase {
             }
         }.store(in: &cancellables)
         let fileURL = Bundle(for: Self.self).url(forResource: "SKK-JISYO.test", withExtension: "json")!
-        let dict = try FileDict(contentsOf: fileURL, type: .json, readonly: true)
+        let dict = try FileDict(contentsOf: fileURL, type: .json, readonly: true, saveToUserDict: true)
         XCTAssertEqual(dict.dict.refer("い", option: nil).map({ $0.word }).sorted(), ["伊", "胃"])
         XCTAssertEqual(dict.dict.refer("あr", option: nil).map({ $0.word }).sorted(), ["在;注釈として解釈されない", "有"])
         wait(for: [expectation], timeout: 1.0)
@@ -44,12 +44,12 @@ final class FileDictTests: XCTestCase {
             }
         }.store(in: &cancellables)
         let fileURL = Bundle(for: Self.self).url(forResource: "SKK-JISYO.broken", withExtension: "json")!
-        _ = try FileDict(contentsOf: fileURL, type: .json, readonly: true)
+        _ = try FileDict(contentsOf: fileURL, type: .json, readonly: true, saveToUserDict: true)
         wait(for: [expectation], timeout: 1.0)
     }
 
     func testAdd() throws {
-        let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: true)
+        let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: true, saveToUserDict: true)
         XCTAssertEqual(dict.entryCount, 0)
         let word = Word("井")
         XCTAssertFalse(dict.hasUnsavedChanges)
@@ -59,7 +59,7 @@ final class FileDictTests: XCTestCase {
     }
 
     func testDelete() throws {
-        let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: true)
+        let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: true, saveToUserDict: true)
         dict.setEntries(["あr": [Word("有"), Word("在")]], readonly: true)
         XCTAssertFalse(dict.delete(yomi: "あr", word: "或"))
         XCTAssertFalse(dict.hasUnsavedChanges)
@@ -68,7 +68,7 @@ final class FileDictTests: XCTestCase {
     }
 
     func testSerialize() throws {
-        let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: false)
+        let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: false, saveToUserDict: true)
         XCTAssertEqual(dict.serialize(),
                        [FileDict.headers[0], FileDict.okuriAriHeader, FileDict.okuriNashiHeader, ""].joined(separator: "\n"))
         dict.add(yomi: "あ", word: Word("亜", annotation: Annotation(dictId: "testDict", text: "亜の注釈")))

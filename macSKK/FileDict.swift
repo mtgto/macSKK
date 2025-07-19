@@ -50,6 +50,8 @@ class FileDict: NSObject, DictProtocol, Identifiable {
      * 読み込み専用で保存しないかどうか
      */
     private let readonly: Bool
+    /// この辞書から返した変換候補をユーザー辞書に保存するかどうか
+    let saveToUserDict: Bool
 
     /// シリアライズ時に先頭に付ける
     static let headers = [";; -*- mode: fundamental; coding: utf-8 -*-"]
@@ -78,17 +80,34 @@ class FileDict: NSObject, DictProtocol, Identifiable {
         return queue
     }()
 
-    init(contentsOf fileURL: URL, type: FileDictType, readonly: Bool) throws {
+    init(contentsOf fileURL: URL, type: FileDictType, readonly: Bool, saveToUserDict: Bool) throws {
         // iCloud Documents使うときには辞書フォルダが複数になりうるけど、それまではひとまずファイル名をIDとして使う
         self.id = fileURL.lastPathComponent
         self.fileURL = fileURL
         self.type = type
-        self.dict = MemoryDict(entries: [:], readonly: readonly)
+        self.dict = MemoryDict(entries: [:], readonly: readonly, saveToUserDict: saveToUserDict)
         self.version = NSFileVersion.currentVersionOfItem(at: fileURL)
         self.readonly = readonly
+        self.saveToUserDict = saveToUserDict
         super.init()
         load()
         NSFileCoordinator.addFilePresenter(self)
+    }
+
+    private init(id: String, fileURL: URL, type: FileDictType, dict: MemoryDict, readonly: Bool, saveToUserDict: Bool, version: NSFileVersion?, hasUnsavedChanges: Bool) {
+        self.id = id
+        self.fileURL = fileURL
+        self.type = type
+        self.dict = dict
+        self.readonly = readonly
+        self.saveToUserDict = saveToUserDict
+        self.version = version
+        self.hasUnsavedChanges = hasUnsavedChanges
+    }
+
+    func with(saveToUserDict: Bool) -> FileDict {
+        FileDict(id: id, fileURL: fileURL, type: type, dict: dict, readonly: readonly, saveToUserDict: saveToUserDict,
+                 version: version, hasUnsavedChanges: hasUnsavedChanges)
     }
 
     func load() {

@@ -87,9 +87,11 @@ struct DictionariesView: View {
             .formStyle(.grouped)
             .sheet(item: $selectedDictSetting) { dictSetting in
                 DictionaryView(
-                    dictSetting: $selectedDictSetting,
+                    settingsViewModel: settingsViewModel,
                     filename: dictSetting.filename,
-                    encoding: dictSetting.type.encoding
+                    canChangeEncoding: dictSetting.type != .json,
+                    encoding: dictSetting.type.encoding,
+                    saveToUserDict: dictSetting.saveToUserDict,
                 )
             }
             .sheet(isPresented: $isShowingSkkservSheet) {
@@ -137,10 +139,10 @@ struct DictionariesView_Previews: PreviewProvider {
 
     private static func makeSettingsViewModel() -> SettingsViewModel {
         let dictSettings = [
-            DictSetting(filename: "SKK-JISYO.L", enabled: true, type: .traditional(.japaneseEUC)),
-            DictSetting(filename: "SKK-JISYO.sample.utf-8", enabled: false, type: .traditional(.utf8)),
-            DictSetting(filename: "SKK-JISYO.dummy", enabled: true, type: .traditional(.utf8)),
-            DictSetting(filename: "SKK-JISYO.error", enabled: true, type: .traditional(.utf8)),
+            DictSetting(filename: "SKK-JISYO.L", enabled: true, type: .traditional(.japaneseEUC), saveToUserDict: true),
+            DictSetting(filename: "SKK-JISYO.sample.utf-8", enabled: false, type: .traditional(.utf8), saveToUserDict: true),
+            DictSetting(filename: "SKK-JISYO.dummy", enabled: true, type: .traditional(.utf8), saveToUserDict: true),
+            DictSetting(filename: "SKK-JISYO.error", enabled: true, type: .traditional(.utf8), saveToUserDict: true),
         ]
         let settings = try! SettingsViewModel(dictSettings: dictSettings)
         settings.dictLoadingStatuses = [

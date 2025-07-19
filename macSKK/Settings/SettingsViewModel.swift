@@ -5,63 +5,6 @@ import Combine
 import Foundation
 import SwiftUI
 
-final class DictSetting: ObservableObject, Identifiable {
-    typealias ID = FileDict.ID
-    @Published var filename: String
-    @Published var enabled: Bool
-    @Published var type: FileDictType
-
-    var id: String { filename }
-    
-    init(filename: String, enabled: Bool, type: FileDictType) {
-        self.filename = filename
-        self.enabled = enabled
-        self.type = type
-    }
-
-    // UserDefaultsのDictionaryを受け取る
-    init?(_ dictionary: [String: Any]) {
-        guard let filename = dictionary["filename"] as? String else { return nil }
-        self.filename = filename
-        guard let enabled = dictionary["enabled"] as? Bool else { return nil }
-        self.enabled = enabled
-        guard let encoding = dictionary["encoding"] as? UInt else { return nil }
-        if let type = dictionary["type"] as? String {
-            if type == "json" {
-                self.type = .json
-            } else if type == "traditional" {
-                self.type = .traditional(String.Encoding(rawValue: encoding))
-            } else {
-                logger.error("不明な辞書設定 \(type) があります。")
-                return nil
-            }
-        } else {
-            // v1.0.1まではJSON形式がなかったので従来形式として扱う
-            self.type = .traditional(String.Encoding(rawValue: encoding))
-        }
-    }
-
-    // UserDefaults用にDictionaryにシリアライズ
-    func encode() -> [String: Any] {
-        let typeValue: String
-        if case .traditional = type {
-            typeValue = "traditional"
-        } else if case .json = type {
-            typeValue = "json"
-        } else {
-            fatalError()
-        }
-        return [
-            "filename": filename,
-            "enabled": enabled,
-            "encoding": type.encoding.rawValue,
-            "type": typeValue
-        ]
-    }
-}
-
-
-
 /// 辞書のエンコーディングとして利用可能なもの
 enum AllowedEncoding: CaseIterable, CustomStringConvertible {
     case utf8
@@ -346,7 +289,7 @@ final class SettingsViewModel: ObservableObject {
                         let fileURL = dictionariesDirectoryUrl.appendingPathComponent(dictSetting.filename)
                         do {
                             logger.log("SKK辞書 \(dictSetting.filename, privacy: .public) を読み込みます")
-                            let fileDict = try FileDict(contentsOf: fileURL, type: dictSetting.type, readonly: true)
+                            let fileDict = try FileDict(contentsOf: fileURL, type: dictSetting.type, readonly: true, saveToUserDict: dictSetting.saveToUserDict)
                             logger.log("SKK辞書 \(dictSetting.filename, privacy: .public) から \(fileDict.entryCount) エントリ読み込みました")
                             return fileDict
                         } catch {
@@ -354,6 +297,9 @@ final class SettingsViewModel: ObservableObject {
                             logger.log("SKK辞書 \(dictSetting.filename, privacy: .public) の読み込みに失敗しました!: \(error)")
                             return nil
                         }
+                    } else if let dict, dictSetting.saveToUserDict != dict.saveToUserDict {
+                        logger.log("SKK辞書 \(dictSetting.filename, privacy: .public) の変換候補をユーザー辞書に保存する設定を\(dictSetting.saveToUserDict ? "有効" : "無効", privacy: .public)に変更しました")
+                        return dict.with(saveToUserDict: dictSetting.saveToUserDict)
                     } else {
                         return dict
                     }
@@ -705,7 +651,8 @@ final class SettingsViewModel: ObservableObject {
                         }
                         self.dictSettings.append(DictSetting(filename: url.lastPathComponent,
                                                              enabled: false,
-                                                             type: type))
+                                                             type: type,
+                                                             saveToUserDict: true))
                     }
                 }
             }.store(in: &cancellables)

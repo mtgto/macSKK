@@ -4,9 +4,12 @@
 import SwiftUI
 
 struct DictionaryView: View {
-    @Binding var dictSetting: DictSetting?
+    @StateObject var settingsViewModel: SettingsViewModel
     let filename: String
+    let canChangeEncoding: Bool
     @State var encoding: String.Encoding
+    @State var saveToUserDict: Bool
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         VStack {
@@ -21,9 +24,10 @@ struct DictionaryView: View {
                         }
                     }
                     .pickerStyle(.radioGroup)
-                    .disabled(
-                        dictSetting?.type == .json
-                    )
+                    .disabled(!canChangeEncoding)
+                    Toggle(isOn: $saveToUserDict) {
+                        Text("Save conversion history to User Dictionary")
+                    }
                 }
             }
             .formStyle(.grouped)
@@ -31,13 +35,15 @@ struct DictionaryView: View {
             HStack {
                 Spacer()
                 Button {
-                    if let dictSetting {
+                    if let index = settingsViewModel.dictSettings.firstIndex(where: { $0.id == filename }) {
+                        let dictSetting = settingsViewModel.dictSettings[index]
                         if case .traditional = dictSetting.type {
                             dictSetting.type = .traditional(encoding)
                         }
+                        dictSetting.saveToUserDict = saveToUserDict
+                        settingsViewModel.dictSettings[index] = dictSetting
                     }
-                    // このビューを閉じる
-                    dictSetting = nil
+                    dismiss()
                 } label: {
                     Text("Done")
                         .padding([.leading, .trailing])
@@ -54,14 +60,18 @@ struct DictionaryView: View {
 struct DictionaryView_Previews: PreviewProvider {
     static var previews: some View {
         DictionaryView(
-            dictSetting: .constant(nil),
-            filename: "SKK-JISYO.sample.utf-8",
-            encoding: .utf8
-        ).previewDisplayName("SKK-JISYO.sample.utf-8")        
+            settingsViewModel: try! SettingsViewModel(),
+            filename: "SKK-JISYO.sample.json",
+            canChangeEncoding: false,
+            encoding: .utf8,
+            saveToUserDict: false,
+        ).previewDisplayName("SKK-JISYO.sample.utf-8")
         DictionaryView(
-            dictSetting: .constant(nil),
+            settingsViewModel: try! SettingsViewModel(),
             filename: "SKK-JISYO.L",
-            encoding: .japaneseEUC
+            canChangeEncoding: true,
+            encoding: .japaneseEUC,
+            saveToUserDict: true,
         ).previewDisplayName("SKK-JISYO.L")
     }
 }

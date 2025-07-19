@@ -32,6 +32,7 @@ class UserDict: NSObject, DictProtocol {
     // ユーザー辞書だけでなくすべての辞書から補完候補を検索するか？
     private let findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>
     private var cancellables: Set<AnyCancellable> = []
+    let saveToUserDict = true
 
     // MARK: NSFilePresenter
     let presentedItemURL: URL?
@@ -61,7 +62,7 @@ class UserDict: NSObject, DictProtocol {
                 try Data().write(to: userDictFileURL, options: .withoutOverwriting)
             }
             do {
-                let userDict = try FileDict(contentsOf: userDictFileURL, type: .traditional(.utf8), readonly: false)
+                let userDict = try FileDict(contentsOf: userDictFileURL, type: .traditional(.utf8), readonly: false, saveToUserDict: true)
                 self.userDict = userDict
             } catch {
                 self.userDict = nil
@@ -113,6 +114,10 @@ class UserDict: NSObject, DictProtocol {
      */
     @MainActor func referDicts(_ yomi: String, option: DictReferringOption? = nil) -> [Candidate] {
         var result: [Candidate] = []
+        func wordToCandidate(_ word: Word, saveToUserDict: Bool) -> Candidate {
+            let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
+            return Candidate(word.word, annotations: annotations, saveToUserDict: saveToUserDict)
+        }
         var candidates = refer(yomi, option: option).map { word in
             let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
             return Candidate(word.word, annotations: annotations)
@@ -124,6 +129,15 @@ class UserDict: NSObject, DictProtocol {
                 return Candidate(word, saveToUserDict: false)
             }
             candidates.append(contentsOf: dateCandidates)
+        }
+        // ユーザー辞書、それ以外の辞書の順に参照する
+        candidates.append(contentsOf: refer(yomi, option: option).map { word in
+            return wordToCandidate(word, saveToUserDict: saveToUserDict)
+        })
+        dicts.forEach { dict in
+            candidates.append(contentsOf: dict.refer(yomi, option: option).map {
+                wordToCandidate($0, saveToUserDict: dict.saveToUserDict)
+            })
         }
         // ひとまずskkservを辞書として使う場合はファイル辞書より後に追加する
         if let skkservDict = Global.skkservDict {
@@ -143,14 +157,30 @@ class UserDict: NSObject, DictProtocol {
                     let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
                     return Candidate(convertedWord,
                                      annotations: annotations,
-                                     original: Candidate.Original(midashi: midashi, word: word.word))
+                                     original: Candidate.Original(midashi: midashi, word: word.word),
+                                     saveToUserDict: saveToUserDict)
                 })
+                dicts.forEach { dict in
+                    candidates.append(contentsOf: dict.refer(midashi, option: option).compactMap { word in
+                        guard let numberCandidate = try? NumberCandidate(yomi: word.word) else { return nil }
+                        guard let convertedWord = numberCandidate.toString(yomi: numberYomi) else { return nil }
+                        let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
+                        return Candidate(convertedWord,
+                                         annotations: annotations,
+                                         original: Candidate.Original(midashi: midashi, word: word.word),
+                                         saveToUserDict: dict.saveToUserDict)
+                    })
+                }
             }
         }
         for candidate in candidates {
             if let index = result.firstIndex(where: { $0.word == candidate.word }) {
                 // 注釈だけマージする
-                result[index].appendAnnotations(candidate.annotations)
+                do {
+                    result[index] = try result[index].merge(candidate)
+                } catch {
+                    logger.error("異なる変換結果をもつ変換候補同士をマージしようとしました。バグと思われます。")
+                }
             } else {
                 result.append(candidate)
             }
@@ -159,24 +189,15 @@ class UserDict: NSObject, DictProtocol {
     }
 
     /**
-     * 非プライベートモード時はユーザー辞書、それ以外の辞書の順に参照する。
      * プライベートモードで入力したエントリは参照しない。
      */
     func refer(_ yomi: String, option: DictReferringOption? = nil) -> [Word] {
-        if let userDict = userDict {
-            var result: [Word] = if !privateMode.value || !ignoreUserDictInPrivateMode.value {
-                userDict.refer(yomi, option: option)
+        if let userDict {
+            if privateMode.value && ignoreUserDictInPrivateMode.value {
+                return []
             } else {
-                []
+                return userDict.refer(yomi, option: option)
             }
-            dicts.forEach { dict in
-                dict.refer(yomi, option: option).forEach { found in
-                    if !result.contains(found) {
-                        result.append(found)
-                    }
-                }
-            }
-            return result
         } else {
             return []
         }
