@@ -38,6 +38,7 @@ final class DictSetting: ObservableObject, Identifiable {
             // v1.0.1まではJSON形式がなかったので従来形式として扱う
             self.type = .traditional(String.Encoding(rawValue: encoding))
         }
+        // v2.2.1までは存在しなかった設定
         self.saveToUserDict = dictionary["saveToUserDict"] as? Bool ?? true
     }
 

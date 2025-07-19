@@ -12,8 +12,8 @@ final class DictSettingTests: XCTestCase {
             "enabled": true,
             "encoding": String.Encoding.utf8.rawValue,
         ]))
-        //
-        // typeはv2.2.1まで設定としてなかったのでtradditional
+        XCTAssertEqual(dictSetting.filename, "foo")
+        // typeはv1.0.1まで設定としてなかったのでtradditional
         XCTAssertEqual(dictSetting.type, .traditional(.utf8))
         // saveToUserDictはv.2.2.1まで設定としてなかったのでtrue
         XCTAssertTrue(dictSetting.saveToUserDict)

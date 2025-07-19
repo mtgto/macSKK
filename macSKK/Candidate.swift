@@ -103,4 +103,3 @@ struct Candidate: Hashable {
                          saveToUserDict: saveToUserDict || other.saveToUserDict)
     }
 }
-
