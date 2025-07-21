@@ -334,6 +334,14 @@ class UserDict: NSObject, DictProtocol {
         }
         return nil
     }
+
+    var hasUnsavedChanges: Bool {
+        if let dict = userDict as? FileDict {
+            return dict.hasUnsavedChanges
+        } else {
+            return false
+        }
+    }
 }
 
 extension UserDict: NSFilePresenter {
