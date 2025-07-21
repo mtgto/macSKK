@@ -245,9 +245,11 @@ class InputController: IMKInputController {
         preferenceMenu.addItem(
             withTitle: String(localized: "MenuItemPreference", comment: "Preferences…"),
             action: #selector(showSettings), keyEquivalent: "")
-        preferenceMenu.addItem(
-            withTitle: String(localized: "MenuItemSaveDict", comment: "Save User Dictionary"),
-            action: #selector(saveDict), keyEquivalent: "")
+        if Global.dictionary.hasUnsavedChanges {
+            preferenceMenu.addItem(
+                withTitle: String(localized: "MenuItemSaveDict", comment: "Save User Dictionary"),
+                action: #selector(saveDict), keyEquivalent: "")
+        }
         let privateModeItem = NSMenuItem(title: String(localized: "MenuItemPrivateMode", comment: "Private mode"),
                                          action: #selector(togglePrivateMode),
                                          keyEquivalent: "")
