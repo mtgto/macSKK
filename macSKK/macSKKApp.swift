@@ -59,7 +59,7 @@ struct macSKKApp: App {
             ).appendingPathComponent("Dictionaries")
             let settingsViewModel = try SettingsViewModel(dictionariesDirectoryUrl: dictionariesDirectoryUrl)
             let settingsWindow = SettingsWindow(settingsViewModel: settingsViewModel)
-            Global.privateMode.send(UserDefaults.standard.bool(forKey: UserDefaultsKeys.privateMode))
+            Global.privateMode.send(UserDefaults.app.bool(forKey: UserDefaultsKeys.privateMode))
 
             // SettingsViewModelの初期化が終わったあとにユーザー辞書を読み込まないと辞書のロード状態が設定されない
             Global.dictionary = try UserDict(dicts: [],
@@ -176,7 +176,7 @@ struct macSKKApp: App {
     }
 
     private static func setupUserDefaults() {
-        UserDefaults.standard.register(defaults: [
+        UserDefaults.app.register(defaults: [
             UserDefaultsKeys.dictionaries: [],
             UserDefaultsKeys.directModeBundleIdentifiers: [String](),
             UserDefaultsKeys.selectedInputSource: InputSource.defaultInputSourceId,
@@ -241,7 +241,7 @@ struct macSKKApp: App {
             }
             return nil
         }
-        let dictSettings = UserDefaults.standard.array(forKey: "dictionaries")?.compactMap { obj in
+        let dictSettings = UserDefaults.app.array(forKey: "dictionaries")?.compactMap { obj in
             if let setting = obj as? [String: Any], let dictSetting = DictSetting(setting) {
                 if validFilenames.contains(dictSetting.filename) {
                     return dictSetting
@@ -253,7 +253,7 @@ struct macSKKApp: App {
             // 再起動してもおそらく同じ理由でこけるので、リセットしちゃう
             // TODO: Notification Center経由でユーザーにも破壊的処理が起きたことを通知してある
             logger.error("環境設定の辞書設定が壊れています")
-            UserDefaults.standard.removeObject(forKey: "dictionaries")
+            UserDefaults.app.removeObject(forKey: "dictionaries")
             return
         }
         settingsViewModel.dictSettings = dictSettings
@@ -268,7 +268,7 @@ struct macSKKApp: App {
     }
 
     private func setupDirectMode() {
-        if let bundleIdentifiers = UserDefaults.standard.array(forKey: "directModeBundleIdentifiers") as? [String] {
+        if let bundleIdentifiers = UserDefaults.app.array(forKey: "directModeBundleIdentifiers") as? [String] {
             Global.directModeBundleIdentifiers.send(bundleIdentifiers)
         }
     }
