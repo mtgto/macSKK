@@ -87,7 +87,7 @@ class UserDict: NSObject, DictProtocol {
             } else {
                 logger.log("プライベートモードが解除されました")
             }
-            UserDefaults.standard.set(privateMode, forKey: UserDefaultsKeys.privateMode)
+            UserDefaults.app.set(privateMode, forKey: UserDefaultsKeys.privateMode)
         }
         .store(in: &cancellables)
     }
