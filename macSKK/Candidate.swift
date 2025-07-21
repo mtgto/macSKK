@@ -3,6 +3,10 @@
 
 import Foundation
 
+fileprivate enum MergeError: Error, LocalizedError {
+    case invalidArgument
+}
+
 /**
  * 変換候補
  */
@@ -72,12 +76,30 @@ struct Candidate: Hashable {
         hasher.combine(word)
     }
 
-    /// 注釈を追加する。すでに同じテキストをもつ注釈があれば追加されない。
-    mutating func appendAnnotations(_ annotations: [Annotation]) {
-        for annotation in annotations {
-            if self.annotations.allSatisfy({ $0.text != annotation.text }) {
-                self.annotations.append(annotation)
+    /**
+     * 同じ変換候補を注釈をマージして返す。
+     *
+     * 引数と変換結果が同じでない場合はMergeErrorを返す。
+     *
+     * saveToUserDictは今のところ次の仕様とする
+     * - self, otherのsaveToUserDictが同じ値ならその値
+     * - self, otherのsaveToUserDictが違う値ならtrue
+     */
+    func merge(_ other: Candidate) throws -> Candidate {
+        guard word == other.word else {
+            throw MergeError.invalidArgument
+        }
+        let annotations = other.annotations.reduce(annotations) { result, annotation in
+            if result.allSatisfy( { $0.text != annotation.text } ) {
+                return result + [annotation]
+            } else {
+                return result
             }
         }
+
+        return Candidate(word,
+                         annotations: annotations,
+                         original: original,
+                         saveToUserDict: saveToUserDict || other.saveToUserDict)
     }
 }
