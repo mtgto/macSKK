@@ -88,7 +88,7 @@ class InputController: IMKInputController {
                     if !self.directMode {
                         textInput.selectMode(inputMode.rawValue)
                         
-                        let showInputModePanel = UserDefaults.standard.bool(forKey: UserDefaultsKeys.showInputModePanel)
+                        let showInputModePanel = UserDefaults.app.bool(forKey: UserDefaultsKeys.showInputModePanel)
                         if showInputModePanel {
                             displayInputModePanel.send(inputMode)
                         }
@@ -98,7 +98,7 @@ class InputController: IMKInputController {
         }.store(in: &cancellables)
         stateMachine.candidateEvent.sink { [weak self] candidates in
             if let self {
-                let showAnnotation = UserDefaults.standard.bool(forKey: UserDefaultsKeys.showAnnotation)
+                let showAnnotation = UserDefaults.app.bool(forKey: UserDefaultsKeys.showAnnotation)
                 Global.candidatesPanel.setShowAnnotationPopover(showAnnotation)
                 if let candidates {
                     // 下線のスタイルがthickのときに被らないように1ピクセル下に余白を設ける
@@ -137,7 +137,7 @@ class InputController: IMKInputController {
             self?.stateMachine.didDoubleSelectCandidate(doubleSelected)
         }.store(in: &cancellables)
         selectedWord.removeDuplicates().compactMap({ $0 }).sink { [weak self] word in
-            if UserDefaults.standard.bool(forKey: UserDefaultsKeys.showAnnotation) {
+            if UserDefaults.app.bool(forKey: UserDefaultsKeys.showAnnotation) {
                 if let self, let systemAnnotation = SystemDict.lookup(word, for: Global.systemDict), !systemAnnotation.isEmpty {
                     Global.candidatesPanel.setSystemAnnotation(systemAnnotation, for: word)
                     Global.candidatesPanel.show(windowLevel: windowLevel(for: textInput))
@@ -190,7 +190,7 @@ class InputController: IMKInputController {
                 }
             }.store(in: &cancellables)
 
-        stateMachine.inlineCandidateCount = UserDefaults.standard.integer(forKey: UserDefaultsKeys.inlineCandidateCount)
+        stateMachine.inlineCandidateCount = UserDefaults.app.integer(forKey: UserDefaultsKeys.inlineCandidateCount)
         NotificationCenter.default.publisher(for: notificationNameInlineCandidateCount)
             .sink { [weak self] notification in
                 if let inlineCandidateCount = notification.object as? Int, inlineCandidateCount >= 0 {
@@ -306,7 +306,7 @@ class InputController: IMKInputController {
             return
         }
         
-        let showInputModePanel = UserDefaults.standard.bool(forKey: UserDefaultsKeys.showInputModePanel)
+        let showInputModePanel = UserDefaults.app.bool(forKey: UserDefaultsKeys.showInputModePanel)
         if showInputModePanel && !directMode {
             // Safariでアドレスバーに移動するときなど、処理が固まることがあるので非同期で実行する
             // ただしIMKTextInputへのアクセスはsetValue内で同期で行う必要がある
@@ -369,7 +369,7 @@ class InputController: IMKInputController {
 
     // キー配列を設定する
     private func setCustomInputSource(textInput: any IMKTextInput) {
-        if let inputSourceID = UserDefaults.standard.string(forKey: UserDefaultsKeys.selectedInputSource) {
+        if let inputSourceID = UserDefaults.app.string(forKey: UserDefaultsKeys.selectedInputSource) {
             logger.info("InputSourceIDを \(inputSourceID, privacy: .public) に設定します")
             textInput.overrideKeyboard(withKeyboardNamed: inputSourceID)
         } else {

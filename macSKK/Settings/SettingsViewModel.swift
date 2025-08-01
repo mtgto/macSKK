@@ -202,20 +202,20 @@ final class SettingsViewModel: ObservableObject {
 
     init(dictionariesDirectoryUrl: URL) throws {
         self.dictionariesDirectoryUrl = dictionariesDirectoryUrl
-        if let bundleIdentifiers = UserDefaults.standard.array(forKey: "directModeBundleIdentifiers") as? [String] {
+        if let bundleIdentifiers = UserDefaults.app.array(forKey: "directModeBundleIdentifiers") as? [String] {
             directModeApplications = bundleIdentifiers.map { DirectModeApplication(bundleIdentifier: $0) }
         }
-        if let selectedInputSourceId = UserDefaults.standard.string(forKey: UserDefaultsKeys.selectedInputSource) {
+        if let selectedInputSourceId = UserDefaults.app.string(forKey: UserDefaultsKeys.selectedInputSource) {
             self.selectedInputSourceId = selectedInputSourceId
         } else {
             selectedInputSourceId = InputSource.defaultInputSourceId
         }
-        showAnnotation = UserDefaults.standard.bool(forKey: UserDefaultsKeys.showAnnotation)
-        inlineCandidateCount = UserDefaults.standard.integer(forKey: UserDefaultsKeys.inlineCandidateCount)
-        candidatesFontSize = UserDefaults.standard.integer(forKey: UserDefaultsKeys.candidatesFontSize)
-        annotationFontSize = UserDefaults.standard.integer(forKey: UserDefaultsKeys.annotationFontSize)
-        findCompletionFromAllDicts = UserDefaults.standard.bool(forKey: UserDefaultsKeys.findCompletionFromAllDicts)
-        workaroundApplications = UserDefaults.standard.array(forKey: UserDefaultsKeys.workarounds)?.compactMap { workaround in
+        showAnnotation = UserDefaults.app.bool(forKey: UserDefaultsKeys.showAnnotation)
+        inlineCandidateCount = UserDefaults.app.integer(forKey: UserDefaultsKeys.inlineCandidateCount)
+        candidatesFontSize = UserDefaults.app.integer(forKey: UserDefaultsKeys.candidatesFontSize)
+        annotationFontSize = UserDefaults.app.integer(forKey: UserDefaultsKeys.annotationFontSize)
+        findCompletionFromAllDicts = UserDefaults.app.bool(forKey: UserDefaultsKeys.findCompletionFromAllDicts)
+        workaroundApplications = UserDefaults.app.array(forKey: UserDefaultsKeys.workarounds)?.compactMap { workaround in
             if let workaround = workaround as? Dictionary<String, Any>, let bundleIdentifier = workaround["bundleIdentifier"] as? String,
                 let insertBlankString = workaround["insertBlankString"] as? Bool {
                 // treatFirstCharacterAsMarkedTextはv2.1+ で追加された
@@ -227,13 +227,13 @@ final class SettingsViewModel: ObservableObject {
                 return nil
             }
         } ?? []
-        guard let skkservDictSettingDict = UserDefaults.standard.dictionary(forKey: UserDefaultsKeys.skkservClient),
+        guard let skkservDictSettingDict = UserDefaults.app.dictionary(forKey: UserDefaultsKeys.skkservClient),
         let skkservDictSetting = SKKServDictSetting(skkservDictSettingDict) else {
             fatalError("skkservClientの設定がありません")
         }
         self.skkservDictSetting = skkservDictSetting
 
-        let customizedKeyBindingSets = UserDefaults.standard.array(forKey: UserDefaultsKeys.keyBindingSets)?.compactMap {
+        let customizedKeyBindingSets = UserDefaults.app.array(forKey: UserDefaultsKeys.keyBindingSets)?.compactMap {
             if let dict = $0 as? [String: Any] {
                 KeyBindingSet(dict: dict)
             } else {
@@ -241,25 +241,25 @@ final class SettingsViewModel: ObservableObject {
             }
         }
         let keyBindingSets = [KeyBindingSet.defaultKeyBindingSet] + (customizedKeyBindingSets ?? [])
-        let selectedKeyBindingSetId = UserDefaults.standard.string(forKey: UserDefaultsKeys.selectedKeyBindingSetId) ?? KeyBindingSet.defaultId
+        let selectedKeyBindingSetId = UserDefaults.app.string(forKey: UserDefaultsKeys.selectedKeyBindingSetId) ?? KeyBindingSet.defaultId
         self.keyBindingSets = keyBindingSets
         self.selectedKeyBindingSet = keyBindingSets.first(where: { $0.id == selectedKeyBindingSetId }) ?? KeyBindingSet.defaultKeyBindingSet
-        if let systemDictId = UserDefaults.standard.string(forKey: UserDefaultsKeys.systemDict), let systemDict = SystemDict.Kind(rawValue: systemDictId) {
+        if let systemDictId = UserDefaults.app.string(forKey: UserDefaultsKeys.systemDict), let systemDict = SystemDict.Kind(rawValue: systemDictId) {
             self.systemDict = systemDict
         } else {
             self.systemDict = .daijirin
         }
 
-        selectCandidateKeys = UserDefaults.standard.string(forKey: UserDefaultsKeys.selectCandidateKeys)!
-        enterNewLine = UserDefaults.standard.bool(forKey: UserDefaultsKeys.enterNewLine)
-        showCompletion = UserDefaults.standard.bool(forKey: UserDefaultsKeys.showCompletion)
-        selectingBackspace = SelectingBackspace(rawValue: UserDefaults.standard.integer(forKey: UserDefaultsKeys.selectingBackspace)) ?? SelectingBackspace.default
-        comma = Punctuation.Comma(rawValue: UserDefaults.standard.integer(forKey: UserDefaultsKeys.punctuation)) ?? .default
-        period = Punctuation.Period(rawValue: UserDefaults.standard.integer(forKey: UserDefaultsKeys.punctuation)) ?? .default
-        ignoreUserDictInPrivateMode = UserDefaults.standard.bool(forKey: UserDefaultsKeys.ignoreUserDictInPrivateMode)
-        showInputIconModal = UserDefaults.standard.bool(forKey: UserDefaultsKeys.showInputModePanel)
-        candidateListDirection = CandidateListDirection(rawValue: UserDefaults.standard.integer(forKey: UserDefaultsKeys.candidateListDirection)) ?? .vertical
-        if let dateConversionDict = UserDefaults.standard.dictionary(forKey: UserDefaultsKeys.dateConversions),
+        selectCandidateKeys = UserDefaults.app.string(forKey: UserDefaultsKeys.selectCandidateKeys)!
+        enterNewLine = UserDefaults.app.bool(forKey: UserDefaultsKeys.enterNewLine)
+        showCompletion = UserDefaults.app.bool(forKey: UserDefaultsKeys.showCompletion)
+        selectingBackspace = SelectingBackspace(rawValue: UserDefaults.app.integer(forKey: UserDefaultsKeys.selectingBackspace)) ?? SelectingBackspace.default
+        comma = Punctuation.Comma(rawValue: UserDefaults.app.integer(forKey: UserDefaultsKeys.punctuation)) ?? .default
+        period = Punctuation.Period(rawValue: UserDefaults.app.integer(forKey: UserDefaultsKeys.punctuation)) ?? .default
+        ignoreUserDictInPrivateMode = UserDefaults.app.bool(forKey: UserDefaultsKeys.ignoreUserDictInPrivateMode)
+        showInputIconModal = UserDefaults.app.bool(forKey: UserDefaultsKeys.showInputModePanel)
+        candidateListDirection = CandidateListDirection(rawValue: UserDefaults.app.integer(forKey: UserDefaultsKeys.candidateListDirection)) ?? .vertical
+        if let dateConversionDict = UserDefaults.app.dictionary(forKey: UserDefaultsKeys.dateConversions),
            let dateConversionsRaw = dateConversionDict["conversions"] as? [[String: Any]],
            let dateYomisRaw = dateConversionDict["yomis"] as? [[String: Any]] {
             dateYomis = dateYomisRaw.compactMap({ DateConversion.Yomi(dict: $0) })
@@ -311,7 +311,7 @@ final class SettingsViewModel: ObservableObject {
                 }
             }
             Global.dictionary.dicts = enabledDicts
-            UserDefaults.standard.set(self.dictSettings.map { $0.encode() }, forKey: UserDefaultsKeys.dictionaries)
+            UserDefaults.app.set(self.dictSettings.map { $0.encode() }, forKey: UserDefaultsKeys.dictionaries)
         }
         .store(in: &cancellables)
 
@@ -324,12 +324,12 @@ final class SettingsViewModel: ObservableObject {
                 logger.log("skkserv辞書は無効化されています")
                 Global.skkservDict = nil
             }
-            UserDefaults.standard.set(setting.encode(), forKey: UserDefaultsKeys.skkservClient)
+            UserDefaults.app.set(setting.encode(), forKey: UserDefaultsKeys.skkservClient)
         }.store(in: &cancellables)
 
         $directModeApplications.dropFirst().sink { applications in
             let bundleIdentifiers = applications.map { $0.bundleIdentifier }
-            UserDefaults.standard.set(bundleIdentifiers, forKey: UserDefaultsKeys.directModeBundleIdentifiers)
+            UserDefaults.app.set(bundleIdentifiers, forKey: UserDefaultsKeys.directModeBundleIdentifiers)
             Global.directModeBundleIdentifiers.send(bundleIdentifiers)
         }
         .store(in: &cancellables)
@@ -340,7 +340,7 @@ final class SettingsViewModel: ObservableObject {
                 "insertBlankString": $0.insertBlankString,
                 "treatFirstCharacterAsMarkedText": $0.treatFirstCharacterAsMarkedText,
             ] }
-            UserDefaults.standard.set(settings, forKey: UserDefaultsKeys.workarounds)
+            UserDefaults.app.set(settings, forKey: UserDefaultsKeys.workarounds)
         }.store(in: &cancellables)
 
         $workaroundApplications.sink { applications in
@@ -401,7 +401,7 @@ final class SettingsViewModel: ObservableObject {
         $selectedInputSourceId.removeDuplicates().sink { [weak self] selectedInputSourceId in
             if let selectedInputSource = self?.inputSources.first(where: { $0.id == selectedInputSourceId }) {
                 logger.info("キー配列を \(selectedInputSource.localizedName, privacy: .public) (\(selectedInputSourceId, privacy: .public)) に設定しました")
-                UserDefaults.standard.set(selectedInputSource.id, forKey: UserDefaultsKeys.selectedInputSource)
+                UserDefaults.app.set(selectedInputSource.id, forKey: UserDefaultsKeys.selectedInputSource)
             } else {
                 if let self, !self.inputSources.isEmpty {
                     logger.error("キー配列 \(selectedInputSourceId, privacy: .public) が見つかりませんでした")
@@ -410,43 +410,43 @@ final class SettingsViewModel: ObservableObject {
         }.store(in: &cancellables)
 
         $showAnnotation.dropFirst().sink { showAnnotation in
-            UserDefaults.standard.set(showAnnotation, forKey: UserDefaultsKeys.showAnnotation)
+            UserDefaults.app.set(showAnnotation, forKey: UserDefaultsKeys.showAnnotation)
             logger.log("注釈表示を\(showAnnotation ? "表示" : "非表示", privacy: .public)に変更しました")
         }.store(in: &cancellables)
 
         $inlineCandidateCount.dropFirst().sink { inlineCandidateCount in
-            UserDefaults.standard.set(inlineCandidateCount, forKey: UserDefaultsKeys.inlineCandidateCount)
+            UserDefaults.app.set(inlineCandidateCount, forKey: UserDefaultsKeys.inlineCandidateCount)
             NotificationCenter.default.post(name: notificationNameInlineCandidateCount, object: inlineCandidateCount)
             logger.log("インラインで表示する変換候補の数を\(inlineCandidateCount)個に変更しました")
         }.store(in: &cancellables)
 
         $candidatesFontSize.dropFirst().sink { candidatesFontSize in
-            UserDefaults.standard.set(candidatesFontSize, forKey: UserDefaultsKeys.candidatesFontSize)
+            UserDefaults.app.set(candidatesFontSize, forKey: UserDefaultsKeys.candidatesFontSize)
             NotificationCenter.default.post(name: notificationNameCandidatesFontSize, object: candidatesFontSize)
             logger.log("変換候補のフォントサイズを\(candidatesFontSize)に変更しました")
         }.store(in: &cancellables)
 
         $annotationFontSize.dropFirst().sink { annotationFontSize in
-            UserDefaults.standard.set(annotationFontSize, forKey: UserDefaultsKeys.annotationFontSize)
+            UserDefaults.app.set(annotationFontSize, forKey: UserDefaultsKeys.annotationFontSize)
             NotificationCenter.default.post(name: notificationNameAnnotationFontSize, object: annotationFontSize)
             logger.log("注釈のフォントサイズを\(annotationFontSize)に変更しました")
         }.store(in: &cancellables)
 
         $selectCandidateKeys.dropFirst().sink { selectCandidateKeys in
-            UserDefaults.standard.set(selectCandidateKeys, forKey: UserDefaultsKeys.selectCandidateKeys)
+            UserDefaults.app.set(selectCandidateKeys, forKey: UserDefaultsKeys.selectCandidateKeys)
             Global.selectCandidateKeys = selectCandidateKeys.lowercased().map { $0 }
             logger.log("変換候補決定のキーを\"\(selectCandidateKeys, privacy: .public)\"に変更しました")
         }.store(in: &cancellables)
 
         $findCompletionFromAllDicts.dropFirst().sink { findCompletionFromAllDicts in
-            UserDefaults.standard.set(findCompletionFromAllDicts, forKey: UserDefaultsKeys.findCompletionFromAllDicts)
+            UserDefaults.app.set(findCompletionFromAllDicts, forKey: UserDefaultsKeys.findCompletionFromAllDicts)
             NotificationCenter.default.post(name: notificationNameFindCompletionFromAllDicts, object: findCompletionFromAllDicts)
             logger.log("一般の辞書を使って補完するかを\(findCompletionFromAllDicts)に変更しました")
         }.store(in: &cancellables)
 
         $keyBindingSets.dropFirst().sink { keyBindingSets in
             // デフォルトのキーバインド以外をUserDefaultsに保存する
-            UserDefaults.standard.set(keyBindingSets.filter({ $0.id != KeyBindingSet.defaultId }).map { $0.encode() },
+            UserDefaults.app.set(keyBindingSets.filter({ $0.id != KeyBindingSet.defaultId }).map { $0.encode() },
                                       forKey: UserDefaultsKeys.keyBindingSets)
             Global.keyBinding = keyBindingSets.first { $0.id == selectedKeyBindingSetId } ?? KeyBindingSet.defaultKeyBindingSet
         }.store(in: &cancellables)
@@ -454,32 +454,32 @@ final class SettingsViewModel: ObservableObject {
         $selectedKeyBindingSet.dropFirst().sink { selectedKeyBindingSet in
             if Global.keyBinding.id != selectedKeyBindingSet.id {
                 logger.log("キーバインドのセットを \(Global.keyBinding.id, privacy: .public) から \(selectedKeyBindingSet.id, privacy: .public) に変更しました")
-                UserDefaults.standard.set(selectedKeyBindingSet.id, forKey: UserDefaultsKeys.selectedKeyBindingSetId)
+                UserDefaults.app.set(selectedKeyBindingSet.id, forKey: UserDefaultsKeys.selectedKeyBindingSetId)
                 Global.keyBinding = selectedKeyBindingSet
             }
         }.store(in: &cancellables)
 
         $enterNewLine.dropFirst().sink { enterNewLine in
             logger.log("Enterキーで変換確定と一緒に改行する設定を\(enterNewLine ? "有効" : "無効", privacy: .public)にしました") 
-            UserDefaults.standard.set(enterNewLine, forKey: UserDefaultsKeys.enterNewLine)
+            UserDefaults.app.set(enterNewLine, forKey: UserDefaultsKeys.enterNewLine)
             Global.enterNewLine = enterNewLine
         }.store(in: &cancellables)
 
         $showCompletion.dropFirst().sink { showCompletion in
             logger.log("補完候補表示を\(showCompletion ? "表示" : "非表示", privacy: .public)に変更しました")
-            UserDefaults.standard.set(showCompletion, forKey: UserDefaultsKeys.showCompletion)
+            UserDefaults.app.set(showCompletion, forKey: UserDefaultsKeys.showCompletion)
             Global.showCompletion = showCompletion
         }.store(in: &cancellables)
 
         $systemDict.dropFirst().sink { systemDict in
             logger.log("注釈で使用するシステム辞書を \(systemDict.rawValue, privacy: .public) に変更しました")
-            UserDefaults.standard.set(systemDict.rawValue, forKey: UserDefaultsKeys.systemDict)
+            UserDefaults.app.set(systemDict.rawValue, forKey: UserDefaultsKeys.systemDict)
             Global.systemDict = systemDict
         }.store(in: &cancellables)
 
         $selectingBackspace.dropFirst().sink { selectingBackspace in
             logger.log("変換候補選択時のバックスペースの挙動を \(selectingBackspace.description, privacy: .public) に変更しました")
-            UserDefaults.standard.set(selectingBackspace.rawValue, forKey: UserDefaultsKeys.selectingBackspace)
+            UserDefaults.app.set(selectingBackspace.rawValue, forKey: UserDefaultsKeys.selectingBackspace)
             Global.selectingBackspace = selectingBackspace
         }.store(in: &cancellables)
 
@@ -487,22 +487,22 @@ final class SettingsViewModel: ObservableObject {
             logger.log("句読点の入力が変更されました。 カンマ: \(comma.description, privacy: .public), ピリオド: \(period.description, privacy: .public)")
             let punctuation = Punctuation(comma: comma, period: period)
             Global.punctuation = punctuation
-            UserDefaults.standard.set(punctuation.rawValue, forKey: UserDefaultsKeys.punctuation)
+            UserDefaults.app.set(punctuation.rawValue, forKey: UserDefaultsKeys.punctuation)
         }.store(in: &cancellables)
 
         $ignoreUserDictInPrivateMode.dropFirst().sink { ignoreUserDictInPrivateMode in
             logger.log("プライベートモードでユーザー辞書を \(ignoreUserDictInPrivateMode ? "参照しない" : "参照する", privacy: .public) に変更しました")
             Global.ignoreUserDictInPrivateMode.send(ignoreUserDictInPrivateMode)
-            UserDefaults.standard.set(ignoreUserDictInPrivateMode, forKey: UserDefaultsKeys.ignoreUserDictInPrivateMode)
+            UserDefaults.app.set(ignoreUserDictInPrivateMode, forKey: UserDefaultsKeys.ignoreUserDictInPrivateMode)
         }.store(in: &cancellables)
         
         $showInputIconModal.dropFirst().sink { showInputModePanel in
-            UserDefaults.standard.set(showInputModePanel, forKey: UserDefaultsKeys.showInputModePanel)
+            UserDefaults.app.set(showInputModePanel, forKey: UserDefaultsKeys.showInputModePanel)
             logger.log("入力モードアイコンを\(showInputModePanel ? "表示" : "非表示", privacy: .public)に変更しました")
         }.store(in: &cancellables)
 
         $candidateListDirection.dropFirst().sink { candidateListDirection in
-            UserDefaults.standard.set(candidateListDirection.rawValue, forKey: UserDefaultsKeys.candidateListDirection)
+            UserDefaults.app.set(candidateListDirection.rawValue, forKey: UserDefaultsKeys.candidateListDirection)
             logger.log("変換候補リストを\(candidateListDirection == .vertical ? "縦" : "横", privacy: .public)で表示するように変更しました")
             Global.candidateListDirection.send(candidateListDirection)
         }.store(in: &cancellables)
@@ -768,6 +768,6 @@ final class SettingsViewModel: ObservableObject {
             "yomis": dateYomis.map { $0.encode() },
             "conversions": dateConversions.map({ $0.encode() }),
         ]
-        UserDefaults.standard.set(dict, forKey: UserDefaultsKeys.dateConversions)
+        UserDefaults.app.set(dict, forKey: UserDefaultsKeys.dateConversions)
     }
 }
