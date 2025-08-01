@@ -347,7 +347,7 @@ class UserDict: NSObject, DictProtocol {
 extension UserDict: NSFilePresenter {
     func presentedSubitemDidAppear(at url: URL) {
         do {
-            if try isValidFile(url) {
+            if try isFile(url) {
                 logger.log("新しいファイル \(url.lastPathComponent, privacy: .public) が作成されました")
                 NotificationCenter.default.post(name: notificationNameDictFileDidAppear, object: url)
             } else {
@@ -374,7 +374,7 @@ extension UserDict: NSFilePresenter {
 
         var relationship: FileManager.URLRelationship = .same
         do {
-            if try isValidFile(url) {
+            if try isFile(url) {
                 try FileManager.default.getRelationship(&relationship, ofDirectoryAt: dictionariesDirectoryURL, toItemAt: url)
                 if case .contains = relationship {
                     logger.log("ファイル \(url.lastPathComponent, privacy: .public) が辞書フォルダに移動または更新されました")
@@ -405,8 +405,13 @@ extension UserDict: NSFilePresenter {
         logger.log("ファイル \(url.lastPathComponent, privacy: .public) が辞書フォルダから削除されます")
     }
 
-    // 辞書ファイルとして問題があるファイルでないかを判定する
-    private func isValidFile(_ fileURL: URL) throws -> Bool {
-        return try fileURL.isReadable()
+    /// ファイルがディレクトリまたは不可視ファイルの場合はfalseを返す
+    /// 読み込み権限がなかったり、App Sandboxのコンテナ外へのシンボリックリンクのように実際には読み込めないファイルについてはtrueを返す
+    private func isFile(_ fileURL: URL) throws -> Bool {
+        let resourceValues = try fileURL.resourceValues(forKeys: [.isDirectoryKey, .isHiddenKey])
+        if let isDirectory = resourceValues.isDirectory, let isHidden = resourceValues.isHidden {
+            return !isDirectory && !isHidden
+        }
+        fatalError("isDirectory, isHiddenの読み込みに失敗しました")
     }
 }
