@@ -171,6 +171,18 @@ class UserDict: NSObject, DictProtocol {
                                          saveToUserDict: dict.saveToUserDict)
                     })
                 }
+                if let skkservDict = Global.skkservDict {
+                    let skkservCandidates: [Candidate] = skkservDict.refer(midashi, option: option).compactMap { word in
+                        guard let numberCandidate = try? NumberCandidate(yomi: word.word) else { return nil }
+                        guard let convertedWord = numberCandidate.toString(yomi: numberYomi) else { return nil }
+                        let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
+                        return Candidate(convertedWord,
+                                         annotations: annotations,
+                                         original: Candidate.Original(midashi: midashi, word: word.word),
+                                         saveToUserDict: skkservDict.saveToUserDict)
+                    }
+                    candidates.append(contentsOf: skkservCandidates)
+                }
             }
         }
         for candidate in candidates {
