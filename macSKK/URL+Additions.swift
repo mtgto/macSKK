@@ -22,6 +22,7 @@ extension URL {
                 return false
             }
         }
-        fatalError("isHidden, isReadable, isRegularFileの読み込みに失敗しました")
+        logger.warning("isHidden, isReadable, isRegularFileの読み込みに失敗しました")
+        return true
     }
 }
