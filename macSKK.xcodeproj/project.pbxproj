@@ -36,6 +36,7 @@
 		CE1B006A2BA5490E00C830FD /* SKKServDictView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE1B00692BA5490E00C830FD /* SKKServDictView.swift */; };
 		CE1B006C2BA54D9800C830FD /* SKKServService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE1B006B2BA54D9800C830FD /* SKKServService.swift */; };
 		CE1B006D2BA54DE400C830FD /* SKKServClientProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF3D8752B9EF0C000BD1D3A /* SKKServClientProtocol.swift */; };
+		CE1E7BAB2E406B6700C2E410 /* URL+AdditionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE1E7BAA2E406B6700C2E410 /* URL+AdditionsTests.swift */; };
 		CE2157662B2EA985006E4C41 /* UserDefaultsKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE2157652B2EA985006E4C41 /* UserDefaultsKeys.swift */; };
 		CE2F3B132C030C9A00CE342B /* KeyBindingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE2F3B122C030C9A00CE342B /* KeyBindingTests.swift */; };
 		CE313A1F2AF5213700A49142 /* Candidate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE313A1E2AF5213700A49142 /* Candidate.swift */; };
@@ -217,6 +218,7 @@
 		CE1B00672BA428AE00C830FD /* NWParameters+SKKServ.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NWParameters+SKKServ.swift"; sourceTree = "<group>"; };
 		CE1B00692BA5490E00C830FD /* SKKServDictView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServDictView.swift; sourceTree = "<group>"; };
 		CE1B006B2BA54D9800C830FD /* SKKServService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServService.swift; sourceTree = "<group>"; };
+		CE1E7BAA2E406B6700C2E410 /* URL+AdditionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URL+AdditionsTests.swift"; sourceTree = "<group>"; };
 		CE2157652B2EA985006E4C41 /* UserDefaultsKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsKeys.swift; sourceTree = "<group>"; };
 		CE2F3B122C030C9A00CE342B /* KeyBindingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyBindingTests.swift; sourceTree = "<group>"; };
 		CE313A1E2AF5213700A49142 /* Candidate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Candidate.swift; sourceTree = "<group>"; };
@@ -535,6 +537,7 @@
 				CE06CA332AAC199500E80E5E /* UserDict+Utilities.swift */,
 				CE39FA942BEB942B00E293F0 /* Character+KeyCode.swift */,
 				CED7CA572A83BFE9004EF988 /* fixture */,
+				CE1E7BAA2E406B6700C2E410 /* URL+AdditionsTests.swift */,
 			);
 			path = macSKKTests;
 			sourceTree = "<group>";
@@ -937,6 +940,7 @@
 				CEA78FAA295EBCAC00B67E25 /* StateMachineTests.swift in Sources */,
 				CE496C952B440BBD001C623C /* Data+EucJis2004Tests.swift in Sources */,
 				CEE2D9792A99FEC700A4CD76 /* CandidateTest.swift in Sources */,
+				CE1E7BAB2E406B6700C2E410 /* URL+AdditionsTests.swift in Sources */,
 				CEF0823629685C0800646366 /* StateTests.swift in Sources */,
 				CEAC95592CF34F4100CD6D55 /* PunctuationTests.swift in Sources */,
 				CED7CA3E2A8397E4004EF988 /* UpdateCheckerTests.swift in Sources */,
