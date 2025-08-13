@@ -91,4 +91,10 @@ final class EntryTests: XCTestCase {
             Entry(line: "いt /[った/行/]/入/[った/言/]/", dictId: "")?.serialize(),
             "いt /[った/行/言/]/入/")
     }
+
+    func testSerizalizeLarge() {
+        let line = "い /" + String(repeating: "イ/", count: 10000)
+        let entry = Entry(line: line, dictId: "")!
+        XCTAssertEqual(entry.serialize(), line)
+    }
 }
