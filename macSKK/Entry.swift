@@ -46,28 +46,29 @@ struct Entry: Sendable {
      * SKK辞書の一行にシリアライズする
      */
     func serialize() -> String {
-        return yomi + " /" + serializeWords(ArraySlice(candidates))
+        return yomi + " /" + serializeWords(candidates)
     }
 
-    private func serializeWords(_ words: any RandomAccessCollection<Word>) -> String {
-        if let head = words.first {
-            let tail = words.dropFirst()
+    private func serializeWords(_ words: [Word]) -> String {
+        var result = ""
+        var remainingWords = ArraySlice(words)
+
+        while !remainingWords.isEmpty {
+            let head = remainingWords.first!
+            let tail = remainingWords.dropFirst()
             if let okuri = head.okuri {
                 // 送り仮名ブロックの読みが一致しているものは1つにまとめる
                 let sameOkuriWords = tail.filter { $0.okuri == okuri }
-                let tail = tail.filter { $0.okuri != okuri }
-                if sameOkuriWords.isEmpty {
-                    return "[\(okuri)/\(serializeWord(head))/]/" + serializeWords(tail)
-                } else {
-                    let candidatesStr = ([head] + sameOkuriWords).map { serializeWord($0) }.joined(separator: "/")
-                    return "[\(okuri)/\(candidatesStr)/]/" + serializeWords(tail)
-                }
+                remainingWords = tail.filter { $0.okuri != okuri }
+
+                let candidatesStr = ([head] + sameOkuriWords).map { serializeWord($0) }.joined(separator: "/")
+                result += "[\(okuri)/\(candidatesStr)/]/"
             } else {
-                return serializeWord(head) + "/" + serializeWords(tail)
+                result += serializeWord(head) + "/"
+                remainingWords = tail
             }
-        } else {
-            return ""
         }
+        return result
     }
 
     private func serializeWord(_ word: Word) -> String {
