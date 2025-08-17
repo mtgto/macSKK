@@ -316,6 +316,38 @@ class UserDict: NSObject, DictProtocol {
         return nil
     }
 
+    /**
+     * 現在入力中のprefixに続く入力候補を返す。見つからなければ空配列を返す。
+     *
+     * 以下のように補完候補を探します。
+     * ※将来この仕様は変更する可能性が大いにあります。
+     *
+     * - prefixが空文字列なら空配列を返す
+     * - ユーザー辞書の送りなしの読みのうち、最近変換したものから選択する。
+     * - prefixと読みが完全に一致する場合は補完候補とはしない
+     * - 数値変換用の読みは補完候補としない
+     */
+    func findCompletions(prefix: String) -> [String] {
+        if prefix.isEmpty {
+            return []
+        }
+        var results: [String] = []
+        if !privateMode.value || !ignoreUserDictInPrivateMode.value {
+            if let userDict {
+                results.append(contentsOf: userDict.findCompletions(prefix: prefix))
+            }
+        }
+        if let dateYomi = dateYomis.first(where: { $0.yomi.hasPrefix(prefix)}), !results.contains(dateYomi.yomi) {
+            results.append(dateYomi.yomi)
+        }
+        if findCompletionFromAllDicts.value {
+            for dict in dicts {
+                results.append(contentsOf: dict.findCompletions(prefix: prefix))
+            }
+        }
+        return results
+    }
+
     /// ユーザー辞書を永続化する
     func save() {
         // XcodeのEdit Scheme…でRun時とTest時の環境変数で設定しています。

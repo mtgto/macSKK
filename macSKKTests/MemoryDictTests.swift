@@ -163,7 +163,20 @@ class MemoryDictTests: XCTestCase {
         XCTAssertEqual(dict.findCompletion(prefix: "あいうえ"), "あいうえお", "あとで追加したエントリの読みを優先する")
         XCTAssertEqual(dict.findCompletion(prefix: "あいうえお"), "あいうえおか")
         dict.add(yomi: "だい#", word: Word("第1"))
-        XCTAssertNil(dict.findCompletion(prefix: "だい"), "数値変換の読みはnil")
+        XCTAssertNil(dict.findCompletion(prefix: "だい"), "数値変換の読みは補完候補とはしない")
+    }
+
+    func testFindCompletions() {
+        var dict = MemoryDict(entries: [:], readonly: false)
+        XCTAssertEqual(dict.findCompletions(prefix: ""), [], "辞書が空だと空")
+        dict.add(yomi: "あいうえおか", word: Word("アイウエオカ"))
+        XCTAssertEqual(dict.findCompletions(prefix: ""), [], "prefixが空だと空")
+        XCTAssertEqual(dict.findCompletions(prefix: "あいうえ"), ["あいうえおか"])
+        XCTAssertEqual(dict.findCompletions(prefix: "あいうえおか"), [], "完全一致する読みは補完候補とはしない")
+        dict.add(yomi: "あいうえお", word: Word("アイウエオ"))
+        XCTAssertEqual(dict.findCompletions(prefix: "あいうえ"), ["あいうえお", "あいうえおか"], "あとで追加したエントリの読みを優先する")
+        dict.add(yomi: "だい#", word: Word("第1"))
+        XCTAssertEqual(dict.findCompletions(prefix: "だい"), [], "数値変換の読みは補完候補とはしない")
     }
 
     func testReferWithOption() {
