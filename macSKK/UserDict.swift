@@ -334,7 +334,11 @@ class UserDict: NSObject, DictProtocol {
         var results: [String] = []
         if !privateMode.value || !ignoreUserDictInPrivateMode.value {
             if let userDict {
-                results.append(contentsOf: userDict.findCompletions(prefix: prefix))
+                for yomi in userDict.findCompletions(prefix: prefix) {
+                    if !results.contains(yomi) {
+                        results.append(yomi)
+                    }
+                }
             }
         }
         if let dateYomi = dateYomis.first(where: { $0.yomi.hasPrefix(prefix)}), !results.contains(dateYomi.yomi) {
@@ -342,7 +346,11 @@ class UserDict: NSObject, DictProtocol {
         }
         if findCompletionFromAllDicts.value {
             for dict in dicts {
-                results.append(contentsOf: dict.findCompletions(prefix: prefix))
+                for yomi in dict.findCompletions(prefix: prefix) {
+                    if !results.contains(yomi) {
+                        results.append(yomi)
+                    }
+                }
             }
         }
         return results

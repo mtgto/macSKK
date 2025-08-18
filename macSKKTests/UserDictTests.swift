@@ -184,4 +184,22 @@ final class UserDictTests: XCTestCase {
         XCTAssertEqual(userDict.findCompletion(prefix: "tod"), "today")
         XCTAssertEqual(userDict.findCompletion(prefix: "y"), "yesterday")
     }
+
+    func testFindCompletionsFromAllDicts() throws {
+        let privateMode = CurrentValueSubject<Bool, Never>(false)
+        let ignoreUserDictInPrivateMode = CurrentValueSubject<Bool, Never>(false)
+        let findCompletionFromAllDicts = CurrentValueSubject<Bool, Never>(true)
+        let dict1 = MemoryDict(entries: ["にほん": [Word("日本")], "にほ": [Word("2歩")]], readonly: false)
+        let dict2 = MemoryDict(entries: ["にほん": [Word("二本")], "にほんご": [Word("日本語")]], readonly: false)
+        let userDict = try UserDict(dicts: [dict1, dict2],
+                                    userDictEntries: ["にふ": [Word("二歩")], "にほん": [Word("日本")]],
+                                    privateMode: privateMode,
+                                    ignoreUserDictInPrivateMode: ignoreUserDictInPrivateMode,
+                                    findCompletionFromAllDicts: findCompletionFromAllDicts,
+                                    dateYomis: [],
+                                    dateConversions: [])
+        XCTAssertEqual(userDict.findCompletions(prefix: "にほ"), ["にほん", "にほんご"]) // ユーザー辞書が優先
+        XCTAssertEqual(userDict.findCompletions(prefix: "にほん"), ["にほんご"])
+        XCTAssertEqual(userDict.findCompletions(prefix: "にほんご"), [])
+    }
 }
