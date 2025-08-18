@@ -39,6 +39,8 @@ import Combine
     static var enterNewLine: Bool = false
     /// 補完候補を表示するか？
     static var showCompletion: Bool = true
+    /// 複数の補完候補を表示するか
+    static var showMultipleCompletions: Bool = true
     /// 注釈で使用するシステム辞書
     static var systemDict: SystemDict.Kind = .daijirin
     /// 変換候補選択中のバックスペースの挙動

@@ -162,17 +162,19 @@ class InputController: IMKInputController {
             }
         }.store(in: &cancellables)
         stateMachine.yomiEvent.sink { [weak self] yomi in
-            if let self, Global.showCompletion {
-                if let completion = Global.dictionary.findCompletion(prefix: yomi) {
-                    self.stateMachine.completion = (yomi, completion)
-                    Global.completionPanel.viewModel.completion = completion
-                    let cursorPosition = cursorPosition(for: textInput)
-                    if cursorPosition != .zero {
-                        Global.completionPanel.show(at: cursorPosition, windowLevel: windowLevel(for: textInput))
+            if let self {
+                if Global.showCompletion {
+                    if let completion = Global.dictionary.findCompletion(prefix: yomi) {
+                        self.stateMachine.completion = (yomi, completion)
+                        Global.completionPanel.viewModel.completion = completion
+                        let cursorPosition = cursorPosition(for: textInput)
+                        if cursorPosition != .zero {
+                            Global.completionPanel.show(at: cursorPosition, windowLevel: windowLevel(for: textInput))
+                        }
+                    } else {
+                        self.stateMachine.completion = nil
+                        Global.completionPanel.orderOut(nil)
                     }
-                } else {
-                    self.stateMachine.completion = nil
-                    Global.completionPanel.orderOut(nil)
                 }
             }
         }.store(in: &cancellables)

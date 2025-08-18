@@ -356,6 +356,19 @@ class UserDict: NSObject, DictProtocol {
         return results
     }
 
+    /**
+     * 現在入力中のprefixに続く変換候補を返す。
+     *
+     * asyncにするかも? (skkservとかで便利そう)
+     * AsyncStreamにするかも?
+     */
+    @MainActor func candidatesForCompletion(of word: String) -> [Candidate] {
+        // あとでいろいろ拡張するけどひとまずfindCompletionsの結果を[Candidate]にするだけ
+        return findCompletions(prefix: word).flatMap { yomi -> [Candidate] in
+            referDicts(yomi)
+        }
+    }
+
     /// ユーザー辞書を永続化する
     func save() {
         // XcodeのEdit Scheme…でRun時とTest時の環境変数で設定しています。
