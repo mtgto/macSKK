@@ -164,7 +164,21 @@ class InputController: IMKInputController {
         stateMachine.yomiEvent.sink { [weak self] yomi in
             if let self {
                 if Global.showCompletion {
-                    if let completion = Global.dictionary.findCompletion(prefix: yomi) {
+                    if Global.showMultipleCompletions {
+                        // 先頭1ページ分だけ変換候補パネルに表示する。
+                        let candidates = Global.dictionary.candidatesForCompletion(of: yomi)
+                        if !candidates.isEmpty {
+                            // 下線のスタイルがthickのときに被らないように1ピクセル下に余白を設ける
+                            var cursorPosition = cursorPosition(for: textInput).offsetBy(dx: 0, dy: -1)
+                            cursorPosition.size.height += 1
+                            Global.candidatesPanel.setCursorPosition(cursorPosition)
+                            let currentCandidates: CurrentCandidates = .panel(words: Array(candidates.prefix(9)),
+                                                                              currentPage: 0,
+                                                                              totalPageCount: 1)
+                            Global.candidatesPanel.setCandidates(currentCandidates, selected: nil)
+                            Global.candidatesPanel.show(windowLevel: windowLevel(for: textInput))
+                        }
+                    } else if let completion = Global.dictionary.findCompletion(prefix: yomi) {
                         self.stateMachine.completion = (yomi, completion)
                         Global.completionPanel.viewModel.completion = completion
                         let cursorPosition = cursorPosition(for: textInput)
