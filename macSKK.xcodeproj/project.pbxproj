@@ -149,6 +149,7 @@
 		CEF3D8782B9EF0C000BD1D3A /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF3D8772B9EF0C000BD1D3A /* main.swift */; };
 		CEF3D87D2B9EF0C000BD1D3A /* SKKServClient.xpc in Embed XPC Services */ = {isa = PBXBuildFile; fileRef = CEF3D8712B9EF0C000BD1D3A /* SKKServClient.xpc */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		CEF3D8822B9EF19100BD1D3A /* SKKServClientProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF3D8752B9EF0C000BD1D3A /* SKKServClientProtocol.swift */; };
+		CEFC174B2E53600600037468 /* Completion.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEFC174A2E53600600037468 /* Completion.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -338,6 +339,7 @@
 		CEF3D8772B9EF0C000BD1D3A /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		CEF3D8792B9EF0C000BD1D3A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CEF3D87A2B9EF0C000BD1D3A /* SKKServClient.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SKKServClient.entitlements; sourceTree = "<group>"; };
+		CEFC174A2E53600600037468 /* Completion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Completion.swift; sourceTree = "<group>"; };
 		F65BF39CED3AABCF59AA6C58 /* DateConversionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateConversionTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -444,6 +446,7 @@
 				CE84A3DF295717CB009394C4 /* StateMachine.swift */,
 				CEE2D9762A99FE1B00A4CD76 /* Word.swift */,
 				CE313A1E2AF5213700A49142 /* Candidate.swift */,
+				CEFC174A2E53600600037468 /* Completion.swift */,
 				CE84A3EA295DA715009394C4 /* Dict.swift */,
 				CE5EB6AC2AAC0DE000389B98 /* FileDict.swift */,
 				CE5EB6AE2AAC0DEB00389B98 /* MemoryDict.swift */,
@@ -911,6 +914,7 @@
 				CEB52CCA2E0D64B10025542F /* DateConversionView.swift in Sources */,
 				CE40D9A32A6D0C3900D44799 /* SystemDict.swift in Sources */,
 				CE49A27C2C26F61700D53CFE /* KeyBindingInputsView.swift in Sources */,
+				CEFC174B2E53600600037468 /* Completion.swift in Sources */,
 				CEB52CC82E0C10F20025542F /* DateConversion.swift in Sources */,
 				CE5EB6AD2AAC0DE000389B98 /* FileDict.swift in Sources */,
 				CEB0888E2A7F393600EFD1E3 /* AnnotationView.swift in Sources */,
