@@ -180,7 +180,8 @@ class InputController: IMKInputController {
             .subscribe(on: DispatchQueue.global())
             .receive(on: DispatchQueue.main)
             .sink { [weak self] completion in
-                if let self, let completion {
+                guard let self else { return }
+                if let completion {
                     if case .single(let yomi, let completion) = completion {
                         self.stateMachine.completion = (yomi, completion)
                         Global.completionPanel.viewModel.completion = completion
@@ -202,13 +203,13 @@ class InputController: IMKInputController {
                             Global.candidatesPanel.setCandidates(currentCandidates, selected: nil)
                             Global.candidatesPanel.show(windowLevel: windowLevel(for: textInput))
                         }
+                    }
+                } else {
+                    if Global.showMultipleCompletions {
+                        Global.candidatesPanel.orderOut(nil)
                     } else {
-                        if Global.showMultipleCompletions {
-                            Global.candidatesPanel.orderOut(nil)
-                        } else {
-                            self.stateMachine.completion = nil
-                            Global.completionPanel.orderOut(nil)
-                        }
+                        self.stateMachine.completion = nil
+                        Global.completionPanel.orderOut(nil)
                     }
                 }
         }.store(in: &cancellables)
