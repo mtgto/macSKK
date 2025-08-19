@@ -114,10 +114,6 @@ class UserDict: NSObject, DictProtocol {
      */
     @MainActor func referDicts(_ yomi: String, option: DictReferringOption? = nil) -> [Candidate] {
         var result: [Candidate] = []
-        func wordToCandidate(_ word: Word, saveToUserDict: Bool) -> Candidate {
-            let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
-            return Candidate(word.word, annotations: annotations, saveToUserDict: saveToUserDict)
-        }
         var candidates = refer(yomi, option: option).map { word in
             let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
             return Candidate(word.word, annotations: annotations)
@@ -362,10 +358,37 @@ class UserDict: NSObject, DictProtocol {
      * asyncにするかも? (skkservとかで便利そう)
      * AsyncStreamにするかも?
      */
-    @MainActor func candidatesForCompletion(of word: String) -> [Candidate] {
+    func candidatesForCompletion(of word: String) -> [Candidate] {
+        // 1文字のときは全探索するとめちゃくちゃ量が多いので完全一致だけ探す
+        if word.count == 1 {
+            // TODO あとで直す
+            //return referDicts(word)
+            return []
+        }
         // あとでいろいろ拡張するけどひとまずfindCompletionsの結果を[Candidate]にするだけ
+        // 別スレッドから実行したいのでskkserv以外を検索する
         return findCompletions(prefix: word).flatMap { yomi -> [Candidate] in
-            referDicts(yomi)
+            var result = refer(yomi).map { wordToCandidate($0, saveToUserDict: true) }
+            if findCompletionFromAllDicts.value {
+                for dict in dicts {
+                    let candidates = dict.refer(yomi, option: nil).map { wordToCandidate($0, saveToUserDict: dict.saveToUserDict) }
+                    result.append(contentsOf: candidates)
+                    // 100件見つかったら終了する
+                    if result.count >= 100 {
+                        break
+                    }
+                }
+
+            }
+            if let dateConversionYomi = dateYomis.first(where: { $0.yomi == yomi }) {
+                let date = Date(timeIntervalSinceNow: dateConversionYomi.timeInterval)
+                let dateCandidates = dateConversions.compactMap { conversion -> Candidate? in
+                    guard let word = conversion.dateFormatter.string(for: date) else { return nil }
+                    return Candidate(word, saveToUserDict: false)
+                }
+                result.append(contentsOf: dateCandidates)
+            }
+            return result
         }
     }
 
@@ -406,6 +429,11 @@ class UserDict: NSObject, DictProtocol {
         } else {
             return false
         }
+    }
+
+    private func wordToCandidate(_ word: Word, saveToUserDict: Bool) -> Candidate {
+        let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
+        return Candidate(word.word, annotations: annotations, saveToUserDict: saveToUserDict)
     }
 }
 
