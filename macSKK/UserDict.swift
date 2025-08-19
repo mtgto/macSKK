@@ -96,6 +96,10 @@ class UserDict: NSObject, DictProtocol {
         NSFileCoordinator.removeFilePresenter(self)
     }
 
+    @MainActor func referDicts(_ yomi: String, option: DictReferringOption? = nil) -> [Candidate] {
+        return referDicts(yomi, option: option, skkservDict: Global.skkservDict)
+    }
+
     /**
      * 保持する辞書を順に引き変換候補順に返す。
      *
@@ -112,7 +116,7 @@ class UserDict: NSObject, DictProtocol {
      *   - yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
      *   - option: 辞書を引くときに接頭辞や接尾辞から検索するかどうか。nilなら通常のエントリから検索する
      */
-    @MainActor func referDicts(_ yomi: String, option: DictReferringOption? = nil) -> [Candidate] {
+    func referDicts(_ yomi: String, option: DictReferringOption?, skkservDict: SKKServDict?) -> [Candidate] {
         var result: [Candidate] = []
         var candidates = refer(yomi, option: option).map { word in
             let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
@@ -136,7 +140,7 @@ class UserDict: NSObject, DictProtocol {
             })
         }
         // ひとまずskkservを辞書として使う場合はファイル辞書より後に追加する
-        if let skkservDict = Global.skkservDict {
+        if let skkservDict {
             let skkservCandidates: [Candidate] = skkservDict.refer(yomi, option: option).map { word in
                 let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
                 return Candidate(word.word, annotations: annotations, saveToUserDict: skkservDict.saveToUserDict)
@@ -167,7 +171,7 @@ class UserDict: NSObject, DictProtocol {
                                          saveToUserDict: dict.saveToUserDict)
                     })
                 }
-                if let skkservDict = Global.skkservDict {
+                if let skkservDict {
                     let skkservCandidates: [Candidate] = skkservDict.refer(midashi, option: option).compactMap { word in
                         guard let numberCandidate = try? NumberCandidate(yomi: word.word) else { return nil }
                         guard let convertedWord = numberCandidate.toString(yomi: numberYomi) else { return nil }
@@ -361,9 +365,7 @@ class UserDict: NSObject, DictProtocol {
     func candidatesForCompletion(of word: String) -> [Candidate] {
         // 1文字のときは全探索するとめちゃくちゃ量が多いので完全一致だけ探す
         if word.count == 1 {
-            // TODO あとで直す
-            //return referDicts(word)
-            return []
+            return referDicts(word, option: nil, skkservDict: nil)
         }
         // あとでいろいろ拡張するけどひとまずfindCompletionsの結果を[Candidate]にするだけ
         // 別スレッドから実行したいのでskkserv以外を検索する
