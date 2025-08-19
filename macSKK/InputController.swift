@@ -195,9 +195,10 @@ class InputController: IMKInputController {
                             var cursorPosition = cursorPosition(for: textInput).offsetBy(dx: 0, dy: -1)
                             cursorPosition.size.height += 1
                             Global.candidatesPanel.setCursorPosition(cursorPosition)
+                            let totalPageCount = (candidates.count - 1) / stateMachine.displayCandidateCount + 1
                             let currentCandidates: CurrentCandidates = .panel(words: Array(candidates.prefix(9)),
                                                                               currentPage: 0,
-                                                                              totalPageCount: 1)
+                                                                              totalPageCount: totalPageCount)
                             Global.candidatesPanel.setCandidates(currentCandidates, selected: nil)
                             Global.candidatesPanel.show(windowLevel: windowLevel(for: textInput))
                         }
