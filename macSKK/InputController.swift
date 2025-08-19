@@ -161,12 +161,35 @@ class InputController: IMKInputController {
                 self.stateMachine.enableMarkedTextWorkaround = enabled
             }
         }.store(in: &cancellables)
-        stateMachine.yomiEvent.sink { [weak self] yomi in
-            if let self {
+        stateMachine.yomiEvent
+            .map { yomi -> Completion? in
                 if Global.showCompletion {
                     if Global.showMultipleCompletions {
-                        // 先頭1ページ分だけ変換候補パネルに表示する。
                         let candidates = Global.dictionary.candidatesForCompletion(of: yomi)
+                        if candidates.isEmpty {
+                            return nil
+                        } else {
+                            return .multiple(candidates)
+                        }
+                    } else if let completion = Global.dictionary.findCompletion(prefix: yomi) {
+                        return .single(yomi, completion)
+                    }
+                }
+                return nil
+            }
+            .subscribe(on: DispatchQueue.global())
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] completion in
+                if let self, let completion {
+                    if case .single(let yomi, let completion) = completion {
+                        self.stateMachine.completion = (yomi, completion)
+                        Global.completionPanel.viewModel.completion = completion
+                        let cursorPosition = cursorPosition(for: textInput)
+                        if cursorPosition != .zero {
+                            Global.completionPanel.show(at: cursorPosition, windowLevel: windowLevel(for: textInput))
+                        }
+                    } else if case .multiple(let candidates) = completion {
+                        // 先頭1ページ分だけ変換候補パネルに表示する。
                         if !candidates.isEmpty {
                             // 下線のスタイルがthickのときに被らないように1ピクセル下に余白を設ける
                             var cursorPosition = cursorPosition(for: textInput).offsetBy(dx: 0, dy: -1)
@@ -178,19 +201,15 @@ class InputController: IMKInputController {
                             Global.candidatesPanel.setCandidates(currentCandidates, selected: nil)
                             Global.candidatesPanel.show(windowLevel: windowLevel(for: textInput))
                         }
-                    } else if let completion = Global.dictionary.findCompletion(prefix: yomi) {
-                        self.stateMachine.completion = (yomi, completion)
-                        Global.completionPanel.viewModel.completion = completion
-                        let cursorPosition = cursorPosition(for: textInput)
-                        if cursorPosition != .zero {
-                            Global.completionPanel.show(at: cursorPosition, windowLevel: windowLevel(for: textInput))
-                        }
                     } else {
-                        self.stateMachine.completion = nil
-                        Global.completionPanel.orderOut(nil)
+                        if Global.showMultipleCompletions {
+                            Global.candidatesPanel.orderOut(nil)
+                        } else {
+                            self.stateMachine.completion = nil
+                            Global.completionPanel.orderOut(nil)
+                        }
                     }
                 }
-            }
         }.store(in: &cancellables)
         // Safariでアドレスバーに移動するときなど、処理が固まることがあるので非同期で実行する
         // https://github.com/mtgto/macSKK/issues/336
