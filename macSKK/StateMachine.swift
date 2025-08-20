@@ -32,7 +32,7 @@ final class StateMachine {
     let yomiEvent: AnyPublisher<String, Never>
     private let yomiEventSubject = PassthroughSubject<String, Never>()
     /// 読みの一部と補完結果(読み)のペア
-    var completion: (String, String)? = nil
+    var completion: Completion? = nil
 
     // TODO: displayCandidateCountを環境設定にするかも
     /// 変換候補パネルを表示するまで表示する変換候補の数
@@ -728,9 +728,9 @@ final class StateMachine {
             }
         case .tab:
             // FIXME: この記号がローマ字に含まれていることも考慮するべき?
-            if let completion {
+            if case .single(_, let yomi) = completion {
                 // カーソル位置に関わらずカーソル位置はリセットされる
-                let newText = completion.1.map({ String($0) })
+                let newText = yomi.map({ String($0) })
                 state.inputMethod = .composing(ComposingState(isShift: composing.isShift,
                                                               text: newText,
                                                               okuri: nil,
@@ -738,6 +738,18 @@ final class StateMachine {
                                                               cursor: nil,
                                                               prevMode: composing.prevMode))
                 self.completion = nil
+                updateMarkedText()
+            } else if case .multiple(let candidateWords) = completion {
+                let trimmedComposing = composing.trim(kanaRule: Global.kanaRule)
+                let yomiText = trimmedComposing.yomi(for: self.state.inputMode, kanaRule: Global.kanaRule)
+                let selectingState = SelectingState(
+                    prev: SelectingState.PrevState(mode: state.inputMode, composing: trimmedComposing),
+                    yomi: yomiText,
+                    candidates: candidateWords,
+                    candidateIndex: 0,
+                    remain: composing.remain())
+                updateCandidates(selecting: selectingState)
+                state.inputMethod = .selecting(selectingState)
                 updateMarkedText()
             }
             return true

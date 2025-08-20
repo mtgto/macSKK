@@ -181,9 +181,9 @@ class InputController: IMKInputController {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] completion in
                 guard let self else { return }
+                self.stateMachine.completion = completion
                 if let completion {
                     if case .single(let yomi, let completion) = completion {
-                        self.stateMachine.completion = (yomi, completion)
                         Global.completionPanel.viewModel.completion = completion
                         let cursorPosition = cursorPosition(for: textInput)
                         if cursorPosition != .zero {
