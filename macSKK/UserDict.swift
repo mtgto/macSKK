@@ -132,11 +132,11 @@ class UserDict: NSObject, DictProtocol {
         }
         // ユーザー辞書、それ以外の辞書の順に参照する
         candidates.append(contentsOf: refer(yomi, option: option).map { word in
-            return wordToCandidate(word, saveToUserDict: saveToUserDict)
+            return wordToCandidate(word, original: nil, saveToUserDict: saveToUserDict)
         })
         dicts.forEach { dict in
             candidates.append(contentsOf: dict.refer(yomi, option: option).map {
-                wordToCandidate($0, saveToUserDict: dict.saveToUserDict)
+                wordToCandidate($0, original: nil, saveToUserDict: dict.saveToUserDict)
             })
         }
         // ひとまずskkservを辞書として使う場合はファイル辞書より後に追加する
@@ -370,10 +370,14 @@ class UserDict: NSObject, DictProtocol {
         // あとでいろいろ拡張するけどひとまずfindCompletionsの結果を[Candidate]にするだけ
         // 別スレッドから実行したいのでskkserv以外を検索する
         return findCompletions(prefix: word).flatMap { yomi -> [Candidate] in
-            var result = refer(yomi).map { wordToCandidate($0, saveToUserDict: true) }
+            var result = refer(yomi).map {
+                wordToCandidate($0, original: Candidate.Original(midashi: yomi, word: $0.word), saveToUserDict: true)
+            }
             if findCompletionFromAllDicts.value {
                 for dict in dicts {
-                    let candidates = dict.refer(yomi, option: nil).map { wordToCandidate($0, saveToUserDict: dict.saveToUserDict) }
+                    let candidates = dict.refer(yomi, option: nil).map {
+                        wordToCandidate($0, original: Candidate.Original(midashi: yomi, word: $0.word), saveToUserDict: dict.saveToUserDict)
+                    }
                     result.append(contentsOf: candidates)
                     // 100件見つかったら終了する
                     if result.count >= 100 {
@@ -433,9 +437,9 @@ class UserDict: NSObject, DictProtocol {
         }
     }
 
-    private func wordToCandidate(_ word: Word, saveToUserDict: Bool) -> Candidate {
+    private func wordToCandidate(_ word: Word, original: Candidate.Original?, saveToUserDict: Bool) -> Candidate {
         let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
-        return Candidate(word.word, annotations: annotations, saveToUserDict: saveToUserDict)
+        return Candidate(word.word, annotations: annotations, original: original, saveToUserDict: saveToUserDict)
     }
 }
 

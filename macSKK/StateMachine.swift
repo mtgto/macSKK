@@ -1206,11 +1206,18 @@ final class StateMachine {
                 return handleSelectingNextPage(action, selecting: selecting, specialState: specialState)
             }
         case .space:
+            if selecting.completion {
+                // TODO 補完を中断して現在の読みで変換開始する
+                return true
+            }
             return handleSelectingNextPage(action, selecting: selecting, specialState: specialState)
         case .backwardCandidate:
             return handleSelectingPrevious(diff: -1, selecting: selecting)
         case .tab:
-            // 補完候補を次に進める
+            if selecting.completion {
+                // 補完候補を次に進める
+                return handleSelectingNext(action, diff: 1, selecting: selecting, specialState: specialState)
+            }
             return true
         case .stickyShift, .hiragana, .hankakuKana:
             fixCurrentSelect()

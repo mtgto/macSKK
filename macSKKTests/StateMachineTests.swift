@@ -2163,6 +2163,31 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    @MainActor func testHandleComposingCompletions() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(4).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("い")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerSelect, .emphasized("色")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerSelect, .emphasized("異論")])))
+            XCTAssertEqual(events[3], .fixedText("異論"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i", withShift: true)))
+        stateMachine.completion = .multiple([
+            Candidate("色", original: Candidate.Original(midashi: "いろ", word: "色")),
+            Candidate("異論", original: Candidate.Original(midashi: "いろん", word: "異論")),
+        ])
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "\t")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "\t")))
+        // 補完候補が終端に達してる状態でTab押しても何も起きない
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "\t")))
+        XCTAssertTrue(stateMachine.handle(enterAction))
+        // "い"まで入力して変換したが、ユーザー辞書には読みは"いろん"で登録される
+        XCTAssertEqual(Global.dictionary.refer("いろん"), [Word("異論")])
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     @MainActor func testHandleComposingAbbrevSpace() {
         Global.dictionary.setEntries(["n": [Word("美")]])
 
