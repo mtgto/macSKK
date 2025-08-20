@@ -747,7 +747,9 @@ final class StateMachine {
                     yomi: yomiText,
                     candidates: candidateWords,
                     candidateIndex: 0,
-                    remain: composing.remain())
+                    remain: composing.remain(),
+                    completion: true,
+                )
                 updateCandidates(selecting: selectingState)
                 state.inputMethod = .selecting(selectingState)
                 updateMarkedText()
@@ -1118,7 +1120,9 @@ final class StateMachine {
                 yomi: yomiText,
                 candidates: candidateWords,
                 candidateIndex: 0,
-                remain: composing.remain())
+                remain: composing.remain(),
+                completion: false,
+            )
             updateCandidates(selecting: selectingState)
             state.inputMethod = .selecting(selectingState)
         }
@@ -1206,6 +1210,7 @@ final class StateMachine {
         case .backwardCandidate:
             return handleSelectingPrevious(diff: -1, selecting: selecting)
         case .tab:
+            // 補完候補を次に進める
             return true
         case .stickyShift, .hiragana, .hankakuKana:
             fixCurrentSelect()
