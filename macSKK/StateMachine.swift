@@ -1353,6 +1353,9 @@ final class StateMachine {
             } else if specialState != nil {
                 state.inputMethod = .normal
                 state.inputMode = selecting.prev.mode
+            } else if selecting.completion {
+                // 変換候補の表示中は何も行わない
+                return true
             } else {
                 state.specialState = .register(
                     RegisterState(
