@@ -169,10 +169,10 @@ class InputController: IMKInputController {
                         if candidates.isEmpty {
                             return nil
                         } else {
-                            return .multiple(candidates)
+                            return .candidates(candidates)
                         }
                     } else if let completion = Global.dictionary.findCompletion(prefix: yomi) {
-                        return .single(yomi, completion)
+                        return .yomi(yomi, completion)
                     }
                 }
                 return nil
@@ -183,13 +183,13 @@ class InputController: IMKInputController {
                 guard let self else { return }
                 self.stateMachine.completion = completion
                 if let completion {
-                    if case .single(let yomi, let completion) = completion {
+                    if case .yomi(let yomi, let completion) = completion {
                         Global.completionPanel.viewModel.completion = completion
                         let cursorPosition = cursorPosition(for: textInput)
                         if cursorPosition != .zero {
                             Global.completionPanel.show(at: cursorPosition, windowLevel: windowLevel(for: textInput))
                         }
-                    } else if case .multiple(let candidates) = completion {
+                    } else if case .candidates(let candidates) = completion {
                         // 先頭1ページ分だけ変換候補パネルに表示する。
                         if !candidates.isEmpty {
                             // 下線のスタイルがthickのときに被らないように1ピクセル下に余白を設ける

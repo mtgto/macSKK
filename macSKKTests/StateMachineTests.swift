@@ -805,7 +805,7 @@ final class StateMachineTests: XCTestCase {
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "/")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
-        stateMachine.completion = .single("a", "apple")
+        stateMachine.completion = .yomi("a", "apple")
         XCTAssertTrue(stateMachine.handle(tabAction))
         XCTAssertTrue(stateMachine.handle(enterAction))
         wait(for: [expectation], timeout: 1.0)
@@ -2140,7 +2140,7 @@ final class StateMachineTests: XCTestCase {
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i", withShift: true)))
-        stateMachine.completion = .single("い", "いろは")
+        stateMachine.completion = .yomi("い", "いろは")
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "\t")))
         wait(for: [expectation], timeout: 1.0)
     }
@@ -2158,7 +2158,7 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
         XCTAssertTrue(stateMachine.handle(leftKeyAction))
-        stateMachine.completion = .single("い", "いろは")
+        stateMachine.completion = .yomi("い", "いろは")
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "\t")))
         wait(for: [expectation], timeout: 1.0)
     }
@@ -2174,7 +2174,7 @@ final class StateMachineTests: XCTestCase {
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i", withShift: true)))
-        stateMachine.completion = .multiple([
+        stateMachine.completion = .candidates([
             Candidate("色", original: Candidate.Original(midashi: "いろ", word: "色")),
             Candidate("異論", original: Candidate.Original(midashi: "いろん", word: "異論")),
         ])
