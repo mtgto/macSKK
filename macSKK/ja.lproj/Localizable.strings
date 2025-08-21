@@ -7,6 +7,7 @@
 "SettingsNameGeneral" = "一般";
 "SettingsNameDictionaries" = "辞書";
 "SettingsNameDateConversion" = "日付変換";
+"SettingsNameCompletion" = "補完";
 "SettingsNameKeyBinding" = "キーバインド";
 "SettingsNameSoftwareUpdate" = "ソフトウェアアップデート";
 "SettingsNameDirectMode" = "直接入力";
