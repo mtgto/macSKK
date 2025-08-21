@@ -179,6 +179,8 @@ final class SettingsViewModel: ObservableObject {
     @Published var enterNewLine: Bool
     /// 補完を表示するかどうか
     @Published var showCompletion: Bool
+    /// 変換候補の補完を表示するかどうか。例えば "ほか" まで入力したときに "補完" と表示するか
+    @Published var showCandidateForCompletion: Bool
     @Published var systemDict: SystemDict.Kind
     @Published var selectingBackspace: SelectingBackspace
     @Published var period: Punctuation.Period
@@ -253,6 +255,7 @@ final class SettingsViewModel: ObservableObject {
         selectCandidateKeys = UserDefaults.app.string(forKey: UserDefaultsKeys.selectCandidateKeys)!
         enterNewLine = UserDefaults.app.bool(forKey: UserDefaultsKeys.enterNewLine)
         showCompletion = UserDefaults.app.bool(forKey: UserDefaultsKeys.showCompletion)
+        showCandidateForCompletion = UserDefaults.app.bool(forKey: UserDefaultsKeys.showCandidateForCompletion)
         selectingBackspace = SelectingBackspace(rawValue: UserDefaults.app.integer(forKey: UserDefaultsKeys.selectingBackspace)) ?? SelectingBackspace.default
         comma = Punctuation.Comma(rawValue: UserDefaults.app.integer(forKey: UserDefaultsKeys.punctuation)) ?? .default
         period = Punctuation.Period(rawValue: UserDefaults.app.integer(forKey: UserDefaultsKeys.punctuation)) ?? .default
@@ -567,6 +570,7 @@ final class SettingsViewModel: ObservableObject {
         selectedKeyBindingSet = KeyBindingSet.defaultKeyBindingSet
         enterNewLine = false
         showCompletion = true
+        showCandidateForCompletion = true
         systemDict = .daijirin
         selectingBackspace = SelectingBackspace.default
         comma = Punctuation.default.comma

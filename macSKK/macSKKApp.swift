@@ -226,6 +226,7 @@ struct macSKKApp: App {
                     ["format": "Gy年M月d日", "locale": "ja_JP", "calendar": "japanese"],
                 ],
             ],
+            UserDefaultsKeys.showCandidateForCompletion: true,
         ])
     }
 
