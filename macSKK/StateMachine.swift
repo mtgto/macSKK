@@ -728,8 +728,9 @@ final class StateMachine {
             }
         case .tab:
             // FIXME: この記号がローマ字に含まれていることも考慮するべき?
-            if case .yomi(_, let yomi) = completion {
+            if case .yomi(let yomis, let yomiIndex) = completion {
                 // カーソル位置に関わらずカーソル位置はリセットされる
+                let yomi = yomis[yomiIndex]
                 let newText = yomi.map({ String($0) })
                 state.inputMethod = .composing(ComposingState(isShift: composing.isShift,
                                                               text: newText,

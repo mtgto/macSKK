@@ -172,7 +172,7 @@ class InputController: IMKInputController {
                             return .candidates(candidates)
                         }
                     } else if let completion = Global.dictionary.findCompletion(prefix: yomi) {
-                        return .yomi(yomi, completion)
+                        return .yomi([completion], 0)
                     }
                 }
                 return nil
@@ -183,8 +183,8 @@ class InputController: IMKInputController {
                 guard let self else { return }
                 self.stateMachine.completion = completion
                 if let completion {
-                    if case .yomi(let yomi, let completion) = completion {
-                        Global.completionPanel.viewModel.completion = completion
+                    if case .yomi(let yomis, let yomiIndex) = completion {
+                        Global.completionPanel.viewModel.completion = yomis[yomiIndex]
                         let cursorPosition = cursorPosition(for: textInput)
                         if cursorPosition != .zero {
                             Global.completionPanel.show(at: cursorPosition, windowLevel: windowLevel(for: textInput))
