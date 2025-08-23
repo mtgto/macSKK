@@ -97,7 +97,7 @@ class UserDict: NSObject, DictProtocol {
     }
 
     @MainActor func referDicts(_ yomi: String, option: DictReferringOption? = nil) -> [Candidate] {
-        return referDicts(yomi, option: option, skkservDict: Global.skkservDict)
+        return referDicts(yomi, option: option, skkservDict: Global.skkservDict, findFromAllDicts: true)
     }
 
     /**
@@ -115,8 +115,10 @@ class UserDict: NSObject, DictProtocol {
      * - Parameters:
      *   - yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
      *   - option: 辞書を引くときに接頭辞や接尾辞から検索するかどうか。nilなら通常のエントリから検索する
+     *   - skkservDict: SKKServ辞書。nilのときはskkservを引かない
+     *   - findFromAllDicts: ユーザー辞書以外を検索するか。trueにするのは補完候補検索時のみ。
      */
-    func referDicts(_ yomi: String, option: DictReferringOption?, skkservDict: SKKServDict?) -> [Candidate] {
+    func referDicts(_ yomi: String, option: DictReferringOption?, skkservDict: SKKServDict?, findFromAllDicts: Bool) -> [Candidate] {
         var result: [Candidate] = []
         var candidates = refer(yomi, option: option).map { word in
             let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
@@ -134,10 +136,12 @@ class UserDict: NSObject, DictProtocol {
         candidates.append(contentsOf: refer(yomi, option: option).map { word in
             return wordToCandidate(word, original: nil, saveToUserDict: saveToUserDict)
         })
-        dicts.forEach { dict in
-            candidates.append(contentsOf: dict.refer(yomi, option: option).map {
-                wordToCandidate($0, original: nil, saveToUserDict: dict.saveToUserDict)
-            })
+        if findFromAllDicts {
+            dicts.forEach { dict in
+                candidates.append(contentsOf: dict.refer(yomi, option: option).map {
+                    wordToCandidate($0, original: nil, saveToUserDict: dict.saveToUserDict)
+                })
+            }
         }
         // ひとまずskkservを辞書として使う場合はファイル辞書より後に追加する
         if let skkservDict {
@@ -160,16 +164,18 @@ class UserDict: NSObject, DictProtocol {
                                      original: Candidate.Original(midashi: midashi, word: word.word),
                                      saveToUserDict: saveToUserDict)
                 })
-                dicts.forEach { dict in
-                    candidates.append(contentsOf: dict.refer(midashi, option: option).compactMap { word in
-                        guard let numberCandidate = try? NumberCandidate(yomi: word.word) else { return nil }
-                        guard let convertedWord = numberCandidate.toString(yomi: numberYomi) else { return nil }
-                        let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
-                        return Candidate(convertedWord,
-                                         annotations: annotations,
-                                         original: Candidate.Original(midashi: midashi, word: word.word),
-                                         saveToUserDict: dict.saveToUserDict)
-                    })
+                if findFromAllDicts {
+                    dicts.forEach { dict in
+                        candidates.append(contentsOf: dict.refer(midashi, option: option).compactMap { word in
+                            guard let numberCandidate = try? NumberCandidate(yomi: word.word) else { return nil }
+                            guard let convertedWord = numberCandidate.toString(yomi: numberYomi) else { return nil }
+                            let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
+                            return Candidate(convertedWord,
+                                             annotations: annotations,
+                                             original: Candidate.Original(midashi: midashi, word: word.word),
+                                             saveToUserDict: dict.saveToUserDict)
+                        })
+                    }
                 }
                 if let skkservDict {
                     let skkservCandidates: [Candidate] = skkservDict.refer(midashi, option: option).compactMap { word in
@@ -362,39 +368,21 @@ class UserDict: NSObject, DictProtocol {
      * asyncにするかも? (skkservとかで便利そう)
      * AsyncStreamにするかも?
      */
-    func candidatesForCompletion(of word: String) -> [Candidate] {
+    func candidatesForCompletion(prefix: String) -> [Candidate] {
         // 1文字のときは全探索するとめちゃくちゃ量が多いので完全一致だけ探す
-        if word.count == 1 {
-            return referDicts(word, option: nil, skkservDict: nil)
+        if prefix.count == 1 {
+            return referDicts(prefix, option: nil, skkservDict: nil, findFromAllDicts: findCompletionFromAllDicts.value)
         }
         // あとでいろいろ拡張するけどひとまずfindCompletionsの結果を[Candidate]にするだけ
-        // 別スレッドから実行したいのでskkserv以外を検索する
-        return findCompletions(prefix: word).flatMap { yomi -> [Candidate] in
-            var result = refer(yomi).map {
-                wordToCandidate($0, original: Candidate.Original(midashi: yomi, word: $0.word), saveToUserDict: true)
-            }
-            if findCompletionFromAllDicts.value {
-                for dict in dicts {
-                    let candidates = dict.refer(yomi, option: nil).map {
-                        wordToCandidate($0, original: Candidate.Original(midashi: yomi, word: $0.word), saveToUserDict: dict.saveToUserDict)
-                    }
-                    result.append(contentsOf: candidates)
-                    // 100件見つかったら終了する
-                    if result.count >= 100 {
-                        break
-                    }
+        // 別スレッドから実行したいのでひとまずskkserv以外を検索する
+        return findCompletions(prefix: prefix).flatMap { midashi in
+            // NOTE: 多すぎても役に立たないだろうと思うのでひとまず先頭100件に制限。設定項目にしてもよさそう
+            // FIXME: Candidateの配列じゃなくて、(String, Candidate) のように見出し語と変換候補のタプルの配列を返すほうがよさそう
+            referDicts(midashi, option: nil, skkservDict: nil, findFromAllDicts: findCompletionFromAllDicts.value)
+                .prefix(100)
+                .map { candidate in
+                    candidate.withOriginal(Candidate.Original(midashi: midashi, word: candidate.word))
                 }
-
-            }
-            if let dateConversionYomi = dateYomis.first(where: { $0.yomi == yomi }) {
-                let date = Date(timeIntervalSinceNow: dateConversionYomi.timeInterval)
-                let dateCandidates = dateConversions.compactMap { conversion -> Candidate? in
-                    guard let word = conversion.dateFormatter.string(for: date) else { return nil }
-                    return Candidate(word, saveToUserDict: false)
-                }
-                result.append(contentsOf: dateCandidates)
-            }
-            return result
         }
     }
 

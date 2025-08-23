@@ -172,7 +172,7 @@ class InputController: IMKInputController {
             .map { yomi -> Completion? in
                 if Global.showCompletion {
                     if Global.showCandidateForCompletion {
-                        let candidates = Global.dictionary.candidatesForCompletion(of: yomi)
+                        let candidates = Global.dictionary.candidatesForCompletion(prefix: yomi)
                         if candidates.isEmpty {
                             return nil
                         } else {

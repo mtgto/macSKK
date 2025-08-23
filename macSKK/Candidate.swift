@@ -102,4 +102,8 @@ struct Candidate: Hashable {
                          original: original,
                          saveToUserDict: saveToUserDict || other.saveToUserDict)
     }
+
+    func withOriginal(_ original: Original?) -> Self {
+        Candidate(word, annotations: annotations, original: original, saveToUserDict: saveToUserDict)
+    }
 }
