@@ -16,6 +16,14 @@ enum InputMethodEvent: Equatable {
     case modeChanged(InputMode)
 }
 
+enum YomiEvent: Equatable {
+    // Tabにより補完されたとき。補完候補は検索しなくてよい
+    case completed(String)
+    // 補完のとき以外。キーボード操作により読み部分が変更されたとき、読み部分が空文字列になったとき。
+    // 補完が有効なら補完候補の検索が行われる
+    case other(String)
+}
+
 final class StateMachine {
     private(set) var state: IMEState
     let inputMethodEvent: AnyPublisher<InputMethodEvent, Never>
@@ -29,8 +37,8 @@ final class StateMachine {
      * 送り仮名がローマ字で一文字でも入力されたときは新しく通知はされない。
      * 入力中の文字列のカーソルを左右に移動した場合はカーソルの左側までが更新された文字列として通知される。
      */
-    let yomiEvent: AnyPublisher<String, Never>
-    private let yomiEventSubject = PassthroughSubject<String, Never>()
+    let yomiEvent: AnyPublisher<YomiEvent, Never>
+    private let yomiEventSubject = PassthroughSubject<YomiEvent, Never>()
     /// 読みの一部と補完結果(読み)のペア
     var completion: Completion? = nil
 
@@ -739,7 +747,7 @@ final class StateMachine {
                                                               cursor: nil,
                                                               prevMode: composing.prevMode))
                 self.completion = nil
-                updateMarkedText()
+                updateMarkedText(completion: true)
             } else if case .candidates(let candidateWords) = completion {
                 let trimmedComposing = composing.trim(kanaRule: Global.kanaRule)
                 let yomiText = trimmedComposing.yomi(for: self.state.inputMode, kanaRule: Global.kanaRule)
@@ -1456,20 +1464,26 @@ final class StateMachine {
                 inputMethodEventSubject.send(.markedText(MarkedText([])))
             } else {
                 inputMethodEventSubject.send(.fixedText(text))
-                yomiEventSubject.send("")
+                yomiEventSubject.send(.other(""))
             }
         }
     }
 
-    /// 現在のMarkedText状態をinputMethodEventSubject.sendする
-    private func updateMarkedText() {
+    /**
+     * 現在のMarkedText状態をinputMethodEventSubject.sendする
+     *
+     * - Parameter completion: 読みをTabによって補完したかどうか
+     */
+    private func updateMarkedText(completion: Bool = false) {
         inputMethodEventSubject.send(.markedText(state.displayText()))
         // 読み部分を取得してyomiEventに通知する
         if case let .composing(composing) = state.inputMethod, composing.okuri == nil {
             // ComposingState#yomi(for:) とComposingState#subText()の違いは未確定ローマ字が"n"のときに「ん」として扱うか否か
-            yomiEventSubject.send(composing.subText().joined())
+            if !completion {
+                yomiEventSubject.send(.other(composing.subText().joined()))
+            }
         } else {
-            yomiEventSubject.send("")
+            yomiEventSubject.send(.other(""))
         }
     }
 

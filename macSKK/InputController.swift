@@ -162,6 +162,12 @@ class InputController: IMKInputController {
             }
         }.store(in: &cancellables)
         stateMachine.yomiEvent
+            .compactMap {
+                if case .other(let yomi) = $0 {
+                    return yomi
+                }
+                return nil
+            }
             .map { yomi -> Completion? in
                 if Global.showCompletion {
                     if Global.showMultipleCompletions {
@@ -171,8 +177,12 @@ class InputController: IMKInputController {
                         } else {
                             return .candidates(candidates)
                         }
-                    } else if let completion = Global.dictionary.findCompletion(prefix: yomi) {
-                        return .yomi([completion], 0)
+                    } else {
+                        let completions = Global.dictionary.findCompletions(prefix: yomi)
+                        if completions.isEmpty {
+                            return nil
+                        }
+                        return .yomi(completions, 0)
                     }
                 }
                 return nil
