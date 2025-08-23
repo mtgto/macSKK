@@ -161,6 +161,7 @@ class InputController: IMKInputController {
                 self.stateMachine.enableMarkedTextWorkaround = enabled
             }
         }.store(in: &cancellables)
+        // 読みが更新されたときに補完候補の検索を行う処理
         stateMachine.yomiEvent
             .compactMap {
                 if case .other(let yomi) = $0 {
@@ -170,7 +171,7 @@ class InputController: IMKInputController {
             }
             .map { yomi -> Completion? in
                 if Global.showCompletion {
-                    if Global.showMultipleCompletions {
+                    if Global.showCandidateForCompletion {
                         let candidates = Global.dictionary.candidatesForCompletion(of: yomi)
                         if candidates.isEmpty {
                             return nil
@@ -215,7 +216,7 @@ class InputController: IMKInputController {
                         }
                     }
                 } else {
-                    if Global.showMultipleCompletions {
+                    if Global.showCandidateForCompletion {
                         Global.candidatesPanel.orderOut(nil)
                     } else {
                         self.stateMachine.completion = nil

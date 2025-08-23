@@ -39,8 +39,8 @@ import Combine
     static var enterNewLine: Bool = false
     /// 補完候補を表示するか？
     static var showCompletion: Bool = true
-    /// 複数の補完候補を表示するか
-    static var showMultipleCompletions: Bool = true
+    /// 変換候補の補完を表示するかどうか。例えば "ほか" まで入力したときに "補完" と表示するか
+    static var showCandidateForCompletion: Bool = true
     /// 注釈で使用するシステム辞書
     static var systemDict: SystemDict.Kind = .daijirin
     /// 変換候補選択中のバックスペースの挙動

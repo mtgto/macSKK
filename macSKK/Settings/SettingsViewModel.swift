@@ -276,6 +276,7 @@ final class SettingsViewModel: ObservableObject {
         Global.selectCandidateKeys = selectCandidateKeys.lowercased().map { $0 }
         Global.enterNewLine = enterNewLine
         Global.showCompletion = showCompletion
+        Global.showCandidateForCompletion = showCandidateForCompletion
         Global.systemDict = systemDict
         Global.selectingBackspace = selectingBackspace
         Global.punctuation = Punctuation(comma: comma, period: period)
@@ -473,6 +474,12 @@ final class SettingsViewModel: ObservableObject {
             logger.log("補完候補表示を\(showCompletion ? "表示" : "非表示", privacy: .public)に変更しました")
             UserDefaults.app.set(showCompletion, forKey: UserDefaultsKeys.showCompletion)
             Global.showCompletion = showCompletion
+        }.store(in: &cancellables)
+
+        $showCandidateForCompletion.dropFirst().sink { showCandidateForCompletion in
+            logger.log("変換候補を補完候補として表示を\(showCandidateForCompletion ? "表示" : "非表示", privacy: .public)に変更しました")
+            UserDefaults.app.set(showCandidateForCompletion, forKey: UserDefaultsKeys.showCandidateForCompletion)
+            Global.showCandidateForCompletion = showCandidateForCompletion
         }.store(in: &cancellables)
 
         $systemDict.dropFirst().sink { systemDict in
