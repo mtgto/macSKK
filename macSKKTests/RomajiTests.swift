@@ -86,9 +86,21 @@ class RomajiTests: XCTestCase {
         XCTAssertTrue(kanaRule.isPrefix("kya", modifierFlags: [], treatAsAlphabet: false))
         XCTAssertFalse(kanaRule.isPrefix("kyi", modifierFlags: [], treatAsAlphabet: false))
         XCTAssertFalse(kanaRule.isPrefix("q", modifierFlags: [], treatAsAlphabet: false))
-        XCTAssertTrue(kanaRule.isPrefix(",", modifierFlags: [], treatAsAlphabet: false))
-        XCTAssertFalse(kanaRule.isPrefix(",", modifierFlags: [.shift], treatAsAlphabet: false))
-        XCTAssertTrue(kanaRule.isPrefix(",", modifierFlags: [.shift], treatAsAlphabet: true))
+        XCTAssertTrue(kanaRule.isPrefix(".", modifierFlags: [], treatAsAlphabet: false))
+        XCTAssertFalse(kanaRule.isPrefix(".", modifierFlags: [.shift], treatAsAlphabet: false))
+        XCTAssertTrue(kanaRule.isPrefix(".", modifierFlags: [.shift], treatAsAlphabet: true))
+        XCTAssertFalse(kanaRule.isPrefix(";", modifierFlags: [], treatAsAlphabet: false))
+        XCTAssertFalse(kanaRule.isPrefix(";", modifierFlags: [.shift], treatAsAlphabet: false))
+    }
+
+    func testAzikIsPrefix() throws {
+        let kanaRule = Romaji.azikKanaRule
+        // AZIKには`;,っ`のルールが存在するので`;`で`true`になる。
+        XCTAssertTrue(kanaRule.isPrefix(";", modifierFlags: [], treatAsAlphabet: false))
+        XCTAssertTrue(kanaRule.isPrefix(";", modifierFlags: [.shift], treatAsAlphabet: false))
+        // AZIKでも`.,。`でkanaがひらがなではないので`.`はRomaji.defaultKanaRuleと同じになる。
+        XCTAssertTrue(kanaRule.isPrefix(".", modifierFlags: [], treatAsAlphabet: false))
+        XCTAssertFalse(kanaRule.isPrefix(".", modifierFlags: [.shift], treatAsAlphabet: false))
     }
 }
 
@@ -96,6 +108,12 @@ extension Romaji {
     // アプリデフォルトのローマ字かな変換ルール
     static var defaultKanaRule: Romaji {
         let kanaRuleFileURL = Bundle.main.url(forResource: "kana-rule", withExtension: "conf")!
+        return try! Romaji(contentsOf: kanaRuleFileURL)
+    }
+
+    // AZIKローマ字かな変換ルール
+    static var azikKanaRule: Romaji {
+        let kanaRuleFileURL = Bundle.main.url(forResource: "kana-rule-azik", withExtension: "conf")!
         return try! Romaji(contentsOf: kanaRuleFileURL)
     }
 }

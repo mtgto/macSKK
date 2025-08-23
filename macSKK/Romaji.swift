@@ -355,32 +355,35 @@ struct Romaji: Equatable, Sendable {
     /**
      * 入力された文字列を受け取り、ローマ字かな変換ルールの入力として正しい接頭辞または全部かどうかを判定する。
      *
-     * Option, Command, Controlが押されている場合は常にfalseを返す。
-     * アルファベットかそれ以外かで挙動が変わる。
+     * 1. Option, Command, Controlが押されている場合は常にfalseを返す
+     * 2. アルファベットかそれ以外かで判定する
+     * 3. ローマ字かな変換ルールに登録されているのがひらがなかどうかで判定する
      *
      * デフォルトのローマ字かな変換ルールでの例:
      *
-     * input | modifierFlags | treatAsAlphabet | 結果 | 補足
-     * ----- | ------------- | ----------------- | ---- | ----
-     * "a" | `[]` | false | true | "a" の全体なので
-     * "a" | `[.shift]` | false | true | アルファベットの場合シフトキーが押されていてもよい
-     * "a" | `[.option]` | false | false | Optionキーが押されている場合は常にfalse
-     * "k" | `[]` | false | true | "ka" の一部
-     * "ky" | `[]` | false | true | "kya" の一部
-     * "q" | `[]` | false | false | "q" で始まるローマ字はない
-     * "." | `[]` | false | true | ".,。" の全体なのでtrue
-     * "." | `[.shift]` | false | false | アルファベット以外でシフトキーが押されている場合は別のキーとして扱う
-     * "." | `[.shift]` | true | true | 記号だが実質アルファベットとして見做す
+     * input | modifierFlags | treatAsAlphabet |  結果  | 補足
+     * ----- | ------------- | --------------- | ----- | ----
+     * "a"   | `[]`          | false           | true  | "a" の全体なので
+     * "a"   | `[.shift]`    | false           | true  | アルファベットの場合シフトキーが押されていてもよい
+     * "a"   | `[.option]`   | false           | false | Optionキーが押されている場合は常にfalse
+     * "k"   | `[]`          | false           | true  | "ka" の一部
+     * "ky"  | `[]`          | false           | true  | "kya" の一部
+     * "q"   | `[]`          | false           | false | "q" で始まるローマ字はない
+     * "."   | `[]`          | false           | true  | ".,。" の全体なのでtrue
+     * "."   | `[.shift]`    | false           | false | アルファベット以外でシフトキーが押されている場合は別のキーとして扱う
+     * "."   | `[.shift]`    | true            | true  | 記号だが実質アルファベットとして見做す
      *
      * - Parameters
      *   - input: IMKInputController.handle の引数NSEventのcharacterIgnoringModifiers
      *   - modifierFlags: 修飾キー
-     *   - treatAsAlphabet: 実質アルファベットとして見做すかどうか。Romaji.convertedKeyEventで変換された場合。
+     *   - treatAsAlphabet: 実質アルファベットとして見做すかどうか。Romaji.convertKeyEventで変換された場合。
      */
     func isPrefix(_ input: String, modifierFlags: NSEvent.ModifierFlags, treatAsAlphabet: Bool) -> Bool {
         if !modifierFlags.isDisjoint(with: [.option, .command, .control]) {
             return false
-        } else if undecidedInputs.contains(input) || table[input] != nil {
+        } else if let romaji = table[input] {
+            return romaji.kana.isHiragana || input.isAlphabet || !modifierFlags.contains(.shift) || treatAsAlphabet
+        } else if undecidedInputs.contains(input){
             return input.isAlphabet || !modifierFlags.contains(.shift) || treatAsAlphabet
         }
         return false
