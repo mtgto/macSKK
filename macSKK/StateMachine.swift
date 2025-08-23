@@ -4,7 +4,7 @@
 import Cocoa
 import Combine
 
-// ActionによってIMEに関する状態が変更するイベントの列挙
+/// ActionによってIMEに関する状態が変更するイベントの列挙
 enum InputMethodEvent: Equatable {
     /// 確定文字列
     case fixedText(String)
@@ -16,11 +16,13 @@ enum InputMethodEvent: Equatable {
     case modeChanged(InputMode)
 }
 
+/// 読み入力部分が変更されたイベント。
 enum YomiEvent: Equatable {
-    // Tabにより補完されたとき。補完候補は検索しなくてよい
+    // Tabにより読み部分が補完されたとき。このイベントが渡されたときは補完候補は検索しなくてよい。
+    // Associated Valueは次の読みの補完候補。次の補完候補がない場合は空文字列。
     case completed(String)
     // 補完のとき以外。キーボード操作により読み部分が変更されたとき、読み部分が空文字列になったとき。
-    // 補完が有効なら補完候補の検索が行われる
+    // 補完が有効なら補完候補の検索が行われる。
     case other(String)
 }
 
@@ -32,6 +34,7 @@ final class StateMachine {
     private let candidateEventSubject = PassthroughSubject<Candidates?, Never>()
     /**
      * 現在入力中の未変換の読み部分の文字列が更新されたときに通知される。
+     * 補完が行われたときはStateMachineのプロパティcompletionがCompletion.yomiのときだけ通知される。
      *
      * 通知される文字列は全角ひらがな(Abbrev以外)もしくは英数(Abbrev)。
      * 送り仮名がローマ字で一文字でも入力されたときは新しく通知はされない。
@@ -737,17 +740,22 @@ final class StateMachine {
         case .tab:
             // FIXME: この記号がローマ字に含まれていることも考慮するべき?
             if case .yomi(let yomis, let yomiIndex) = completion {
-                // カーソル位置に関わらずカーソル位置はリセットされる
-                let yomi = yomis[yomiIndex]
-                let newText = yomi.map({ String($0) })
-                state.inputMethod = .composing(ComposingState(isShift: composing.isShift,
-                                                              text: newText,
-                                                              okuri: nil,
-                                                              romaji: "",
-                                                              cursor: nil,
-                                                              prevMode: composing.prevMode))
-                self.completion = nil
-                updateMarkedText(completion: true)
+                if yomiIndex < yomis.count {
+                    // カーソル位置に関わらずカーソル位置はリセットされる
+                    let yomi = yomis[yomiIndex]
+                    let newText = yomi.map({ String($0) })
+                    state.inputMethod = .composing(ComposingState(isShift: composing.isShift,
+                                                                  text: newText,
+                                                                  okuri: nil,
+                                                                  romaji: "",
+                                                                  cursor: nil,
+                                                                  prevMode: composing.prevMode))
+                    let nextYomiCompletion = yomiIndex + 1 < yomis.count ? yomis[yomiIndex + 1] : ""
+                    self.completion = .yomi(yomis, yomiIndex + 1)
+                    updateMarkedText(nextCompletion: nextYomiCompletion)
+                } else {
+                    return true
+                }
             } else if case .candidates(let candidateWords) = completion {
                 let trimmedComposing = composing.trim(kanaRule: Global.kanaRule)
                 let yomiText = trimmedComposing.yomi(for: self.state.inputMode, kanaRule: Global.kanaRule)
@@ -1472,15 +1480,22 @@ final class StateMachine {
     /**
      * 現在のMarkedText状態をinputMethodEventSubject.sendする
      *
-     * - Parameter completion: 読みをTabによって補完したかどうか
+     * - Parameter nextCompletion: 次の読みの補完要素。キー入力による場合
      */
-    private func updateMarkedText(completion: Bool = false) {
+    private func updateMarkedText(nextCompletion: String? = nil) {
         inputMethodEventSubject.send(.markedText(state.displayText()))
         // 読み部分を取得してyomiEventに通知する
         if case let .composing(composing) = state.inputMethod, composing.okuri == nil {
             // ComposingState#yomi(for:) とComposingState#subText()の違いは未確定ローマ字が"n"のときに「ん」として扱うか否か
-            if !completion {
-                yomiEventSubject.send(.other(composing.subText().joined()))
+            let yomi = composing.subText().joined()
+            if let nextCompletion {
+                // 次の読みの補完候補 (ない場合は空文字列) を送信する。
+                // 補完候補が読みでなく見出し候補のときはなにも送信しない
+                if case .yomi = self.completion {
+                    yomiEventSubject.send(.completed(nextCompletion))
+                }
+            } else {
+                yomiEventSubject.send(.other(yomi))
             }
         } else {
             yomiEventSubject.send(.other(""))

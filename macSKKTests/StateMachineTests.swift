@@ -2134,14 +2134,29 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleComposingTab() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(2).sink { events in
+        expectation.expectedFulfillmentCount = 2
+        stateMachine.inputMethodEvent.collect(4).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("い")])))
             XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("いろは")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("いしき")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("いぬ")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        stateMachine.yomiEvent.collect(4).sink { events in
+            XCTAssertEqual(events[0], .other("い"))
+            XCTAssertEqual(events[1], .completed("いしき")) // 補完候補の"いろは"を消費したので次の"いしき"を返す
+            XCTAssertEqual(events[2], .completed("いぬ"))
+            XCTAssertEqual(events[3], .completed("")) // 読みの補完候補の終端に到達している
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i", withShift: true)))
-        stateMachine.completion = .yomi(["いろは"], 0)
+        stateMachine.completion = .yomi(["いろは", "いしき", "いぬ"], 0)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "\t")))
+        XCTAssertEqual(stateMachine.completion, .yomi(["いろは", "いしき", "いぬ"], 1))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "\t")))
+        XCTAssertEqual(stateMachine.completion, .yomi(["いろは", "いしき", "いぬ"], 2))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "\t")))
+        XCTAssertEqual(stateMachine.completion, .yomi(["いろは", "いしき", "いぬ"], 3))
         wait(for: [expectation], timeout: 1.0)
     }
 

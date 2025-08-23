@@ -223,6 +223,22 @@ class InputController: IMKInputController {
                     }
                 }
         }.store(in: &cancellables)
+        // 読みの補完候補が更新されたときの処理
+        stateMachine.yomiEvent
+            .compactMap {
+                if case .completed(let nextYomi) = $0 {
+                    return nextYomi
+                }
+                return nil
+            }
+            .sink { nextYomi in
+                if nextYomi.isEmpty {
+                    Global.completionPanel.orderOut(nil)
+                } else {
+                    Global.completionPanel.viewModel.completion = nextYomi
+                }
+            }
+            .store(in: &cancellables)
         // Safariでアドレスバーに移動するときなど、処理が固まることがあるので非同期で実行する
         // https://github.com/mtgto/macSKK/issues/336
         displayInputModePanel
