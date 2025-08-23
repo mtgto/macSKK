@@ -286,7 +286,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleNormalTab() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         // Normal時はタブは処理しない (Composingでは補完に使用する)
-        XCTAssertFalse(stateMachine.handle(printableKeyEventAction(character: "\t")))
+        XCTAssertFalse(stateMachine.handle(tabAction))
     }
 
     @MainActor func testHandleNormalEnter() {
@@ -2151,11 +2151,11 @@ final class StateMachineTests: XCTestCase {
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i", withShift: true)))
         stateMachine.completion = .yomi(["いろは", "いしき", "いぬ"], 0)
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "\t")))
+        XCTAssertTrue(stateMachine.handle(tabAction))
         XCTAssertEqual(stateMachine.completion, .yomi(["いろは", "いしき", "いぬ"], 1))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "\t")))
+        XCTAssertTrue(stateMachine.handle(tabAction))
         XCTAssertEqual(stateMachine.completion, .yomi(["いろは", "いしき", "いぬ"], 2))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "\t")))
+        XCTAssertTrue(stateMachine.handle(tabAction))
         XCTAssertEqual(stateMachine.completion, .yomi(["いろは", "いしき", "いぬ"], 3))
         wait(for: [expectation], timeout: 1.0)
     }
@@ -2174,7 +2174,7 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
         XCTAssertTrue(stateMachine.handle(leftKeyAction))
         stateMachine.completion = .yomi(["いろは"], 0)
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "\t")))
+        XCTAssertTrue(stateMachine.handle(tabAction))
         wait(for: [expectation], timeout: 1.0)
     }
 
@@ -2193,10 +2193,10 @@ final class StateMachineTests: XCTestCase {
             Candidate("色", original: Candidate.Original(midashi: "いろ", word: "色")),
             Candidate("異論", original: Candidate.Original(midashi: "いろん", word: "異論")),
         ])
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "\t")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "\t")))
+        XCTAssertTrue(stateMachine.handle(tabAction))
+        XCTAssertTrue(stateMachine.handle(tabAction))
         // 補完候補が終端に達してる状態でTab押しても何も起きない
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "\t")))
+        XCTAssertTrue(stateMachine.handle(tabAction))
         XCTAssertTrue(stateMachine.handle(enterAction))
         // "い"まで入力して変換したが、ユーザー辞書には読みは"いろん"で登録される
         XCTAssertEqual(Global.dictionary.refer("いろん"), [Word("異論")])
@@ -2977,7 +2977,7 @@ final class StateMachineTests: XCTestCase {
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "\t")))
+        XCTAssertTrue(stateMachine.handle(tabAction))
         wait(for: [expectation], timeout: 1.0)
     }
 
