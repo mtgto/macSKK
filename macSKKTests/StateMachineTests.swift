@@ -2135,28 +2135,39 @@ final class StateMachineTests: XCTestCase {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         expectation.expectedFulfillmentCount = 2
-        stateMachine.inputMethodEvent.collect(4).sink { events in
+        stateMachine.inputMethodEvent.collect(6).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("い")])))
             XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("いろは")])))
             XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("いしき")])))
-            XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("いぬ")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("いろは")])))
+            XCTAssertEqual(events[4], .markedText(MarkedText([.markerCompose, .plain("いしき")])))
+            XCTAssertEqual(events[5], .markedText(MarkedText([.markerCompose, .plain("いぬ")])))
             expectation.fulfill()
         }.store(in: &cancellables)
-        stateMachine.yomiEvent.collect(4).sink { events in
+        stateMachine.yomiEvent.collect(6).sink { events in
             XCTAssertEqual(events[0], .other("い"))
             XCTAssertEqual(events[1], .completed("いしき")) // 補完候補の"いろは"を消費したので次の"いしき"を返す
             XCTAssertEqual(events[2], .completed("いぬ"))
-            XCTAssertEqual(events[3], .completed("")) // 読みの補完候補の終端に到達している
+            XCTAssertEqual(events[3], .completed("いしき"))
+            XCTAssertEqual(events[4], .completed("いぬ"))
+            XCTAssertEqual(events[5], .completed("")) // 読みの補完候補の終端に到達している
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i", withShift: true)))
         stateMachine.completion = .yomi(["いろは", "いしき", "いぬ"], 0)
         XCTAssertTrue(stateMachine.handle(tabAction))
         XCTAssertEqual(stateMachine.completion, .yomi(["いろは", "いしき", "いぬ"], 1))
+        XCTAssertTrue(stateMachine.handle(shiftTabAction)) // 先頭でシフトタブしてもなにも起きない
+        XCTAssertEqual(stateMachine.completion, .yomi(["いろは", "いしき", "いぬ"], 1))
+        XCTAssertTrue(stateMachine.handle(tabAction))
+        XCTAssertEqual(stateMachine.completion, .yomi(["いろは", "いしき", "いぬ"], 2))
+        XCTAssertTrue(stateMachine.handle(shiftTabAction))
+        XCTAssertEqual(stateMachine.completion, .yomi(["いろは", "いしき", "いぬ"], 1))
         XCTAssertTrue(stateMachine.handle(tabAction))
         XCTAssertEqual(stateMachine.completion, .yomi(["いろは", "いしき", "いぬ"], 2))
         XCTAssertTrue(stateMachine.handle(tabAction))
         XCTAssertEqual(stateMachine.completion, .yomi(["いろは", "いしき", "いぬ"], 3))
+        XCTAssertTrue(stateMachine.handle(tabAction))
         wait(for: [expectation], timeout: 1.0)
     }
 
@@ -2181,11 +2192,13 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleComposingCompletions() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(4).sink { events in
+        stateMachine.inputMethodEvent.collect(6).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("い")])))
             XCTAssertEqual(events[1], .markedText(MarkedText([.markerSelect, .emphasized("色")])))
             XCTAssertEqual(events[2], .markedText(MarkedText([.markerSelect, .emphasized("異論")])))
-            XCTAssertEqual(events[3], .fixedText("異論"))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerSelect, .emphasized("色")])))
+            XCTAssertEqual(events[4], .markedText(MarkedText([.markerSelect, .emphasized("異論")])))
+            XCTAssertEqual(events[5], .fixedText("異論"))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i", withShift: true)))
@@ -2194,8 +2207,12 @@ final class StateMachineTests: XCTestCase {
             Candidate("異論", original: Candidate.Original(midashi: "いろん", word: "異論")),
         ])
         XCTAssertTrue(stateMachine.handle(tabAction))
+        // 補完候補が先頭のときはShiftTab押しても何も起きない
+        XCTAssertTrue(stateMachine.handle(shiftTabAction))
         XCTAssertTrue(stateMachine.handle(tabAction))
         // 補完候補が終端に達してる状態でTab押しても何も起きない
+        XCTAssertTrue(stateMachine.handle(tabAction))
+        XCTAssertTrue(stateMachine.handle(shiftTabAction))
         XCTAssertTrue(stateMachine.handle(tabAction))
         XCTAssertTrue(stateMachine.handle(enterAction))
         // "い"まで入力して変換したが、ユーザー辞書には読みは"いろん"で登録される
@@ -3619,6 +3636,9 @@ final class StateMachineTests: XCTestCase {
     // タブキーを押した
     var tabAction: Action {
         Action(keyBind: .tab, event: generateNSEvent(character: "\t", characterIgnoringModifiers: "\t"))
+    }
+    var shiftTabAction: Action {
+        Action(keyBind: .tab, event: generateNSEvent(character: "\t", characterIgnoringModifiers: "\t", modifierFlags: .shift))
     }
     // Ctrl-gキーを押した
     var cancelAction: Action {
