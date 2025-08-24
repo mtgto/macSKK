@@ -203,6 +203,7 @@ class InputController: IMKInputController {
                     } else if case .candidates(let candidates) = completion {
                         // 先頭1ページ分だけ変換候補パネルに表示する。
                         if !candidates.isEmpty {
+                            Global.candidatesPanel.setShowAnnotationPopover(false)
                             // 下線のスタイルがthickのときに被らないように1ピクセル下に余白を設ける
                             var cursorPosition = cursorPosition(for: textInput).offsetBy(dx: 0, dy: -1)
                             cursorPosition.size.height += 1
@@ -216,7 +217,7 @@ class InputController: IMKInputController {
                         }
                     }
                 } else {
-                    if Global.showCandidateForCompletion {
+                    if Global.showCompletion && Global.showCandidateForCompletion {
                         Global.candidatesPanel.orderOut(nil)
                     } else {
                         self.stateMachine.completion = nil
