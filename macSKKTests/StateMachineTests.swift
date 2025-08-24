@@ -2998,6 +2998,68 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    // 補完候補で変換結果を表示しているときのタブ操作。selectingBackspaceがcancelのとき。
+    @MainActor func testHandleSelectingBackspaceCancelCompletion() throws {
+        Global.selectingBackspace = .cancel
+        let dict = MemoryDict(entries: ["あいず": [Word("合図")], "あえん": [Word("亜鉛")]], readonly: true)
+        Global.dictionary = try UserDict(dicts: [dict],
+                                         privateMode: CurrentValueSubject<Bool, Never>(false),
+                                         ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
+                                         findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false),
+                                         dateYomis: [],
+                                         dateConversions: [])
+        Global.dictionary.setEntries([:])
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(4).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerSelect, .emphasized("合図")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerSelect, .emphasized("亜鉛")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerSelect, .emphasized("合図")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        stateMachine.completion = .candidates([
+            Candidate("合図", original: .init(midashi: "あいず", word: "合図")),
+            Candidate("亜鉛", original: .init(midashi: "あえん", word: "亜鉛")),
+        ])
+        XCTAssertTrue(stateMachine.handle(tabAction))
+        XCTAssertTrue(stateMachine.handle(backspaceAction)) // 先頭なので何も起きない
+        XCTAssertTrue(stateMachine.handle(tabAction))
+        XCTAssertTrue(stateMachine.handle(backspaceAction))  // 1つ前に戻る
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    // 補完候補で変換結果を表示しているときのタブ操作。selectingBackspaceがdropLastInlineOnlyのとき。
+    @MainActor func testHandleSelectingBackspaceDropLastInlineOnlyCompletion() throws {
+        Global.selectingBackspace = .dropLastInlineOnly
+        let dict = MemoryDict(entries: ["あいず": [Word("合図")], "あえん": [Word("亜鉛")]], readonly: true)
+        Global.dictionary = try UserDict(dicts: [dict],
+                                         privateMode: CurrentValueSubject<Bool, Never>(false),
+                                         ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
+                                         findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false),
+                                         dateYomis: [],
+                                         dateConversions: [])
+        Global.dictionary.setEntries([:])
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(3).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerSelect, .emphasized("合図")])))
+            XCTAssertEqual(events[2], .fixedText("合"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        stateMachine.completion = .candidates([
+            Candidate("合図", original: .init(midashi: "あいず", word: "合図")),
+            Candidate("亜鉛", original: .init(midashi: "あえん", word: "亜鉛")),
+        ])
+        XCTAssertTrue(stateMachine.handle(tabAction))
+        // 補完候補の変換候補表示時は変換候補とほとんど同じ処理なのでインライン変換時のみテストしてます
+        XCTAssertTrue(stateMachine.handle(backspaceAction))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     @MainActor func testHandleSelectingStickyShift() {
         Global.dictionary.setEntries(["と": [Word("戸")]])
 
