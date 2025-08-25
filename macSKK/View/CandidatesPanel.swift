@@ -115,4 +115,3 @@ final class CandidatesPanel: NSPanel {
         orderFrontRegardless()
     }
 }
- 
