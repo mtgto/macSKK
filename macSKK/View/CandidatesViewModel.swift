@@ -83,6 +83,8 @@ final class CandidatesViewModel: ObservableObject {
                 }
                 self.selectedSystemAnnotation = systemAnnotations[selected.word]
                 self.popoverIsPresented = self.showAnnotationPopover && (self.selectedAnnotations != [] || self.selectedSystemAnnotation != nil)
+            } else {
+                self.popoverIsPresented = false
             }
         }
         .store(in: &cancellables)
