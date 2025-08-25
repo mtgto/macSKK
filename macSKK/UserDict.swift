@@ -248,6 +248,7 @@ class UserDict: NSObject, DictProtocol {
      *   - word: SKK辞書の変換候補。
      */
     func add(yomi: String, word: Word) {
+        logger.log("ユーザー辞書に読み \(yomi, privacy: .public), 変換 \(word.word, privacy: .public) を登録する")
         if !privateMode.value {
             if let dict = userDict as? FileDict {
                 dict.add(yomi: yomi, word: word)

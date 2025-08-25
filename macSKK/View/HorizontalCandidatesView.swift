@@ -50,10 +50,12 @@ struct HorizontalCandidatesView: View {
                     .frame(height: candidates.candidatesLineHeight)
                     .background(candidates.selected == candidate ? Color.accentColor : Color.clear)
                 }
-                Text("\(currentPage + 1) / \(totalPageCount)")
-                    .foregroundStyle(Color(NSColor.secondaryLabelColor))
-                    .padding([.leading, .trailing], 4)
-                    .fixedSize(horizontal: true, vertical: false)
+                if candidates.showPage {
+                    Text("\(currentPage + 1) / \(totalPageCount)")
+                        .foregroundStyle(Color(NSColor.secondaryLabelColor))
+                        .padding([.leading, .trailing], 4)
+                        .fixedSize(horizontal: true, vertical: false)
+                }
             }
             .background()
             if candidates.popoverIsPresented && !candidates.displayPopoverInLeftOrTop {
@@ -126,6 +128,12 @@ struct HorizonalCandidatesView_Previews: PreviewProvider {
         return viewModel
     }
 
+    private static func pageWithoutPageNumberViewModel() -> CandidatesViewModel {
+        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, showAnnotationPopover: false)
+        viewModel.showPage = false
+        return viewModel
+    }
+
     static var previews: some View {
         HorizontalCandidatesView(candidates: pageViewModel(), words: words, currentPage: 9, totalPageCount: 10)
             .background(Color.cyan)
@@ -143,5 +151,8 @@ struct HorizonalCandidatesView_Previews: PreviewProvider {
         HorizontalCandidatesView(candidates: fontSize19ViewModel(), words: words, currentPage: 0, totalPageCount: 3)
             .background(Color.cyan)
             .previewDisplayName("フォントサイズ19")
+        HorizontalCandidatesView(candidates: pageWithoutPageNumberViewModel(), words: words, currentPage: 9, totalPageCount: 10)
+            .background(Color.cyan)
+            .previewDisplayName("パネル表示 (ページなし)")
     }
 }

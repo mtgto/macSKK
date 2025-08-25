@@ -7,8 +7,10 @@ import SwiftUI
 class CompletionPanel: NSPanel {
     let viewModel: CompletionViewModel
 
-    init() {
-        viewModel = CompletionViewModel(completion: "")
+    init(candidatesFontSize: Int, annotationFontSize: Int) {
+        viewModel = CompletionViewModel(completion: .yomi(""),
+                                        candidatesFontSize: candidatesFontSize,
+                                        annotationFontSize: annotationFontSize)
         let rootView = CompletionView(viewModel: viewModel)
         let viewController = NSHostingController(rootView: rootView)
         super.init(contentRect: .zero, styleMask: [.nonactivatingPanel], backing: .buffered, defer: true)
@@ -18,7 +20,7 @@ class CompletionPanel: NSPanel {
     func show(at cursorPoint: NSRect, windowLevel: NSWindow.Level) {
         level = windowLevel
         var origin = cursorPoint.origin
-        
+
         if let size = contentViewController?.view.frame.size, let mainScreen = NSScreen.main {
             let visibleFrame = mainScreen.visibleFrame
             if origin.x + size.width > visibleFrame.minX + visibleFrame.width {

@@ -1508,7 +1508,7 @@ final class StateMachine {
     /**
      * 現在のMarkedText状態をinputMethodEventSubject.sendする
      *
-     * - Parameter nextCompletion: 次の読みの補完要素。キー入力による場合
+     * - Parameter nextCompletion: 次の読みの補完要素。Tabキー入力による補完が発生した場合のみ渡される。
      */
     private func updateMarkedText(nextCompletion: String? = nil) {
         inputMethodEventSubject.send(.markedText(state.displayText()))

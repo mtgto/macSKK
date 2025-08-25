@@ -87,7 +87,7 @@ final class CandidatesPanel: NSPanel {
             switch Global.candidateListDirection.value {
             case .vertical:
                 width = viewModel.showAnnotationPopover ? viewModel.minWidth + CandidatesView.annotationPopupWidth : viewModel.minWidth
-                height = CGFloat(words.count) * viewModel.candidatesLineHeight + CandidatesView.footerHeight
+                height = CGFloat(words.count) * viewModel.candidatesLineHeight + (viewModel.showPage ? CandidatesView.footerHeight : 0)
                 if viewModel.displayPopoverInLeftOrTop {
                     origin.x = origin.x - CandidatesView.annotationPopupWidth - CandidatesView.annotationMarginLeftRight
                 }

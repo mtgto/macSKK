@@ -63,7 +63,10 @@ import Combine
             candidatesFontSize: UserDefaults.app.integer(forKey: UserDefaultsKeys.candidatesFontSize),
             annotationFontSize: UserDefaults.app.integer(forKey: UserDefaultsKeys.annotationFontSize)
         )
-        completionPanel = CompletionPanel()
+        completionPanel = CompletionPanel(
+            candidatesFontSize: UserDefaults.app.integer(forKey: UserDefaultsKeys.candidatesFontSize),
+            annotationFontSize: UserDefaults.app.integer(forKey: UserDefaultsKeys.annotationFontSize)
+        )
     }
 
     static var inputModePanel: InputModePanel {

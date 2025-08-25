@@ -54,14 +54,16 @@ struct VerticalCandidatesView: View {
                 .environment(\.defaultMinListRowHeight, candidates.candidatesLineHeight)
                 .scrollDisabled(true)
                 .frame(width: candidates.minWidth, height: CGFloat(words.count) * candidates.candidatesLineHeight)
-                HStack(alignment: .center, spacing: 0) {
-                    Spacer()
-                    Text("\(currentPage + 1) / \(totalPageCount)")
-                        .foregroundStyle(Color(NSColor.secondaryLabelColor))
-                        .padding(EdgeInsets(top: 2, leading: 0, bottom: 2, trailing: 4))
+                if candidates.showPage {
+                    HStack(alignment: .center, spacing: 0) {
+                        Spacer()
+                        Text("\(currentPage + 1) / \(totalPageCount)")
+                            .foregroundStyle(Color(NSColor.secondaryLabelColor))
+                            .padding(EdgeInsets(top: 2, leading: 0, bottom: 2, trailing: 4))
+                    }
+                    .frame(width: candidates.minWidth, height: CandidatesView.footerHeight)
+                    .background()
                 }
-                .frame(width: candidates.minWidth, height: CandidatesView.footerHeight)
-                .background()
             }
             if candidates.popoverIsPresented && !candidates.displayPopoverInLeftOrTop {
                 AnnotationView(
@@ -127,6 +129,12 @@ struct VerticalCandidatesView_Previews: PreviewProvider {
         return viewModel
     }
 
+    private static func pageWithoutPageNumberViewModel() -> CandidatesViewModel {
+        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, showAnnotationPopover: false)
+        viewModel.showPage = false
+        return viewModel
+    }
+
     static var previews: some View {
         VerticalCandidatesView(candidates: pageViewModel(), words: words, currentPage: 0, totalPageCount: 3)
             .background(Color.cyan)
@@ -141,5 +149,8 @@ struct VerticalCandidatesView_Previews: PreviewProvider {
         VerticalCandidatesView(candidates: fontSize19ViewModel(), words: words, currentPage: 0, totalPageCount: 3)
             .background(Color.cyan)
             .previewDisplayName("フォントサイズ19")
+        VerticalCandidatesView(candidates: pageWithoutPageNumberViewModel(), words: words, currentPage: 0, totalPageCount: 3)
+            .background(Color.cyan)
+            .previewDisplayName("パネル表示 (ページなし)")
     }
 }
