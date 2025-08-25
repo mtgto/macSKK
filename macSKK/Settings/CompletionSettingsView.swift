@@ -15,6 +15,7 @@ struct CompletionSettingsView: View {
                     Toggle(isOn: $settingsViewModel.showCandidateForCompletion, label: {
                         Text("Show Candidate for Completion")
                     })
+                    .disabled(!settingsViewModel.showCompletion)
                 }
                 Toggle(isOn: $settingsViewModel.findCompletionFromAllDicts, label: {
                     Text("Find completion from all dictionaries")
