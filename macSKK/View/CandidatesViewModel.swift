@@ -71,8 +71,10 @@ final class CandidatesViewModel: ObservableObject {
             self.selected = first
         }
 
+
         $selected.combineLatest($systemAnnotations).sink { [weak self] (selected, systemAnnotations) in
-            if let selected, let self {
+            guard let self else { return }
+            if let selected {
                 self.selectedAnnotations = selected.annotations
                 if case let .panel(words, _, _) = self.candidates {
                     self.selectedIndex = words.firstIndex(of: selected)

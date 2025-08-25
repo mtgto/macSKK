@@ -173,16 +173,9 @@ class InputController: IMKInputController {
                 if Global.showCompletion {
                     if Global.showCandidateForCompletion {
                         let candidates = Global.dictionary.candidatesForCompletion(prefix: yomi)
-                        if candidates.isEmpty {
-                            return nil
-                        } else {
-                            return .candidates(candidates)
-                        }
-                    } else {
+                        return .candidates(candidates)
+                     } else {
                         let completions = Global.dictionary.findCompletions(prefix: yomi)
-                        if completions.isEmpty {
-                            return nil
-                        }
                         return .yomi(completions, 0)
                     }
                 }
@@ -201,8 +194,10 @@ class InputController: IMKInputController {
                             Global.completionPanel.show(at: cursorPosition, windowLevel: windowLevel(for: textInput))
                         }
                     } else if case .candidates(let candidates) = completion {
-                        // 先頭1ページ分だけ変換候補パネルに表示する。
-                        if !candidates.isEmpty {
+                        if candidates.isEmpty {
+                            Global.candidatesPanel.orderOut(nil)
+                        } else {
+                            // 先頭1ページ分だけ変換候補パネルに表示する。
                             Global.candidatesPanel.setShowAnnotationPopover(false)
                             // 下線のスタイルがthickのときに被らないように1ピクセル下に余白を設ける
                             var cursorPosition = cursorPosition(for: textInput).offsetBy(dx: 0, dy: -1)
@@ -217,23 +212,25 @@ class InputController: IMKInputController {
                         }
                     }
                 } else {
-                    if Global.showCompletion && Global.showCandidateForCompletion {
-                        Global.candidatesPanel.orderOut(nil)
-                    } else {
-                        self.stateMachine.completion = nil
-                        Global.completionPanel.orderOut(nil)
-                    }
+                    self.stateMachine.completion = nil
+                    Global.completionPanel.orderOut(nil)
                 }
         }.store(in: &cancellables)
-        // 読みの補完候補が更新されたときの処理
         stateMachine.yomiEvent
             .compactMap {
                 if case .completed(let nextYomi) = $0 {
                     return nextYomi
+                } else if case .other(let yomi) = $0 {
+                    // 読みが更新されたとき、変換候補の補完を使用する設定が有効かつ読みが空のときは
+                    // すでにCandidatesPanelによる補完候補が表示されていることがあるので閉じる
+                    if yomi.isEmpty && Global.showCompletion && Global.showCandidateForCompletion {
+                        Global.candidatesPanel.orderOut(nil)
+                    }
                 }
                 return nil
             }
             .sink { nextYomi in
+                // 読みの補完候補が更新されたときの処理
                 if nextYomi.isEmpty {
                     Global.completionPanel.orderOut(nil)
                 } else {
