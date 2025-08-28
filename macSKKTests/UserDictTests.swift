@@ -207,23 +207,31 @@ final class UserDictTests: XCTestCase {
         let privateMode = CurrentValueSubject<Bool, Never>(false)
         let ignoreUserDictInPrivateMode = CurrentValueSubject<Bool, Never>(false)
         let findCompletionFromAllDicts = CurrentValueSubject<Bool, Never>(false)
+        let annotation1 = Annotation(dictId: UserDict.userDictFilename, text: "日本の注釈")
+        let annotation2 = Annotation(dictId: "dict2", text: "日本語の注釈")
         let dict1 = MemoryDict(entries: ["にほん": [Word("日本")], "にほ": [Word("2歩")]], readonly: false)
-        let dict2 = MemoryDict(entries: ["にほん": [Word("二本")], "にほんご": [Word("日本語")]], readonly: false)
-        let userDict = try UserDict(dicts: [dict1, dict2],
-                                    userDictEntries: ["にふ": [Word("二歩")], "にほん": [Word("日本")]],
-                                    privateMode: privateMode,
-                                    ignoreUserDictInPrivateMode: ignoreUserDictInPrivateMode,
-                                    findCompletionFromAllDicts: findCompletionFromAllDicts,
-                                    dateYomis: [],
-                                    dateConversions: [])
-        XCTAssertEqual(userDict.candidatesForCompletion(prefix: "にほ"), [
-            Candidate("日本", original: .init(midashi: "にほん", word: "日本")),
-        ])
-        findCompletionFromAllDicts.send(true) // 全辞書を対象
-        XCTAssertEqual(userDict.candidatesForCompletion(prefix: "にほ"), [
-            Candidate("日本", original: .init(midashi: "にほん", word: "日本")),
-            Candidate("二本", original: .init(midashi: "にほん", word: "二本")),
-            Candidate("日本語", original: .init(midashi: "にほんご", word: "日本語")),
-        ])
+        let dict2 = MemoryDict(entries: ["にほん": [Word("二本")], "にほんご": [Word("日本語", annotation: annotation2)]], readonly: false)
+        let userDict = try UserDict(
+            dicts: [dict1, dict2],
+            userDictEntries: ["にふ": [Word("二歩")],
+                              "にほん": [Word("日本", annotation: annotation1)]],
+            privateMode: privateMode,
+            ignoreUserDictInPrivateMode: ignoreUserDictInPrivateMode,
+            findCompletionFromAllDicts: findCompletionFromAllDicts,
+            dateYomis: [],
+            dateConversions: [])
+        XCTAssertEqual(
+            userDict.candidatesForCompletion(prefix: "にほ"),
+            [
+                Candidate("日本", annotations: [annotation1], original: .init(midashi: "にほん", word: "日本"))
+            ])
+        findCompletionFromAllDicts.send(true)  // 全辞書を対象
+        XCTAssertEqual(
+            userDict.candidatesForCompletion(prefix: "にほ"),
+            [
+                Candidate("日本", annotations: [annotation1], original: .init(midashi: "にほん", word: "日本")),
+                Candidate("二本", annotations: [], original: .init(midashi: "にほん", word: "二本")),
+                Candidate("日本語", annotations: [annotation2], original: .init(midashi: "にほんご", word: "日本語")),
+            ])
     }
 }
