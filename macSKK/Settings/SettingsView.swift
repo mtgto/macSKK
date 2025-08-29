@@ -9,6 +9,7 @@ struct SettingsView: View {
         case general = "SettingsNameGeneral"
         case dictionaries = "SettingsNameDictionaries"
         case dateConversion = "SettingsNameDateConversion"
+        case completion = "SettingsNameCompletion"
         case keyBinding = "SettingsNameKeyBinding"
         case softwareUpdate = "SettingsNameSoftwareUpdate"
         case directMode = "SettingsNameDirectMode"
@@ -37,6 +38,8 @@ struct SettingsView: View {
                         Label(section.localizedStringKey, systemImage: "books.vertical")
                     case .dateConversion:
                         Label(section.localizedStringKey, systemImage: "calendar")
+                    case .completion:
+                        Label(section.localizedStringKey, systemImage: "wand.and.rays")
                     case .keyBinding:
                         Label(section.localizedStringKey, systemImage: "keyboard")
                     case .softwareUpdate:
@@ -70,6 +73,9 @@ struct SettingsView: View {
                     .navigationTitle(selectedSection.localizedStringKey)
             case .dateConversion:
                 DateConversionsView(settingsViewModel: settingsViewModel)
+                    .navigationTitle(selectedSection.localizedStringKey)
+            case .completion:
+                CompletionSettingsView(settingsViewModel: settingsViewModel)
                     .navigationTitle(selectedSection.localizedStringKey)
             case .keyBinding:
                 KeyBindingView(settingsViewModel: settingsViewModel)

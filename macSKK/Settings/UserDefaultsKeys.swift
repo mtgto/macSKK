@@ -31,6 +31,8 @@ struct UserDefaultsKeys {
     static let enterNewLine = "enterNewLine"
     // 補完を表示するか
     static let showCompletion = "showCompletion"
+    // 変換候補の補完を表示するかどうか。例えば "ほか" まで入力したときに "補完" と表示するか
+    static let showCandidateForCompletion = "showCandidateForCompletion"
     // 注釈に使用するシステム辞書のID。SystemDict.Kindで定義。
     static let systemDict = "systemDict"
     // 変換候補選択中のバックスペースの挙動

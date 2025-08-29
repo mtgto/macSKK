@@ -7,6 +7,7 @@
 "SettingsNameGeneral" = "General";
 "SettingsNameDictionaries" = "Dictionaries";
 "SettingsNameDateConversion" = "Date Conversion";
+"SettingsNameCompletion" = "Completion";
 "SettingsNameKeyBinding" = "Key Bindings";
 "SettingsNameSoftwareUpdate" = "Software Update";
 "SettingsNameDirectMode" = "Direct Mode";
@@ -78,6 +79,7 @@
 "Direction of candidate list" = "Direction of candidate list";
 "Enter Key confirms a candidate and sends a newline" = "Enter Key confirms a candidate and sends a newline";
 "Show Completion" = "Show Completion";
+"Show Candidate for Completion" = "Show Candidate for Completion";
 "Insert Blank String" = "Insert Blank String";
 "Treat First Character as Marked Text" = "Treat First Character as Marked Text";
 "Enabled" = "Enabled";

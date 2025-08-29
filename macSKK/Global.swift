@@ -39,6 +39,8 @@ import Combine
     static var enterNewLine: Bool = false
     /// 補完候補を表示するか？
     static var showCompletion: Bool = true
+    /// 変換候補の補完を表示するかどうか。例えば "ほか" まで入力したときに "補完" と表示するか
+    static var showCandidateForCompletion: Bool = true
     /// 注釈で使用するシステム辞書
     static var systemDict: SystemDict.Kind = .daijirin
     /// 変換候補選択中のバックスペースの挙動
@@ -61,7 +63,10 @@ import Combine
             candidatesFontSize: UserDefaults.app.integer(forKey: UserDefaultsKeys.candidatesFontSize),
             annotationFontSize: UserDefaults.app.integer(forKey: UserDefaultsKeys.annotationFontSize)
         )
-        completionPanel = CompletionPanel()
+        completionPanel = CompletionPanel(
+            candidatesFontSize: UserDefaults.app.integer(forKey: UserDefaultsKeys.candidatesFontSize),
+            annotationFontSize: UserDefaults.app.integer(forKey: UserDefaultsKeys.annotationFontSize)
+        )
     }
 
     static var inputModePanel: InputModePanel {

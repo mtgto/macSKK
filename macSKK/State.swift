@@ -424,6 +424,8 @@ struct SelectingState: Equatable, MarkedTextProtocol {
     var candidateIndex: Int = 0
     /// カーソル位置より後のテキスト部分。ひらがな(Abbrevモード以外) or 英数(Abbrevモード)の配列
     let remain: [String]?
+    /// 補完モードかどうか
+    let completion: Bool
 
     func addCandidateIndex(diff: Int) -> Self {
         return SelectingState(
@@ -431,7 +433,9 @@ struct SelectingState: Equatable, MarkedTextProtocol {
             yomi: yomi,
             candidates: candidates,
             candidateIndex: candidateIndex + diff,
-            remain: remain)
+            remain: remain,
+            completion: completion,
+        )
     }
 
     /// 現在選択されている変換候補を文字列を返す

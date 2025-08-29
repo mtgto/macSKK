@@ -18,10 +18,6 @@ let notificationNameToggleTreatFirstCharacterAsMarkedText = Notification.Name("t
 let notificationNameOpenSettings = Notification.Name("openSettings")
 // インラインで表示する変換候補の数を変更したときに通知される通知の名前
 let notificationNameInlineCandidateCount = Notification.Name("inlineCandidateCount")
-// 変換候補のフォントサイズが変更されたときに通知される通知の名前
-let notificationNameCandidatesFontSize = Notification.Name("candidatesFontSize")
-// 注釈のフォントサイズが変更されたときに通知される通知の名前
-let notificationNameAnnotationFontSize = Notification.Name("annotationFontSize")
 // 一般辞書を補完で検索するかが変更されたときに通知される通知の名前
 let notificationNameFindCompletionFromAllDicts =  Notification.Name("findCompletionFromAllDicts")
 
@@ -226,6 +222,7 @@ struct macSKKApp: App {
                     ["format": "Gy年M月d日", "locale": "ja_JP", "calendar": "japanese"],
                 ],
             ],
+            UserDefaultsKeys.showCandidateForCompletion: true,
         ])
     }
 
