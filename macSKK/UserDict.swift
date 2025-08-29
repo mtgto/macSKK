@@ -287,43 +287,6 @@ class UserDict: NSObject, DictProtocol {
     }
 
     /**
-     * 現在入力中のprefixに続く入力候補を1つ返す。見つからなければnilを返す。
-     *
-     * 以下のように補完候補を探します。
-     * ※将来この仕様は変更する可能性が大いにあります。
-     *
-     * - prefixが空文字列ならnilを返す
-     * - ユーザー辞書の送りなしの読みのうち、最近変換したものから選択する。
-     *   - ユーザー辞書に存在しない場合は、日付変換の読みから選択する
-     * - ユーザー辞書にも日付変換の読みにも候補にない場合は有効になっている辞書から優先度順に検索する
-     * - prefixと読みが完全に一致する場合は補完候補とはしない
-     * - 数値変換用の読みは補完候補としない
-     */
-    func findCompletion(prefix: String) -> String? {
-        if prefix.isEmpty {
-            return nil
-        }
-        if !privateMode.value || !ignoreUserDictInPrivateMode.value {
-            if let userDict {
-                if let completion = userDict.findCompletion(prefix: prefix) {
-                    return completion
-                }
-            }
-        }
-        if let dateYomi = dateYomis.first(where: { $0.yomi.hasPrefix(prefix)}) {
-            return dateYomi.yomi
-        }
-        if findCompletionFromAllDicts.value {
-            for dict in dicts {
-                if let completion = dict.findCompletion(prefix: prefix) {
-                    return completion
-                }
-            }
-        }
-        return nil
-    }
-
-    /**
      * 現在入力中のprefixに続く入力候補を返す。見つからなければ空配列を返す。
      *
      * 以下のように補完候補を探します。
@@ -348,8 +311,10 @@ class UserDict: NSObject, DictProtocol {
                 }
             }
         }
-        if let dateYomi = dateYomis.first(where: { $0.yomi.hasPrefix(prefix)}), !results.contains(dateYomi.yomi) {
-            results.append(dateYomi.yomi)
+        dateYomis.forEach { dateYomi in
+            if dateYomi.yomi.hasPrefix(prefix) && !results.contains(dateYomi.yomi) {
+                results.append(dateYomi.yomi)
+            }
         }
         if findCompletionFromAllDicts.value {
             for dict in dicts {

@@ -68,19 +68,6 @@ protocol DictProtocol {
     mutating func delete(yomi: String, word: Word.Word) -> Bool
 
     /**
-     * 現在入力中のprefixに続く入力候補を1つ返す。見つからなければnilを返す。
-     *
-     * 以下のように補完候補を探します。
-     * ※将来この仕様は変更する可能性が大いにあります。
-     *
-     * - prefixが空文字列ならnilを返す
-     * - ユーザー辞書の送りなしの読みのうち、最近変換したものから選択する。
-     * - prefixと読みが完全に一致する場合は補完候補とはしない
-     * - 数値変換用の読みは補完候補としない
-     */
-    func findCompletion(prefix: String) -> String?
-
-    /**
      * 現在入力中のprefixに続く入力候補を返す。見つからなければ空配列を返す。
      *
      * 以下のように補完候補を探します。

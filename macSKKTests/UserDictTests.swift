@@ -120,7 +120,7 @@ final class UserDictTests: XCTestCase {
         XCTAssertEqual(candidatesKyou.first?.word, "今日") // ユーザー辞書の方が日付変換より前
     }
 
-    func testFindCompletionPrivateMode() throws {
+    func testFindCompletionsPrivateMode() throws {
         let privateMode = CurrentValueSubject<Bool, Never>(true)
         let ignoreUserDictInPrivateMode = CurrentValueSubject<Bool, Never>(false)
         let dict1 = MemoryDict(entries: ["にほん": [Word("日本")], "にほ": [Word("2歩")]], readonly: false)
@@ -132,42 +132,17 @@ final class UserDictTests: XCTestCase {
                                     findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false),
                                     dateYomis: [],
                                     dateConversions: [])
-        // プライベートモード時はユーザー辞書から検索する
-        XCTAssertEqual(userDict.findCompletion(prefix: "に"), "にふ")
+        // プライベートモード時は通常はユーザー辞書から検索する
+        XCTAssertEqual(userDict.findCompletions(prefix: "に"), ["にふ"])
         ignoreUserDictInPrivateMode.send(true)
         // プライベートモードかつユーザー辞書から検索しない設定のとき
-        XCTAssertNil(userDict.findCompletion(prefix: "に"))
+        XCTAssertEqual(userDict.findCompletions(prefix: "に"), [])
         // ユーザー辞書から検索しない設定だがプライベートモードじゃないときはユーザー辞書から検索する
         privateMode.send(false)
-        XCTAssertEqual(userDict.findCompletion(prefix: "に"), "にふ")
+        XCTAssertEqual(userDict.findCompletions(prefix: "に"), ["にふ"])
     }
 
-    func testFindCompletionFromAllDicts() throws {
-        let privateMode = CurrentValueSubject<Bool, Never>(false)
-        let ignoreUserDictInPrivateMode = CurrentValueSubject<Bool, Never>(false)
-        let findCompletionFromAllDicts = CurrentValueSubject<Bool, Never>(false)
-        let dict1 = MemoryDict(entries: ["にほん": [Word("日本")], "にほ": [Word("2歩")]], readonly: false)
-        let dict2 = MemoryDict(entries: ["にほんご": [Word("日本語")]], readonly: false)
-        let userDict = try UserDict(dicts: [dict1, dict2],
-                                    userDictEntries: ["にふ": [Word("二歩")]],
-                                    privateMode: privateMode,
-                                    ignoreUserDictInPrivateMode: ignoreUserDictInPrivateMode,
-                                    findCompletionFromAllDicts: findCompletionFromAllDicts,
-                                    dateYomis: [],
-                                    dateConversions: [])
-        XCTAssertNil(userDict.findCompletion(prefix: "")) // 空文字列にはnilを返す
-        XCTAssertEqual(userDict.findCompletion(prefix: "に"), "にふ")
-        XCTAssertNil(userDict.findCompletion(prefix: "にほ"))
-        XCTAssertNil(userDict.findCompletion(prefix: "にほん"))
-        XCTAssertNil(userDict.findCompletion(prefix: "にほんご"))
-        findCompletionFromAllDicts.send(true)
-        XCTAssertEqual(userDict.findCompletion(prefix: "に"), "にふ")
-        XCTAssertEqual(userDict.findCompletion(prefix: "にほ"), "にほん")
-        XCTAssertEqual(userDict.findCompletion(prefix: "にほん"), "にほんご")
-        XCTAssertNil(userDict.findCompletion(prefix: "にほんご"))
-    }
-
-    func testFindCompletionDateYomi() throws {
+    func testFindCompletionsDateYomi() throws {
         let userDict = try UserDict(dicts: [],
                                     userDictEntries: ["tower": [Word("塔")]],
                                     privateMode: CurrentValueSubject<Bool, Never>(false),
@@ -179,10 +154,11 @@ final class UserDictTests: XCTestCase {
                                         .init(yomi: "tomorrow", relative: .tomorrow),
                                     ],
                                     dateConversions: [])
-        XCTAssertNil(userDict.findCompletion(prefix: "")) // 空文字列にはnilを返す
-        XCTAssertEqual(userDict.findCompletion(prefix: "to"), "tower")
-        XCTAssertEqual(userDict.findCompletion(prefix: "tod"), "today")
-        XCTAssertEqual(userDict.findCompletion(prefix: "y"), "yesterday")
+        XCTAssertEqual(userDict.findCompletions(prefix: ""), [], "prefixが空だと空")
+        XCTAssertEqual(userDict.findCompletions(prefix: "t"), ["tower", "today", "tomorrow"])
+        XCTAssertEqual(userDict.findCompletions(prefix: "to"), ["tower", "today", "tomorrow"])
+        XCTAssertEqual(userDict.findCompletions(prefix: "tod"), ["today"])
+        XCTAssertEqual(userDict.findCompletions(prefix: "y"), ["yesterday"])
     }
 
     func testFindCompletionsFromAllDicts() throws {

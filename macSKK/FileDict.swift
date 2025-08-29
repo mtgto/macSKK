@@ -297,10 +297,6 @@ class FileDict: NSObject, DictProtocol, Identifiable {
         return false
     }
 
-    func findCompletion(prefix: String) -> String? {
-        return dict.findCompletion(prefix: prefix)
-    }
-
     func findCompletions(prefix: String) -> [String] {
         return dict.findCompletions(prefix: prefix)
     }
