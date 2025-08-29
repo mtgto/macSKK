@@ -427,13 +427,15 @@ final class SettingsViewModel: ObservableObject {
 
         $candidatesFontSize.dropFirst().sink { candidatesFontSize in
             UserDefaults.app.set(candidatesFontSize, forKey: UserDefaultsKeys.candidatesFontSize)
-            NotificationCenter.default.post(name: notificationNameCandidatesFontSize, object: candidatesFontSize)
+            Global.candidatesPanel.viewModel.candidatesFontSize = CGFloat(candidatesFontSize)
+            Global.completionPanel.viewModel.candidatesViewModel.candidatesFontSize = CGFloat(candidatesFontSize)
             logger.log("変換候補のフォントサイズを\(candidatesFontSize)に変更しました")
         }.store(in: &cancellables)
 
         $annotationFontSize.dropFirst().sink { annotationFontSize in
             UserDefaults.app.set(annotationFontSize, forKey: UserDefaultsKeys.annotationFontSize)
-            NotificationCenter.default.post(name: notificationNameAnnotationFontSize, object: annotationFontSize)
+            Global.candidatesPanel.viewModel.annotationFontSize = CGFloat(annotationFontSize)
+            Global.completionPanel.viewModel.candidatesViewModel.annotationFontSize = CGFloat(annotationFontSize)
             logger.log("注釈のフォントサイズを\(annotationFontSize)に変更しました")
         }.store(in: &cancellables)
 

@@ -260,19 +260,6 @@ class InputController: IMKInputController {
                     self?.stateMachine.inlineCandidateCount = inlineCandidateCount
                 }
             }.store(in: &cancellables)
-
-        NotificationCenter.default.publisher(for: notificationNameCandidatesFontSize)
-            .sink { notification in
-                if let candidatesFontSize = notification.object as? Int {
-                    Global.candidatesPanel.setCandidatesFontSize(candidatesFontSize)
-                }
-            }.store(in: &cancellables)
-        NotificationCenter.default.publisher(for: notificationNameAnnotationFontSize)
-            .sink { notification in
-                if let annotationFontSize = notification.object as? Int {
-                    Global.candidatesPanel.setAnnotationFontSize(annotationFontSize)
-                }
-            }.store(in: &cancellables)
         NotificationCenter.default.publisher(for: notificationNameFindCompletionFromAllDicts)
             .sink { notification in
                 if let findCompletionFromAllDicts = notification.object as? Bool {
