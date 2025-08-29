@@ -2,7 +2,7 @@
 
 import Foundation
 
-/// 補完候補の定義。読みの配列と自動変換候補の配列でもいいかも? case yomi([String]) case candidate([Candidate])
+/// 補完候補
 enum Completion: Equatable {
     /// 補完候補である読みの一覧と現在のインデックス
     /// インデックスは最初にセットされるときは0が入り、Tabが押される度に1ずつ増えていく。
