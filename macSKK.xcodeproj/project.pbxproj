@@ -90,6 +90,7 @@
 		CE84A3EB295DA715009394C4 /* Dict.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE84A3EA295DA715009394C4 /* Dict.swift */; };
 		CE84A3ED295DA818009394C4 /* MemoryDictTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE84A3EC295DA818009394C4 /* MemoryDictTests.swift */; };
 		CE8871322E574CC900E20BFB /* CompletionSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE8871312E574CC900E20BFB /* CompletionSettingsView.swift */; };
+		CE8871462E63ECB700E20BFB /* kana-rule-azik-us.conf in Resources */ = {isa = PBXBuildFile; fileRef = CE8871452E63ECB700E20BFB /* kana-rule-azik-us.conf */; };
 		CE8DFE092CBEAA2900A24230 /* Character+AdditionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE8DFE082CBEAA1F00A24230 /* Character+AdditionsTests.swift */; };
 		CE97887B2A9B93EB00F9B196 /* DirectModeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE97887A2A9B93EB00F9B196 /* DirectModeView.swift */; };
 		CEA253942E228E2000618E64 /* SKKServDictSettingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA253932E228E2000618E64 /* SKKServDictSettingTests.swift */; };
@@ -276,6 +277,7 @@
 		CE84A3EA295DA715009394C4 /* Dict.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dict.swift; sourceTree = "<group>"; };
 		CE84A3EC295DA818009394C4 /* MemoryDictTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryDictTests.swift; sourceTree = "<group>"; };
 		CE8871312E574CC900E20BFB /* CompletionSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletionSettingsView.swift; sourceTree = "<group>"; };
+		CE8871452E63ECB700E20BFB /* kana-rule-azik-us.conf */ = {isa = PBXFileReference; lastKnownFileType = text; path = "kana-rule-azik-us.conf"; sourceTree = "<group>"; };
 		CE8DFE082CBEAA1F00A24230 /* Character+AdditionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Character+AdditionsTests.swift"; sourceTree = "<group>"; };
 		CE97887A2A9B93EB00F9B196 /* DirectModeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectModeView.swift; sourceTree = "<group>"; };
 		CEA253932E228E2000618E64 /* SKKServDictSettingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServDictSettingTests.swift; sourceTree = "<group>"; };
@@ -498,6 +500,7 @@
 				CEB0888B2A7F342000EFD1E3 /* Credits.rtf */,
 				CE3E44A62B52AFB400105798 /* kana-rule.conf */,
 				CEF16CE92DBF21B500EF20A3 /* kana-rule-azik.conf */,
+				CE8871452E63ECB700E20BFB /* kana-rule-azik-us.conf */,
 				CE5ECF3B2957034D00E7BE7D /* Preview Content */,
 			);
 			path = macSKK;
@@ -778,6 +781,7 @@
 				CE1A014B2C5931D60034FA7D /* hankaku.tiff in Resources */,
 				CEF16CEA2DBF21B500EF20A3 /* kana-rule-azik.conf in Resources */,
 				CEB0888C2A7F342000EFD1E3 /* Credits.rtf in Resources */,
+				CE8871462E63ECB700E20BFB /* kana-rule-azik-us.conf in Resources */,
 				CE1A014C2C5931D60034FA7D /* eisu.tiff in Resources */,
 				CE5ECF3D2957034D00E7BE7D /* Preview Assets.xcassets in Resources */,
 				CE6DBACF2A8663E600F5A227 /* SKK-JISYO.sample.utf-8 in Resources */,
