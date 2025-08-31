@@ -14,6 +14,7 @@ final class CandidatesPanel: NSPanel {
      * - Parameters:
      *   - showAnnotationPopover: パネル表示時に注釈を表示するかどうか
      *   - candidatesFontSize: 変換候補のフォントサイズ
+     *   - annotationFontSize: 注釈のフォントサイズ
      */
     init(showAnnotationPopover: Bool, candidatesFontSize: Int, annotationFontSize: Int) {
         viewModel = CandidatesViewModel(candidates: [],

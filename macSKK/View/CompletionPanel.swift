@@ -7,6 +7,11 @@ import SwiftUI
 class CompletionPanel: NSPanel {
     let viewModel: CompletionViewModel
 
+    /**
+     * - Parameters:
+     *   - candidatesFontSize: 変換候補のフォントサイズ
+     *   - annotationFontSize: 注釈のフォントサイズ。注釈は補完表示では表示してないのでなくてもいいかも?
+     */
     init(candidatesFontSize: Int, annotationFontSize: Int) {
         viewModel = CompletionViewModel(completion: .yomi(""),
                                         candidatesFontSize: candidatesFontSize,
