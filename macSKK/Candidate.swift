@@ -34,7 +34,7 @@ struct Candidate: Hashable {
     let word: Word.Word
 
     /**
-     * 辞書上の表記。現在は数値変換時のみ設定される。
+     * 辞書上の表記。数値変換時と補完候補の場合のみ設定される。
      */
     let original: Original?
 
@@ -101,5 +101,9 @@ struct Candidate: Hashable {
                          annotations: annotations,
                          original: original,
                          saveToUserDict: saveToUserDict || other.saveToUserDict)
+    }
+
+    func withOriginal(_ original: Original?) -> Self {
+        Candidate(word, annotations: annotations, original: original, saveToUserDict: saveToUserDict)
     }
 }

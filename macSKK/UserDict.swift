@@ -96,6 +96,10 @@ class UserDict: NSObject, DictProtocol {
         NSFileCoordinator.removeFilePresenter(self)
     }
 
+    @MainActor func referDicts(_ yomi: String, option: DictReferringOption? = nil) -> [Candidate] {
+        return referDicts(yomi, option: option, skkservDict: Global.skkservDict, findFromAllDicts: true)
+    }
+
     /**
      * 保持する辞書を順に引き変換候補順に返す。
      *
@@ -111,13 +115,11 @@ class UserDict: NSObject, DictProtocol {
      * - Parameters:
      *   - yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
      *   - option: 辞書を引くときに接頭辞や接尾辞から検索するかどうか。nilなら通常のエントリから検索する
+     *   - skkservDict: SKKServ辞書。nilのときはskkservを引かない
+     *   - findFromAllDicts: ユーザー辞書以外を検索するか。trueにするのは補完候補検索時のみ。
      */
-    @MainActor func referDicts(_ yomi: String, option: DictReferringOption? = nil) -> [Candidate] {
+    func referDicts(_ yomi: String, option: DictReferringOption?, skkservDict: SKKServDict?, findFromAllDicts: Bool) -> [Candidate] {
         var result: [Candidate] = []
-        func wordToCandidate(_ word: Word, saveToUserDict: Bool) -> Candidate {
-            let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
-            return Candidate(word.word, annotations: annotations, saveToUserDict: saveToUserDict)
-        }
         var candidates = refer(yomi, option: option).map { word in
             let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
             return Candidate(word.word, annotations: annotations)
@@ -132,15 +134,17 @@ class UserDict: NSObject, DictProtocol {
         }
         // ユーザー辞書、それ以外の辞書の順に参照する
         candidates.append(contentsOf: refer(yomi, option: option).map { word in
-            return wordToCandidate(word, saveToUserDict: saveToUserDict)
+            return wordToCandidate(word, original: nil, saveToUserDict: saveToUserDict)
         })
-        dicts.forEach { dict in
-            candidates.append(contentsOf: dict.refer(yomi, option: option).map {
-                wordToCandidate($0, saveToUserDict: dict.saveToUserDict)
-            })
+        if findFromAllDicts {
+            dicts.forEach { dict in
+                candidates.append(contentsOf: dict.refer(yomi, option: option).map {
+                    wordToCandidate($0, original: nil, saveToUserDict: dict.saveToUserDict)
+                })
+            }
         }
         // ひとまずskkservを辞書として使う場合はファイル辞書より後に追加する
-        if let skkservDict = Global.skkservDict {
+        if let skkservDict {
             let skkservCandidates: [Candidate] = skkservDict.refer(yomi, option: option).map { word in
                 let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
                 return Candidate(word.word, annotations: annotations, saveToUserDict: skkservDict.saveToUserDict)
@@ -160,18 +164,20 @@ class UserDict: NSObject, DictProtocol {
                                      original: Candidate.Original(midashi: midashi, word: word.word),
                                      saveToUserDict: saveToUserDict)
                 })
-                dicts.forEach { dict in
-                    candidates.append(contentsOf: dict.refer(midashi, option: option).compactMap { word in
-                        guard let numberCandidate = try? NumberCandidate(yomi: word.word) else { return nil }
-                        guard let convertedWord = numberCandidate.toString(yomi: numberYomi) else { return nil }
-                        let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
-                        return Candidate(convertedWord,
-                                         annotations: annotations,
-                                         original: Candidate.Original(midashi: midashi, word: word.word),
-                                         saveToUserDict: dict.saveToUserDict)
-                    })
+                if findFromAllDicts {
+                    dicts.forEach { dict in
+                        candidates.append(contentsOf: dict.refer(midashi, option: option).compactMap { word in
+                            guard let numberCandidate = try? NumberCandidate(yomi: word.word) else { return nil }
+                            guard let convertedWord = numberCandidate.toString(yomi: numberYomi) else { return nil }
+                            let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
+                            return Candidate(convertedWord,
+                                             annotations: annotations,
+                                             original: Candidate.Original(midashi: midashi, word: word.word),
+                                             saveToUserDict: dict.saveToUserDict)
+                        })
+                    }
                 }
-                if let skkservDict = Global.skkservDict {
+                if let skkservDict {
                     let skkservCandidates: [Candidate] = skkservDict.refer(midashi, option: option).compactMap { word in
                         guard let numberCandidate = try? NumberCandidate(yomi: word.word) else { return nil }
                         guard let convertedWord = numberCandidate.toString(yomi: numberYomi) else { return nil }
@@ -242,6 +248,7 @@ class UserDict: NSObject, DictProtocol {
      *   - word: SKK辞書の変換候補。
      */
     func add(yomi: String, word: Word) {
+        logger.log("ユーザー辞書に読み \(yomi, privacy: .public), 変換 \(word.word, privacy: .public) を登録する")
         if !privateMode.value {
             if let dict = userDict as? FileDict {
                 dict.add(yomi: yomi, word: word)
@@ -280,40 +287,69 @@ class UserDict: NSObject, DictProtocol {
     }
 
     /**
-     * 現在入力中のprefixに続く入力候補を1つ返す。見つからなければnilを返す。
+     * 現在入力中のprefixに続く入力候補を返す。見つからなければ空配列を返す。
      *
      * 以下のように補完候補を探します。
      * ※将来この仕様は変更する可能性が大いにあります。
      *
-     * - prefixが空文字列ならnilを返す
+     * - prefixが空文字列なら空配列を返す
      * - ユーザー辞書の送りなしの読みのうち、最近変換したものから選択する。
-     *   - ユーザー辞書に存在しない場合は、日付変換の読みから選択する
-     * - ユーザー辞書にも日付変換の読みにも候補にない場合は有効になっている辞書から優先度順に検索する
      * - prefixと読みが完全に一致する場合は補完候補とはしない
      * - 数値変換用の読みは補完候補としない
      */
-    func findCompletion(prefix: String) -> String? {
+    func findCompletions(prefix: String) -> [String] {
         if prefix.isEmpty {
-            return nil
+            return []
         }
+        var results: [String] = []
         if !privateMode.value || !ignoreUserDictInPrivateMode.value {
             if let userDict {
-                if let completion = userDict.findCompletion(prefix: prefix) {
-                    return completion
+                for yomi in userDict.findCompletions(prefix: prefix) {
+                    if !results.contains(yomi) {
+                        results.append(yomi)
+                    }
                 }
             }
         }
-        if let dateYomi = dateYomis.first(where: { $0.yomi.hasPrefix(prefix)}) {
-            return dateYomi.yomi
+        dateYomis.forEach { dateYomi in
+            if dateYomi.yomi.hasPrefix(prefix) && !results.contains(dateYomi.yomi) {
+                results.append(dateYomi.yomi)
+            }
         }
         if findCompletionFromAllDicts.value {
             for dict in dicts {
-                if let completion = dict.findCompletion(prefix: prefix) {
-                    return completion
+                for yomi in dict.findCompletions(prefix: prefix) {
+                    if !results.contains(yomi) {
+                        results.append(yomi)
+                    }
                 }
             }
         }
-        return nil
+        return results
+    }
+
+    /**
+     * 現在入力中のprefixに続く変換候補を返す。
+     *
+     * asyncにするかも? (skkservとかで便利そう)
+     * AsyncStreamにするかも?
+     */
+    func candidatesForCompletion(prefix: String) -> [Candidate] {
+        // 1文字のときは全探索するとめちゃくちゃ量が多いので完全一致だけ探す
+        if prefix.count == 1 {
+            return referDicts(prefix, option: nil, skkservDict: nil, findFromAllDicts: findCompletionFromAllDicts.value)
+        }
+        // あとでいろいろ拡張するけどひとまずfindCompletionsの結果を[Candidate]にするだけ
+        // 別スレッドから実行したいのでひとまずskkserv以外を検索する
+        return findCompletions(prefix: prefix).flatMap { midashi in
+            // NOTE: 多すぎても役に立たないだろうと思うのでひとまず先頭100件に制限。設定項目にしてもよさそう
+            // FIXME: Candidateの配列じゃなくて、(String, Candidate) のように見出し語と変換候補のタプルの配列を返すほうがよさそう
+            referDicts(midashi, option: nil, skkservDict: nil, findFromAllDicts: findCompletionFromAllDicts.value)
+                .prefix(100)
+                .map { candidate in
+                    candidate.withOriginal(Candidate.Original(midashi: midashi, word: candidate.word))
+                }
+        }
     }
 
     /// ユーザー辞書を永続化する
@@ -353,6 +389,11 @@ class UserDict: NSObject, DictProtocol {
         } else {
             return false
         }
+    }
+
+    private func wordToCandidate(_ word: Word, original: Candidate.Original?, saveToUserDict: Bool) -> Candidate {
+        let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
+        return Candidate(word.word, annotations: annotations, original: original, saveToUserDict: saveToUserDict)
     }
 }
 

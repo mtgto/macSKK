@@ -97,34 +97,33 @@ class InputController: IMKInputController {
             }
         }.store(in: &cancellables)
         stateMachine.candidateEvent.sink { [weak self] candidates in
-            if let self {
-                let showAnnotation = UserDefaults.app.bool(forKey: UserDefaultsKeys.showAnnotation)
-                Global.candidatesPanel.setShowAnnotationPopover(showAnnotation)
-                if let candidates {
-                    // 下線のスタイルがthickのときに被らないように1ピクセル下に余白を設ける
-                    var cursorPosition = cursorPosition(for: textInput).offsetBy(dx: 0, dy: -1)
-                    cursorPosition.size.height += 1
-                    Global.candidatesPanel.setCursorPosition(cursorPosition)
+            guard let self else { return }
+            let showAnnotation = UserDefaults.app.bool(forKey: UserDefaultsKeys.showAnnotation)
+            Global.candidatesPanel.setShowAnnotationPopover(showAnnotation)
+            if let candidates {
+                // 下線のスタイルがthickのときに被らないように1ピクセル下に余白を設ける
+                var cursorPosition = cursorPosition(for: textInput).offsetBy(dx: 0, dy: -1)
+                cursorPosition.size.height += 1
+                Global.candidatesPanel.setCursorPosition(cursorPosition)
 
-                    if let page = candidates.page {
-                        let currentCandidates: CurrentCandidates = .panel(words: page.words,
-                                                                          currentPage: page.current,
-                                                                          totalPageCount: page.total)
-                        Global.candidatesPanel.setCandidates(currentCandidates, selected: candidates.selected)
-                        Global.candidatesPanel.show(windowLevel: windowLevel(for: textInput))
-                    } else {
-                        if candidates.selected.annotations.isEmpty || !showAnnotation {
-                            Global.candidatesPanel.orderOut(nil)
-                        } else {
-                            Global.candidatesPanel.show(windowLevel: windowLevel(for: textInput))
-                        }
-                        Global.candidatesPanel.setCandidates(.inline, selected: candidates.selected)
-                    }
+                if let page = candidates.page {
+                    let currentCandidates: CurrentCandidates = .panel(words: page.words,
+                                                                      currentPage: page.current,
+                                                                      totalPageCount: page.total)
+                    Global.candidatesPanel.setCandidates(currentCandidates, selected: candidates.selected)
+                    Global.candidatesPanel.show(windowLevel: windowLevel(for: textInput))
                 } else {
-                    // 変換→キャンセル→再変換しても注釈が表示されなくならないように状態を変えておく
-                    self.selectedWord.send(nil)
-                    Global.candidatesPanel.orderOut(nil)
+                    if candidates.selected.annotations.isEmpty || !showAnnotation {
+                        Global.candidatesPanel.orderOut(nil)
+                    } else {
+                        Global.candidatesPanel.show(windowLevel: windowLevel(for: textInput))
+                    }
+                    Global.candidatesPanel.setCandidates(.inline, selected: candidates.selected)
                 }
+            } else {
+                // 変換→キャンセル→再変換しても注釈が表示されなくならないように状態を変えておく
+                self.selectedWord.send(nil)
+                Global.candidatesPanel.orderOut(nil)
             }
         }.store(in: &cancellables)
         Global.candidatesPanel.viewModel.$selected.compactMap { $0 }.sink { [weak self] selected in
@@ -161,21 +160,85 @@ class InputController: IMKInputController {
                 self.stateMachine.enableMarkedTextWorkaround = enabled
             }
         }.store(in: &cancellables)
-        stateMachine.yomiEvent.sink { [weak self] yomi in
-            if let self, Global.showCompletion {
-                if let completion = Global.dictionary.findCompletion(prefix: yomi) {
-                    self.stateMachine.completion = (yomi, completion)
-                    Global.completionPanel.viewModel.completion = completion
-                    let cursorPosition = cursorPosition(for: textInput)
-                    if cursorPosition != .zero {
-                        Global.completionPanel.show(at: cursorPosition, windowLevel: windowLevel(for: textInput))
+        // 読みが更新されたときに補完候補の検索を行う処理
+        stateMachine.yomiEvent
+            .compactMap {
+                if case .other(let yomi) = $0 {
+                    // 変換開始時などもyomiが空になるのでそのときは補完候補に対してなにもしない
+                    if !yomi.isEmpty {
+                        return yomi
                     }
-                } else {
-                    self.stateMachine.completion = nil
+                }
+                // YomiEvent.otherじゃないときは補完されたときなのでそのときは新たな補完候補は検索しない
+                return nil
+            }
+            .compactMap { yomi -> Completion? in
+                if Global.showCompletion {
+                    if yomi.isEmpty {
+                        return nil
+                    }
+                    if Global.showCandidateForCompletion {
+                        let candidates = Global.dictionary.candidatesForCompletion(prefix: yomi)
+                        return .candidates(candidates)
+                     } else {
+                        let completions = Global.dictionary.findCompletions(prefix: yomi)
+                        return .yomi(completions, 0)
+                    }
+                }
+                return nil
+            }
+            .subscribe(on: DispatchQueue.global())
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] completion in
+                guard let self else { return }
+                self.stateMachine.completion = completion
+                if case .yomi(let yomis, let yomiIndex) = completion {
+                    if yomis.isEmpty {
+                        Global.completionPanel.orderOut(nil)
+                        self.stateMachine.completion = nil
+                    } else {
+                        Global.completionPanel.viewModel.completion = .yomi(yomis[yomiIndex])
+                        let cursorPosition = cursorPosition(for: textInput)
+                        if cursorPosition != .zero {
+                            Global.completionPanel.show(at: cursorPosition, windowLevel: windowLevel(for: textInput))
+                        }
+                    }
+                } else if case .candidates(let candidates) = completion {
+                    if candidates.isEmpty {
+                        Global.completionPanel.orderOut(nil)
+                        self.stateMachine.completion = nil
+                    } else {
+                        // 先頭1ページ分だけ変換候補パネルに表示する。
+                        Global.completionPanel.viewModel.completion = .candidates(Array(candidates.prefix(9)))
+                        let cursorPosition = cursorPosition(for: textInput)
+                        if cursorPosition != .zero {
+                            Global.completionPanel.show(at: cursorPosition, windowLevel: windowLevel(for: textInput))
+                        }
+                    }
+                }
+        }.store(in: &cancellables)
+        stateMachine.yomiEvent
+            .compactMap {
+                if case .completed(let nextYomi) = $0 {
+                    return nextYomi
+                } else if case .other(let yomi) = $0 {
+                    // 読みが更新されたとき、変換候補の補完を使用する設定が有効かつ読みが空のときは
+                    // すでにCandidatesPanelによる補完候補が表示されていることがあるので閉じる
+                    if yomi.isEmpty && Global.showCompletion {
+                        Global.completionPanel.orderOut(nil)
+                    }
+                }
+                return nil
+            }
+            .sink { nextYomi in
+                // 読みの補完候補が更新されたときの処理
+                if nextYomi.isEmpty {
                     Global.completionPanel.orderOut(nil)
+                } else {
+                    Global.completionPanel.viewModel.completion = .yomi(nextYomi)
                 }
             }
-        }.store(in: &cancellables)
+            .store(in: &cancellables)
         // Safariでアドレスバーに移動するときなど、処理が固まることがあるので非同期で実行する
         // https://github.com/mtgto/macSKK/issues/336
         displayInputModePanel
@@ -195,19 +258,6 @@ class InputController: IMKInputController {
             .sink { [weak self] notification in
                 if let inlineCandidateCount = notification.object as? Int, inlineCandidateCount >= 0 {
                     self?.stateMachine.inlineCandidateCount = inlineCandidateCount
-                }
-            }.store(in: &cancellables)
-
-        NotificationCenter.default.publisher(for: notificationNameCandidatesFontSize)
-            .sink { notification in
-                if let candidatesFontSize = notification.object as? Int {
-                    Global.candidatesPanel.setCandidatesFontSize(candidatesFontSize)
-                }
-            }.store(in: &cancellables)
-        NotificationCenter.default.publisher(for: notificationNameAnnotationFontSize)
-            .sink { notification in
-                if let annotationFontSize = notification.object as? Int {
-                    Global.candidatesPanel.setAnnotationFontSize(annotationFontSize)
                 }
             }.store(in: &cancellables)
         NotificationCenter.default.publisher(for: notificationNameFindCompletionFromAllDicts)

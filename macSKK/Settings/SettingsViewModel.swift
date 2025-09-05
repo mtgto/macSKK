@@ -179,6 +179,8 @@ final class SettingsViewModel: ObservableObject {
     @Published var enterNewLine: Bool
     /// 補完を表示するかどうか
     @Published var showCompletion: Bool
+    /// 変換候補の補完を表示するかどうか。例えば "ほか" まで入力したときに "補完" と表示するか
+    @Published var showCandidateForCompletion: Bool
     @Published var systemDict: SystemDict.Kind
     @Published var selectingBackspace: SelectingBackspace
     @Published var period: Punctuation.Period
@@ -253,6 +255,7 @@ final class SettingsViewModel: ObservableObject {
         selectCandidateKeys = UserDefaults.app.string(forKey: UserDefaultsKeys.selectCandidateKeys)!
         enterNewLine = UserDefaults.app.bool(forKey: UserDefaultsKeys.enterNewLine)
         showCompletion = UserDefaults.app.bool(forKey: UserDefaultsKeys.showCompletion)
+        showCandidateForCompletion = UserDefaults.app.bool(forKey: UserDefaultsKeys.showCandidateForCompletion)
         selectingBackspace = SelectingBackspace(rawValue: UserDefaults.app.integer(forKey: UserDefaultsKeys.selectingBackspace)) ?? SelectingBackspace.default
         comma = Punctuation.Comma(rawValue: UserDefaults.app.integer(forKey: UserDefaultsKeys.punctuation)) ?? .default
         period = Punctuation.Period(rawValue: UserDefaults.app.integer(forKey: UserDefaultsKeys.punctuation)) ?? .default
@@ -273,6 +276,7 @@ final class SettingsViewModel: ObservableObject {
         Global.selectCandidateKeys = selectCandidateKeys.lowercased().map { $0 }
         Global.enterNewLine = enterNewLine
         Global.showCompletion = showCompletion
+        Global.showCandidateForCompletion = showCandidateForCompletion
         Global.systemDict = systemDict
         Global.selectingBackspace = selectingBackspace
         Global.punctuation = Punctuation(comma: comma, period: period)
@@ -423,13 +427,15 @@ final class SettingsViewModel: ObservableObject {
 
         $candidatesFontSize.dropFirst().sink { candidatesFontSize in
             UserDefaults.app.set(candidatesFontSize, forKey: UserDefaultsKeys.candidatesFontSize)
-            NotificationCenter.default.post(name: notificationNameCandidatesFontSize, object: candidatesFontSize)
+            Global.candidatesPanel.viewModel.candidatesFontSize = CGFloat(candidatesFontSize)
+            Global.completionPanel.viewModel.candidatesViewModel.candidatesFontSize = CGFloat(candidatesFontSize)
             logger.log("変換候補のフォントサイズを\(candidatesFontSize)に変更しました")
         }.store(in: &cancellables)
 
         $annotationFontSize.dropFirst().sink { annotationFontSize in
             UserDefaults.app.set(annotationFontSize, forKey: UserDefaultsKeys.annotationFontSize)
-            NotificationCenter.default.post(name: notificationNameAnnotationFontSize, object: annotationFontSize)
+            Global.candidatesPanel.viewModel.annotationFontSize = CGFloat(annotationFontSize)
+            Global.completionPanel.viewModel.candidatesViewModel.annotationFontSize = CGFloat(annotationFontSize)
             logger.log("注釈のフォントサイズを\(annotationFontSize)に変更しました")
         }.store(in: &cancellables)
 
@@ -470,6 +476,12 @@ final class SettingsViewModel: ObservableObject {
             logger.log("補完候補表示を\(showCompletion ? "表示" : "非表示", privacy: .public)に変更しました")
             UserDefaults.app.set(showCompletion, forKey: UserDefaultsKeys.showCompletion)
             Global.showCompletion = showCompletion
+        }.store(in: &cancellables)
+
+        $showCandidateForCompletion.dropFirst().sink { showCandidateForCompletion in
+            logger.log("変換候補を補完候補として表示を\(showCandidateForCompletion ? "表示" : "非表示", privacy: .public)に変更しました")
+            UserDefaults.app.set(showCandidateForCompletion, forKey: UserDefaultsKeys.showCandidateForCompletion)
+            Global.showCandidateForCompletion = showCandidateForCompletion
         }.store(in: &cancellables)
 
         $systemDict.dropFirst().sink { systemDict in
@@ -567,6 +579,7 @@ final class SettingsViewModel: ObservableObject {
         selectedKeyBindingSet = KeyBindingSet.defaultKeyBindingSet
         enterNewLine = false
         showCompletion = true
+        showCandidateForCompletion = true
         systemDict = .daijirin
         selectingBackspace = SelectingBackspace.default
         comma = Punctuation.default.comma

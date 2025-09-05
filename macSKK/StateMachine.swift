@@ -4,7 +4,7 @@
 import Cocoa
 import Combine
 
-// ActionによってIMEに関する状態が変更するイベントの列挙
+/// ActionによってIMEに関する状態が変更するイベントの列挙
 enum InputMethodEvent: Equatable {
     /// 確定文字列
     case fixedText(String)
@@ -16,6 +16,16 @@ enum InputMethodEvent: Equatable {
     case modeChanged(InputMode)
 }
 
+/// 読み入力部分が変更されたイベント。
+enum YomiEvent: Equatable {
+    /// Tabにより読み部分が補完されたとき。このイベントが渡されたときは補完候補は検索しなくてよい。
+    /// Associated Valueは次の読みの補完候補。次の補完候補がない場合は空文字列。
+    case completed(String)
+    /// 補完のとき以外。キーボード操作により読み部分が変更されたとき、読み部分が空文字列になったとき。
+    /// 補完が有効なら補完候補の検索が行われる。
+    case other(String)
+}
+
 final class StateMachine {
     private(set) var state: IMEState
     let inputMethodEvent: AnyPublisher<InputMethodEvent, Never>
@@ -24,15 +34,16 @@ final class StateMachine {
     private let candidateEventSubject = PassthroughSubject<Candidates?, Never>()
     /**
      * 現在入力中の未変換の読み部分の文字列が更新されたときに通知される。
+     * 補完が行われたときはStateMachineのプロパティcompletionがCompletion.yomiのときだけ通知される。
      *
      * 通知される文字列は全角ひらがな(Abbrev以外)もしくは英数(Abbrev)。
      * 送り仮名がローマ字で一文字でも入力されたときは新しく通知はされない。
      * 入力中の文字列のカーソルを左右に移動した場合はカーソルの左側までが更新された文字列として通知される。
      */
-    let yomiEvent: AnyPublisher<String, Never>
-    private let yomiEventSubject = PassthroughSubject<String, Never>()
+    let yomiEvent: AnyPublisher<YomiEvent, Never>
+    private let yomiEventSubject = PassthroughSubject<YomiEvent, Never>()
     /// 読みの一部と補完結果(読み)のペア
-    var completion: (String, String)? = nil
+    var completion: Completion? = nil
 
     // TODO: displayCandidateCountを環境設定にするかも
     /// 変換候補パネルを表示するまで表示する変換候補の数
@@ -728,16 +739,56 @@ final class StateMachine {
             }
         case .tab:
             // FIXME: この記号がローマ字に含まれていることも考慮するべき?
-            if let completion {
-                // カーソル位置に関わらずカーソル位置はリセットされる
-                let newText = completion.1.map({ String($0) })
-                state.inputMethod = .composing(ComposingState(isShift: composing.isShift,
-                                                              text: newText,
-                                                              okuri: nil,
-                                                              romaji: "",
-                                                              cursor: nil,
-                                                              prevMode: composing.prevMode))
-                self.completion = nil
+            if case .yomi(let yomis, let yomiIndex) = completion {
+                if action.shiftIsPressed() {
+                    if yomiIndex > 1 {
+                        let yomi = yomis[yomiIndex - 2]
+                        let newText = yomi.map({ String($0) })
+                        state.inputMethod = .composing(ComposingState(isShift: composing.isShift,
+                                                                      text: newText,
+                                                                      okuri: nil,
+                                                                      romaji: "",
+                                                                      cursor: nil,
+                                                                      prevMode: composing.prevMode))
+                        let nextYomiCompletion = yomis[yomiIndex - 1]
+                        self.completion = .yomi(yomis, yomiIndex - 1)
+                        updateMarkedText(nextCompletion: nextYomiCompletion)
+                    } else {
+                        // 補完候補の先頭だったらなにもしない
+                        return true
+                    }
+                } else {
+                    if yomiIndex < yomis.count {
+                        // カーソル位置に関わらずカーソル位置はリセットされる
+                        let yomi = yomis[yomiIndex]
+                        let newText = yomi.map({ String($0) })
+                        state.inputMethod = .composing(ComposingState(isShift: composing.isShift,
+                                                                      text: newText,
+                                                                      okuri: nil,
+                                                                      romaji: "",
+                                                                      cursor: nil,
+                                                                      prevMode: composing.prevMode))
+                        let nextYomiCompletion = yomiIndex + 1 < yomis.count ? yomis[yomiIndex + 1] : ""
+                        self.completion = .yomi(yomis, yomiIndex + 1)
+                        updateMarkedText(nextCompletion: nextYomiCompletion)
+                    } else {
+                        // 補完候補の終端だったらなにもしない
+                        return true
+                    }
+                }
+            } else if case .candidates(let candidateWords) = completion {
+                let trimmedComposing = composing.trim(kanaRule: Global.kanaRule)
+                let yomiText = trimmedComposing.yomi(for: self.state.inputMode, kanaRule: Global.kanaRule)
+                let selectingState = SelectingState(
+                    prev: SelectingState.PrevState(mode: state.inputMode, composing: trimmedComposing),
+                    yomi: yomiText,
+                    candidates: candidateWords,
+                    candidateIndex: 0,
+                    remain: composing.remain(),
+                    completion: true,
+                )
+                updateCandidates(selecting: selectingState)
+                state.inputMethod = .selecting(selectingState)
                 updateMarkedText()
             }
             return true
@@ -1106,7 +1157,9 @@ final class StateMachine {
                 yomi: yomiText,
                 candidates: candidateWords,
                 candidateIndex: 0,
-                remain: composing.remain())
+                remain: composing.remain(),
+                completion: false,
+            )
             updateCandidates(selecting: selectingState)
             state.inputMethod = .selecting(selectingState)
         }
@@ -1190,10 +1243,23 @@ final class StateMachine {
                 return handleSelectingNextPage(action, selecting: selecting, specialState: specialState)
             }
         case .space:
+            if selecting.completion {
+                // TODO 補完を中断して現在の読みで変換開始する
+                return true
+            }
             return handleSelectingNextPage(action, selecting: selecting, specialState: specialState)
         case .backwardCandidate:
             return handleSelectingPrevious(diff: -1, selecting: selecting)
         case .tab:
+            if selecting.completion {
+                if action.shiftIsPressed() {
+                    // 補完候補を前に戻す
+                    return handleSelectingPrevious(diff: -1, selecting: selecting)
+                } else {
+                    // 補完候補を次に進める
+                    return handleSelectingNext(action, diff: 1, selecting: selecting, specialState: specialState)
+                }
+            }
             return true
         case .stickyShift, .hiragana, .hankakuKana:
             fixCurrentSelect()
@@ -1299,6 +1365,9 @@ final class StateMachine {
             let newSelectingState = selecting.addCandidateIndex(diff: diff)
             updateCandidates(selecting: newSelectingState)
             state.inputMethod = .selecting(newSelectingState)
+        } else if selecting.completion {
+            // 変換候補の表示中は先頭のときは何もしない
+            return true
         } else {
             updateCandidates(selecting: nil)
             // 送り仮名がある場合は読みに結合する。例えば `Na I` という入力("な*い")をしてからキャンセルするときは
@@ -1329,6 +1398,9 @@ final class StateMachine {
             } else if specialState != nil {
                 state.inputMethod = .normal
                 state.inputMode = selecting.prev.mode
+            } else if selecting.completion {
+                // 変換候補の表示中は終端のときに何も行わない
+                return true
             } else {
                 state.specialState = .register(
                     RegisterState(
@@ -1428,20 +1500,33 @@ final class StateMachine {
                 inputMethodEventSubject.send(.markedText(MarkedText([])))
             } else {
                 inputMethodEventSubject.send(.fixedText(text))
-                yomiEventSubject.send("")
+                yomiEventSubject.send(.other(""))
             }
         }
     }
 
-    /// 現在のMarkedText状態をinputMethodEventSubject.sendする
-    private func updateMarkedText() {
+    /**
+     * 現在のMarkedText状態をinputMethodEventSubject.sendする
+     *
+     * - Parameter nextCompletion: 次の読みの補完要素。Tabキー入力による補完が発生した場合のみ渡される。
+     */
+    private func updateMarkedText(nextCompletion: String? = nil) {
         inputMethodEventSubject.send(.markedText(state.displayText()))
         // 読み部分を取得してyomiEventに通知する
         if case let .composing(composing) = state.inputMethod, composing.okuri == nil {
             // ComposingState#yomi(for:) とComposingState#subText()の違いは未確定ローマ字が"n"のときに「ん」として扱うか否か
-            yomiEventSubject.send(composing.subText().joined())
+            let yomi = composing.subText().joined()
+            if let nextCompletion {
+                // 次の読みの補完候補 (ない場合は空文字列) を送信する。
+                // 補完候補が読みでなく見出し候補のときはなにも送信しない
+                if case .yomi = self.completion {
+                    yomiEventSubject.send(.completed(nextCompletion))
+                }
+            } else {
+                yomiEventSubject.send(.other(yomi))
+            }
         } else {
-            yomiEventSubject.send("")
+            yomiEventSubject.send(.other(""))
         }
     }
 

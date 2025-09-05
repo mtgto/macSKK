@@ -202,14 +202,16 @@ struct MemoryDict: DictProtocol {
         return false
     }
 
-    func findCompletion(prefix: String) -> String? {
-        if !prefix.isEmpty {
-            for yomi in okuriNashiYomis.reversed() {
-                if yomi.count > prefix.count && yomi.hasPrefix(prefix) && !yomi.contains(where: { $0 == "#" }) {
-                    return yomi
-                }
+    func findCompletions(prefix: String) -> [String] {
+        if prefix.isEmpty {
+            return []
+        }
+        var results: [String] = []
+        for yomi in okuriNashiYomis.reversed() {
+            if yomi.count > prefix.count && yomi.hasPrefix(prefix) && !yomi.contains(where: { $0 == "#" }) {
+                results.append(yomi)
             }
         }
-        return nil
+        return results
     }
 }

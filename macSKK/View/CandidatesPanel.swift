@@ -14,6 +14,7 @@ final class CandidatesPanel: NSPanel {
      * - Parameters:
      *   - showAnnotationPopover: パネル表示時に注釈を表示するかどうか
      *   - candidatesFontSize: 変換候補のフォントサイズ
+     *   - annotationFontSize: 注釈のフォントサイズ
      */
     init(showAnnotationPopover: Bool, candidatesFontSize: Int, annotationFontSize: Int) {
         viewModel = CandidatesViewModel(candidates: [],
@@ -53,14 +54,6 @@ final class CandidatesPanel: NSPanel {
         self.viewModel.showAnnotationPopover = showAnnotationPopover
     }
 
-    func setCandidatesFontSize(_ candidatesFontSize: Int) {
-        self.viewModel.candidatesFontSize = CGFloat(candidatesFontSize)
-    }
-
-    func setAnnotationFontSize(_ annotationFontSize: Int) {
-        self.viewModel.annotationFontSize = CGFloat(annotationFontSize)
-    }
-
     /**
      * 表示する。スクリーンからはみ出す位置が指定されている場合は自動で調整する。
      *
@@ -87,7 +80,7 @@ final class CandidatesPanel: NSPanel {
             switch Global.candidateListDirection.value {
             case .vertical:
                 width = viewModel.showAnnotationPopover ? viewModel.minWidth + CandidatesView.annotationPopupWidth : viewModel.minWidth
-                height = CGFloat(words.count) * viewModel.candidatesLineHeight + CandidatesView.footerHeight
+                height = CGFloat(words.count) * viewModel.candidatesLineHeight + (viewModel.showPage ? CandidatesView.footerHeight : 0)
                 if viewModel.displayPopoverInLeftOrTop {
                     origin.x = origin.x - CandidatesView.annotationPopupWidth - CandidatesView.annotationMarginLeftRight
                 }
@@ -115,4 +108,3 @@ final class CandidatesPanel: NSPanel {
         orderFrontRegardless()
     }
 }
- 
