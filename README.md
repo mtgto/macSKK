@@ -91,6 +91,7 @@ macSKKが入力メソッドとして選択されているときに入力メニ�
 | showInputModePanel          | Boolean    | 入力モードをモーダル表示するか          |
 | candidateListDirection      | Number     | 変換候補リストの表示方向                |
 | dateConversions             | Dictionary | 日付変換の読みと変換候補                |
+| showCandidateForCompletion  | Boolean    | 変換候補の補完を表示するか              |
 
 ## 機能
 
