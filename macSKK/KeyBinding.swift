@@ -35,6 +35,10 @@ struct KeyBinding: Identifiable, Hashable {
         case enter
         /// デフォルトはSpaceキー
         case space
+        /// 現在の補完候補で変換を開始する。
+        /// 変換候補が補完で表示されているときはspaceと同じ挙動をする。
+        /// デフォルトはShift-Spaceキー
+        case shiftSpace
         /// 前の変換候補に移動する。デフォルトはxキー。
         case backwardCandidate
         /// 補完候補の確定用。デフォルトはTabキー
@@ -289,6 +293,8 @@ struct KeyBinding: Identifiable, Hashable {
                 return KeyBinding(action, [Input(key: .code(0x24), modifierFlags: [], optionalModifierFlags: [.shift, .option])])
             case .space:
                 return KeyBinding(action, [Input(key: .code(0x31), modifierFlags: [])])
+            case .shiftSpace:
+                return KeyBinding(action, [Input(key: .code(0x31), modifierFlags: [.shift])])
             case .backwardCandidate:
                 return KeyBinding(action, [Input(key: .character("x"), modifierFlags: [])])
             case .tab:
