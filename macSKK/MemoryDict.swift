@@ -226,7 +226,7 @@ struct MemoryDict: DictProtocol {
             var high = okuriNashiYomis.count
             while low < high {
                 let mid = low + (high - low) / 2
-                if okuriNashiYomis[mid] < prefix {
+                if okuriNashiYomis[mid] <= prefix {
                     low = mid + 1
                 } else {
                     high = mid

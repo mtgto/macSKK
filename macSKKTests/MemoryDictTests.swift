@@ -222,10 +222,10 @@ class MemoryDictTests: XCTestCase {
             """
         let dict = MemoryDict(dictId: "testDict", source: source, readonly: true)
         XCTAssertEqual(dict.findCompletions(prefix: "い"), ["いか", "いかめし", "いかめら", "いがい", "いきおい", "いきなり", "いきば", "いく", "いこい"])
-        XCTAssertEqual(dict.findCompletions(prefix: "いか"), ["いか", "いかめし", "いかめら"])
+        XCTAssertEqual(dict.findCompletions(prefix: "いか"), ["いかめし", "いかめら"])
         XCTAssertEqual(dict.findCompletions(prefix: "いき"), ["いきおい", "いきなり", "いきば"])
-        XCTAssertEqual(dict.findCompletions(prefix: "うえ"), ["うえ"])
-        XCTAssertEqual(dict.findCompletions(prefix: "あ"), ["あ"])
+        XCTAssertEqual(dict.findCompletions(prefix: "う"), ["うえ"])
+        XCTAssertEqual(dict.findCompletions(prefix: "あ"), [])
         XCTAssertEqual(dict.findCompletions(prefix: "え"), [])
     }
 
