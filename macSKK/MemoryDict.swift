@@ -95,6 +95,9 @@ struct MemoryDict: DictProtocol {
                 okuriNashiYomis.append(yomi)
             }
         }
+        if readonly {
+            okuriNashiYomis = okuriNashiYomis.sorted()
+        }
     }
 
     init(okuriAriEntries: [String: [Word]], okuriNashiEntries: [String: [Word]], readonly: Bool, saveToUserDict: Bool = true) {
