@@ -452,7 +452,7 @@ final class StateMachineTests: XCTestCase {
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u", withShift: true)))
         wait(for: [expectation], timeout: 1.0)
@@ -2274,6 +2274,28 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(Action(keyBind: nil, event: generateNSEvent(character: "c", characterIgnoringModifiers: "c", modifierFlags: .command))))
     }
 
+    @MainActor func testHandleComposingShiftSpace() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        Global.dictionary.setEntries(["あさ": [Word("朝"), Word("麻")]])
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(4).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerSelect, .emphasized("朝")])))
+            XCTAssertEqual(events[2], .fixedText("朝"))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("い")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        stateMachine.completion = .yomi(["あさ"], 0)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(enterAction))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i", withShift: true)))
+        stateMachine.completion = .candidates([Candidate("井の頭公園", original: Candidate.Original(midashi: "いのかしらこうえん", word: "井の頭公園"))])
+        // 補完が変換候補の場合はなにもしない
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ", withShift: true)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     @MainActor func testHandleRegisteringEnter() {
         Global.dictionary.setEntries(["お": [Word("尾")]])
 
@@ -3815,7 +3837,7 @@ final class StateMachineTests: XCTestCase {
         case "/":
             return withShift ? nil : .abbrev
         case " ":
-            return .space
+            return withShift ? .shiftSpace : .space
         case "\r":
             return .enter
         case "\t":

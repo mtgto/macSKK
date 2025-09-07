@@ -123,6 +123,7 @@
 "KeyBindingActionStickyshift" = "Sticky Shift";
 "KeyBindingActionEnter" = "Enter";
 "KeyBindingActionSpace" = "Space";
+"KeyBindingActionShiftspace" = "Shift-Space";
 "KeyBindingActionBackwardcandidate" = "Select backward candidate";
 "KeyBindingActionTab" = "Tab";
 "KeyBindingActionBackspace" = "Backspace";
