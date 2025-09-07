@@ -20,7 +20,7 @@ struct MemoryDict: DictProtocol {
      */
     private(set) var failedEntryCount: Int
     /**
-     * 送りなしの読みの配列。最近変換したものが後に登場する。
+     * 送りなしの読みの配列。読み込み専用の場合は辞書順、そうでないときは最近変換したものが後に登場する。
      *
      * シリアライズするときはddskkに合わせて最近変換したものが前に登場するようにする。
      * ユーザー辞書だと更新されるのでNSOrderedSetにしたほうが先頭への追加が早いかも?
@@ -39,6 +39,8 @@ struct MemoryDict: DictProtocol {
         var okuriAriYomis: [String] = []
         var lineNumber = 0
         var failedEntryCount = 0
+        // readonlyのときはokuriAriYomisがソート済みかどうかを判定する
+        var okuriNashiSorted = readonly
 
         source.enumerateLines { line, stop in
             lineNumber += 1
@@ -56,6 +58,9 @@ struct MemoryDict: DictProtocol {
                     if entry.yomi.isOkuriAri {
                         okuriAriYomis.append(entry.yomi)
                     } else {
+                        if readonly && okuriNashiSorted && !okuriNashiYomis.isEmpty {
+                            okuriNashiSorted = okuriNashiYomis.last! < entry.yomi
+                        }
                         okuriNashiYomis.append(entry.yomi)
                     }
                 }
@@ -66,7 +71,15 @@ struct MemoryDict: DictProtocol {
         }
         entries = dict
         self.failedEntryCount = failedEntryCount
-        self.okuriNashiYomis = okuriNashiYomis.reversed()
+        self.okuriNashiYomis = if readonly {
+            if okuriNashiSorted {
+                okuriNashiYomis
+            } else {
+                okuriNashiYomis.sorted()
+            }
+        } else {
+            okuriNashiYomis.reversed()
+        }
         self.okuriAriYomis = okuriAriYomis.reversed()
     }
 
@@ -207,9 +220,36 @@ struct MemoryDict: DictProtocol {
             return []
         }
         var results: [String] = []
-        for yomi in okuriNashiYomis.reversed() {
-            if yomi.count > prefix.count && yomi.hasPrefix(prefix) && !yomi.contains(where: { $0 == "#" }) {
-                results.append(yomi)
+        if readonly {
+            // 二分探索で始点と終点を見つける
+            var low = 0
+            var high = okuriNashiYomis.count
+            while low < high {
+                let mid = low + (high - low) / 2
+                if okuriNashiYomis[mid] < prefix {
+                    low = mid + 1
+                } else {
+                    high = mid
+                }
+            }
+
+            var upperBound = okuriNashiYomis.count
+            var lowerBound = low
+            while lowerBound < upperBound {
+                let mid = lowerBound + (upperBound - lowerBound) / 2
+                if okuriNashiYomis[mid].hasPrefix(prefix) {
+                    lowerBound = mid + 1
+                } else {
+                    upperBound = mid
+                }
+            }
+
+            results.append(contentsOf: okuriNashiYomis[low..<upperBound].filter({ !$0.contains("#") }))
+        } else {
+            for yomi in okuriNashiYomis.reversed() {
+                if yomi.count > prefix.count && yomi.hasPrefix(prefix) && !yomi.contains("#") {
+                    results.append(yomi)
+                }
             }
         }
         return results

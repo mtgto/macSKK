@@ -10,6 +10,8 @@ class MemoryDictTests: XCTestCase {
         let source = """
             ;; この行はコメント扱い
             ;; okuri-ari entries.
+            おおk /大/多/[く/多/]/[き/大/]/
+            いt /[った/行/言/]/
             あg /挙/揚/上/
             あb /浴/
             ;; okuri-nasi entries.
@@ -19,8 +21,6 @@ class MemoryDictTests: XCTestCase {
             greek /α/β/γ/δ/ε/ζ/η/θ/ι/κ/λ/μ/ν/ξ/ο/π/ρ/σ/τ/υ/φ/χ/ψ/ω/
             あ /阿/唖/亜/娃/
             けい /京;10^16/
-            おおk /大/多/[く/多/]/[き/大/]/
-            いt /[った/行/言/]/
 
             """
         let dict = MemoryDict(dictId: "testDict", source: source, readonly: false)
@@ -87,6 +87,44 @@ class MemoryDictTests: XCTestCase {
             """
         let dict = MemoryDict(dictId: "testDict", source: source, readonly: false)
         XCTAssertNil(dict.entries["から"])
+    }
+
+    func testParseReadonly() {
+        // SKK-JISYOは送りありエントリは辞書の逆順、送りなしエントリは辞書順に並ぶ
+        var source = """
+            ;; okuri-ari entries.
+            おおk /大/多/[く/多/]/[き/大/]/
+            いt /[った/行/言/]/
+            あg /挙/揚/上/
+            あb /浴/
+            ;; okuri-nasi entries.
+            Cyrillic /А/Б/В/Г/Д/Е/Ё/Ж/З/И/Й/К/Л/М/Н/О/П/Р/С/Т/У/Ф/Х/Ц/Ч/Ш/Щ/Ъ/Ы/Ь/Э/Ю/Я/
+            Greek /Α/Β/Γ/Δ/Ε/Ζ/Η/Θ/Ι/Κ/Λ/Μ/Ν/Ξ/Ο/Π/Ρ/Σ/Τ/Υ/Φ/Χ/Ψ/Ω/
+            cyrillic /а/б/в/г/д/е/ё/ж/з/и/й/к/л/м/н/о/п/р/с/т/у/ф/х/ц/ч/ш/щ/ъ/ы/ь/э/ю/я/
+            greek /α/β/γ/δ/ε/ζ/η/θ/ι/κ/λ/μ/ν/ξ/ο/π/ρ/σ/τ/υ/φ/χ/ψ/ω/
+            あ /阿/唖/亜/娃/
+            けい /京;10^16/
+
+            """
+        var dict = MemoryDict(dictId: "testDict", source: source, readonly: true)
+        XCTAssertEqual(dict.okuriNashiYomis, ["Cyrillic", "Greek", "cyrillic", "greek", "あ", "けい"])
+        XCTAssertEqual(dict.okuriAriYomis, ["あb", "あg", "いt", "おおk"])
+        // okuri-nashi entriesが辞書順になってなければソートされる
+        source = """
+            Greek /Α/Β/Γ/Δ/Ε/Ζ/Η/Θ/Ι/Κ/Λ/Μ/Ν/Ξ/Ο/Π/Ρ/Σ/Τ/Υ/Φ/Χ/Ψ/Ω/
+            おおk /大/多/[く/多/]/[き/大/]/
+            greek /α/β/γ/δ/ε/ζ/η/θ/ι/κ/λ/μ/ν/ξ/ο/π/ρ/σ/τ/υ/φ/χ/ψ/ω/
+            いt /[った/行/言/]/
+            けい /京;10^16/
+            あg /挙/揚/上/
+            あ /阿/唖/亜/娃/
+            あb /浴/
+            cyrillic /а/б/в/г/д/е/ё/ж/з/и/й/к/л/м/н/о/п/р/с/т/у/ф/х/ц/ч/ш/щ/ъ/ы/ь/э/ю/я/
+            Cyrillic /А/Б/В/Г/Д/Е/Ё/Ж/З/И/Й/К/Л/М/Н/О/П/Р/С/Т/У/Ф/Х/Ц/Ч/Ш/Щ/Ъ/Ы/Ь/Э/Ю/Я/
+            """
+        dict = MemoryDict(dictId: "testDict", source: source, readonly: true)
+        XCTAssertEqual(dict.okuriNashiYomis, ["Cyrillic", "Greek", "cyrillic", "greek", "あ", "けい"])
+        // okuriAriYomisはソートしてない。そのうちするかも
     }
 
     func testAdd() throws {
@@ -163,6 +201,32 @@ class MemoryDictTests: XCTestCase {
         XCTAssertEqual(dict.findCompletions(prefix: "あいうえ"), ["あいうえお", "あいうえおか"], "あとで追加したエントリの読みを優先する")
         dict.add(yomi: "だい#", word: Word("第1"))
         XCTAssertEqual(dict.findCompletions(prefix: "だい"), [], "数値変換の読みは補完候補とはしない")
+    }
+
+    func testFindCompletionsBinarySearch() {
+        let source = """
+            ;; okuri-ari entries.
+            ;; okuri-nasi entries.
+            あ /亜/
+            いか /以下/
+            いかめし /イカめし/
+            いかめら /胃カメラ/
+            いがい /以外/
+            いきおい /勢い/
+            いきなり /行き成り/
+            いきば /行き場/
+            いく /育/
+            いこい /憩い/
+            うえ /上/
+
+            """
+        let dict = MemoryDict(dictId: "testDict", source: source, readonly: true)
+        XCTAssertEqual(dict.findCompletions(prefix: "い"), ["いか", "いかめし", "いかめら", "いがい", "いきおい", "いきなり", "いきば", "いく", "いこい"])
+        XCTAssertEqual(dict.findCompletions(prefix: "いか"), ["いか", "いかめし", "いかめら"])
+        XCTAssertEqual(dict.findCompletions(prefix: "いき"), ["いきおい", "いきなり", "いきば"])
+        XCTAssertEqual(dict.findCompletions(prefix: "うえ"), ["うえ"])
+        XCTAssertEqual(dict.findCompletions(prefix: "あ"), ["あ"])
+        XCTAssertEqual(dict.findCompletions(prefix: "え"), [])
     }
 
     func testReferWithOption() {
