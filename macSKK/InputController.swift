@@ -162,34 +162,36 @@ class InputController: IMKInputController {
         }.store(in: &cancellables)
         // 読みが更新されたときに補完候補の検索を行う処理
         stateMachine.yomiEvent
-            .compactMap {
-                if case .other(let yomi) = $0 {
+            .compactMap { [weak self] yomi -> (String, NSRect)? in
+                guard let self else { return nil }
+                if case .other(let yomi) = yomi {
                     // 変換開始時などもyomiが空になるのでそのときは補完候補に対してなにもしない
                     if !yomi.isEmpty {
-                        return yomi
+                        let cursorPosition = self.cursorPosition(for: textInput)
+                        return (yomi, cursorPosition)
                     }
                 }
                 // YomiEvent.otherじゃないときは補完されたときなのでそのときは新たな補完候補は検索しない
                 return nil
             }
-            .compactMap { yomi -> Completion? in
+            .receive(on: DispatchQueue.global())
+            .compactMap { (yomi, cursorPosition) -> (Completion, NSRect)? in
                 if Global.showCompletion {
                     if yomi.isEmpty {
                         return nil
                     }
                     if Global.showCandidateForCompletion {
                         let candidates = Global.dictionary.candidatesForCompletion(prefix: yomi)
-                        return .candidates(candidates)
+                        return (.candidates(candidates), cursorPosition)
                      } else {
                         let completions = Global.dictionary.findCompletions(prefix: yomi)
-                        return .yomi(completions, 0)
+                        return (.yomi(completions, 0), cursorPosition)
                     }
                 }
                 return nil
             }
-            .subscribe(on: DispatchQueue.global())
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] completion in
+            .sink { [weak self] (completion, cursorPosition) in
                 guard let self else { return }
                 self.stateMachine.completion = completion
                 if case .yomi(let yomis, let yomiIndex) = completion {
@@ -198,7 +200,6 @@ class InputController: IMKInputController {
                         self.stateMachine.completion = nil
                     } else {
                         Global.completionPanel.viewModel.completion = .yomi(yomis[yomiIndex])
-                        let cursorPosition = cursorPosition(for: textInput)
                         if cursorPosition != .zero {
                             Global.completionPanel.show(at: cursorPosition, windowLevel: windowLevel(for: textInput))
                         }
@@ -210,7 +211,6 @@ class InputController: IMKInputController {
                     } else {
                         // 先頭1ページ分だけ変換候補パネルに表示する。
                         Global.completionPanel.viewModel.completion = .candidates(Array(candidates.prefix(9)))
-                        let cursorPosition = cursorPosition(for: textInput)
                         if cursorPosition != .zero {
                             Global.completionPanel.show(at: cursorPosition, windowLevel: windowLevel(for: textInput))
                         }
