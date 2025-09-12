@@ -8,7 +8,7 @@ struct MemoryDict: DictProtocol {
     /**
      * 読み込み専用で保存しないかどうか
      *
-     * okuriNashiYomisを管理するのに使います。
+     * okuriNashiYomisを辞書順にソートしておくかの管理するのに使います。
      */
     private let readonly: Bool
     /**
@@ -20,13 +20,15 @@ struct MemoryDict: DictProtocol {
      */
     private(set) var failedEntryCount: Int
     /**
-     * 送りなしの読みの配列。読み込み専用の場合は辞書順、そうでないときは最近変換したものが後に登場する。
+     * 重複を含まない送りなしの読みの配列。
+     * 読み込み専用の場合は辞書順、そうでないときは最近変換したものが後に登場する。
      *
-     * シリアライズするときはddskkに合わせて最近変換したものが前に登場するようにする。
+     * 読み込み専用でない場合、シリアライズするときはddskkに合わせて最近変換したものが前に登場するようにする。
      * ユーザー辞書だと更新されるのでNSOrderedSetにしたほうが先頭への追加が早いかも?
      */
     private(set) var okuriNashiYomis: [String] = []
-    /// 送りありの読みの配列。最近変換したものが後に登場する。
+    /// 送りありの読みの配列。
+    /// ユーザー辞書の場合は最近変換したものが後に登場する。
     private(set) var okuriAriYomis: [String] = []
     /// この辞書から返した変換候補をユーザー辞書に保存するかどうか
     let saveToUserDict: Bool
@@ -218,6 +220,17 @@ struct MemoryDict: DictProtocol {
         return false
     }
 
+    /**
+     * 現在入力中のprefixに続く入力候補を返す。見つからなければ空配列を返す。
+     *
+     * 以下のように補完候補を探します。
+     * ※将来この仕様は変更する可能性が大いにあります。
+     *
+     * - prefixが空文字列なら空配列を返す
+     * - ユーザー辞書の送りなしの読みのうち、最近変換したものから選択する。
+     * - prefixと読みが完全に一致する場合は補完候補とはしない
+     * - 数値変換用の読みは補完候補としない
+     */
     func findCompletions(prefix: String) -> [String] {
         if prefix.isEmpty {
             return []
