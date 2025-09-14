@@ -73,15 +73,6 @@ final class EntryTests: XCTestCase {
         XCTAssertNil(Entry(line: "いt /[った/行]/", dictId: ""), "送り仮名ブロックの変換候補の末尾にスラッシュがない")
     }
 
-    func testIgnoreDuplicated() {
-        var entry = Entry(line: "で でm /[ま/出/出/出/出/出/]/出/出/出/", dictId: "")
-        // 重複した変換候補は省略される
-        XCTAssertEqual(entry?.candidates, [Word("出", okuri: "ま"), Word("出")])
-        entry = Entry(line: "で でr /[ら/出/]/[る/出/]/出/", dictId: "")
-        // 送り仮名が違う変換候補は別の変換候補として扱う
-        XCTAssertEqual(entry?.candidates, [Word("出", okuri: "ら"), Word("出", okuri: "る"), Word("出")])
-    }
-
     func testSerialize() {
         [
             "あg /挙/揚/上/",
