@@ -88,6 +88,9 @@ struct Entry: Sendable {
     }
 
     /**
+     * エントリの変換候補部分の先頭のスラッシュを取り除いた文字列をパースする。
+     * 重複変換候補は最初に現れたものだけを残してあとは無視する。
+     *
      * - Parameters:
      *   - wordsText "胃/異/" のように先頭のスラッシュを除いた変換候補部分の文字列
      */
@@ -95,6 +98,7 @@ struct Entry: Sendable {
         // 長すぎるとスタックオーバーフローで死ぬので送り仮名ブロック以外はループで処理
         var wordsText = wordsText
         var result: [Word] = []
+        var added = Set<Word>()
         while true {
             if wordsText.isEmpty {
                 return result
@@ -111,8 +115,14 @@ struct Entry: Sendable {
                             return nil
                         }
                         let yomi = array[0].prefix(upTo: index)
-                        let words = parseWords(array[0].suffix(from: index).dropFirst(), dictId: dictId)?.map { word in
-                            Word(word.word, okuri: String(yomi), annotation: word.annotation)
+                        let words = parseWords(array[0].suffix(from: index).dropFirst(), dictId: dictId)?.compactMap { word in
+                            let wordWithOkuri = Word(word.word, okuri: String(yomi), annotation: word.annotation)
+                            let (inserted, _) = added.insert(wordWithOkuri)
+                            if inserted {
+                                return wordWithOkuri
+                            } else {
+                                return nil
+                            }
                         }
                         guard let words else { return nil }
                         result.append(contentsOf: words)
@@ -128,10 +138,18 @@ struct Entry: Sendable {
             let array = wordsText.split(separator: "/", maxSplits: 1)
             switch array.count {
             case 1:
-                result.append(parseWord(array[0], dictId: dictId))
+                let word = parseWord(array[0], dictId: dictId)
+                let (inserted, _) = added.insert(word)
+                if inserted {
+                    result.append(word)
+                }
                 return result
             case 2:
-                result.append(parseWord(array[0], dictId: dictId))
+                let word = parseWord(array[0], dictId: dictId)
+                let (inserted, _) = added.insert(word)
+                if inserted {
+                    result.append(word)
+                }
                 wordsText = array[1]
             default:
                 result.append(Word(""))
