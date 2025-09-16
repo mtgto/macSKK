@@ -71,6 +71,7 @@ final class EntryTests: XCTestCase {
         XCTAssertNil(Entry(line: "い  /胃/", dictId: ""), "読みと変換候補の間にスペースが2つある")
         XCTAssertNil(Entry(line: "い /胃/意", dictId: ""), "末尾がスラッシュで終わらない")
         XCTAssertNil(Entry(line: "いt /[った/行]/", dictId: ""), "送り仮名ブロックの変換候補の末尾にスラッシュがない")
+        XCTAssertNil(Entry(line: "い いt /行/", dictId: ""), "読みが複数ある")
     }
 
     func testSerialize() {

@@ -28,7 +28,7 @@ struct Entry: Sendable {
             return nil
         }
         let words = line.split(separator: " /", maxSplits: 1)
-        if words.count != 2 || words[0].last == " " {
+        if words.count != 2 || words[0].contains(" ") {
             return nil
         }
         yomi = String(words[0]).replacing("う゛", with: "ゔ")
