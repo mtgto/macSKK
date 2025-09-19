@@ -73,6 +73,15 @@ final class EntryTests: XCTestCase {
         XCTAssertNil(Entry(line: "いt /[った/行]/", dictId: ""), "送り仮名ブロックの変換候補の末尾にスラッシュがない")
     }
 
+    func testIgnoreDuplicated() {
+        var entry = Entry(line: "でm /[ま/出/出/出/出/出/]/出/出/出/", dictId: "")
+        // 重複した変換候補は省略される
+        XCTAssertEqual(entry?.candidates, [Word("出", okuri: "ま"), Word("出")])
+        entry = Entry(line: "きk /[か/聞/]/[き/聞/]/聞/聴/聞/", dictId: "")
+        // 送り仮名が違う変換候補は別の変換候補として扱う
+        XCTAssertEqual(entry?.candidates, [Word("聞", okuri: "か"), Word("聞", okuri: "き"), Word("聞"), Word("聴")])
+    }
+
     func testSerialize() {
         [
             "あg /挙/揚/上/",
@@ -95,6 +104,6 @@ final class EntryTests: XCTestCase {
     func testSerizalizeLarge() {
         let line = "い /" + String(repeating: "イ/", count: 10000)
         let entry = Entry(line: line, dictId: "")!
-        XCTAssertEqual(entry.serialize(), line)
+        XCTAssertEqual(entry.serialize(), "い /イ/") // 重複エントリは読み込みで消去される
     }
 }
