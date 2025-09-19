@@ -98,7 +98,6 @@ struct Entry: Sendable {
         // 長すぎるとスタックオーバーフローで死ぬので送り仮名ブロック以外はループで処理
         var wordsText = wordsText
         var result: [Word] = []
-        var added = Set<Word>()
         while true {
             if wordsText.isEmpty {
                 return result
@@ -115,17 +114,13 @@ struct Entry: Sendable {
                             return nil
                         }
                         let yomi = array[0].prefix(upTo: index)
-                        let words = parseWords(array[0].suffix(from: index).dropFirst(), dictId: dictId)?.compactMap { word in
+                        guard let words = parseWords(array[0].suffix(from: index).dropFirst(), dictId: dictId) else { return nil }
+                        words.forEach { word in
                             let wordWithOkuri = Word(word.word, okuri: String(yomi), annotation: word.annotation)
-                            let (inserted, _) = added.insert(wordWithOkuri)
-                            if inserted {
-                                return wordWithOkuri
-                            } else {
-                                return nil
+                            if !result.contains(wordWithOkuri) {
+                                result.append(wordWithOkuri)
                             }
                         }
-                        guard let words else { return nil }
-                        result.append(contentsOf: words)
                         wordsText = array[1].dropFirst()
                     } else {
                         // スラッシュが含まれないときは送り仮名ブロックではない
@@ -139,15 +134,13 @@ struct Entry: Sendable {
             switch array.count {
             case 1:
                 let word = parseWord(array[0], dictId: dictId)
-                let (inserted, _) = added.insert(word)
-                if inserted {
+                if !result.contains(word) {
                     result.append(word)
                 }
                 return result
             case 2:
                 let word = parseWord(array[0], dictId: dictId)
-                let (inserted, _) = added.insert(word)
-                if inserted {
+                if !result.contains(word) {
                     result.append(word)
                 }
                 wordsText = array[1]
