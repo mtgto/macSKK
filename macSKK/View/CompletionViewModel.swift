@@ -36,7 +36,7 @@ final class CompletionViewModel: ObservableObject {
         $completion.dropFirst().sink { [weak self] completion in
             guard let self else { return }
             if case .candidates(let words) = completion {
-                logger.log("補完候補が更新されました")
+                logger.debug("補完候補が更新されました")
                 self.candidatesViewModel.candidates = .panel(words: words, currentPage: 0, totalPageCount: 1)
             } else {
                 self.candidatesViewModel.candidates = .inline
