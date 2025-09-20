@@ -6,9 +6,10 @@ import SwiftUI
 /// 補完候補を表示するビュー
 struct CompletionView: View {
     @ObservedObject var viewModel: CompletionViewModel
+    static let footerHeight: CGFloat = 18
 
     var body: some View {
-        VStack {
+        VStack(spacing: 0) {
             if case .yomi(let yomi) = viewModel.completion {
                 Text(yomi)
                     .font(.body)
@@ -22,8 +23,8 @@ struct CompletionView: View {
             Text("Tab Completion")
                 .font(.caption)
                 .frame(maxWidth: .infinity)
+                .frame(height: Self.footerHeight)
         }
-        .padding(2)
         .fixedSize()
     }
 }

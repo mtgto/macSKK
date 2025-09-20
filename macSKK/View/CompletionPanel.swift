@@ -23,22 +23,38 @@ class CompletionPanel: NSPanel {
     }
 
     func show(at cursorPoint: NSRect, windowLevel: NSWindow.Level) {
-        level = windowLevel
         var origin = cursorPoint.origin
-
-        if let size = contentViewController?.view.frame.size, let mainScreen = NSScreen.main {
+        let width: CGFloat
+        let height: CGFloat
+        if case let .panel(words, _, _) = viewModel.candidatesViewModel.candidates {
+            switch Global.candidateListDirection.value {
+            case .vertical:
+                width = viewModel.candidatesViewModel.minWidth
+                height = CGFloat(words.count) * viewModel.candidatesViewModel.candidatesLineHeight + CompletionView.footerHeight
+            case .horizontal:
+                width = viewModel.candidatesViewModel.minWidth
+                height = viewModel.candidatesViewModel.candidatesLineHeight + CompletionView.footerHeight
+            }
+        } else {
+            // FIXME: 短い文のときにはそれに合わせて高さを縮める
+            width = viewModel.candidatesViewModel.minWidth
+            height = 200
+        }
+        setContentSize(NSSize(width: width, height: height))
+        if let mainScreen = NSScreen.main {
             let visibleFrame = mainScreen.visibleFrame
-            if origin.x + size.width > visibleFrame.minX + visibleFrame.width {
-                origin.x = visibleFrame.minX + visibleFrame.width - size.width
+            if origin.x + width > visibleFrame.minX + visibleFrame.width {
+                origin.x = visibleFrame.minX + visibleFrame.width - width
             }
             // 1ピクセルの余白を設ける
-            if origin.y - size.height < visibleFrame.minY {
-                origin.y = origin.y + size.height + cursorPoint.height + 1
+            if origin.y - height < visibleFrame.minY {
+                origin.y = origin.y + cursorPoint.height + height + 1
             } else {
-                origin.y -= 1
+                origin.y = origin.y - 1
             }
         }
         setFrameTopLeftPoint(origin)
+        level = windowLevel
         orderFrontRegardless()
     }
 }
