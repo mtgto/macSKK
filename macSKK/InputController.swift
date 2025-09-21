@@ -182,7 +182,7 @@ class InputController: IMKInputController {
                 return nil
             }
             .receive(on: DispatchQueue.global())
-            .compactMap { (yomi, cursorPosition) -> (Completion, NSRect)? in
+            .compactMap { (yomi, cursorPosition) -> (String, Completion, NSRect)? in
                 if Global.showCompletion {
                     if yomi.isEmpty {
                         return nil
@@ -190,17 +190,28 @@ class InputController: IMKInputController {
                     Thread.sleep(forTimeInterval: 0.5)
                     if Global.showCandidateForCompletion {
                         let candidates = Global.dictionary.candidatesForCompletion(prefix: yomi)
-                        return (.candidates(candidates), cursorPosition)
+                        return (yomi, .candidates(candidates), cursorPosition)
                      } else {
                         let completions = Global.dictionary.findCompletions(prefix: yomi)
-                        return (.yomi(completions, 0), cursorPosition)
+                        return (yomi, .yomi(completions, 0), cursorPosition)
                     }
                 }
                 return nil
             }
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] (completion, cursorPosition) in
+            .sink { [weak self] (yomi, completion, cursorPosition) in
                 guard let self else { return }
+                // 補完候補の検索を別スレッドで実行しているため、その間に読みが変更されたり変換を開始したり確定している可能性がある。
+                // 現在のStateMachineの読みが異なる場合は補完候補検索結果を捨てて何もしない
+                if case .composing(let composing) = self.stateMachine.state.inputMethod {
+                    if yomi != composing.yomi(for: .hiragana, kanaRule: Global.kanaRule) {
+                        logger.info("補完候補を検索しましたが現在の読みが補完候補検索時と変わっているため補完候補は表示しません")
+                        return
+                    }
+                } else {
+                    logger.info("補完候補を検索しましたが現在の変換の状態が読み入力中でないため補完候補は表示しません")
+                    return
+                }
                 self.stateMachine.completion = completion
                 if case .yomi(let yomis, let yomiIndex) = completion {
                     if yomis.isEmpty {
