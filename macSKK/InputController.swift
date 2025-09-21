@@ -164,14 +164,21 @@ class InputController: IMKInputController {
         stateMachine.yomiEvent
             .compactMap { [weak self] yomi -> (String, NSRect)? in
                 guard let self else { return nil }
-                if case .other(let yomi) = yomi {
-                    // 変換開始時などもyomiが空になるのでそのときは補完候補に対してなにもしない
-                    if !yomi.isEmpty {
-                        let cursorPosition = self.cursorPosition(for: textInput)
-                        return (yomi, cursorPosition)
+                if Global.showCompletion {
+                    if case .other(let yomi) = yomi {
+                        // 変換開始時などもyomiが空になるのでそのときは
+                        // すでにCandidatesPanelによる補完候補が表示されていることがあるのでCompletionPanelを閉じる
+                        // YomiEvent.otherじゃないときは補完されたときなのでそのときは何もしない
+                        if yomi.isEmpty {
+                            if Global.showCompletion {
+                                Global.completionPanel.orderOut(nil)
+                            }
+                        } else {
+                            let cursorPosition = self.cursorPosition(for: textInput)
+                            return (yomi, cursorPosition)
+                        }
                     }
                 }
-                // YomiEvent.otherじゃないときは補完されたときなのでそのときは新たな補完候補は検索しない
                 return nil
             }
             .receive(on: DispatchQueue.global())
@@ -180,6 +187,7 @@ class InputController: IMKInputController {
                     if yomi.isEmpty {
                         return nil
                     }
+                    Thread.sleep(forTimeInterval: 0.5)
                     if Global.showCandidateForCompletion {
                         let candidates = Global.dictionary.candidatesForCompletion(prefix: yomi)
                         return (.candidates(candidates), cursorPosition)
@@ -217,23 +225,17 @@ class InputController: IMKInputController {
                     }
                 }
         }.store(in: &cancellables)
+        // 読みの補完候補が更新されたときの処理
         stateMachine.yomiEvent
             .compactMap {
                 if case .completed(let nextYomi) = $0 {
                     return nextYomi
-                } else if case .other(let yomi) = $0 {
-                    // 読みが更新されたとき、変換候補の補完を使用する設定が有効かつ読みが空のときは
-                    // すでにCandidatesPanelによる補完候補が表示されていることがあるので閉じる
-                    if yomi.isEmpty && Global.showCompletion {
-                        Global.completionPanel.orderOut(nil)
-                    }
                 }
                 return nil
             }
             .sink { nextYomi in
-                // 読みの補完候補が更新されたときの処理
                 if nextYomi.isEmpty {
-                    Global.completionPanel.orderOut(nil)
+                    logger.warning("補完候補を使って補完されましたが空文字列になっており、バグの可能性があります。")
                 } else {
                     Global.completionPanel.viewModel.completion = .yomi(nextYomi)
                 }
