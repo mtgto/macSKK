@@ -187,7 +187,6 @@ class InputController: IMKInputController {
                     if yomi.isEmpty {
                         return nil
                     }
-                    Thread.sleep(forTimeInterval: 0.5)
                     if Global.showCandidateForCompletion {
                         let candidates = Global.dictionary.candidatesForCompletion(prefix: yomi)
                         return (yomi, .candidates(candidates), cursorPosition)
