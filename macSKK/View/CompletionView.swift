@@ -7,12 +7,14 @@ import SwiftUI
 struct CompletionView: View {
     @ObservedObject var viewModel: CompletionViewModel
     static let footerHeight: CGFloat = 18
+    static let yomiHeight: CGFloat = 16
 
     var body: some View {
         VStack(spacing: 0) {
             if case .yomi(let yomi) = viewModel.completion {
                 Text(yomi)
                     .font(.body)
+                    .frame(height: Self.yomiHeight)
             } else if case .candidates(let words) = viewModel.completion {
                 if case .vertical = Global.candidateListDirection.value {
                     VerticalCandidatesView(candidates: viewModel.candidatesViewModel, words: words, currentPage: 0, totalPageCount: 1)
@@ -25,6 +27,7 @@ struct CompletionView: View {
                 .frame(maxWidth: .infinity)
                 .frame(height: Self.footerHeight)
         }
+        .padding(viewModel.padding)
         .fixedSize()
     }
 }

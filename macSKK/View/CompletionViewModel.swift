@@ -14,6 +14,13 @@ final class CompletionViewModel: ObservableObject {
     @Published var completion: CurrentCompletion
     @Published var candidatesViewModel: CandidatesViewModel
     private var cancellables: Set<AnyCancellable> = []
+    var padding: CGFloat {
+        if case .yomi = completion {
+            2
+        } else {
+            0
+        }
+    }
 
     init(completion: CurrentCompletion, candidatesFontSize: Int, annotationFontSize: Int) {
         self.completion = completion
