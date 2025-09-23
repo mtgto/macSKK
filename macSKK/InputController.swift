@@ -183,19 +183,13 @@ class InputController: IMKInputController {
             }
             .receive(on: DispatchQueue.global())
             .compactMap { (yomi, cursorPosition) -> (String, Completion, NSRect)? in
-                if Global.showCompletion {
-                    if yomi.isEmpty {
-                        return nil
-                    }
-                    if Global.showCandidateForCompletion {
-                        let candidates = Global.dictionary.candidatesForCompletion(prefix: yomi)
-                        return (yomi, .candidates(candidates), cursorPosition)
-                     } else {
-                        let completions = Global.dictionary.findCompletions(prefix: yomi)
-                        return (yomi, .yomi(completions, 0), cursorPosition)
-                    }
+                if Global.showCandidateForCompletion {
+                    let candidates = Global.dictionary.candidatesForCompletion(prefix: yomi)
+                    return (yomi, .candidates(candidates), cursorPosition)
+                 } else {
+                    let completions = Global.dictionary.findCompletions(prefix: yomi)
+                    return (yomi, .yomi(completions, 0), cursorPosition)
                 }
-                return nil
             }
             .receive(on: DispatchQueue.main)
             .sink { [weak self] (yomi, completion, cursorPosition) in
