@@ -36,9 +36,9 @@ class CompletionPanel: NSPanel {
                 height = viewModel.candidatesViewModel.candidatesLineHeight + CompletionView.footerHeight
             }
         } else {
-            // FIXME: 短い文のときにはそれに合わせて高さを縮める
             width = viewModel.candidatesViewModel.minWidth
-            height = 200
+            // 読みのときの足さは1行 + "Tabで補完" + 上下のパディング4
+            height = CompletionView.yomiHeight + CompletionView.footerHeight + 4
         }
         setContentSize(NSSize(width: width, height: height))
         if let mainScreen = NSScreen.main {
