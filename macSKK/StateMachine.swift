@@ -740,19 +740,17 @@ final class StateMachine {
         case .shiftSpace:
             // 補完が読みのときは変換開始する。そうじゃないときはなにもしない
             // NOTE: 補完が変換候補のときはシフトをうっかり押しちゃっただけのspaceと同じ挙動でもいいかも?
-            if state.inputMode != .direct {
-                if case .yomi(let yomis, let yomiIndex) = completion, 0 <= yomiIndex && yomiIndex < yomis.count {
-                    // 最初の読みで変換開始
-                    let yomi = yomis[yomiIndex]
-                    let newText = yomi.map({ String($0) })
-                    let completionState = ComposingState(isShift: true,
-                                                         text: newText,
-                                                         okuri: nil,
-                                                         romaji: "",
-                                                         cursor: nil,
-                                                         prevMode: composing.prevMode)
-                    return handleComposingStartConvert(action, composing: completionState, specialState: specialState)
-                }
+            if case .yomi(let yomis, let yomiIndex) = completion, 0 <= yomiIndex && yomiIndex < yomis.count {
+                // 最初の読みで変換開始
+                let yomi = yomis[yomiIndex]
+                let newText = yomi.map({ String($0) })
+                let completionState = ComposingState(isShift: true,
+                                                     text: newText,
+                                                     okuri: nil,
+                                                     romaji: "",
+                                                     cursor: nil,
+                                                     prevMode: composing.prevMode)
+                return handleComposingStartConvert(action, composing: completionState, specialState: specialState)
             }
             return true
         case .tab:
