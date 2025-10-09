@@ -412,7 +412,7 @@ final class StateMachine {
         case .eisu:
             // 何もしない (OSがIMEの切り替えはしてくれる)
             return true
-        case .space, .unregister, .backwardCandidate, .toggleAndFixKana, .affix, nil:
+        case .space, .shiftSpace, .unregister, .backwardCandidate, .toggleAndFixKana, .affix, nil:
             break
         }
 
@@ -737,6 +737,22 @@ final class StateMachine {
                     return handleComposingStartConvert(action, composing: composing, specialState: specialState)
                 }
             }
+        case .shiftSpace:
+            // 補完が読みのときは変換開始する。そうじゃないときはなにもしない
+            // NOTE: 補完が変換候補のときはシフトをうっかり押しちゃっただけのspaceと同じ挙動でもいいかも?
+            if case .yomi(let yomis, let yomiIndex) = completion, 0 <= yomiIndex && yomiIndex < yomis.count {
+                // 最初の読みで変換開始
+                let yomi = yomis[yomiIndex]
+                let newText = yomi.map({ String($0) })
+                let completionState = ComposingState(isShift: true,
+                                                     text: newText,
+                                                     okuri: nil,
+                                                     romaji: "",
+                                                     cursor: nil,
+                                                     prevMode: composing.prevMode)
+                return handleComposingStartConvert(action, composing: completionState, specialState: specialState)
+            }
+            return true
         case .tab:
             // FIXME: この記号がローマ字に含まれていることも考慮するべき?
             if case .yomi(let yomis, let yomiIndex) = completion {
@@ -1242,7 +1258,7 @@ final class StateMachine {
             } else {
                 return handleSelectingNextPage(action, selecting: selecting, specialState: specialState)
             }
-        case .space:
+        case .space, .shiftSpace:
             if selecting.completion {
                 // TODO 補完を中断して現在の読みで変換開始する
                 return true
