@@ -2296,6 +2296,34 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    @MainActor func testHandleComposingPeriod() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        Global.fixedCompletionByPeriod = true
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(4).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
+            XCTAssertEqual(events[1], .fixedText("朝"))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("あ")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("あ。")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+
+        // fixedCompletionByPeriodがtrueならピリオドキーで最初の補完候補で確定する
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        stateMachine.completion = .candidates([
+            Candidate("朝", original: Candidate.Original(midashi: "あさ", word: "朝")),
+            Candidate("麻", original: Candidate.Original(midashi: "あさ", word: "麻")),
+        ])
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ".")))
+        XCTAssertEqual(Global.dictionary.refer("あさ"), [Word("朝")])
+
+        // 補完候補が読みのみの場合はピリオドキーで確定はしない
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        stateMachine.completion = .yomi(["あさ"], 0)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ".")))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     @MainActor func testHandleRegisteringEnter() {
         Global.dictionary.setEntries(["お": [Word("尾")]])
 

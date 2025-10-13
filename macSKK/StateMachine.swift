@@ -541,6 +541,15 @@ final class StateMachine {
         if action.keyBind == nil && (event.modifierFlags.contains(.control) || event.modifierFlags.contains(.command)) {
             return true
         } else if let input, !event.modifierFlags.contains(.control) {
+            // 補完候補が変換候補であり、fixedCompletionByPeriodが有効で、ピリオドキーが入力された場合先頭の補完候補で確定する
+            if input == "." && !event.modifierFlags.contains(.shift) && Global.fixedCompletionByPeriod {
+                if case .candidates(let candidates) = completion, let candidate = candidates.first, let original = candidate.original {
+                    addWordToUserDict(yomi: original.midashi,  okuri: nil, candidate: candidate)
+                    state.inputMethod = .normal
+                    addFixedText(candidate.word)
+                    return true
+                }
+            }
             if !input.isAlphabet, let characters = action.characters() {
                 converted = useKanaRuleIfPresent(inputMode: state.inputMode, romaji: romaji, input: characters)
             } else {
