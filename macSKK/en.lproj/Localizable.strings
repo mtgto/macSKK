@@ -74,6 +74,7 @@
 "Candidates font size" = "Candidates font size";
 "Annotation font size" = "Annotation font size";
 "Find completion from all dictionaries" = "Find completion from all dictionaries";
+"Confirm the first completion by period" = "Confirm the first completion by period";
 "Ignore User Dict in Private Mode" = "Ignore User Dict in Private Mode";
 "Show Input Mode Modal" = "Show Input Mode Modal";
 "Direction of candidate list" = "Direction of candidate list";

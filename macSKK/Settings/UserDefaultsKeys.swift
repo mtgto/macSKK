@@ -48,4 +48,6 @@ struct UserDefaultsKeys {
     static let candidateListDirection = "candidateListDirection"
     // 日時変換の変換後のリスト
     static let dateConversions = "dateConversions"
+    // ピリオドで補完候補の最初の要素で確定するか
+    static let fixedCompletionByPeriod = "fixedCompletionByPeriod"
 }

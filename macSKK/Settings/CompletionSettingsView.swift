@@ -16,6 +16,10 @@ struct CompletionSettingsView: View {
                         Text("Show Candidate for Completion")
                     })
                     .disabled(!settingsViewModel.showCompletion)
+                    Toggle(isOn: $settingsViewModel.fixedCompletionByPeriod, label: {
+                        Text("Confirm the first completion by period")
+                    })
+                    .disabled(!settingsViewModel.showCompletion || !settingsViewModel.showCandidateForCompletion)
                 }
                 Toggle(isOn: $settingsViewModel.findCompletionFromAllDicts, label: {
                     Text("Find completion from all dictionaries")

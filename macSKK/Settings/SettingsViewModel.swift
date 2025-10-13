@@ -181,6 +181,8 @@ final class SettingsViewModel: ObservableObject {
     @Published var showCompletion: Bool
     /// 変換候補の補完を表示するかどうか。例えば "ほか" まで入力したときに "補完" と表示するか
     @Published var showCandidateForCompletion: Bool
+    /// ピリオドで補完候補の最初の要素で確定するか
+    @Published var fixedCompletionByPeriod: Bool
     @Published var systemDict: SystemDict.Kind
     @Published var selectingBackspace: SelectingBackspace
     @Published var period: Punctuation.Period
@@ -256,6 +258,7 @@ final class SettingsViewModel: ObservableObject {
         enterNewLine = UserDefaults.app.bool(forKey: UserDefaultsKeys.enterNewLine)
         showCompletion = UserDefaults.app.bool(forKey: UserDefaultsKeys.showCompletion)
         showCandidateForCompletion = UserDefaults.app.bool(forKey: UserDefaultsKeys.showCandidateForCompletion)
+        fixedCompletionByPeriod = UserDefaults.app.bool(forKey: UserDefaultsKeys.fixedCompletionByPeriod)
         selectingBackspace = SelectingBackspace(rawValue: UserDefaults.app.integer(forKey: UserDefaultsKeys.selectingBackspace)) ?? SelectingBackspace.default
         comma = Punctuation.Comma(rawValue: UserDefaults.app.integer(forKey: UserDefaultsKeys.punctuation)) ?? .default
         period = Punctuation.Period(rawValue: UserDefaults.app.integer(forKey: UserDefaultsKeys.punctuation)) ?? .default
@@ -277,6 +280,7 @@ final class SettingsViewModel: ObservableObject {
         Global.enterNewLine = enterNewLine
         Global.showCompletion = showCompletion
         Global.showCandidateForCompletion = showCandidateForCompletion
+        Global.fixedCompletionByPeriod = fixedCompletionByPeriod
         Global.systemDict = systemDict
         Global.selectingBackspace = selectingBackspace
         Global.punctuation = Punctuation(comma: comma, period: period)
@@ -484,6 +488,12 @@ final class SettingsViewModel: ObservableObject {
             Global.showCandidateForCompletion = showCandidateForCompletion
         }.store(in: &cancellables)
 
+        $fixedCompletionByPeriod.dropFirst().sink { fixedCompletionByPeriod in
+            logger.log("ピリオドで補完候補の最初の要素で確定する設定を\(fixedCompletionByPeriod ? "有効" : "無効", privacy: .public)に変更しました")
+            UserDefaults.app.set(fixedCompletionByPeriod, forKey: UserDefaultsKeys.fixedCompletionByPeriod)
+            Global.fixedCompletionByPeriod = fixedCompletionByPeriod
+        }.store(in: &cancellables)
+
         $systemDict.dropFirst().sink { systemDict in
             logger.log("注釈で使用するシステム辞書を \(systemDict.rawValue, privacy: .public) に変更しました")
             UserDefaults.app.set(systemDict.rawValue, forKey: UserDefaultsKeys.systemDict)
@@ -580,6 +590,7 @@ final class SettingsViewModel: ObservableObject {
         enterNewLine = false
         showCompletion = true
         showCandidateForCompletion = true
+        fixedCompletionByPeriod = true
         systemDict = .daijirin
         selectingBackspace = SelectingBackspace.default
         comma = Punctuation.default.comma

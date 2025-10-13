@@ -49,6 +49,8 @@ import Combine
     static var punctuation: Punctuation = .default
     /// 変換候補パネルの表示方向
     static var candidateListDirection = CurrentValueSubject<CandidateListDirection, Never>(.vertical)
+    /// ピリオドで補完候補の最初の要素で確定するか
+    static var fixedCompletionByPeriod: Bool = true
     /// 現在のモードを表示するパネル
     private let inputModePanel: InputModePanel
     /// 変換候補を表示するパネル
