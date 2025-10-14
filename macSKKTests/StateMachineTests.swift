@@ -2300,11 +2300,14 @@ final class StateMachineTests: XCTestCase {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         Global.fixedCompletionByPeriod = true
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(4).sink { events in
+        stateMachine.inputMethodEvent.collect(7).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
             XCTAssertEqual(events[1], .fixedText("朝"))
             XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("あ")])))
             XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("あ。")])))
+            XCTAssertEqual(events[4], .fixedText("あ。"))
+            XCTAssertEqual(events[5], .markedText(MarkedText([.plain("z")])))
+            XCTAssertEqual(events[6], .fixedText("…"))
             expectation.fulfill()
         }.store(in: &cancellables)
 
@@ -2320,6 +2323,10 @@ final class StateMachineTests: XCTestCase {
         // 補完候補が読みのみの場合はピリオドキーで確定はしない
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
         stateMachine.completion = .yomi(["あさ"], 0)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ".")))
+        // "z." のようなピリオドを含む入力はそちらを優先する
+        XCTAssertTrue(stateMachine.handle(enterAction))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "z")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ".")))
         wait(for: [expectation], timeout: 1.0)
     }
