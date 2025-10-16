@@ -95,7 +95,7 @@ final class CandidatesViewModel: ObservableObject {
 
         $candidates.combineLatest(Global.candidateListDirection).map { candidates, listDirection in
             if case let .panel(words, currentPage, totalPageCount) = candidates {
-                let font = NSFont.preferredFont(forTextStyle: .body)
+                let font = NSFont.systemFont(ofSize: self.candidatesFontSize)
                 switch listDirection {
                 case .vertical:
                     let listWidth = words.map { candidate -> CGFloat in
