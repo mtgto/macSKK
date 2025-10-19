@@ -338,6 +338,9 @@ class UserDict: NSObject, DictProtocol {
         // 1文字のときは全探索するとめちゃくちゃ量が多いので完全一致だけ探す
         if prefix.count == 1 {
             return referDicts(prefix, option: nil, skkservDict: nil, findFromAllDicts: findCompletionFromAllDicts.value)
+                .map { candidate in
+                    candidate.withOriginal(Candidate.Original(midashi: prefix, word: candidate.word))
+                }
         }
         // あとでいろいろ拡張するけどひとまずfindCompletionsの結果を[Candidate]にするだけ
         // 別スレッドから実行したいのでひとまずskkserv以外を検索する

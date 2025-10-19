@@ -172,6 +172,7 @@ class InputController: IMKInputController {
                         if yomi.isEmpty {
                             if Global.showCompletion {
                                 Global.completionPanel.orderOut(nil)
+                                self.stateMachine.completion = nil
                             }
                         } else {
                             let cursorPosition = self.cursorPosition(for: textInput)

@@ -186,7 +186,10 @@ final class UserDictTests: XCTestCase {
         let annotation1 = Annotation(dictId: UserDict.userDictFilename, text: "日本の注釈")
         let annotation2 = Annotation(dictId: "dict2", text: "日本語の注釈")
         let dict1 = MemoryDict(entries: ["にほん": [Word("日本")], "にほ": [Word("2歩")]], readonly: false)
-        let dict2 = MemoryDict(entries: ["にほん": [Word("二本")], "にほんご": [Word("日本語", annotation: annotation2)]], readonly: false)
+        let dict2 = MemoryDict(entries: [
+            "にほん": [Word("二本")],
+            "にほんご": [Word("日本語", annotation: annotation2)],
+            "に": [Word("似")]], readonly: false)
         let userDict = try UserDict(
             dicts: [dict1, dict2],
             userDictEntries: ["にふ": [Word("二歩")],
@@ -209,5 +212,9 @@ final class UserDictTests: XCTestCase {
                 Candidate("二本", annotations: [], original: .init(midashi: "にほん", word: "二本")),
                 Candidate("日本語", annotations: [annotation2], original: .init(midashi: "にほんご", word: "日本語")),
             ])
+        XCTAssertEqual(
+            userDict.candidatesForCompletion(prefix: "に"),
+            [Candidate("似", original: .init(midashi: "に", word: "似"))],
+        )
     }
 }

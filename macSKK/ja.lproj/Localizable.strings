@@ -74,6 +74,7 @@
 "Candidates font size" = "変換候補のフォントサイズ";
 "Annotation font size" = "注釈のフォントサイズ";
 "Find completion from all dictionaries" = "ユーザー辞書だけでなくすべての辞書から補完を探す";
+"Confirm the first completion by period" = "最初の補完候補をピリオドキーで確定する";
 "Ignore User Dict in Private Mode" = "プライベートモードではユーザー辞書を参照しない";
 "Show Input Mode Modal" = "入力モードアイコンを表示";
 "Direction of candidate list" = "変換候補リストの表示方向";
