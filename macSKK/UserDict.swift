@@ -251,7 +251,13 @@ class UserDict: NSObject, DictProtocol {
         logger.log("ユーザー辞書に読み \(yomi, privacy: .public), 変換 \(word.word, privacy: .public) を登録する")
         if !privateMode.value {
             if let dict = userDict as? FileDict {
-                dict.add(yomi: yomi, word: word)
+                // 登録前に "/" と ";" を辞書内で扱える形式に変換する
+                let escapedWordString = Self.escapeSpecialCharacters(word.word)
+                let escapedAnnotation: Annotation? = if let ann = word.annotation {
+                    Annotation(dictId: ann.dictId, text: Self.escapeSpecialCharacters(ann.text))
+                } else { nil }
+                let escaped = Word(escapedWordString, okuri: word.okuri, annotation: escapedAnnotation)
+                dict.add(yomi: yomi, word: escaped)
                 savePublisher.send(())
             }
         }
@@ -397,6 +403,14 @@ class UserDict: NSObject, DictProtocol {
     private func wordToCandidate(_ word: Word, original: Candidate.Original?, saveToUserDict: Bool) -> Candidate {
         let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
         return Candidate(word.word, annotations: annotations, original: original, saveToUserDict: saveToUserDict)
+    }
+
+    /// 辞書に保存する前に "/" と ";" を (concat "...") 形式でエスケープする
+    private static func escapeSpecialCharacters(_ string: String) -> String {
+        if string.contains("/") || string.contains(";") {
+            return "(concat \"" + string.replacingOccurrences(of: "/", with: "\\057").replacingOccurrences(of: ";", with: "\\073") + "\")"
+        }
+        return string
     }
 }
 
