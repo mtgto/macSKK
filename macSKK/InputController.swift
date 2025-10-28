@@ -188,7 +188,7 @@ class InputController: IMKInputController {
                     let candidates = Global.dictionary.candidatesForCompletion(prefix: yomi)
                     return (yomi, .candidates(candidates), cursorPosition)
                  } else {
-                    let completions = Global.dictionary.findCompletions(prefix: yomi)
+                    let completions = Global.dictionary.findCompletionsDicts(prefix: yomi, skkservDict: Global.skkservDict, findFromAllDicts: Global.findCompletionFromAllDicts.value)
                     return (yomi, .yomi(completions, 0), cursorPosition)
                 }
             }

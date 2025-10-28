@@ -62,6 +62,37 @@ struct SKKServDict {
         }
     }
 
+    func findCompletions(prefix: String) -> [String] {
+        do {
+            let result = try service.completion(yomi: prefix, destination: destination, timeout: 1.0)
+            // 補完結果が見つかった場合は "1/ほかん/ほかんこうほ/" のように 1が先頭でスラッシュで区切られた文字列
+            // 見つからなかた場合は "4ほかん" のように4が先頭の文字列
+            guard result.hasPrefix("1/") else {
+                logger.debug("skkservから補完候補が見つからなかったレスポンスが返りました")
+                return []
+            }
+            return result.dropFirst(2).split(separator: "/").map { String($0) }
+        } catch {
+            if let error = error as? SKKServClientError {
+                switch error {
+                case .connectionRefused:
+                    logger.log("skkservが応答しません")
+                case .connectionTimeout:
+                    logger.log("skkservとの接続がタイムアウトしました")
+                case .invalidResponse:
+                    logger.warning("skkservから想定しない応答が返りました")
+                case .timeout:
+                    logger.log("skkservから応答が一定時間返りませんでした")
+                default:
+                    logger.error("skkservから不明なエラーが返りました")
+                }
+            } else {
+                logger.error("skkserv辞書の検索でエラーが発生しました: \(error, privacy: .public)")
+            }
+            return []
+        }
+    }
+
     func disconnect() {
         do {
             try service.disconnect()
