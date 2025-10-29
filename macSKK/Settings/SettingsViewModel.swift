@@ -333,6 +333,7 @@ final class SettingsViewModel: ObservableObject {
                 logger.log("skkserv辞書は無効化されています")
                 Global.skkservDict = nil
             }
+            Global.searchCompletionsSkkserv = setting.enableCompletion
             UserDefaults.app.set(setting.encode(), forKey: UserDefaultsKeys.skkservClient)
         }.store(in: &cancellables)
 
@@ -582,7 +583,8 @@ final class SettingsViewModel: ObservableObject {
             address: "127.0.0.1",
             port: 1178,
             encoding: .japaneseEUC,
-            saveToUserDict: true)
+            saveToUserDict: true,
+            enableCompletion: false)
         selectCandidateKeys = "123456789"
         findCompletionFromAllDicts = false
         keyBindingSets = [KeyBindingSet.defaultKeyBindingSet]

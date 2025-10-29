@@ -28,6 +28,10 @@ struct SKKServDictView: View {
                         Text("Save conversion history to User Dictionary")
                     }
                     .toggleStyle(.switch)
+                    Toggle(isOn: $settingsViewModel.skkservDictSetting.enableCompletion) {
+                        Text("Search completions")
+                    }
+                    .toggleStyle(.switch)
                 } header: {
                     Text("SKKServDictTitle")
                 }
@@ -167,7 +171,8 @@ struct SKKServDictView: View {
         address: "127.0.0.1",
         port: 1178,
         encoding: .japaneseEUC,
-        saveToUserDict: true)
+        saveToUserDict: true,
+        enableCompletion: false)
     return SKKServDictView(settingsViewModel: try! SettingsViewModel(skkservDictSetting: setting),
                     isShowSheet: .constant(true), information: "skkservが応答していません")
 }

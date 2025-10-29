@@ -12,13 +12,16 @@ final class SKKServDictSetting: ObservableObject {
     @Published var encoding: String.Encoding
     /// 変換履歴をユーザー辞書に保存するかどうか
     @Published var saveToUserDict: Bool
+    /// 補完候補をSKKServから取得するか
+    @Published var enableCompletion: Bool
 
-    init(enabled: Bool, address: String, port: UInt16, encoding: String.Encoding, saveToUserDict: Bool) {
+    init(enabled: Bool, address: String, port: UInt16, encoding: String.Encoding, saveToUserDict: Bool, enableCompletion: Bool) {
         self.enabled = enabled
         self.address = address
         self.port = port
         self.encoding = encoding
         self.saveToUserDict = saveToUserDict
+        self.enableCompletion = enableCompletion
     }
 
     // UserDefaultsのDictionaryを受け取る
@@ -31,9 +34,12 @@ final class SKKServDictSetting: ObservableObject {
         self.port = port
         guard let encoding = dictionary["encoding"] as? UInt else { return nil }
         self.encoding = String.Encoding(rawValue: encoding)
-        // v2.2.1までは存在しなかった設定
+        // v2.2.1まで存在しなかった設定
         let saveToUserDict = dictionary["saveToUserDict"] as? Bool ?? true
         self.saveToUserDict = saveToUserDict
+        // v2.5.0まで存在しなかった設定
+        let enableCompletion = dictionary["enableCompletion"] as? Bool ?? false
+        self.enableCompletion = enableCompletion
     }
 
     // UserDefaults用にDictionaryにシリアライズ
@@ -44,6 +50,7 @@ final class SKKServDictSetting: ObservableObject {
             "port": port,
             "encoding": encoding.rawValue,
             "saveToUserDict": saveToUserDict,
+            "enableCompletion": enableCompletion,
         ]
     }
 }

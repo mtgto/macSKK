@@ -51,6 +51,8 @@ import Combine
     static var candidateListDirection = CurrentValueSubject<CandidateListDirection, Never>(.vertical)
     /// ピリオドで補完候補の最初の要素で確定するか
     static var fixedCompletionByPeriod: Bool = true
+    /// SKKServから補完候補を検索するか
+    static var searchCompletionsSkkserv: Bool = false
     /// 現在のモードを表示するパネル
     private let inputModePanel: InputModePanel
     /// 変換候補を表示するパネル
