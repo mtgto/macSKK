@@ -18,8 +18,6 @@ let notificationNameToggleTreatFirstCharacterAsMarkedText = Notification.Name("t
 let notificationNameOpenSettings = Notification.Name("openSettings")
 // インラインで表示する変換候補の数を変更したときに通知される通知の名前
 let notificationNameInlineCandidateCount = Notification.Name("inlineCandidateCount")
-// 一般辞書を補完で検索するかが変更されたときに通知される通知の名前
-let notificationNameFindCompletionFromAllDicts =  Notification.Name("findCompletionFromAllDicts")
 
 func isTest() -> Bool {
     return ProcessInfo.processInfo.environment["MACSKK_IS_TEST"] == "1"
@@ -61,7 +59,6 @@ struct macSKKApp: App {
             Global.dictionary = try UserDict(dicts: [],
                                              privateMode: Global.privateMode,
                                              ignoreUserDictInPrivateMode: Global.ignoreUserDictInPrivateMode,
-                                             findCompletionFromAllDicts: Global.findCompletionFromAllDicts,
                                              dateYomis: settingsViewModel.dateYomis,
                                              dateConversions: settingsViewModel.dateConversions)
             settingsWindowController = NSWindowController(window: settingsWindow)

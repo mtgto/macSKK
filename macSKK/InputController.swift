@@ -184,12 +184,12 @@ class InputController: IMKInputController {
             }
             .receive(on: DispatchQueue.global())
             .compactMap { (yomi, cursorPosition) -> (String, Completion, NSRect)? in
+                let skkservDict = Global.searchCompletionsSkkserv ? Global.skkservDict : nil
                 if Global.showCandidateForCompletion {
-                     let candidates = Global.dictionary.candidatesForCompletion(prefix: yomi)
+                    let candidates = Global.dictionary.candidatesForCompletion(prefix: yomi, skkservDict: skkservDict, findFromAllDicts: Global.findCompletionFromAllDicts)
                      return (yomi, .candidates(candidates), cursorPosition)
                  } else {
-                     let skkservDict = Global.searchCompletionsSkkserv ? Global.skkservDict : nil
-                     let completions = Global.dictionary.findCompletionsDicts(prefix: yomi, skkservDict: skkservDict, findFromAllDicts: Global.findCompletionFromAllDicts.value)
+                     let completions = Global.dictionary.findCompletionsDicts(prefix: yomi, skkservDict: skkservDict, findFromAllDicts: Global.findCompletionFromAllDicts)
                      return (yomi, .yomi(completions, 0), cursorPosition)
                 }
             }
@@ -266,12 +266,6 @@ class InputController: IMKInputController {
             .sink { [weak self] notification in
                 if let inlineCandidateCount = notification.object as? Int, inlineCandidateCount >= 0 {
                     self?.stateMachine.inlineCandidateCount = inlineCandidateCount
-                }
-            }.store(in: &cancellables)
-        NotificationCenter.default.publisher(for: notificationNameFindCompletionFromAllDicts)
-            .sink { notification in
-                if let findCompletionFromAllDicts = notification.object as? Bool {
-                    Global.findCompletionFromAllDicts.send(findCompletionFromAllDicts)
                 }
             }.store(in: &cancellables)
     }

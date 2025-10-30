@@ -286,7 +286,7 @@ final class SettingsViewModel: ObservableObject {
         Global.punctuation = Punctuation(comma: comma, period: period)
         Global.ignoreUserDictInPrivateMode.send(ignoreUserDictInPrivateMode)
         Global.candidateListDirection.send(candidateListDirection)
-        Global.findCompletionFromAllDicts.send(findCompletionFromAllDicts)
+        Global.findCompletionFromAllDicts = findCompletionFromAllDicts
 
         // SKK-JISYO.Lのようなファイルの読み込みが遅いのでバックグラウンドで処理
         $dictSettings.filter({ !$0.isEmpty }).receive(on: DispatchQueue.global()).sink { dictSettings in
@@ -452,7 +452,7 @@ final class SettingsViewModel: ObservableObject {
 
         $findCompletionFromAllDicts.dropFirst().sink { findCompletionFromAllDicts in
             UserDefaults.app.set(findCompletionFromAllDicts, forKey: UserDefaultsKeys.findCompletionFromAllDicts)
-            NotificationCenter.default.post(name: notificationNameFindCompletionFromAllDicts, object: findCompletionFromAllDicts)
+            Global.findCompletionFromAllDicts = findCompletionFromAllDicts
             logger.log("一般の辞書を使って補完するかを\(findCompletionFromAllDicts)に変更しました")
         }.store(in: &cancellables)
 

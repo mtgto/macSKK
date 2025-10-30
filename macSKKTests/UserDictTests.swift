@@ -14,7 +14,6 @@ final class UserDictTests: XCTestCase {
                                     userDictEntries: ["い": [Word("井"), Word("伊")]],
                                     privateMode: CurrentValueSubject<Bool, Never>(false),
                                     ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
-                                    findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false),
                                     dateYomis: [],
                                     dateConversions: [])
         XCTAssertEqual(userDict.refer("い").map { $0.word }, ["井", "伊"], "UserDictのエントリだけを返す")
@@ -29,7 +28,6 @@ final class UserDictTests: XCTestCase {
                                     userDictEntries: [:],
                                     privateMode: CurrentValueSubject<Bool, Never>(false),
                                     ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
-                                    findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false),
                                     dateYomis: [],
                                     dateConversions: [])
         XCTAssertEqual(userDict.referDicts("い").map({ $0.word }), ["胃", "伊", "意"])
@@ -49,7 +47,6 @@ final class UserDictTests: XCTestCase {
                                                       "し": [Word("士")]],
                                     privateMode: CurrentValueSubject<Bool, Never>(false),
                                     ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
-                                    findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false),
                                     dateYomis: [],
                                     dateConversions: [])
         XCTAssertEqual(userDict.referDicts("あき", option: nil), [Candidate("安芸"), Candidate("秋")])
@@ -66,7 +63,6 @@ final class UserDictTests: XCTestCase {
                                     userDictEntries: ["い": [Word("位")]],
                                     privateMode: privateMode,
                                     ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
-                                    findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false),
                                     dateYomis: [],
                                     dateConversions: [])
         let word = Word("井")
@@ -85,7 +81,6 @@ final class UserDictTests: XCTestCase {
                                     userDictEntries: ["きょう": [Word("今日")]],
                                     privateMode: CurrentValueSubject<Bool, Never>(false),
                                     ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
-                                    findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false),
                                     dateYomis:  [
                                         .init(yomi: "today", relative: .now),
                                         .init(yomi: "yesterday", relative: .yesterday),
@@ -129,7 +124,6 @@ final class UserDictTests: XCTestCase {
                                     userDictEntries: ["にふ": [Word("二歩")]],
                                     privateMode: privateMode,
                                     ignoreUserDictInPrivateMode: ignoreUserDictInPrivateMode,
-                                    findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false),
                                     dateYomis: [],
                                     dateConversions: [])
         // プライベートモード時は通常はユーザー辞書から検索する
@@ -147,7 +141,6 @@ final class UserDictTests: XCTestCase {
                                     userDictEntries: ["tower": [Word("塔")]],
                                     privateMode: CurrentValueSubject<Bool, Never>(false),
                                     ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
-                                    findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>(false),
                                     dateYomis: [
                                         .init(yomi: "today", relative: .now),
                                         .init(yomi: "yesterday", relative: .yesterday),
@@ -161,28 +154,9 @@ final class UserDictTests: XCTestCase {
         XCTAssertEqual(userDict.findCompletions(prefix: "y"), ["yesterday"])
     }
 
-    func testFindCompletionsFromAllDicts() throws {
-        let privateMode = CurrentValueSubject<Bool, Never>(false)
-        let ignoreUserDictInPrivateMode = CurrentValueSubject<Bool, Never>(false)
-        let findCompletionFromAllDicts = CurrentValueSubject<Bool, Never>(true)
-        let dict1 = MemoryDict(entries: ["にほん": [Word("日本")], "にほ": [Word("2歩")]], readonly: false)
-        let dict2 = MemoryDict(entries: ["にほん": [Word("二本")], "にほんご": [Word("日本語")]], readonly: false)
-        let userDict = try UserDict(dicts: [dict1, dict2],
-                                    userDictEntries: ["にふ": [Word("二歩")], "にほん": [Word("日本")]],
-                                    privateMode: privateMode,
-                                    ignoreUserDictInPrivateMode: ignoreUserDictInPrivateMode,
-                                    findCompletionFromAllDicts: findCompletionFromAllDicts,
-                                    dateYomis: [],
-                                    dateConversions: [])
-        XCTAssertEqual(userDict.findCompletions(prefix: "にほ"), ["にほん", "にほんご"]) // ユーザー辞書が優先
-        XCTAssertEqual(userDict.findCompletions(prefix: "にほん"), ["にほんご"])
-        XCTAssertEqual(userDict.findCompletions(prefix: "にほんご"), [])
-    }
-
     func testCandidatesForCompletion() throws {
         let privateMode = CurrentValueSubject<Bool, Never>(false)
         let ignoreUserDictInPrivateMode = CurrentValueSubject<Bool, Never>(false)
-        let findCompletionFromAllDicts = CurrentValueSubject<Bool, Never>(false)
         let annotation1 = Annotation(dictId: UserDict.userDictFilename, text: "日本の注釈")
         let annotation2 = Annotation(dictId: "dict2", text: "日本語の注釈")
         let dict1 = MemoryDict(entries: ["にほん": [Word("日本")], "にほ": [Word("2歩")]], readonly: false)
@@ -196,24 +170,23 @@ final class UserDictTests: XCTestCase {
                               "にほん": [Word("日本", annotation: annotation1)]],
             privateMode: privateMode,
             ignoreUserDictInPrivateMode: ignoreUserDictInPrivateMode,
-            findCompletionFromAllDicts: findCompletionFromAllDicts,
             dateYomis: [],
             dateConversions: [])
         XCTAssertEqual(
-            userDict.candidatesForCompletion(prefix: "にほ"),
+            userDict.candidatesForCompletion(prefix: "にほ", skkservDict: nil, findFromAllDicts: false),
             [
                 Candidate("日本", annotations: [annotation1], original: .init(midashi: "にほん", word: "日本"))
             ])
-        findCompletionFromAllDicts.send(true)  // 全辞書を対象
+        // 全辞書を対象
         XCTAssertEqual(
-            userDict.candidatesForCompletion(prefix: "にほ"),
+            userDict.candidatesForCompletion(prefix: "にほ", skkservDict: nil, findFromAllDicts: true),
             [
                 Candidate("日本", annotations: [annotation1], original: .init(midashi: "にほん", word: "日本")),
                 Candidate("二本", annotations: [], original: .init(midashi: "にほん", word: "二本")),
                 Candidate("日本語", annotations: [annotation2], original: .init(midashi: "にほんご", word: "日本語")),
             ])
         XCTAssertEqual(
-            userDict.candidatesForCompletion(prefix: "に"),
+            userDict.candidatesForCompletion(prefix: "に", skkservDict: nil, findFromAllDicts: true),
             [Candidate("似", original: .init(midashi: "に", word: "似"))],
         )
     }

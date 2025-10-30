@@ -12,6 +12,10 @@ final class SKKServDictTests: XCTestCase {
             return response
         }
 
+        func completion(yomi: String, destination: macSKK.SKKServDestination, timeout: TimeInterval) throws -> String {
+            return response
+        }
+
         func disconnect() throws {}
     }
 

@@ -29,8 +29,6 @@ class UserDict: NSObject, DictProtocol {
     private let privateMode: CurrentValueSubject<Bool, Never>
     /// プライベートモード時に変換候補にユーザー辞書を無視するかどうか
     private let ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>
-    // ユーザー辞書だけでなくすべての辞書から補完候補を検索するか？
-    private let findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>
     private var cancellables: Set<AnyCancellable> = []
     let saveToUserDict = true
 
@@ -38,11 +36,10 @@ class UserDict: NSObject, DictProtocol {
     let presentedItemURL: URL?
     let presentedItemOperationQueue: OperationQueue = OperationQueue()
 
-    init(dicts: [any DictProtocol], userDictEntries: [String: [Word]]? = nil, privateMode: CurrentValueSubject<Bool, Never>, ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>, findCompletionFromAllDicts: CurrentValueSubject<Bool, Never>, dateYomis: [DateConversion.Yomi], dateConversions: [DateConversion]) throws {
+    init(dicts: [any DictProtocol], userDictEntries: [String: [Word]]? = nil, privateMode: CurrentValueSubject<Bool, Never>, ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>, dateYomis: [DateConversion.Yomi], dateConversions: [DateConversion]) throws {
         self.dicts = dicts
         self.privateMode = privateMode
         self.ignoreUserDictInPrivateMode = ignoreUserDictInPrivateMode
-        self.findCompletionFromAllDicts = findCompletionFromAllDicts
         self.dateYomis = dateYomis
         self.dateConversions = dateConversions
         dictionariesDirectoryURL = try FileManager.default.url(
@@ -365,20 +362,20 @@ class UserDict: NSObject, DictProtocol {
      * asyncにするかも? (skkservとかで便利そう)
      * AsyncStreamにするかも?
      */
-    func candidatesForCompletion(prefix: String) -> [Candidate] {
+    func candidatesForCompletion(prefix: String, skkservDict: SKKServDict?, findFromAllDicts: Bool) -> [Candidate] {
         // 1文字のときは全探索するとめちゃくちゃ量が多いので完全一致だけ探す
         if prefix.count == 1 {
-            return referDicts(prefix, option: nil, skkservDict: nil, findFromAllDicts: findCompletionFromAllDicts.value)
+            return referDicts(prefix, option: nil, skkservDict: skkservDict, findFromAllDicts: findFromAllDicts)
                 .map { candidate in
                     candidate.withOriginal(Candidate.Original(midashi: prefix, word: candidate.word))
                 }
         }
         // あとでいろいろ拡張するけどひとまずfindCompletionsの結果を[Candidate]にするだけ
         // 別スレッドから実行したいのでひとまずskkserv以外を検索する
-        return findCompletions(prefix: prefix).flatMap { midashi in
+        return findCompletionsDicts(prefix: prefix, skkservDict: skkservDict, findFromAllDicts: findFromAllDicts).flatMap { midashi in
             // NOTE: 多すぎても役に立たないだろうと思うのでひとまず先頭100件に制限。設定項目にしてもよさそう
             // FIXME: Candidateの配列じゃなくて、(String, Candidate) のように見出し語と変換候補のタプルの配列を返すほうがよさそう
-            referDicts(midashi, option: nil, skkservDict: nil, findFromAllDicts: findCompletionFromAllDicts.value)
+            referDicts(midashi, option: nil, skkservDict: nil, findFromAllDicts: findFromAllDicts)
                 .prefix(100)
                 .map { candidate in
                     candidate.withOriginal(Candidate.Original(midashi: midashi, word: candidate.word))
