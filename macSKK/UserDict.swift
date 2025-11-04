@@ -375,7 +375,7 @@ class UserDict: NSObject, DictProtocol {
         return findCompletionsDicts(prefix: prefix, skkservDict: skkservDict, findFromAllDicts: findFromAllDicts).flatMap { midashi in
             // NOTE: 多すぎても役に立たないだろうと思うのでひとまず先頭100件に制限。設定項目にしてもよさそう
             // FIXME: Candidateの配列じゃなくて、(String, Candidate) のように見出し語と変換候補のタプルの配列を返すほうがよさそう
-            referDicts(midashi, option: nil, skkservDict: nil, findFromAllDicts: findFromAllDicts)
+            referDicts(midashi, option: nil, skkservDict: skkservDict, findFromAllDicts: findFromAllDicts)
                 .prefix(100)
                 .map { candidate in
                     candidate.withOriginal(Candidate.Original(midashi: midashi, word: candidate.word))

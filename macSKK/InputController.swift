@@ -187,10 +187,10 @@ class InputController: IMKInputController {
                 let skkservDict = Global.searchCompletionsSkkserv ? Global.skkservDict : nil
                 if Global.showCandidateForCompletion {
                     let candidates = Global.dictionary.candidatesForCompletion(prefix: yomi, skkservDict: skkservDict, findFromAllDicts: Global.findCompletionFromAllDicts)
-                     return (yomi, .candidates(candidates), cursorPosition)
-                 } else {
-                     let completions = Global.dictionary.findCompletionsDicts(prefix: yomi, skkservDict: skkservDict, findFromAllDicts: Global.findCompletionFromAllDicts)
-                     return (yomi, .yomi(completions, 0), cursorPosition)
+                    return (yomi, .candidates(candidates), cursorPosition)
+                } else {
+                    let completions = Global.dictionary.findCompletionsDicts(prefix: yomi, skkservDict: skkservDict, findFromAllDicts: Global.findCompletionFromAllDicts)
+                    return (yomi, .yomi(completions, 0), cursorPosition)
                 }
             }
             .receive(on: DispatchQueue.main)
