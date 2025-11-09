@@ -14,5 +14,7 @@ final class SKKServDictSettingTests: XCTestCase {
         ]))
         // v2.2.1まではsaveToUserDictは設定としてなかった。辞書にエントリがない場合はtrue
         XCTAssertTrue(skkServDictSetting.saveToUserDict)
+        // v2.5.0まではenableCompletionは設定としてなかった。辞書にエントリがない場合はfalse
+        XCTAssertFalse(skkServDictSetting.enableCompletion)
     }
 }

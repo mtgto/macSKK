@@ -25,7 +25,7 @@ import Combine
     /// 1文字目を常に未確定扱いするワークアラウンドを適用するBundle Identifierの集合
     static let treatFirstCharacterAsMarkedTextBundleIdentifiers = CurrentValueSubject<[String], Never>([])
     /// ユーザー辞書だけでなくすべての辞書から補完候補を検索するか？
-    static let findCompletionFromAllDicts = CurrentValueSubject<Bool, Never>(false)
+    static var findCompletionFromAllDicts = false
     /// 現在のローマ字かな変換ルール
     static var kanaRule: Romaji!
     /// デフォルトでもってるローマ字かな変換ルール
@@ -51,6 +51,8 @@ import Combine
     static var candidateListDirection = CurrentValueSubject<CandidateListDirection, Never>(.vertical)
     /// ピリオドで補完候補の最初の要素で確定するか
     static var fixedCompletionByPeriod: Bool = true
+    /// SKKServから補完候補を検索するか
+    static var searchCompletionsSkkserv: Bool = false
     /// 現在のモードを表示するパネル
     private let inputModePanel: InputModePanel
     /// 変換候補を表示するパネル

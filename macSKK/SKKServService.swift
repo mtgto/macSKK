@@ -5,6 +5,7 @@ import Foundation
 
 protocol SKKServServiceProtocol {
     func refer(yomi: String, destination: SKKServDestination, timeout: TimeInterval) throws -> String
+    func completion(yomi: String, destination: SKKServDestination, timeout: TimeInterval) throws -> String
     func disconnect() throws
 }
 

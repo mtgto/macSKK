@@ -93,6 +93,7 @@
 "TCP Port" = "TCPポート番号";
 "Response Encoding" = "応答エンコーディング";
 "Save conversion history to User Dictionary" = "ユーザー辞書に変換履歴を保存する";
+"Search completions" = "補完候補を検索する";
 "Yomi" = "読み";
 "Find Candidates" = "変換候補を検索";
 "Find Completions" = "補完候補を検索";
