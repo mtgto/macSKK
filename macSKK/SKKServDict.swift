@@ -71,7 +71,13 @@ struct SKKServDict {
                 logger.debug("skkservから補完候補が見つからなかったレスポンスが返りました")
                 return []
             }
-            return result.dropFirst(2).split(separator: "/").map { String($0) }
+            let completions = result.dropFirst(2).split(separator: "/").map { String($0) }
+            // 重複した候補、読みと同じ候補、読みを接頭辞としてもたない候補は除去
+            return completions.reduce(into: []) { acc, item in
+                if !acc.contains(item) && item.hasPrefix(prefix) && item != prefix {
+                    acc.append(item)
+                }
+            }
         } catch {
             if let error = error as? SKKServClientError {
                 switch error {

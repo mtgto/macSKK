@@ -35,8 +35,13 @@ final class SKKServDictTests: XCTestCase {
 
     func testFindCompletion() async throws {
         let service = MockedSKKServService(response: "1/ほかん/ほかく/")
-        let dict = SKKServDict(destination: destination, service: service, saveToUserDict: false)
+        var dict = SKKServDict(destination: destination, service: service, saveToUserDict: false)
         XCTAssertEqual(dict.findCompletions(prefix: "ほか"), ["ほかん", "ほかく"])
+        // 重複した補完候補、読みと同じ候補、読みを接頭辞としてもたない候補は除外する
+        dict = SKKServDict(destination: destination,
+                           service: MockedSKKServService(response: "1/ほかん/ほかん/ほか/ほげ/"),
+                           saveToUserDict: false)
+        XCTAssertEqual(dict.findCompletions(prefix: "ほか"), ["ほかん"])
     }
 
     func testFindCompletionNotFound() async throws {
