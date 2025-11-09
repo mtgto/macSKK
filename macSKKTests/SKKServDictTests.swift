@@ -32,4 +32,16 @@ final class SKKServDictTests: XCTestCase {
         let dict = SKKServDict(destination: destination, service: service, saveToUserDict: false)
         XCTAssertEqual(dict.refer("へんかん", option: nil).map { $0.word }, [])
     }
+
+    func testFindCompletion() async throws {
+        let service = MockedSKKServService(response: "1/ほかん/ほかく/")
+        let dict = SKKServDict(destination: destination, service: service, saveToUserDict: false)
+        XCTAssertEqual(dict.findCompletions(prefix: "ほか"), ["ほかん", "ほかく"])
+    }
+
+    func testFindCompletionNotFound() async throws {
+        let service = MockedSKKServService(response: "4ほかん")
+        let dict = SKKServDict(destination: destination, service: service, saveToUserDict: false)
+        XCTAssertEqual(dict.findCompletions(prefix: "ほかん"), [])
+    }
 }
