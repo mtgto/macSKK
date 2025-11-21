@@ -207,6 +207,15 @@ final class StateMachine {
             case .eisu, .direct:
                 break
             }
+        case .directAbbrev:
+            if state.inputMode == .direct {
+                state.inputMethod = .composing(ComposingState(isShift: true, text: [], okuri: nil, romaji: "", prevMode: state.inputMode))
+                state.inputMode = .direct
+                inputMethodEventSubject.send(.modeChanged(.direct))
+                inputMethodEventSubject.send(.markedText(state.displayText()))
+                return true
+            }
+            break
         case .enter:
             if let specialState {
                 if case .register(let registerState, let prev) = specialState {
@@ -963,7 +972,7 @@ final class StateMachine {
             }
         case .up, .down, .registerPaste, .eisu, .kana, .toggleKana, .reconvert:
             return true
-        case .abbrev, .unregister, .backwardCandidate, .none:
+        case .abbrev, .directAbbrev, .unregister, .backwardCandidate, .none:
             break
         }
 
@@ -1362,7 +1371,7 @@ final class StateMachine {
             return handle(action)
         case .registerPaste, .delete, .eisu, .kana, .reconvert:
             return true
-        case .toggleKana, .toggleAndFixKana, .direct, .zenkaku, .abbrev, .japanese:
+        case .toggleKana, .toggleAndFixKana, .direct, .zenkaku, .abbrev, .directAbbrev, .japanese:
             break
         case nil:
             break

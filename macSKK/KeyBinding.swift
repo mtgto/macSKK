@@ -26,6 +26,8 @@ struct KeyBinding: Identifiable, Hashable {
         case zenkaku
         /// Abbrevに入るためのキー。デフォルトは/キー
         case abbrev
+        /// 半角英数入力からAbbrevに入るためのキー。デフォルトはなし
+        case directAbbrev
         /// 未確定入力を始めるキー。Sticky Shiftとは違って未確定文字列があるときは確定させてから未確定入力を始める。
         /// デフォルトはShift-qキー
         case japanese
@@ -285,6 +287,8 @@ struct KeyBinding: Identifiable, Hashable {
                 return KeyBinding(action, [Input(key: .character("l"), modifierFlags: .shift)])
             case .abbrev:
                 return KeyBinding(action, [Input(key: .character("/"), modifierFlags: [])])
+            case .directAbbrev:
+                return KeyBinding(action, [])
             case .japanese:
                 return KeyBinding(action, [Input(key: .character("q"), modifierFlags: .shift)])
             case .stickyShift:

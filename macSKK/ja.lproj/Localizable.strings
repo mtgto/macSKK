@@ -121,6 +121,7 @@
 "KeyBindingActionDirect" = "直接入力";
 "KeyBindingActionZenkaku" = "全角英数モード";
 "KeyBindingActionAbbrev" = "Abbrevモード";
+"KeyBindingActionDirectabbrev" = "直接入力時Abbrevモード";
 "KeyBindingActionJapanese" = "未確定入力開始";
 "KeyBindingActionStickyshift" = "Sticky Shift";
 "KeyBindingActionEnter" = "Enter";

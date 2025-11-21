@@ -121,6 +121,7 @@
 "KeyBindingActionDirect" = "Direct Input";
 "KeyBindingActionZenkaku" = "Zenkaku Eisu Mode";
 "KeyBindingActionAbbrev" = "Abbrev Mode";
+"KeyBindingActionDirectabbrev" = "Abbrev Mode from Direct";
 "KeyBindingActionJapanese" = "Start Input Mode";
 "KeyBindingActionStickyshift" = "Sticky Shift";
 "KeyBindingActionEnter" = "Enter";
