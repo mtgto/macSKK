@@ -478,7 +478,7 @@ final class StateMachine {
                     // lowercaseMapにエントリがある場合はエントリの方のキーが入力されたと見做す
                     if let mappedEvent = Global.kanaRule.convertKeyEvent(action.event) {
                         return handleNormal(
-                            Action(keyBind: Global.keyBinding.action(event: mappedEvent, inputMethodState: state.inputMethod),
+                            Action(keyBind: Global.keyBinding.action(event: mappedEvent, inputMode: state.inputMode, inputMethod: state.inputMethod),
                                    event: mappedEvent,
                                    textInput: action.textInput,
                                    treatAsAlphabet: true),
@@ -538,7 +538,7 @@ final class StateMachine {
                 // Enterキーは単に未確定文字列の確定として使用する
                 return true
             } else {
-                let keyBind = Global.keyBinding.action(event: event, inputMethodState: .normal)
+                let keyBind = Global.keyBinding.action(event: event, inputMode: .hiragana, inputMethod: .normal)
                 let newAction = action.with(keyBind: keyBind)
                 return handleNormal(newAction, specialState: nil)
             }
@@ -1018,7 +1018,7 @@ final class StateMachine {
             // lowercaseMapにエントリがある場合はエントリの方のキーが入力されたと見做す
             if let mappedEvent = Global.kanaRule.convertKeyEvent(action.event) {
                 return handleComposing(
-                    Action(keyBind: Global.keyBinding.action(event: mappedEvent, inputMethodState: state.inputMethod),
+                    Action(keyBind: Global.keyBinding.action(event: mappedEvent, inputMode: state.inputMode, inputMethod: state.inputMethod),
                            event: mappedEvent,
                            textInput: action.textInput,
                            treatAsAlphabet: true),

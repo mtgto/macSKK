@@ -84,12 +84,12 @@ struct KeyBinding: Identifiable, Hashable {
             String(localized: LocalizedStringResource(stringLiteral: "KeyBindingAction\(stringValue.capitalized)"))
         }
 
-        func accepts(inputMethodState: InputMethodState) -> Bool {
+        func accepts(inputMode: InputMode, inputMethod: InputMethodState) -> Bool {
             switch self {
             case .toggleKana:
-                if case .normal = inputMethodState {
+                if case .normal = inputMethod {
                     return true
-                } else if case .selecting(_) = inputMethodState {
+                } else if case .selecting(_) = inputMethod {
                     // selecting時にはqキーはtoggleKanaとして扱うことで、選択中の変換要素で確定し
                     // さらにNormalモード時にtoggleKanaしたとして扱わせたい
                     return true
@@ -97,43 +97,37 @@ struct KeyBinding: Identifiable, Hashable {
                     return false
                 }
             case .toggleAndFixKana:
-                if case .composing(_) = inputMethodState {
+                if case .composing(_) = inputMethod {
                     return true
                 } else {
                     return false
                 }
             case .affix:
-                if case .composing(_) = inputMethodState {
+                if case .composing(_) = inputMethod {
                     return true
-                } else if case .selecting(_) = inputMethodState {
+                } else if case .selecting(_) = inputMethod {
+                    return true
+                } else {
+                    return false
+                }
+            // abbrevはinputModeがdirect,eisu以外のときのみ受理
+            case .abbrev:
+                if case .direct = inputMode {
+                    return false
+                } else if case .eisu = inputMode {
+                    return false
+                } else {
+                    return true
+                }
+            // directAbbrevはinputModeがdirectのときのみ受理
+            case .directAbbrev:
+                if case .direct = inputMode {
                     return true
                 } else {
                     return false
                 }
             default:
                 return true
-            }
-        }
-    }
-
-    /**
-     * キーバインドが成立するStateMachineの状態の集合
-     */
-    struct InputMethodStateFlags: OptionSet {
-        let rawValue: Int
-        static let normal = InputMethodStateFlags(rawValue: 1)
-        static let composing = InputMethodStateFlags(rawValue: 2)
-        static let selecting = InputMethodStateFlags(rawValue: 4)
-        static let all: InputMethodStateFlags = [normal, composing, selecting]
-
-        func accepts(inputMethodState: InputMethodState) -> Bool {
-            switch inputMethodState {
-            case .normal:
-                contains(.normal)
-            case .composing(_):
-                contains(.composing)
-            case .selecting(_):
-                contains(.selecting)
             }
         }
     }
