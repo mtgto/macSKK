@@ -839,9 +839,9 @@ final class StateMachineTests: XCTestCase {
         }.store(in: &cancellables)
 
         let event = generateNSEvent(
-            character: "/",
-            characterIgnoringModifiers: "/",
-            modifierFlags: [.option])
+            character: ";",
+            characterIgnoringModifiers: ";",
+            modifierFlags: [.control])
         let action = Action(keyBind: .directAbbrev, event: event)
 
         XCTAssertTrue(stateMachine.handle(action))
