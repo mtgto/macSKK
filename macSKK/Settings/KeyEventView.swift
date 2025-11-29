@@ -56,7 +56,7 @@ struct KeyEventView: View {
                         }
                         self.modifiers = modifiers.joined(separator: ", ")
                         // toggleKanaとtoggleAndFixKanaが判別できないけどデバッグ機能なのでよしとする
-                        self.keyBinding = Global.keyBinding.action(event: event, inputMethodState: .normal)
+                        self.keyBinding = Global.keyBinding.action(event: event, inputMode: .hiragana, inputMethod: .normal)
 
                         return event
                     }

@@ -81,11 +81,18 @@ final class KeyBindingTests: XCTestCase {
     }
 
     func testActionAccepts() {
-        XCTAssertTrue(KeyBinding.Action.toggleKana.accepts(inputMethodState: .normal))
-        XCTAssertFalse(KeyBinding.Action.toggleAndFixKana.accepts(inputMethodState: .normal))
+        XCTAssertTrue(KeyBinding.Action.toggleKana.accepts(inputMode: .hiragana, inputMethod: .normal))
+        XCTAssertFalse(KeyBinding.Action.toggleAndFixKana.accepts(inputMode: .hiragana, inputMethod: .normal))
         let composing = ComposingState(isShift: false, text: [], romaji: "")
-        XCTAssertFalse(KeyBinding.Action.toggleKana.accepts(inputMethodState: .composing(composing)))
-        XCTAssertTrue(KeyBinding.Action.toggleAndFixKana.accepts(inputMethodState: .composing(composing)))
+        XCTAssertFalse(KeyBinding.Action.toggleKana.accepts(inputMode: .hiragana, inputMethod: .composing(composing)))
+        XCTAssertTrue(KeyBinding.Action.toggleAndFixKana.accepts(inputMode: .hiragana, inputMethod: .composing(composing)))
+        XCTAssertTrue(KeyBinding.Action.abbrev.accepts(inputMode: .hiragana, inputMethod: .normal))
+        XCTAssertTrue(KeyBinding.Action.abbrev.accepts(inputMode: .hankaku, inputMethod: .normal))
+        XCTAssertFalse(KeyBinding.Action.abbrev.accepts(inputMode: .eisu, inputMethod: .normal))
+        XCTAssertFalse(KeyBinding.Action.abbrev.accepts(inputMode: .direct, inputMethod: .normal))
+        XCTAssertTrue(KeyBinding.Action.directAbbrev.accepts(inputMode: .direct, inputMethod: .normal))
+        XCTAssertFalse(KeyBinding.Action.directAbbrev.accepts(inputMode: .eisu, inputMethod: .normal))
+        XCTAssertFalse(KeyBinding.Action.directAbbrev.accepts(inputMode: .hiragana, inputMethod: .normal))
     }
 
     func testIsDefault() {

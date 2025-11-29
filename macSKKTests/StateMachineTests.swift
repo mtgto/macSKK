@@ -829,6 +829,25 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    @MainActor func testHandleNormalDirectAbbrev() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .direct))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(2).sink { events in
+            XCTAssertEqual(events[0], .modeChanged(.direct))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+
+        let event = generateNSEvent(
+            character: ";",
+            characterIgnoringModifiers: ";",
+            modifierFlags: [.control])
+        let action = Action(keyBind: .directAbbrev, event: event)
+
+        XCTAssertTrue(stateMachine.handle(action))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     @MainActor func testHandleComposingNandQ() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
