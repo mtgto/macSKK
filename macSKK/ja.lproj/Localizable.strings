@@ -77,6 +77,7 @@
 "Confirm the first completion by period" = "最初の補完候補をピリオドキーで確定する";
 "Ignore User Dict in Private Mode" = "プライベートモードではユーザー辞書を参照しない";
 "Show Input Mode Modal" = "入力モードアイコンを表示";
+"Register fixed katakana word to dict" = "カタカナで確定した単語を辞書に登録する";
 "Direction of candidate list" = "変換候補リストの表示方向";
 "Enter Key confirms a candidate and sends a newline" = "Enterキーで変換候補確定後に改行を入力";
 "Show Completion" = "補完候補を表示";

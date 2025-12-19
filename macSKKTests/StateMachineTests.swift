@@ -958,6 +958,29 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "y")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
         XCTAssertTrue(stateMachine.handle(toggleAndFixKanaAction))
+        XCTAssertEqual(Global.dictionary.userDict?.refer("ちょ", option: nil), [])
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    @MainActor func testHandleComposingYomiQRegisterDict() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        // qキーで確定したときにカタカナ変換後の単語をユーザー辞書に登録する
+        Global.registerKatakana = true
+        expectation.expectedFulfillmentCount = 2
+        stateMachine.inputMethodEvent.collect(2).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("お")])))
+            XCTAssertEqual(events[1], .fixedText("オ"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        stateMachine.yomiEvent.collect(2).sink { events in
+            XCTAssertEqual(events[0], .other("お"))
+            XCTAssertEqual(events[1], .other(""), "カタカナで確定した")
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(toggleAndFixKanaAction))
+        XCTAssertEqual(Global.dictionary.userDict?.refer("お", option: nil), [Word("オ")])
         wait(for: [expectation], timeout: 1.0)
     }
 

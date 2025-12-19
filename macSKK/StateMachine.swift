@@ -618,7 +618,15 @@ final class StateMachine {
                 // 未確定ローマ字はn以外は入力されずに削除される. nだけは"ん"が入力されているとする
                 state.inputMethod = .normal
                 switch state.inputMode {
-                case .hiragana, .hankaku:
+                case .hiragana:
+                    let fixedText = composing.string(for: .katakana, kanaRule: Global.kanaRule)
+                    if Global.registerKatakana {
+                        let yomi = composing.string(for: .hiragana, kanaRule: Global.kanaRule)
+                        addWordToUserDict(yomi: yomi, okuri: nil, candidate: Candidate(fixedText))
+                    }
+                    addFixedText(fixedText)
+                    return true
+                case .hankaku:
                     addFixedText(composing.string(for: .katakana, kanaRule: Global.kanaRule))
                     return true
                 case .katakana:

@@ -199,6 +199,8 @@ final class SettingsViewModel: ObservableObject {
     /// 和暦・西暦の選択用にLocaleも選択可能。曜日のためにCalendarも選択可能。
     /// 現在は localeは `"ja_JP"`, calendarは `Calender(identifier: .japanese)` 固定。
     @Published var dateConversions: [DateConversion]
+    /// qキーでカタカナで確定した場合に辞書に登録するか
+    @Published var registerKatakana: Bool
 
     // 辞書ディレクトリ
     let dictionariesDirectoryUrl: URL
@@ -259,6 +261,7 @@ final class SettingsViewModel: ObservableObject {
         showCompletion = UserDefaults.app.bool(forKey: UserDefaultsKeys.showCompletion)
         showCandidateForCompletion = UserDefaults.app.bool(forKey: UserDefaultsKeys.showCandidateForCompletion)
         fixedCompletionByPeriod = UserDefaults.app.bool(forKey: UserDefaultsKeys.fixedCompletionByPeriod)
+        registerKatakana = UserDefaults.app.bool(forKey: UserDefaultsKeys.registerKatakana)
         selectingBackspace = SelectingBackspace(rawValue: UserDefaults.app.integer(forKey: UserDefaultsKeys.selectingBackspace)) ?? SelectingBackspace.default
         comma = Punctuation.Comma(rawValue: UserDefaults.app.integer(forKey: UserDefaultsKeys.punctuation)) ?? .default
         period = Punctuation.Period(rawValue: UserDefaults.app.integer(forKey: UserDefaultsKeys.punctuation)) ?? .default
@@ -287,6 +290,7 @@ final class SettingsViewModel: ObservableObject {
         Global.ignoreUserDictInPrivateMode.send(ignoreUserDictInPrivateMode)
         Global.candidateListDirection.send(candidateListDirection)
         Global.findCompletionFromAllDicts = findCompletionFromAllDicts
+        Global.registerKatakana = registerKatakana
 
         // SKK-JISYO.Lのようなファイルの読み込みが遅いのでバックグラウンドで処理
         $dictSettings.filter({ !$0.isEmpty }).receive(on: DispatchQueue.global()).sink { dictSettings in
@@ -547,6 +551,12 @@ final class SettingsViewModel: ObservableObject {
             Global.dictionary.dateConversions = dateConversions
         }.store(in: &cancellables)
 
+        $registerKatakana.dropFirst().sink { registerKatakana in
+            UserDefaults.app.set(registerKatakana, forKey: UserDefaultsKeys.registerKatakana)
+            logger.log("カタカナで確定した単語を辞書に保存する設定を\(registerKatakana ? "有効" : "無効", privacy: .public)に変更しました")
+            Global.registerKatakana = registerKatakana
+        }.store(in: &cancellables)
+
         NotificationCenter.default.publisher(for: notificationNameDictLoad).receive(on: RunLoop.main).sink { [weak self] notification in
             if let loadEvent = notification.object as? DictLoadEvent, let self {
                 if let userDict = Global.dictionary.userDict as? FileDict, userDict.id == loadEvent.id {
@@ -593,6 +603,7 @@ final class SettingsViewModel: ObservableObject {
         showCompletion = true
         showCandidateForCompletion = true
         fixedCompletionByPeriod = true
+        registerKatakana = false
         systemDict = .daijirin
         selectingBackspace = SelectingBackspace.default
         comma = Punctuation.default.comma

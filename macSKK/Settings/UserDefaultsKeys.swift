@@ -50,4 +50,6 @@ struct UserDefaultsKeys {
     static let dateConversions = "dateConversions"
     // ピリオドで補完候補の最初の要素で確定するか
     static let fixedCompletionByPeriod = "fixedCompletionByPeriod"
+    // qキーでカタカナで確定した場合に辞書に登録するか
+    static let registerKatakana = "registerKatakana"
 }
