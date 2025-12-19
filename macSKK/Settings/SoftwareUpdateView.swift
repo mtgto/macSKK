@@ -52,7 +52,11 @@ struct SoftwareUpdateView: View {
 
     private func fetchReleases() {
         Task {
-            try await _ = settingsViewModel.fetchLatestRelease()
+            do {
+                try await _ = settingsViewModel.fetchLatestRelease()
+            } catch {
+                logger.error("最新バージョンの取得に失敗しました: \(error)")
+            }
         }
     }
 }
