@@ -93,6 +93,7 @@ macSKKが入力メソッドとして選択されているときに入力メニ�
 | dateConversions             | Dictionary | 日付変換の読みと変換候補                |
 | showCandidateForCompletion  | Boolean    | 変換候補の補完を表示するか              |
 | fixedCompletionByPeriod     | Boolean    | ピリオドで最初の補完候補で確定するか    |
+| registerKatakana            | Boolean    | カタカナで確定した場合に辞書に登録するか |
 
 ## 機能
 
