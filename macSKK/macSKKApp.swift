@@ -222,6 +222,7 @@ struct macSKKApp: App {
             ],
             UserDefaultsKeys.showCandidateForCompletion: true,
             UserDefaultsKeys.fixedCompletionByPeriod: true,
+            UserDefaultsKeys.registerKatakana: false,
         ])
     }
 

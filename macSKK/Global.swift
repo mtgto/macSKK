@@ -53,6 +53,8 @@ import Combine
     static var fixedCompletionByPeriod: Bool = true
     /// SKKServから補完候補を検索するか
     static var searchCompletionsSkkserv: Bool = false
+    /// qキーでカタカナで確定したときに辞書に保存するか
+    static var registerKatakana = false
     /// 現在のモードを表示するパネル
     private let inputModePanel: InputModePanel
     /// 変換候補を表示するパネル

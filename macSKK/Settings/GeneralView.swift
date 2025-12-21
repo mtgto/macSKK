@@ -47,6 +47,9 @@ struct GeneralView: View {
                 Toggle(isOn: $settingsViewModel.showInputIconModal, label: {
                     Text("Show Input Mode Modal")
                 })
+                Toggle(isOn: $settingsViewModel.registerKatakana, label: {
+                    Text("Register fixed katakana word to dict")
+                })
                 Section {
                     Picker("Number of inline candidates", selection: $settingsViewModel.inlineCandidateCount) {
                         ForEach(0..<10) { count in
