@@ -54,6 +54,7 @@ struct VerticalCandidatesView: View {
                 .environment(\.defaultMinListRowHeight, candidates.candidatesLineHeight)
                 .scrollDisabled(true)
                 .frame(width: candidates.minWidth, height: CGFloat(words.count) * candidates.candidatesLineHeight)
+                .scrollContentBackground(candidates.candidatesBackgroundColor != nil ? .hidden : .automatic)
                 if candidates.showPage {
                     HStack(alignment: .center, spacing: 0) {
                         Spacer()
@@ -62,9 +63,10 @@ struct VerticalCandidatesView: View {
                             .padding(EdgeInsets(top: 2, leading: 0, bottom: 2, trailing: 4))
                     }
                     .frame(width: candidates.minWidth, height: CandidatesView.footerHeight)
-                    .background()
+                    .optionalBackground(candidates.candidatesBackgroundColor)
                 }
             }
+            .optionalBackground(candidates.candidatesBackgroundColor)
             if candidates.popoverIsPresented && !candidates.displayPopoverInLeftOrTop {
                 AnnotationView(
                     annotations: $candidates.selectedAnnotations,

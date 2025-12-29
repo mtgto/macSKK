@@ -98,6 +98,8 @@
 		CEA253982E23AB7600618E64 /* DictSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA253972E23AB7600618E64 /* DictSetting.swift */; };
 		CEA2539A2E23DA9000618E64 /* DictSettingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA253992E23DA9000618E64 /* DictSettingTests.swift */; };
 		CEA253E62E2E852000618E64 /* UserDefaults+App.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA253E52E2E852000618E64 /* UserDefaults+App.swift */; };
+		CEA602AA2F02C6FD00E605F2 /* CandidateWindowSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA602A92F02C6FD00E605F2 /* CandidateWindowSettingsView.swift */; };
+		CEA602AC2F02CFB000E605F2 /* OptionalBackgroundModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA602AB2F02CFB000E605F2 /* OptionalBackgroundModifier.swift */; };
 		CEA78FAA295EBCAC00B67E25 /* StateMachineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA78FA9295EBCAC00B67E25 /* StateMachineTests.swift */; };
 		CEA78FAC2960401F00B67E25 /* String+Transform.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA78FAB2960401F00B67E25 /* String+Transform.swift */; };
 		CEA78FAE2961BA1D00B67E25 /* String+TransformTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA78FAD2961BA1D00B67E25 /* String+TransformTests.swift */; };
@@ -285,6 +287,8 @@
 		CEA253972E23AB7600618E64 /* DictSetting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictSetting.swift; sourceTree = "<group>"; };
 		CEA253992E23DA9000618E64 /* DictSettingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictSettingTests.swift; sourceTree = "<group>"; };
 		CEA253E52E2E852000618E64 /* UserDefaults+App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UserDefaults+App.swift"; sourceTree = "<group>"; };
+		CEA602A92F02C6FD00E605F2 /* CandidateWindowSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CandidateWindowSettingsView.swift; sourceTree = "<group>"; };
+		CEA602AB2F02CFB000E605F2 /* OptionalBackgroundModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OptionalBackgroundModifier.swift; sourceTree = "<group>"; };
 		CEA78FA9295EBCAC00B67E25 /* StateMachineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateMachineTests.swift; sourceTree = "<group>"; };
 		CEA78FAB2960401F00B67E25 /* String+Transform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Transform.swift"; sourceTree = "<group>"; };
 		CEA78FAD2961BA1D00B67E25 /* String+TransformTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+TransformTests.swift"; sourceTree = "<group>"; };
@@ -601,6 +605,8 @@
 				CE40D9A02A6D0C2F00D44799 /* SystemDictView.swift */,
 				CE00FCCD2C30E99300AC6EEB /* KeyBinding */,
 				CE2157652B2EA985006E4C41 /* UserDefaultsKeys.swift */,
+				CEA602A92F02C6FD00E605F2 /* CandidateWindowSettingsView.swift */,
+				CEA602AB2F02CFB000E605F2 /* OptionalBackgroundModifier.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -874,6 +880,7 @@
 				CE485A8A2A8FA5C6008271EF /* UserNotificationDelegate.swift in Sources */,
 				CE8871322E574CC900E20BFB /* CompletionSettingsView.swift in Sources */,
 				CE84A3EB295DA715009394C4 /* Dict.swift in Sources */,
+				CEA602AC2F02CFB000E605F2 /* OptionalBackgroundModifier.swift in Sources */,
 				CE40D9A12A6D0C2F00D44799 /* SystemDictView.swift in Sources */,
 				CEADA4512B1358D40026E2BD /* InputSource.swift in Sources */,
 				CE84A3E7295DA4DA009394C4 /* Romaji.swift in Sources */,
@@ -913,6 +920,7 @@
 				CEADA44F2B1357090026E2BD /* GeneralView.swift in Sources */,
 				CE84A3DC2957174D009394C4 /* State.swift in Sources */,
 				CE496C8C2B43968A001C623C /* LogView.swift in Sources */,
+				CEA602AA2F02C6FD00E605F2 /* CandidateWindowSettingsView.swift in Sources */,
 				CEA253962E2290AC00618E64 /* SKKServDictSetting.swift in Sources */,
 				CEE3717529653112000DB2C3 /* SoftwareUpdateView.swift in Sources */,
 				CE496C912B440892001C623C /* URL+Additions.swift in Sources */,

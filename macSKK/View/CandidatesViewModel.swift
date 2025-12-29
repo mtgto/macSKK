@@ -4,6 +4,7 @@
 import Combine
 import Foundation
 import AppKit
+import SwiftUI
 
 /// 現在表示されている変換候補の情報
 enum CurrentCandidates {
@@ -36,6 +37,7 @@ final class CandidatesViewModel: ObservableObject {
     @Published var showAnnotationPopover: Bool
     /// 変換候補のフォントサイズ
     @Published var candidatesFontSize: CGFloat
+    @Published var candidatesBackgroundColor: Color?
     /// 注釈のフォントサイズ
     @Published var annotationFontSize: CGFloat
     /// 表示座標から右方向に取れる最大の幅。負数のときは不明なとき
