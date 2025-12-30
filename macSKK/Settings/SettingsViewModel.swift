@@ -161,8 +161,16 @@ final class SettingsViewModel: ObservableObject {
     @Published var inlineCandidateCount: Int
     /// 変換候補のフォントサイズ
     @Published var candidatesFontSize: Int
+    /// 変換候補の背景色をカスタマイズするか
+    @Published var overridesCandidatesBackgroundColor: Bool
+    /// 背景候補の背景色
+    @Published var candidatesBackgroundColor: Color
     /// 注釈のフォントサイズ
     @Published var annotationFontSize: Int
+    /// 注釈の背景色をカスタマイズするか
+    @Published var overridesAnnotationBackgroundColor: Bool
+    /// 注釈の背景色
+    @Published var annotationBackgroundColor: Color
     /// ワークアラウンドが設定されたアプリケーション
     @Published var workaroundApplications: [WorkaroundApplication]
     /// skkserv辞書設定
@@ -219,7 +227,23 @@ final class SettingsViewModel: ObservableObject {
         showAnnotation = UserDefaults.app.bool(forKey: UserDefaultsKeys.showAnnotation)
         inlineCandidateCount = UserDefaults.app.integer(forKey: UserDefaultsKeys.inlineCandidateCount)
         candidatesFontSize = UserDefaults.app.integer(forKey: UserDefaultsKeys.candidatesFontSize)
+        overridesCandidatesBackgroundColor = UserDefaults.app.bool(forKey: UserDefaultsKeys.overridesCandidatesBackgroundColor)
+        if let serializedCandidatesBackgroundColor = UserDefaults.app.string(forKey: UserDefaultsKeys.candidatesBackgroundColor), let candidatesBackgroundColor = ColorEncoding.decode(serializedCandidatesBackgroundColor) {
+            self.candidatesBackgroundColor = candidatesBackgroundColor
+        } else {
+            logger.error("設定candidatesBackgroundColorをデコードできません")
+            candidatesBackgroundColor = .white
+            overridesCandidatesBackgroundColor = false
+        }
         annotationFontSize = UserDefaults.app.integer(forKey: UserDefaultsKeys.annotationFontSize)
+        overridesAnnotationBackgroundColor = UserDefaults.app.bool(forKey: UserDefaultsKeys.overridesAnnotationBackgroundColor)
+        if let serializedAnnotationBackgroundColor = UserDefaults.app.string(forKey: UserDefaultsKeys.annotationBackgroundColor), let annotationBackgroundColor = ColorEncoding.decode(serializedAnnotationBackgroundColor) {
+            self.annotationBackgroundColor = annotationBackgroundColor
+        } else {
+            logger.error("設定annotationBackgroundColorをデコードできません")
+            annotationBackgroundColor = .white
+            overridesAnnotationBackgroundColor = false
+        }
         findCompletionFromAllDicts = UserDefaults.app.bool(forKey: UserDefaultsKeys.findCompletionFromAllDicts)
         workaroundApplications = UserDefaults.app.array(forKey: UserDefaultsKeys.workarounds)?.compactMap { workaround in
             if let workaround = workaround as? Dictionary<String, Any>, let bundleIdentifier = workaround["bundleIdentifier"] as? String,
@@ -291,6 +315,12 @@ final class SettingsViewModel: ObservableObject {
         Global.candidateListDirection.send(candidateListDirection)
         Global.findCompletionFromAllDicts = findCompletionFromAllDicts
         Global.registerKatakana = registerKatakana
+        if overridesCandidatesBackgroundColor {
+            Global.candidatesPanel.viewModel.candidatesBackgroundColor = candidatesBackgroundColor
+        }
+        if overridesAnnotationBackgroundColor {
+            Global.candidatesPanel.viewModel.annotationBackgroundColor = annotationBackgroundColor
+        }
 
         // SKK-JISYO.Lのようなファイルの読み込みが遅いのでバックグラウンドで処理
         $dictSettings.filter({ !$0.isEmpty }).receive(on: DispatchQueue.global()).sink { dictSettings in
@@ -441,11 +471,43 @@ final class SettingsViewModel: ObservableObject {
             logger.log("変換候補のフォントサイズを\(candidatesFontSize)に変更しました")
         }.store(in: &cancellables)
 
+        $overridesCandidatesBackgroundColor.dropFirst().sink { overridesCandidatesBackgroundColor in
+            UserDefaults.app.set(overridesCandidatesBackgroundColor, forKey: UserDefaultsKeys.overridesCandidatesBackgroundColor)
+            Global.candidatesPanel.viewModel.candidatesBackgroundColor = nil
+            Global.completionPanel.viewModel.candidatesViewModel.candidatesBackgroundColor = nil
+            logger.log("変換候補の背景色を上書きするかの設定を\(overridesCandidatesBackgroundColor ? "有効" : "無効", privacy: .public)にしました")
+        }.store(in: &cancellables)
+
+        $candidatesBackgroundColor.dropFirst().sink { candidatesBackgroundColor in
+            if let serialized = ColorEncoding.encode(candidatesBackgroundColor) {
+                UserDefaults.app.set(serialized, forKey: UserDefaultsKeys.candidatesBackgroundColor)
+                logger.log("変換候補の背景色を\(serialized, privacy: .public)に変更しました")
+            }
+            Global.candidatesPanel.viewModel.candidatesBackgroundColor = candidatesBackgroundColor
+            Global.completionPanel.viewModel.candidatesViewModel.candidatesBackgroundColor = candidatesBackgroundColor
+        }.store(in: &cancellables)
+
         $annotationFontSize.dropFirst().sink { annotationFontSize in
             UserDefaults.app.set(annotationFontSize, forKey: UserDefaultsKeys.annotationFontSize)
             Global.candidatesPanel.viewModel.annotationFontSize = CGFloat(annotationFontSize)
             Global.completionPanel.viewModel.candidatesViewModel.annotationFontSize = CGFloat(annotationFontSize)
             logger.log("注釈のフォントサイズを\(annotationFontSize)に変更しました")
+        }.store(in: &cancellables)
+
+        $overridesAnnotationBackgroundColor.dropFirst().sink { overridesAnnotationBackgroundColor in
+            UserDefaults.app.set(overridesAnnotationBackgroundColor, forKey: UserDefaultsKeys.overridesAnnotationBackgroundColor)
+            Global.candidatesPanel.viewModel.annotationBackgroundColor = nil
+            Global.completionPanel.viewModel.candidatesViewModel.annotationBackgroundColor = nil
+            logger.log("変換候補の背景色を上書きするかの設定を\(overridesAnnotationBackgroundColor ? "有効" : "無効", privacy: .public)にしました")
+        }.store(in: &cancellables)
+
+        $annotationBackgroundColor.dropFirst().sink { annotationBackgroundColor in
+            if let serialized = ColorEncoding.encode(annotationBackgroundColor) {
+                UserDefaults.app.set(serialized, forKey: UserDefaultsKeys.annotationBackgroundColor)
+                logger.log("注釈の背景色を\(serialized, privacy: .public)に変更しました")
+            }
+            Global.candidatesPanel.viewModel.annotationBackgroundColor = annotationBackgroundColor
+            Global.completionPanel.viewModel.candidatesViewModel.annotationBackgroundColor = annotationBackgroundColor
         }.store(in: &cancellables)
 
         $selectCandidateKeys.dropFirst().sink { selectCandidateKeys in
@@ -587,7 +649,11 @@ final class SettingsViewModel: ObservableObject {
         inlineCandidateCount = 3
         workaroundApplications = []
         candidatesFontSize = 13
+        overridesCandidatesBackgroundColor = false
+        candidatesBackgroundColor = .blue
         annotationFontSize = 13
+        overridesAnnotationBackgroundColor = false
+        annotationBackgroundColor = .blue
         skkservDictSetting = SKKServDictSetting(
             enabled: true,
             address: "127.0.0.1",

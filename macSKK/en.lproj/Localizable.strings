@@ -6,6 +6,7 @@
 "MenuItemTreadFirstCharacterAsMarkedText" = "Treat First Char as Marked for Workaround";
 "SettingsNameGeneral" = "General";
 "SettingsNameDictionaries" = "Dictionaries";
+"SettingsNameCandidateWindow" = "Candidates Panel";
 "SettingsNameDateConversion" = "Date Conversion";
 "SettingsNameCompletion" = "Completion";
 "SettingsNameKeyBinding" = "Key Bindings";
@@ -73,6 +74,10 @@
 "Behavior of Period" = "Behavior of Period";
 "Candidates font size" = "Candidates font size";
 "Annotation font size" = "Annotation font size";
+"Candidates" = "Candidates";
+"Background Color" = "Background Color";
+"Override background color" = "Override background color";
+"Annotation" = "Annotation";
 "Find completion from all dictionaries" = "Find completion from all dictionaries";
 "Confirm the first completion by period" = "Confirm the first completion by period";
 "Ignore User Dict in Private Mode" = "Ignore User Dict in Private Mode";

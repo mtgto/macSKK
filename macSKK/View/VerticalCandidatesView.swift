@@ -54,6 +54,7 @@ struct VerticalCandidatesView: View {
                 .environment(\.defaultMinListRowHeight, candidates.candidatesLineHeight)
                 .scrollDisabled(true)
                 .frame(width: candidates.minWidth, height: CGFloat(words.count) * candidates.candidatesLineHeight)
+                // 背景色を設定してないときにhiddenにしちゃうと背景が抜けちゃうので、設定されているときだけhiddenにする
                 .scrollContentBackground(candidates.candidatesBackgroundColor != nil ? .hidden : .automatic)
                 if candidates.showPage {
                     HStack(alignment: .center, spacing: 0) {
@@ -77,7 +78,7 @@ struct VerticalCandidatesView: View {
                 .frame(width: CandidatesView.annotationPopupWidth, alignment: .topLeading)
                 .frame(maxHeight: max(200, CGFloat(words.count) * candidates.candidatesLineHeight + CandidatesView.footerHeight))
                 .fixedSize(horizontal: false, vertical: /*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
-                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
+                .optionalBackground(candidates.annotationBackgroundColor, cornerRadius: 10)
                 .opacity(0.9)
             }
         }
@@ -137,6 +138,15 @@ struct VerticalCandidatesView_Previews: PreviewProvider {
         return viewModel
     }
 
+    private static func backgroundColorViewModel() -> CandidatesViewModel {
+        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, showAnnotationPopover: true)
+        viewModel.selected = words.first
+        viewModel.systemAnnotations = [words.first!.word: String(repeating: "これはシステム辞書の注釈です。", count: 20)]
+        viewModel.candidatesBackgroundColor = .green
+        viewModel.annotationBackgroundColor = .blue
+        return viewModel
+    }
+
     static var previews: some View {
         VerticalCandidatesView(candidates: pageViewModel(), words: words, currentPage: 0, totalPageCount: 3)
             .background(Color.cyan)
@@ -154,5 +164,8 @@ struct VerticalCandidatesView_Previews: PreviewProvider {
         VerticalCandidatesView(candidates: pageWithoutPageNumberViewModel(), words: words, currentPage: 0, totalPageCount: 3)
             .background(Color.cyan)
             .previewDisplayName("パネル表示 (ページなし)")
+        VerticalCandidatesView(candidates: backgroundColorViewModel(), words: words, currentPage: 0, totalPageCount: 3)
+            .background(Color.cyan)
+            .previewDisplayName("背景色設定")
     }
 }

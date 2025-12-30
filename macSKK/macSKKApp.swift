@@ -223,6 +223,10 @@ struct macSKKApp: App {
             UserDefaultsKeys.showCandidateForCompletion: true,
             UserDefaultsKeys.fixedCompletionByPeriod: true,
             UserDefaultsKeys.registerKatakana: false,
+            UserDefaultsKeys.overridesCandidatesBackgroundColor: false,
+            UserDefaultsKeys.candidatesBackgroundColor: "#FFFFFF",
+            UserDefaultsKeys.overridesAnnotationBackgroundColor: false,
+            UserDefaultsKeys.annotationBackgroundColor: "#FFFFFF",
         ])
     }
 

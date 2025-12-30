@@ -15,8 +15,18 @@ struct UserDefaultsKeys {
     static let showAnnotation = "showAnnotation"
     static let inlineCandidateCount = "inlineCandidateCount"
     static let workarounds = "workarounds"
+    /// 変換候補のフォントサイズ
     static let candidatesFontSize = "candidatesFontSize"
+    /// 変換候補の背景色
+    static let candidatesBackgroundColor = "candidatesBackgroundColor"
+    /// 変換候補の背景色を上書きするか
+    static let overridesCandidatesBackgroundColor = "overridesCandidatesBackgroundColor"
+    /// 注釈のフォントサイズ
     static let annotationFontSize = "annotationFontSize"
+    /// 注釈の背景色
+    static let annotationBackgroundColor = "annotationBackgroundColor"
+    /// 注釈の背景色を上書きするか
+    static let overridesAnnotationBackgroundColor = "overridesAnnotationBackgroundColor"
     // SKK辞書サーバーへの接続設定
     static let skkservClient = "skkserv"
     // 選択候補パネルから決定するショートカットキー。

@@ -8,6 +8,7 @@ struct SettingsView: View {
     enum Section: String, CaseIterable {
         case general = "SettingsNameGeneral"
         case dictionaries = "SettingsNameDictionaries"
+        case candidateWindow = "SettingsNameCandidateWindow"
         case dateConversion = "SettingsNameDateConversion"
         case completion = "SettingsNameCompletion"
         case keyBinding = "SettingsNameKeyBinding"
@@ -36,6 +37,8 @@ struct SettingsView: View {
                         Label(section.localizedStringKey, systemImage: "gear")
                     case .dictionaries:
                         Label(section.localizedStringKey, systemImage: "books.vertical")
+                    case .candidateWindow:
+                        Label(section.localizedStringKey, systemImage: "list.bullet.rectangle")
                     case .dateConversion:
                         Label(section.localizedStringKey, systemImage: "calendar")
                     case .completion:
@@ -70,6 +73,9 @@ struct SettingsView: View {
                     .navigationTitle(selectedSection.localizedStringKey)
             case .dictionaries:
                 DictionariesView(settingsViewModel: settingsViewModel)
+                    .navigationTitle(selectedSection.localizedStringKey)
+            case .candidateWindow:
+                CandidateWindowSettingsView(settingsViewModel: settingsViewModel)
                     .navigationTitle(selectedSection.localizedStringKey)
             case .dateConversion:
                 DateConversionsView(settingsViewModel: settingsViewModel)

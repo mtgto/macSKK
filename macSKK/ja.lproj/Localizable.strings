@@ -6,6 +6,7 @@
 "MenuItemTreadFirstCharacterAsMarkedText" = "1文字目を未確定扱い (互換性)";
 "SettingsNameGeneral" = "一般";
 "SettingsNameDictionaries" = "辞書";
+"SettingsNameCandidateWindow" = "変換候補パネル";
 "SettingsNameDateConversion" = "日付変換";
 "SettingsNameCompletion" = "補完";
 "SettingsNameKeyBinding" = "キーバインド";
@@ -73,6 +74,10 @@
 "Behavior of Period" = "ピリオドの挙動";
 "Candidates font size" = "変換候補のフォントサイズ";
 "Annotation font size" = "注釈のフォントサイズ";
+"Candidates" = "変換候補";
+"Background Color" = "背景色";
+"Override background color" = "背景色を上書きする";
+"Annotation" = "注釈";
 "Find completion from all dictionaries" = "ユーザー辞書だけでなくすべての辞書から補完を探す";
 "Confirm the first completion by period" = "最初の補完候補をピリオドキーで確定する";
 "Ignore User Dict in Private Mode" = "プライベートモードではユーザー辞書を参照しない";

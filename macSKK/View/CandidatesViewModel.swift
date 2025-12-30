@@ -40,6 +40,7 @@ final class CandidatesViewModel: ObservableObject {
     @Published var candidatesBackgroundColor: Color?
     /// 注釈のフォントサイズ
     @Published var annotationFontSize: CGFloat
+    @Published var annotationBackgroundColor: Color?
     /// 表示座標から右方向に取れる最大の幅。負数のときは不明なとき
     @Published var maxWidth: CGFloat = -1
     /// 最長のテキストを表示するために必要なビューの横幅。パネル表示のときは注釈部分は除いたリスト部分の幅。
