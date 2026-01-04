@@ -48,6 +48,7 @@ struct VerticalCandidatesView: View {
                     .frame(height: candidates.candidatesLineHeight)
                     // .border(Color.red) // Listの謎のInsetのデバッグ時に使用する
                     .contentShape(Rectangle())
+                    .listRowBackground(candidate == candidates.selected ? candidates.selectedCandidatesBackgroundColor : Color.clear)
                 }
                 .listStyle(.plain)
                 // Listの行の上下の余白を削除
@@ -56,6 +57,7 @@ struct VerticalCandidatesView: View {
                 .frame(width: candidates.minWidth, height: CGFloat(words.count) * candidates.candidatesLineHeight)
                 // 背景色を設定してないときにhiddenにしちゃうと背景が抜けちゃうので、設定されているときだけhiddenにする
                 .scrollContentBackground(candidates.candidatesBackgroundColor != nil ? .hidden : .automatic)
+                .tint(Color.red)
                 if candidates.showPage {
                     HStack(alignment: .center, spacing: 0) {
                         Spacer()
@@ -144,6 +146,7 @@ struct VerticalCandidatesView_Previews: PreviewProvider {
         viewModel.systemAnnotations = [words.first!.word: String(repeating: "これはシステム辞書の注釈です。", count: 20)]
         viewModel.candidatesBackgroundColor = .green
         viewModel.annotationBackgroundColor = .blue
+        viewModel.selectedCandidatesBackgroundColor = .purple
         return viewModel
     }
 

@@ -163,8 +163,10 @@ final class SettingsViewModel: ObservableObject {
     @Published var candidatesFontSize: Int
     /// 変換候補の背景色をカスタマイズするか
     @Published var overridesCandidatesBackgroundColor: Bool
-    /// 背景候補の背景色
+    /// 変換候補の背景色
     @Published var candidatesBackgroundColor: Color
+    /// 選択している変換候補の背景色
+    @Published var selectedCandidatesBackgroundColor: Color
     /// 注釈のフォントサイズ
     @Published var annotationFontSize: Int
     /// 注釈の背景色をカスタマイズするか
@@ -228,11 +230,16 @@ final class SettingsViewModel: ObservableObject {
         inlineCandidateCount = UserDefaults.app.integer(forKey: UserDefaultsKeys.inlineCandidateCount)
         candidatesFontSize = UserDefaults.app.integer(forKey: UserDefaultsKeys.candidatesFontSize)
         overridesCandidatesBackgroundColor = UserDefaults.app.bool(forKey: UserDefaultsKeys.overridesCandidatesBackgroundColor)
-        if let serializedCandidatesBackgroundColor = UserDefaults.app.string(forKey: UserDefaultsKeys.candidatesBackgroundColor), let candidatesBackgroundColor = ColorEncoding.decode(serializedCandidatesBackgroundColor) {
+        if let serializedCandidatesBackgroundColor = UserDefaults.app.string(forKey: UserDefaultsKeys.candidatesBackgroundColor),
+           let candidatesBackgroundColor = ColorEncoding.decode(serializedCandidatesBackgroundColor),
+           let serializedSelectedCandidatesBackgroundColor = UserDefaults.app.string(forKey: UserDefaultsKeys.selectedCandidatesBackgroundColor),
+           let selectedCandidatesBackgroundColor = ColorEncoding.decode(serializedSelectedCandidatesBackgroundColor) {
             self.candidatesBackgroundColor = candidatesBackgroundColor
+            self.selectedCandidatesBackgroundColor = selectedCandidatesBackgroundColor
         } else {
             logger.error("設定candidatesBackgroundColorをデコードできません")
             candidatesBackgroundColor = .white
+            selectedCandidatesBackgroundColor = .white
             overridesCandidatesBackgroundColor = false
         }
         annotationFontSize = UserDefaults.app.integer(forKey: UserDefaultsKeys.annotationFontSize)
@@ -317,6 +324,7 @@ final class SettingsViewModel: ObservableObject {
         Global.registerKatakana = registerKatakana
         if overridesCandidatesBackgroundColor {
             Global.candidatesPanel.viewModel.candidatesBackgroundColor = candidatesBackgroundColor
+            Global.candidatesPanel.viewModel.selectedCandidatesBackgroundColor = selectedCandidatesBackgroundColor
         }
         if overridesAnnotationBackgroundColor {
             Global.candidatesPanel.viewModel.annotationBackgroundColor = annotationBackgroundColor
@@ -651,6 +659,7 @@ final class SettingsViewModel: ObservableObject {
         candidatesFontSize = 13
         overridesCandidatesBackgroundColor = false
         candidatesBackgroundColor = .blue
+        selectedCandidatesBackgroundColor = .blue
         annotationFontSize = 13
         overridesAnnotationBackgroundColor = false
         annotationBackgroundColor = .blue

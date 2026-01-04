@@ -76,6 +76,7 @@
 "Annotation font size" = "Annotation font size";
 "Candidates" = "Candidates";
 "Background Color" = "Background Color";
+"Selected Color" = "Selected Color";
 "Override background color" = "Override background color";
 "Annotation" = "Annotation";
 "Find completion from all dictionaries" = "Find completion from all dictionaries";

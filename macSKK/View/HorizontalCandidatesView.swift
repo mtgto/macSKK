@@ -48,7 +48,7 @@ struct HorizontalCandidatesView: View {
                             .padding(.trailing, 8)
                     }
                     .frame(height: candidates.candidatesLineHeight)
-                    .background(candidates.selected == candidate ? Color.accentColor : candidates.candidatesBackgroundColor ?? Color.clear)
+                    .background(candidates.selected == candidate ? (candidates.selectedCandidatesBackgroundColor ?? Color.accentColor) : candidates.candidatesBackgroundColor ?? Color.clear)
                 }
                 if candidates.showPage {
                     Text("\(currentPage + 1) / \(totalPageCount)")
@@ -141,6 +141,7 @@ struct HorizonalCandidatesView_Previews: PreviewProvider {
         viewModel.systemAnnotations = [words.first!.word: String(repeating: "これはシステム辞書の注釈です。", count: 20)]
         viewModel.candidatesBackgroundColor = .green
         viewModel.annotationBackgroundColor = .blue
+        viewModel.selectedCandidatesBackgroundColor = .purple
         return viewModel
     }
 
