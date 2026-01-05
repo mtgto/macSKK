@@ -15,6 +15,8 @@ struct UserDefaultsKeys {
     static let showAnnotation = "showAnnotation"
     static let inlineCandidateCount = "inlineCandidateCount"
     static let workarounds = "workarounds"
+    /// 変換候補のフォントファミリー名
+    static let candidatesFontFamily = "candidatesFontFamily"
     /// 変換候補のフォントサイズ
     static let candidatesFontSize = "candidatesFontSize"
     /// 変換候補の背景色

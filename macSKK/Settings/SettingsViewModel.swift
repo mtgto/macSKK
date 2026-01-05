@@ -161,6 +161,8 @@ final class SettingsViewModel: ObservableObject {
     @Published var inlineCandidateCount: Int
     /// 変換候補のフォントサイズ
     @Published var candidatesFontSize: Int
+    /// 変換候補のフォントファミリー名
+    @Published var candidatesFontFamily: String
     /// 変換候補の背景色をカスタマイズするか
     @Published var overridesCandidatesBackgroundColor: Bool
     /// 変換候補の背景色
@@ -211,6 +213,8 @@ final class SettingsViewModel: ObservableObject {
     @Published var dateConversions: [DateConversion]
     /// qキーでカタカナで確定した場合に辞書に登録するか
     @Published var registerKatakana: Bool
+    /// 利用可能なフォントファミリー名
+    @Published var availableFontFamilies: [String] = []
 
     // 辞書ディレクトリ
     let dictionariesDirectoryUrl: URL
@@ -229,6 +233,7 @@ final class SettingsViewModel: ObservableObject {
         showAnnotation = UserDefaults.app.bool(forKey: UserDefaultsKeys.showAnnotation)
         inlineCandidateCount = UserDefaults.app.integer(forKey: UserDefaultsKeys.inlineCandidateCount)
         candidatesFontSize = UserDefaults.app.integer(forKey: UserDefaultsKeys.candidatesFontSize)
+        candidatesFontFamily = UserDefaults.app.string(forKey: UserDefaultsKeys.candidatesFontFamily) ?? "system"
         overridesCandidatesBackgroundColor = UserDefaults.app.bool(forKey: UserDefaultsKeys.overridesCandidatesBackgroundColor)
         if let serializedCandidatesBackgroundColor = UserDefaults.app.string(forKey: UserDefaultsKeys.candidatesBackgroundColor),
            let candidatesBackgroundColor = ColorEncoding.decode(serializedCandidatesBackgroundColor),
@@ -307,6 +312,12 @@ final class SettingsViewModel: ObservableObject {
         } else {
             dateYomis = []
             dateConversions = []
+        }
+        // 利用可能なフォント名をバックグラウンドスレッドで取得
+        Task(priority: .background) {
+            logger.log("利用可能なフォントを読み込みます")
+            availableFontFamilies = NSFontManager.shared.availableFontFamilies
+            logger.log("利用可能なフォントを\(self.availableFontFamilies.count)種類読み込みました")
         }
 
         Global.keyBinding = selectedKeyBindingSet
@@ -495,6 +506,11 @@ final class SettingsViewModel: ObservableObject {
             Global.completionPanel.viewModel.candidatesViewModel.candidatesBackgroundColor = candidatesBackgroundColor
         }.store(in: &cancellables)
 
+        $candidatesFontFamily.dropFirst().sink { candidatesFontFamily in
+            UserDefaults.app.set(candidatesFontFamily, forKey: UserDefaultsKeys.candidatesFontFamily)
+            logger.log("変換候補のフォント名を\(candidatesFontFamily, privacy: .public)に変更しました")
+        }.store(in: &cancellables)
+
         $annotationFontSize.dropFirst().sink { annotationFontSize in
             UserDefaults.app.set(annotationFontSize, forKey: UserDefaultsKeys.annotationFontSize)
             Global.candidatesPanel.viewModel.annotationFontSize = CGFloat(annotationFontSize)
@@ -657,6 +673,7 @@ final class SettingsViewModel: ObservableObject {
         inlineCandidateCount = 3
         workaroundApplications = []
         candidatesFontSize = 13
+        candidatesFontFamily = "system"
         overridesCandidatesBackgroundColor = false
         candidatesBackgroundColor = .blue
         selectedCandidatesBackgroundColor = .blue

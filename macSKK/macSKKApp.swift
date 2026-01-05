@@ -223,6 +223,7 @@ struct macSKKApp: App {
             UserDefaultsKeys.showCandidateForCompletion: true,
             UserDefaultsKeys.fixedCompletionByPeriod: true,
             UserDefaultsKeys.registerKatakana: false,
+            UserDefaultsKeys.candidatesFontFamily: "Hiragino Sans",
             UserDefaultsKeys.overridesCandidatesBackgroundColor: false,
             UserDefaultsKeys.candidatesBackgroundColor: "#FFFFFF",
             UserDefaultsKeys.overridesAnnotationBackgroundColor: false,

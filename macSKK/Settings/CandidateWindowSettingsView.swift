@@ -8,6 +8,12 @@ struct CandidateWindowSettingsView: View {
     var body: some View {
         Form {
             Section(header: Text("Candidates")) {
+                Picker("Font Name", selection: $settingsViewModel.candidatesFontFamily) {
+                    ForEach(settingsViewModel.availableFontFamilies, id: \.self) { fontFamily in
+                        Text(fontFamily)
+                    }
+                }
+                .disabled(settingsViewModel.availableFontFamilies.isEmpty)
                 Picker("Candidates font size", selection: $settingsViewModel.candidatesFontSize) {
                     ForEach(6..<31) { count in
                         Text("\(count)").tag(count)
@@ -32,9 +38,6 @@ struct CandidateWindowSettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .onAppear {
-            // TODO: Load fonts?
-        }
     }
 }
 
