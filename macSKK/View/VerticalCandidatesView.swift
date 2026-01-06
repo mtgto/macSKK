@@ -32,14 +32,14 @@ struct VerticalCandidatesView: View {
                 List(Array(words.enumerated()), id: \.element, selection: $candidates.selected) { index, candidate in
                     HStack(alignment: .firstTextBaseline) {
                         Text(String(Global.selectCandidateKeys[index]).uppercased())
-                            // 変換候補の90%のフォントサイズ
-                            .font(.system(size: candidates.candidatesFontSize * 0.9))
+                            .font(candidates.candidatesMarkerFont)
                             // 目立たないようにする
                             .foregroundStyle(candidates.selected == candidate ? Color(NSColor.selectedMenuItemTextColor.withAlphaComponent(0.8)) : Color(NSColor.secondaryLabelColor))
                             .padding(EdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 0))
                             .frame(width: 16)
                         Text(candidate.word)
-                            .font(.system(size: candidates.candidatesFontSize))
+//                            .font(.system(size: candidates.candidatesFontSize))
+                            .font(candidates.candidatesFont)
                             .fixedSize(horizontal: true, vertical: false)
                             .padding(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 4))
                         Spacer()  // popoverをListの右に表示するために余白を入れる
@@ -127,7 +127,7 @@ struct VerticalCandidatesView_Previews: PreviewProvider {
     }
 
     private static func fontSize19ViewModel() -> CandidatesViewModel {
-        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, showAnnotationPopover: true, candidatesFontSize: CGFloat(19), annotationFontSize: CGFloat(19))
+        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, showAnnotationPopover: true, candidatesFontSize: CGFloat(19), candidatesFont: .system(size: 19), annotationFontSize: CGFloat(19))
         viewModel.selected = words.first
         viewModel.systemAnnotations = [words.first!.word: String(repeating: "これはシステム辞書の注釈です。", count: 20)]
         viewModel.maxWidth = 1000
@@ -137,6 +137,18 @@ struct VerticalCandidatesView_Previews: PreviewProvider {
     private static func pageWithoutPageNumberViewModel() -> CandidatesViewModel {
         let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, showAnnotationPopover: false)
         viewModel.showPage = false
+        return viewModel
+    }
+
+    private static func customFontViewModel() -> CandidatesViewModel {
+        let fontName = "凸版文久見出しゴシック"
+        let fontSize: CGFloat = 16
+        let font = Font(NSFont(name: fontName, size: fontSize)!)
+        let candidatesMarkerFont = Font(NSFont(name: fontName, size: fontSize * 0.9)!)
+        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, showAnnotationPopover: true, candidatesFontSize: fontSize, candidatesFont: font, candidatesMarkerFont: candidatesMarkerFont)
+        viewModel.selected = words.first
+        viewModel.systemAnnotations = [words.first!.word: String(repeating: "これはシステム辞書の注釈です。", count: 20)]
+        viewModel.maxWidth = 1000
         return viewModel
     }
 
@@ -164,6 +176,9 @@ struct VerticalCandidatesView_Previews: PreviewProvider {
         VerticalCandidatesView(candidates: fontSize19ViewModel(), words: words, currentPage: 0, totalPageCount: 3)
             .background(Color.cyan)
             .previewDisplayName("フォントサイズ19")
+        VerticalCandidatesView(candidates: customFontViewModel(), words: words, currentPage: 0, totalPageCount: 3)
+            .background(Color.cyan)
+            .previewDisplayName("カスタムフォント")
         VerticalCandidatesView(candidates: pageWithoutPageNumberViewModel(), words: words, currentPage: 0, totalPageCount: 3)
             .background(Color.cyan)
             .previewDisplayName("パネル表示 (ページなし)")

@@ -488,6 +488,13 @@ final class SettingsViewModel: ObservableObject {
             Global.candidatesPanel.viewModel.candidatesFontSize = CGFloat(candidatesFontSize)
             Global.completionPanel.viewModel.candidatesViewModel.candidatesFontSize = CGFloat(candidatesFontSize)
             logger.log("変換候補のフォントサイズを\(candidatesFontSize)に変更しました")
+            if let font = NSFont(name: self.candidatesFontFamily, size: CGFloat(candidatesFontSize)),
+               let markerFont = NSFont(name: self.candidatesFontFamily, size: CGFloat(candidatesFontSize) * 0.9) {
+                Global.candidatesPanel.viewModel.candidatesFont = Font(font)
+                Global.candidatesPanel.viewModel.candidatesMarkerFont = Font(markerFont)
+                Global.completionPanel.viewModel.candidatesViewModel.candidatesFont = Font(font)
+                Global.completionPanel.viewModel.candidatesViewModel.candidatesMarkerFont = Font(markerFont)
+            }
         }.store(in: &cancellables)
 
         $overridesCandidatesBackgroundColor.dropFirst().sink { overridesCandidatesBackgroundColor in
@@ -509,6 +516,13 @@ final class SettingsViewModel: ObservableObject {
         $candidatesFontFamily.dropFirst().sink { candidatesFontFamily in
             UserDefaults.app.set(candidatesFontFamily, forKey: UserDefaultsKeys.candidatesFontFamily)
             logger.log("変換候補のフォント名を\(candidatesFontFamily, privacy: .public)に変更しました")
+            if let font = NSFont(name: candidatesFontFamily, size: CGFloat(self.candidatesFontSize)),
+               let markerFont = NSFont(name: candidatesFontFamily, size: CGFloat(self.candidatesFontSize) * 0.9) {
+                Global.candidatesPanel.viewModel.candidatesFont = Font(font)
+                Global.candidatesPanel.viewModel.candidatesMarkerFont = Font(markerFont)
+                Global.completionPanel.viewModel.candidatesViewModel.candidatesFont = Font(font)
+                Global.completionPanel.viewModel.candidatesViewModel.candidatesMarkerFont = Font(markerFont)
+            }
         }.store(in: &cancellables)
 
         $annotationFontSize.dropFirst().sink { annotationFontSize in

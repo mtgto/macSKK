@@ -35,7 +35,11 @@ final class CandidatesViewModel: ObservableObject {
     @Published var selectedAnnotations: [Annotation] = []
     /// パネル表示時に注釈を表示するかどうか
     @Published var showAnnotationPopover: Bool
-    /// 変換候補のフォントサイズ
+    /// 変換候補のフォント
+    @Published var candidatesFont: Font
+    /// 変換候補の何番目かを表す数字を表示するフォント。candidatesFontの90%
+    @Published var candidatesMarkerFont: Font
+    /// 変換候補のフォントサイズ。高さの計算に使用する
     @Published var candidatesFontSize: CGFloat
     /// 変換候補の背景色
     @Published var candidatesBackgroundColor: Color?
@@ -67,6 +71,8 @@ final class CandidatesViewModel: ObservableObject {
         totalPageCount: Int,
         showAnnotationPopover: Bool,
         candidatesFontSize: CGFloat = 13,
+        candidatesFont: Font = .system(size: 13),
+        candidatesMarkerFont: Font = .system(size: 13 * 0.9),
         annotationFontSize: CGFloat = 13,
         showPage: Bool = true
     ) {
@@ -75,6 +81,8 @@ final class CandidatesViewModel: ObservableObject {
                                  totalPageCount: totalPageCount)
         self.showAnnotationPopover = showAnnotationPopover
         self.candidatesFontSize = candidatesFontSize
+        self.candidatesFont = candidatesFont
+        self.candidatesMarkerFont = candidatesMarkerFont
         self.annotationFontSize = annotationFontSize
         self.showPage = showPage
         if let first = candidates.first {
