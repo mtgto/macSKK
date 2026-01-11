@@ -46,7 +46,7 @@ final class CandidatesViewModel: ObservableObject {
     /// 選択している変換候補の背景色
     @Published var selectedCandidatesBackgroundColor: Color?
     /// 注釈のフォントサイズ
-    @Published var annotationFontSize: CGFloat
+    @Published var annotationFont: Font
     @Published var annotationBackgroundColor: Color?
     /// 表示座標から右方向に取れる最大の幅。負数のときは不明なとき
     @Published var maxWidth: CGFloat = -1
@@ -74,6 +74,7 @@ final class CandidatesViewModel: ObservableObject {
         candidatesFont: Font = .system(size: 13),
         candidatesMarkerFont: Font = .system(size: 13 * 0.9),
         annotationFontSize: CGFloat = 13,
+        annotationFont: Font = .system(size: 13),
         showPage: Bool = true
     ) {
         self.candidates = .panel(words: candidates,
@@ -83,7 +84,7 @@ final class CandidatesViewModel: ObservableObject {
         self.candidatesFontSize = candidatesFontSize
         self.candidatesFont = candidatesFont
         self.candidatesMarkerFont = candidatesMarkerFont
-        self.annotationFontSize = annotationFontSize
+        self.annotationFont = annotationFont
         self.showPage = showPage
         if let first = candidates.first {
             self.selected = first

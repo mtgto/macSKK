@@ -9,6 +9,8 @@ struct CandidateWindowSettingsView: View {
         Form {
             Section(header: Text("Candidates")) {
                 Picker("Font Name", selection: $settingsViewModel.candidatesFontFamily) {
+                    Text("System").tag("")
+                    Divider()
                     ForEach(settingsViewModel.availableFontFamilies, id: \.self) { fontFamily in
                         Text(fontFamily)
                     }
@@ -26,6 +28,13 @@ struct CandidateWindowSettingsView: View {
                 ColorPicker("Selected Color", selection: $settingsViewModel.selectedCandidatesBackgroundColor)
             }
             Section(header: Text("Annotation")) {
+                Picker("Font Name", selection: $settingsViewModel.annotationFontFamily) {
+                    Text("System").tag("")
+                    Divider()
+                    ForEach(settingsViewModel.availableFontFamilies, id: \.self) { fontFamily in
+                        Text(fontFamily)
+                    }
+                }
                 Picker("Annotation font size", selection: $settingsViewModel.annotationFontSize) {
                     ForEach(6..<31) { count in
                         Text("\(count)").tag(count)

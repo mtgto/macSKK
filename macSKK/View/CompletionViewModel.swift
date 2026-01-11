@@ -35,8 +35,9 @@ final class CompletionViewModel: ObservableObject {
             currentPage: 0,
             totalPageCount: 1,
             showAnnotationPopover: false,
-            candidatesFontSize: CGFloat(candidatesFontSize),
-            annotationFontSize: CGFloat(annotationFontSize),
+            candidatesFont: .system(size: CGFloat(candidatesFontSize)),
+            candidatesMarkerFont: .system(size: CGFloat(candidatesFontSize) * 0.9),
+            annotationFont: .system(size: CGFloat(annotationFontSize)),
             showPage: false,
         )
 

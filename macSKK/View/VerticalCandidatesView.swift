@@ -16,7 +16,7 @@ struct VerticalCandidatesView: View {
                     AnnotationView(
                         annotations: $candidates.selectedAnnotations,
                         systemAnnotation: $candidates.selectedSystemAnnotation,
-                        annotationFontSize: candidates.annotationFontSize
+                        font: candidates.annotationFont
                     )
                     .padding(EdgeInsets(top: 16, leading: 12, bottom: 16, trailing: 8))
                     .frame(width: CandidatesView.annotationPopupWidth, alignment: .topLeading)
@@ -74,7 +74,7 @@ struct VerticalCandidatesView: View {
                 AnnotationView(
                     annotations: $candidates.selectedAnnotations,
                     systemAnnotation: $candidates.selectedSystemAnnotation,
-                    annotationFontSize: candidates.annotationFontSize
+                    font: candidates.annotationFont
                 )
                 .padding(EdgeInsets(top: 16, leading: 28, bottom: 16, trailing: 4))
                 .frame(width: CandidatesView.annotationPopupWidth, alignment: .topLeading)
