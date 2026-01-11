@@ -330,14 +330,6 @@ final class SettingsViewModel: ObservableObject {
         Global.candidateListDirection.send(candidateListDirection)
         Global.findCompletionFromAllDicts = findCompletionFromAllDicts
         Global.registerKatakana = registerKatakana
-        if overridesCandidatesBackgroundColor {
-            Global.candidatesPanel.viewModel.candidatesBackgroundColor = candidatesBackgroundColor
-            Global.completionPanel.viewModel.candidatesViewModel.candidatesBackgroundColor = candidatesBackgroundColor
-        }
-        if overridesAnnotationBackgroundColor {
-            Global.candidatesPanel.viewModel.annotationBackgroundColor = annotationBackgroundColor
-            Global.completionPanel.viewModel.candidatesViewModel.annotationBackgroundColor = annotationBackgroundColor
-        }
 
         // SKK-JISYO.Lのようなファイルの読み込みが遅いのでバックグラウンドで処理
         $dictSettings.filter({ !$0.isEmpty }).receive(on: DispatchQueue.global()).sink { dictSettings in
@@ -532,18 +524,15 @@ final class SettingsViewModel: ObservableObject {
             Global.completionPanel.viewModel.candidatesViewModel.candidatesBackgroundColor = candidatesBackgroundColor
         }.store(in: &cancellables)
 
-        $annotationFontSize.combineLatest($annotationFontFamily).sink { (annotationFontSize, annotationFontFamily) in
-            if annotationFontFamily.isEmpty {
-                let annotationFont: Font = .system(size: CGFloat(annotationFontSize))
-                Global.candidatesPanel.viewModel.annotationFont = annotationFont
-                Global.completionPanel.viewModel.candidatesViewModel.annotationFont = annotationFont
-            } else if let font = NSFont(name: annotationFontFamily, size: CGFloat(annotationFontSize)) {
-                let annotationFont: Font = Font(font)
-                Global.candidatesPanel.viewModel.annotationFont = annotationFont
-                Global.completionPanel.viewModel.candidatesViewModel.annotationFont = annotationFont
+        $overridesCandidatesBackgroundColor.combineLatest($candidatesBackgroundColor).sink { (overridesCandidatesBackgroundColor, candidatesBackgroundColor) in
+            if overridesCandidatesBackgroundColor {
+                Global.candidatesPanel.viewModel.candidatesBackgroundColor = candidatesBackgroundColor
+                Global.completionPanel.viewModel.candidatesViewModel.candidatesBackgroundColor = candidatesBackgroundColor
+            } else {
+                Global.candidatesPanel.viewModel.candidatesBackgroundColor = .clear
+                Global.completionPanel.viewModel.candidatesViewModel.candidatesBackgroundColor = .clear
             }
-        }
-        .store(in: &cancellables)
+        }.store(in: &cancellables)
 
         $annotationFontSize.dropFirst().sink { annotationFontSize in
             UserDefaults.app.set(annotationFontSize, forKey: UserDefaultsKeys.annotationFontSize)
@@ -559,11 +548,24 @@ final class SettingsViewModel: ObservableObject {
             }
         }.store(in: &cancellables)
 
+        $annotationFontSize.combineLatest($annotationFontFamily).sink { (annotationFontSize, annotationFontFamily) in
+            if annotationFontFamily.isEmpty {
+                let annotationFont: Font = .system(size: CGFloat(annotationFontSize))
+                Global.candidatesPanel.viewModel.annotationFont = annotationFont
+                Global.completionPanel.viewModel.candidatesViewModel.annotationFont = annotationFont
+            } else if let font = NSFont(name: annotationFontFamily, size: CGFloat(annotationFontSize)) {
+                let annotationFont: Font = Font(font)
+                Global.candidatesPanel.viewModel.annotationFont = annotationFont
+                Global.completionPanel.viewModel.candidatesViewModel.annotationFont = annotationFont
+            }
+        }
+        .store(in: &cancellables)
+
         $overridesAnnotationBackgroundColor.dropFirst().sink { overridesAnnotationBackgroundColor in
             UserDefaults.app.set(overridesAnnotationBackgroundColor, forKey: UserDefaultsKeys.overridesAnnotationBackgroundColor)
             Global.candidatesPanel.viewModel.annotationBackgroundColor = nil
             Global.completionPanel.viewModel.candidatesViewModel.annotationBackgroundColor = nil
-            logger.log("変換候補の背景色を上書きするかの設定を\(overridesAnnotationBackgroundColor ? "有効" : "無効", privacy: .public)にしました")
+            logger.log("注釈の背景色を上書きするかの設定を\(overridesAnnotationBackgroundColor ? "有効" : "無効", privacy: .public)にしました")
         }.store(in: &cancellables)
 
         $annotationBackgroundColor.dropFirst().sink { annotationBackgroundColor in
@@ -573,6 +575,16 @@ final class SettingsViewModel: ObservableObject {
             }
             Global.candidatesPanel.viewModel.annotationBackgroundColor = annotationBackgroundColor
             Global.completionPanel.viewModel.candidatesViewModel.annotationBackgroundColor = annotationBackgroundColor
+        }.store(in: &cancellables)
+
+        $overridesAnnotationBackgroundColor.combineLatest($annotationBackgroundColor).sink { (overridesAnnotationBackgroundColor, annotationBackgroundColor) in
+            if overridesAnnotationBackgroundColor {
+                Global.candidatesPanel.viewModel.annotationBackgroundColor = annotationBackgroundColor
+                Global.completionPanel.viewModel.candidatesViewModel.annotationBackgroundColor = annotationBackgroundColor
+            } else {
+                Global.candidatesPanel.viewModel.annotationBackgroundColor = .clear
+                Global.completionPanel.viewModel.candidatesViewModel.annotationBackgroundColor = .clear
+            }
         }.store(in: &cancellables)
 
         $selectCandidateKeys.dropFirst().sink { selectCandidateKeys in
