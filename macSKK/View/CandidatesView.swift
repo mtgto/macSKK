@@ -21,10 +21,11 @@ struct CandidatesView: View {
             AnnotationView(
                 annotations: $candidates.selectedAnnotations,
                 systemAnnotation: $candidates.selectedSystemAnnotation,
-                font: candidates.annotationFont
+                font: $candidates.annotationFont
             )
             .padding(EdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4))
             .frame(width: 300, height: 200)
+            .optionalBackground(candidates.annotationBackgroundColor)
             .background()
         case let .panel(words, currentPage, totalPageCount):
             switch Global.candidateListDirection.value {

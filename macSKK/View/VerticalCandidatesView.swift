@@ -16,13 +16,13 @@ struct VerticalCandidatesView: View {
                     AnnotationView(
                         annotations: $candidates.selectedAnnotations,
                         systemAnnotation: $candidates.selectedSystemAnnotation,
-                        font: candidates.annotationFont
+                        font: $candidates.annotationFont
                     )
                     .padding(EdgeInsets(top: 16, leading: 12, bottom: 16, trailing: 8))
                     .frame(width: CandidatesView.annotationPopupWidth, alignment: .topLeading)
                     .frame(maxHeight: max(200, CGFloat(words.count) * candidates.candidatesLineHeight + CandidatesView.footerHeight))
                     .fixedSize(horizontal: false, vertical: /*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
-                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
+                    .optionalBackground(candidates.annotationBackgroundColor, cornerRadius: 10)
                     .opacity(0.9)
                 } else {
                     Spacer(minLength: CandidatesView.annotationPopupWidth)
@@ -48,7 +48,6 @@ struct VerticalCandidatesView: View {
                     .frame(height: candidates.candidatesLineHeight)
                     // .border(Color.red) // Listの謎のInsetのデバッグ時に使用する
                     .contentShape(Rectangle())
-                    .listRowBackground(candidate == candidates.selected ? candidates.selectedCandidatesBackgroundColor : Color.clear)
                 }
                 .listStyle(.plain)
                 // Listの行の上下の余白を削除
@@ -57,7 +56,6 @@ struct VerticalCandidatesView: View {
                 .frame(width: candidates.minWidth, height: CGFloat(words.count) * candidates.candidatesLineHeight)
                 // 背景色を設定してないときにhiddenにしちゃうと背景が抜けちゃうので、設定されているときだけhiddenにする
                 .scrollContentBackground(candidates.candidatesBackgroundColor != nil ? .hidden : .automatic)
-                .tint(Color.red)
                 if candidates.showPage {
                     HStack(alignment: .center, spacing: 0) {
                         Spacer()
@@ -74,7 +72,7 @@ struct VerticalCandidatesView: View {
                 AnnotationView(
                     annotations: $candidates.selectedAnnotations,
                     systemAnnotation: $candidates.selectedSystemAnnotation,
-                    font: candidates.annotationFont
+                    font: $candidates.annotationFont
                 )
                 .padding(EdgeInsets(top: 16, leading: 28, bottom: 16, trailing: 4))
                 .frame(width: CandidatesView.annotationPopupWidth, alignment: .topLeading)
@@ -158,7 +156,6 @@ struct VerticalCandidatesView_Previews: PreviewProvider {
         viewModel.systemAnnotations = [words.first!.word: String(repeating: "これはシステム辞書の注釈です。", count: 20)]
         viewModel.candidatesBackgroundColor = .green
         viewModel.annotationBackgroundColor = .blue
-        viewModel.selectedCandidatesBackgroundColor = .purple
         return viewModel
     }
 

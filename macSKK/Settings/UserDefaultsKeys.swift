@@ -21,8 +21,6 @@ struct UserDefaultsKeys {
     static let candidatesFontSize = "candidatesFontSize"
     /// 変換候補の背景色
     static let candidatesBackgroundColor = "candidatesBackgroundColor"
-    /// 選択している変換候補の背景色
-    static let selectedCandidatesBackgroundColor = "selectedCandidatesBackgroundColor"
     /// 変換候補の背景色を上書きするか
     static let overridesCandidatesBackgroundColor = "overridesCandidatesBackgroundColor"
     /// 注釈のフォントファミリー名

@@ -77,7 +77,6 @@
 "Candidates" = "変換候補";
 "Font Name" = "フォント名";
 "Background Color" = "背景色";
-"Selected Color" = "選択された行の色";
 "Override background color" = "背景色を上書きする";
 "Annotation" = "注釈";
 "Find completion from all dictionaries" = "ユーザー辞書だけでなくすべての辞書から補完を探す";

@@ -25,7 +25,6 @@ struct CandidateWindowSettingsView: View {
                     Text("Override background color")
                 })
                 ColorPicker("Background Color", selection: $settingsViewModel.candidatesBackgroundColor)
-                ColorPicker("Selected Color", selection: $settingsViewModel.selectedCandidatesBackgroundColor)
             }
             Section(header: Text("Annotation")) {
                 Picker("Font Name", selection: $settingsViewModel.annotationFontFamily) {

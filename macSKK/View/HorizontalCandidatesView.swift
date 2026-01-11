@@ -20,7 +20,7 @@ struct HorizontalCandidatesView: View {
                     AnnotationView(
                         annotations: $candidates.selectedAnnotations,
                         systemAnnotation: $candidates.selectedSystemAnnotation,
-                        font: candidates.annotationFont
+                        font: $candidates.annotationFont
                     )
                     .padding(EdgeInsets(top: 16, leading: 12, bottom: 16, trailing: 8))
                     .frame(width: CandidatesView.annotationPopupWidth, height: Self.annotationPopupHeight, alignment: .topLeading)
@@ -48,7 +48,6 @@ struct HorizontalCandidatesView: View {
                             .padding(.trailing, 8)
                     }
                     .frame(height: candidates.candidatesLineHeight)
-                    .background(candidates.selected == candidate ? (candidates.selectedCandidatesBackgroundColor ?? Color.accentColor) : candidates.candidatesBackgroundColor ?? Color.clear)
                 }
                 if candidates.showPage {
                     Text("\(currentPage + 1) / \(totalPageCount)")
@@ -63,7 +62,7 @@ struct HorizontalCandidatesView: View {
                 AnnotationView(
                     annotations: $candidates.selectedAnnotations,
                     systemAnnotation: $candidates.selectedSystemAnnotation,
-                    font: candidates.annotationFont
+                    font: $candidates.annotationFont
                 )
                 .padding(EdgeInsets(top: 16, leading: 28, bottom: 16, trailing: 4))
                 .frame(width: CandidatesView.annotationPopupWidth, height: Self.annotationPopupHeight, alignment: .topLeading)
@@ -141,7 +140,6 @@ struct HorizonalCandidatesView_Previews: PreviewProvider {
         viewModel.systemAnnotations = [words.first!.word: String(repeating: "これはシステム辞書の注釈です。", count: 20)]
         viewModel.candidatesBackgroundColor = .green
         viewModel.annotationBackgroundColor = .blue
-        viewModel.selectedCandidatesBackgroundColor = .purple
         return viewModel
     }
 

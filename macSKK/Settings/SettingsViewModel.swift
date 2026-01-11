@@ -167,8 +167,6 @@ final class SettingsViewModel: ObservableObject {
     @Published var overridesCandidatesBackgroundColor: Bool
     /// 変換候補の背景色
     @Published var candidatesBackgroundColor: Color
-    /// 選択している変換候補の背景色
-    @Published var selectedCandidatesBackgroundColor: Color
     // 注釈候補のフォントファミリー名。空文字列のときはSystem Font
     @Published var annotationFontFamily: String
     /// 注釈のフォントサイズ
@@ -238,15 +236,11 @@ final class SettingsViewModel: ObservableObject {
         candidatesFontFamily = UserDefaults.app.string(forKey: UserDefaultsKeys.candidatesFontFamily) ?? ""
         overridesCandidatesBackgroundColor = UserDefaults.app.bool(forKey: UserDefaultsKeys.overridesCandidatesBackgroundColor)
         if let serializedCandidatesBackgroundColor = UserDefaults.app.string(forKey: UserDefaultsKeys.candidatesBackgroundColor),
-           let candidatesBackgroundColor = ColorEncoding.decode(serializedCandidatesBackgroundColor),
-           let serializedSelectedCandidatesBackgroundColor = UserDefaults.app.string(forKey: UserDefaultsKeys.selectedCandidatesBackgroundColor),
-           let selectedCandidatesBackgroundColor = ColorEncoding.decode(serializedSelectedCandidatesBackgroundColor) {
+           let candidatesBackgroundColor = ColorEncoding.decode(serializedCandidatesBackgroundColor) {
             self.candidatesBackgroundColor = candidatesBackgroundColor
-            self.selectedCandidatesBackgroundColor = selectedCandidatesBackgroundColor
         } else {
             logger.error("設定candidatesBackgroundColorをデコードできません")
             candidatesBackgroundColor = .white
-            selectedCandidatesBackgroundColor = .white
             overridesCandidatesBackgroundColor = false
         }
         annotationFontSize = UserDefaults.app.integer(forKey: UserDefaultsKeys.annotationFontSize)
@@ -338,10 +332,11 @@ final class SettingsViewModel: ObservableObject {
         Global.registerKatakana = registerKatakana
         if overridesCandidatesBackgroundColor {
             Global.candidatesPanel.viewModel.candidatesBackgroundColor = candidatesBackgroundColor
-            Global.candidatesPanel.viewModel.selectedCandidatesBackgroundColor = selectedCandidatesBackgroundColor
+            Global.completionPanel.viewModel.candidatesViewModel.candidatesBackgroundColor = candidatesBackgroundColor
         }
         if overridesAnnotationBackgroundColor {
             Global.candidatesPanel.viewModel.annotationBackgroundColor = annotationBackgroundColor
+            Global.completionPanel.viewModel.candidatesViewModel.annotationBackgroundColor = annotationBackgroundColor
         }
 
         // SKK-JISYO.Lのようなファイルの読み込みが遅いのでバックグラウンドで処理
@@ -490,19 +485,27 @@ final class SettingsViewModel: ObservableObject {
             UserDefaults.app.set(candidatesFontFamily, forKey: UserDefaultsKeys.candidatesFontFamily)
             if candidatesFontFamily.isEmpty {
                 logger.log("変換候補のフォント名をデフォルトに変更しました")
-                Global.candidatesPanel.viewModel.candidatesFont = .system(size: CGFloat(self.candidatesFontSize))
-                Global.candidatesPanel.viewModel.candidatesMarkerFont = .system(size: CGFloat(self.candidatesFontSize) * 0.9)
-                Global.completionPanel.viewModel.candidatesViewModel.candidatesFont = .system(size: CGFloat(self.candidatesFontSize))
-                Global.completionPanel.viewModel.candidatesViewModel.candidatesMarkerFont = .system(size: CGFloat(self.candidatesFontSize) * 0.9)
             } else {
                 logger.log("変換候補のフォント名を\(candidatesFontFamily, privacy: .public)に変更しました")
-                if let font = NSFont(name: candidatesFontFamily, size: CGFloat(self.candidatesFontSize)),
-                   let markerFont = NSFont(name: candidatesFontFamily, size: CGFloat(self.candidatesFontSize) * 0.9) {
-                    Global.candidatesPanel.viewModel.candidatesFont = Font(font)
-                    Global.candidatesPanel.viewModel.candidatesMarkerFont = Font(markerFont)
-                    Global.completionPanel.viewModel.candidatesViewModel.candidatesFont = Font(font)
-                    Global.completionPanel.viewModel.candidatesViewModel.candidatesMarkerFont = Font(markerFont)
-                }
+            }
+        }.store(in: &cancellables)
+
+        $candidatesFontSize.combineLatest($candidatesFontFamily).sink { (candidatesFontSize, candidatesFontFamily) in
+            if candidatesFontFamily.isEmpty {
+                let candidatesFont: Font = .system(size: CGFloat(candidatesFontSize))
+                let candidatesMarkerFont: Font = .system(size: CGFloat(candidatesFontSize) * 0.9)
+                Global.candidatesPanel.viewModel.candidatesFont = candidatesFont
+                Global.candidatesPanel.viewModel.candidatesMarkerFont = candidatesMarkerFont
+                Global.completionPanel.viewModel.candidatesViewModel.candidatesFont = candidatesFont
+                Global.completionPanel.viewModel.candidatesViewModel.candidatesMarkerFont = candidatesMarkerFont
+            } else if let font = NSFont(name: candidatesFontFamily, size: CGFloat(candidatesFontSize)),
+                      let markerFont = NSFont(name: candidatesFontFamily, size: CGFloat(candidatesFontSize) * 0.9) {
+                let candidatesFont: Font = Font(font)
+                let candidatesMarkerFont: Font = Font(markerFont)
+                Global.candidatesPanel.viewModel.candidatesFont = candidatesFont
+                Global.candidatesPanel.viewModel.candidatesMarkerFont = candidatesMarkerFont
+                Global.completionPanel.viewModel.candidatesViewModel.candidatesFont = candidatesFont
+                Global.completionPanel.viewModel.candidatesViewModel.candidatesMarkerFont = candidatesMarkerFont
             }
         }.store(in: &cancellables)
 
@@ -511,20 +514,6 @@ final class SettingsViewModel: ObservableObject {
             Global.candidatesPanel.viewModel.candidatesFontSize = CGFloat(candidatesFontSize)
             Global.completionPanel.viewModel.candidatesViewModel.candidatesFontSize = CGFloat(candidatesFontSize)
             logger.log("変換候補のフォントサイズを\(candidatesFontSize)に変更しました")
-            if self.candidatesFontFamily.isEmpty {
-                Global.candidatesPanel.viewModel.candidatesFont = .system(size: CGFloat(candidatesFontSize))
-                Global.candidatesPanel.viewModel.candidatesMarkerFont = .system(size: CGFloat(candidatesFontSize) * 0.9)
-                Global.completionPanel.viewModel.candidatesViewModel.candidatesFont = .system(size: CGFloat(candidatesFontSize))
-                Global.completionPanel.viewModel.candidatesViewModel.candidatesMarkerFont = .system(size: CGFloat(candidatesFontSize) * 0.9)
-            } else {
-                if let font = NSFont(name: self.candidatesFontFamily, size: CGFloat(candidatesFontSize)),
-                   let markerFont = NSFont(name: self.candidatesFontFamily, size: CGFloat(candidatesFontSize) * 0.9) {
-                    Global.candidatesPanel.viewModel.candidatesFont = Font(font)
-                    Global.candidatesPanel.viewModel.candidatesMarkerFont = Font(markerFont)
-                    Global.completionPanel.viewModel.candidatesViewModel.candidatesFont = Font(font)
-                    Global.completionPanel.viewModel.candidatesViewModel.candidatesMarkerFont = Font(markerFont)
-                }
-            }
         }.store(in: &cancellables)
 
         $overridesCandidatesBackgroundColor.dropFirst().sink { overridesCandidatesBackgroundColor in
@@ -543,32 +532,30 @@ final class SettingsViewModel: ObservableObject {
             Global.completionPanel.viewModel.candidatesViewModel.candidatesBackgroundColor = candidatesBackgroundColor
         }.store(in: &cancellables)
 
+        $annotationFontSize.combineLatest($annotationFontFamily).sink { (annotationFontSize, annotationFontFamily) in
+            if annotationFontFamily.isEmpty {
+                let annotationFont: Font = .system(size: CGFloat(annotationFontSize))
+                Global.candidatesPanel.viewModel.annotationFont = annotationFont
+                Global.completionPanel.viewModel.candidatesViewModel.annotationFont = annotationFont
+            } else if let font = NSFont(name: annotationFontFamily, size: CGFloat(annotationFontSize)) {
+                let annotationFont: Font = Font(font)
+                Global.candidatesPanel.viewModel.annotationFont = annotationFont
+                Global.completionPanel.viewModel.candidatesViewModel.annotationFont = annotationFont
+            }
+        }
+        .store(in: &cancellables)
+
         $annotationFontSize.dropFirst().sink { annotationFontSize in
             UserDefaults.app.set(annotationFontSize, forKey: UserDefaultsKeys.annotationFontSize)
             logger.log("注釈のフォントサイズを\(annotationFontSize)に変更しました")
-            if self.annotationFontFamily.isEmpty {
-                Global.candidatesPanel.viewModel.annotationFont = .system(size: CGFloat(annotationFontSize))
-                Global.completionPanel.viewModel.candidatesViewModel.annotationFont = .system(size: CGFloat(annotationFontSize))
-            } else {
-                if let font = NSFont(name: self.annotationFontFamily, size: CGFloat(annotationFontSize)) {
-                    Global.candidatesPanel.viewModel.annotationFont = Font(font)
-                    Global.completionPanel.viewModel.candidatesViewModel.annotationFont = Font(font)
-                }
-            }
         }.store(in: &cancellables)
 
         $annotationFontFamily.dropFirst().sink { annotationFontFamily in
+            UserDefaults.app.set(annotationFontFamily, forKey: UserDefaultsKeys.annotationFontFamily)
             if annotationFontFamily.isEmpty {
                 logger.log("注釈のフォント名をデフォルトに変更しました")
-                Global.candidatesPanel.viewModel.annotationFont = .system(size: CGFloat(self.annotationFontSize))
-                Global.completionPanel.viewModel.candidatesViewModel.annotationFont = .system(size: CGFloat(self.annotationFontSize))
             } else {
-                UserDefaults.app.set(annotationFontFamily, forKey: UserDefaultsKeys.annotationFontFamily)
                 logger.log("注釈のフォント名を\(annotationFontFamily, privacy: .public)に変更しました")
-                if let font = NSFont(name: annotationFontFamily, size: CGFloat(self.annotationFontSize)) {
-                    Global.candidatesPanel.viewModel.annotationFont = Font(font)
-                    Global.completionPanel.viewModel.candidatesViewModel.annotationFont = Font(font)
-                }
             }
         }.store(in: &cancellables)
 
@@ -730,7 +717,6 @@ final class SettingsViewModel: ObservableObject {
         candidatesFontFamily = ""
         overridesCandidatesBackgroundColor = false
         candidatesBackgroundColor = .blue
-        selectedCandidatesBackgroundColor = .blue
         annotationFontSize = 13
         annotationFontFamily = ""
         overridesAnnotationBackgroundColor = false

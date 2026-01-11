@@ -7,7 +7,7 @@ import SwiftUI
 struct AnnotationView: View {
     @Binding var annotations: [Annotation]
     @Binding var systemAnnotation: String?
-    let font: Font
+    @Binding var font: Font
     @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
@@ -58,7 +58,7 @@ struct AnnotationView_Previews: PreviewProvider {
         AnnotationView(
             annotations: .constant([Annotation(dictId: "SKK-JISYO.L", text: "これは辞書の注釈です。")]),
             systemAnnotation: .constant(nil),
-            font: annotationFont
+            font: .constant(annotationFont)
         )
         .frame(width: 300)
         .previewDisplayName("SKK辞書の注釈のみ")
@@ -66,35 +66,35 @@ struct AnnotationView_Previews: PreviewProvider {
             annotations: .constant([Annotation(dictId: "SKK-JISYO.L", text: "これは辞書の注釈です。"),
                                     Annotation(dictId: Annotation.userDictId, text: "これはユーザー辞書の注釈です。")]),
             systemAnnotation: .constant(nil),
-            font: annotationFont
+            font: .constant(annotationFont)
         )
         .frame(width: 300)
         .previewDisplayName("SKK辞書の注釈 + ユーザー辞書の注釈")
         AnnotationView(
             annotations: .constant([Annotation(dictId: "SKK-JISYO.L", text: "これは辞書の注釈です。")]),
             systemAnnotation: .constant(String(repeating: "これはシステム辞書の注釈です。", count: 10)),
-            font: annotationFont
+            font: .constant(annotationFont)
         )
         .frame(width: 300)
         .previewDisplayName("SKK辞書の注釈 & システム辞書の注釈")
         AnnotationView(
             annotations: .constant([]),
             systemAnnotation: .constant(String(repeating: "これはシステム辞書の注釈です。", count: 10)),
-            font: annotationFont
+            font: .constant(annotationFont)
         )
         .frame(width: 300)
         .previewDisplayName("システム辞書のみ")
         AnnotationView(
             annotations: .constant([]),
             systemAnnotation: .constant(nil),
-            font: annotationFont
+            font: .constant(annotationFont)
         )
         .frame(width: 300)
         .previewDisplayName("注釈なし")
         AnnotationView(
             annotations: .constant([Annotation(dictId: "SKK-JISYO.L", text: "フォントサイズ19")]),
             systemAnnotation: .constant(nil),
-            font: .system(size: 19)
+            font: .constant(.system(size: 19))
         )
         .frame(width: 300)
         .previewDisplayName("フォントサイズ19")

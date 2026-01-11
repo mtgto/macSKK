@@ -43,8 +43,6 @@ final class CandidatesViewModel: ObservableObject {
     @Published var candidatesFontSize: CGFloat
     /// 変換候補の背景色
     @Published var candidatesBackgroundColor: Color?
-    /// 選択している変換候補の背景色
-    @Published var selectedCandidatesBackgroundColor: Color?
     /// 注釈のフォントサイズ
     @Published var annotationFont: Font
     @Published var annotationBackgroundColor: Color?
