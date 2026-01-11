@@ -20,7 +20,7 @@ struct HorizontalCandidatesView: View {
                     AnnotationView(
                         annotations: $candidates.selectedAnnotations,
                         systemAnnotation: $candidates.selectedSystemAnnotation,
-                        annotationFontSize: candidates.annotationFontSize
+                        font: $candidates.annotationFont
                     )
                     .padding(EdgeInsets(top: 16, leading: 12, bottom: 16, trailing: 8))
                     .frame(width: CandidatesView.annotationPopupWidth, height: Self.annotationPopupHeight, alignment: .topLeading)
@@ -48,7 +48,6 @@ struct HorizontalCandidatesView: View {
                             .padding(.trailing, 8)
                     }
                     .frame(height: candidates.candidatesLineHeight)
-                    .background(candidates.selected == candidate ? Color.accentColor : Color.clear)
                 }
                 if candidates.showPage {
                     Text("\(currentPage + 1) / \(totalPageCount)")
@@ -57,17 +56,18 @@ struct HorizontalCandidatesView: View {
                         .fixedSize(horizontal: true, vertical: false)
                 }
             }
+            .optionalBackground(candidates.candidatesBackgroundColor)
             .background()
             if candidates.popoverIsPresented && !candidates.displayPopoverInLeftOrTop {
                 AnnotationView(
                     annotations: $candidates.selectedAnnotations,
                     systemAnnotation: $candidates.selectedSystemAnnotation,
-                    annotationFontSize: candidates.annotationFontSize
+                    font: $candidates.annotationFont
                 )
                 .padding(EdgeInsets(top: 16, leading: 28, bottom: 16, trailing: 4))
                 .frame(width: CandidatesView.annotationPopupWidth, height: Self.annotationPopupHeight, alignment: .topLeading)
                 .fixedSize(horizontal: false, vertical: /*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
-                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
+                .optionalBackground(candidates.annotationBackgroundColor, cornerRadius: 10)
                 .opacity(0.9)
             }
         }
@@ -134,6 +134,15 @@ struct HorizonalCandidatesView_Previews: PreviewProvider {
         return viewModel
     }
 
+    private static func backgroundColorViewModel() -> CandidatesViewModel {
+        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, showAnnotationPopover: true)
+        viewModel.selected = words.first
+        viewModel.systemAnnotations = [words.first!.word: String(repeating: "これはシステム辞書の注釈です。", count: 20)]
+        viewModel.candidatesBackgroundColor = .green
+        viewModel.annotationBackgroundColor = .blue
+        return viewModel
+    }
+
     static var previews: some View {
         HorizontalCandidatesView(candidates: pageViewModel(), words: words, currentPage: 9, totalPageCount: 10)
             .background(Color.cyan)
@@ -154,5 +163,8 @@ struct HorizonalCandidatesView_Previews: PreviewProvider {
         HorizontalCandidatesView(candidates: pageWithoutPageNumberViewModel(), words: words, currentPage: 9, totalPageCount: 10)
             .background(Color.cyan)
             .previewDisplayName("パネル表示 (ページなし)")
+        HorizontalCandidatesView(candidates: backgroundColorViewModel(), words: words, currentPage: 0, totalPageCount: 3)
+            .background(Color.cyan)
+            .previewDisplayName("背景色設定")
     }
 }

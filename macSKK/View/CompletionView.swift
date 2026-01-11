@@ -26,6 +26,7 @@ struct CompletionView: View {
                 .font(.caption)
                 .frame(maxWidth: .infinity)
                 .frame(height: Self.footerHeight)
+                .optionalBackground(viewModel.candidatesViewModel.candidatesBackgroundColor)
         }
         .padding(viewModel.padding)
         .fixedSize()

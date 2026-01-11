@@ -223,6 +223,12 @@ struct macSKKApp: App {
             UserDefaultsKeys.showCandidateForCompletion: true,
             UserDefaultsKeys.fixedCompletionByPeriod: true,
             UserDefaultsKeys.registerKatakana: false,
+            UserDefaultsKeys.candidatesFontFamily: "", // 空文字列はSystem Font
+            UserDefaultsKeys.overridesCandidatesBackgroundColor: false,
+            UserDefaultsKeys.candidatesBackgroundColor: "#FFFFFF",
+            UserDefaultsKeys.annotationFontFamily: "", // 空文字列はSystem Font
+            UserDefaultsKeys.overridesAnnotationBackgroundColor: false,
+            UserDefaultsKeys.annotationBackgroundColor: "#FFFFFF",
         ])
     }
 
