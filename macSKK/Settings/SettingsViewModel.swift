@@ -492,11 +492,10 @@ final class SettingsViewModel: ObservableObject {
                 Global.completionPanel.viewModel.candidatesViewModel.candidatesMarkerFont = candidatesMarkerFont
             } else if let font = NSFont(name: candidatesFontFamily, size: CGFloat(candidatesFontSize)),
                       let markerFont = NSFont(name: candidatesFontFamily, size: CGFloat(candidatesFontSize) * 0.9) {
-                let candidatesFont: Font = Font(font)
                 let candidatesMarkerFont: Font = Font(markerFont)
-                Global.candidatesPanel.viewModel.candidatesFont = candidatesFont
+                Global.candidatesPanel.viewModel.nsCandidatesFont = font
                 Global.candidatesPanel.viewModel.candidatesMarkerFont = candidatesMarkerFont
-                Global.completionPanel.viewModel.candidatesViewModel.candidatesFont = candidatesFont
+                Global.completionPanel.viewModel.candidatesViewModel.nsCandidatesFont = font
                 Global.completionPanel.viewModel.candidatesViewModel.candidatesMarkerFont = candidatesMarkerFont
             }
         }.store(in: &cancellables)

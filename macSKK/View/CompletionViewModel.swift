@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import Combine
+import AppKit
 
 // 現在表示されている補完候補の情報
 enum CurrentCompletion {
@@ -35,7 +36,7 @@ final class CompletionViewModel: ObservableObject {
             currentPage: 0,
             totalPageCount: 1,
             showAnnotationPopover: false,
-            candidatesFont: .system(size: CGFloat(candidatesFontSize)),
+            nsCandidatesFont: NSFont.systemFont(ofSize: CGFloat(candidatesFontSize)),
             candidatesMarkerFont: .system(size: CGFloat(candidatesFontSize) * 0.9),
             annotationFont: .system(size: CGFloat(annotationFontSize)),
             showPage: false,

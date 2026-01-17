@@ -125,7 +125,13 @@ struct VerticalCandidatesView_Previews: PreviewProvider {
     }
 
     private static func fontSize19ViewModel() -> CandidatesViewModel {
-        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, showAnnotationPopover: true, candidatesFontSize: CGFloat(19), candidatesFont: .system(size: 19), annotationFontSize: CGFloat(19))
+        let viewModel = CandidatesViewModel(candidates: words,
+                                            currentPage: 0,
+                                            totalPageCount: 3,
+                                            showAnnotationPopover: true,
+                                            candidatesFontSize: CGFloat(19),
+                                            nsCandidatesFont: NSFont.systemFont(ofSize: CGFloat(19)),
+                                            annotationFontSize: CGFloat(19))
         viewModel.selected = words.first
         viewModel.systemAnnotations = [words.first!.word: String(repeating: "これはシステム辞書の注釈です。", count: 20)]
         viewModel.maxWidth = 1000
@@ -141,9 +147,9 @@ struct VerticalCandidatesView_Previews: PreviewProvider {
     private static func customFontViewModel() -> CandidatesViewModel {
         let fontName = "凸版文久見出しゴシック"
         let fontSize: CGFloat = 16
-        let font = Font(NSFont(name: fontName, size: fontSize)!)
+        let font = NSFont(name: fontName, size: fontSize)!
         let candidatesMarkerFont = Font(NSFont(name: fontName, size: fontSize * 0.9)!)
-        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, showAnnotationPopover: true, candidatesFontSize: fontSize, candidatesFont: font, candidatesMarkerFont: candidatesMarkerFont)
+        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, showAnnotationPopover: true, candidatesFontSize: fontSize, nsCandidatesFont: font, candidatesMarkerFont: candidatesMarkerFont)
         viewModel.selected = words.first
         viewModel.systemAnnotations = [words.first!.word: String(repeating: "これはシステム辞書の注釈です。", count: 20)]
         viewModel.maxWidth = 1000
