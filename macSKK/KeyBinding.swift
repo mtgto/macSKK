@@ -112,6 +112,10 @@ struct KeyBinding: Identifiable, Hashable {
                 }
             // abbrevはinputModeがdirect,eisu以外のときのみ受理
             case .abbrev:
+                // 候補選択時は候補決定後に次の入力として扱うので許容する
+                if case .selecting(_) = inputMethod {
+                    return true
+                }
                 if case .direct = inputMode {
                     return false
                 } else if case .eisu = inputMode {
