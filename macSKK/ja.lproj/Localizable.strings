@@ -74,6 +74,7 @@
 "Behavior of Period" = "ピリオドの挙動";
 "Candidates font size" = "変換候補のフォントサイズ";
 "Annotation font size" = "注釈のフォントサイズ";
+"FontSizeDefault" = "(デフォルト)";
 "Candidates" = "変換候補";
 "Font Name" = "フォント名";
 "Background Color" = "背景色";

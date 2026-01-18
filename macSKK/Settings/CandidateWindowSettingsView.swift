@@ -18,7 +18,7 @@ struct CandidateWindowSettingsView: View {
                 .disabled(settingsViewModel.availableFontFamilies.isEmpty)
                 Picker("Candidates font size", selection: $settingsViewModel.candidatesFontSize) {
                     ForEach(6..<31) { count in
-                        Text("\(count)").tag(count)
+                        Text(count == 13 ? "\(count) " + String(localized: "FontSizeDefault") : "\(count)").tag(count)
                     }
                 }
                 Toggle(isOn: $settingsViewModel.overridesCandidatesBackgroundColor, label: {
@@ -36,7 +36,7 @@ struct CandidateWindowSettingsView: View {
                 }
                 Picker("Annotation font size", selection: $settingsViewModel.annotationFontSize) {
                     ForEach(6..<31) { count in
-                        Text("\(count)").tag(count)
+                        Text(count == 13 ? "\(count) " + String(localized: "FontSizeDefault") : "\(count)").tag(count)
                     }
                 }
                 Toggle(isOn: $settingsViewModel.overridesAnnotationBackgroundColor, label: {
