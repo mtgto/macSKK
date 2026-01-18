@@ -16,13 +16,13 @@ struct VerticalCandidatesView: View {
                     AnnotationView(
                         annotations: $candidates.selectedAnnotations,
                         systemAnnotation: $candidates.selectedSystemAnnotation,
-                        annotationFontSize: candidates.annotationFontSize
+                        font: $candidates.annotationFont
                     )
                     .padding(EdgeInsets(top: 16, leading: 12, bottom: 16, trailing: 8))
                     .frame(width: CandidatesView.annotationPopupWidth, alignment: .topLeading)
                     .frame(maxHeight: max(200, CGFloat(words.count) * candidates.candidatesLineHeight + CandidatesView.footerHeight))
                     .fixedSize(horizontal: false, vertical: /*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
-                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
+                    .optionalBackground(candidates.annotationBackgroundColor, cornerRadius: 10)
                     .opacity(0.9)
                 } else {
                     Spacer(minLength: CandidatesView.annotationPopupWidth)
@@ -32,14 +32,14 @@ struct VerticalCandidatesView: View {
                 List(Array(words.enumerated()), id: \.element, selection: $candidates.selected) { index, candidate in
                     HStack(alignment: .firstTextBaseline) {
                         Text(String(Global.selectCandidateKeys[index]).uppercased())
-                            // 変換候補の90%のフォントサイズ
-                            .font(.system(size: candidates.candidatesFontSize * 0.9))
+                            .font(candidates.candidatesMarkerFont)
                             // 目立たないようにする
                             .foregroundStyle(candidates.selected == candidate ? Color(NSColor.selectedMenuItemTextColor.withAlphaComponent(0.8)) : Color(NSColor.secondaryLabelColor))
                             .padding(EdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 0))
                             .frame(width: 16)
                         Text(candidate.word)
-                            .font(.system(size: candidates.candidatesFontSize))
+//                            .font(.system(size: candidates.candidatesFontSize))
+                            .font(candidates.candidatesFont)
                             .fixedSize(horizontal: true, vertical: false)
                             .padding(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 4))
                         Spacer()  // popoverをListの右に表示するために余白を入れる
@@ -54,6 +54,8 @@ struct VerticalCandidatesView: View {
                 .environment(\.defaultMinListRowHeight, candidates.candidatesLineHeight)
                 .scrollDisabled(true)
                 .frame(width: candidates.minWidth, height: CGFloat(words.count) * candidates.candidatesLineHeight)
+                // 背景色を設定してないときにhiddenにしちゃうと背景が抜けちゃうので、設定されているときだけhiddenにする
+                .scrollContentBackground(candidates.candidatesBackgroundColor != nil ? .hidden : .automatic)
                 if candidates.showPage {
                     HStack(alignment: .center, spacing: 0) {
                         Spacer()
@@ -62,20 +64,21 @@ struct VerticalCandidatesView: View {
                             .padding(EdgeInsets(top: 2, leading: 0, bottom: 2, trailing: 4))
                     }
                     .frame(width: candidates.minWidth, height: CandidatesView.footerHeight)
-                    .background()
+                    .optionalBackground(candidates.candidatesBackgroundColor)
                 }
             }
+            .optionalBackground(candidates.candidatesBackgroundColor)
             if candidates.popoverIsPresented && !candidates.displayPopoverInLeftOrTop {
                 AnnotationView(
                     annotations: $candidates.selectedAnnotations,
                     systemAnnotation: $candidates.selectedSystemAnnotation,
-                    annotationFontSize: candidates.annotationFontSize
+                    font: $candidates.annotationFont
                 )
                 .padding(EdgeInsets(top: 16, leading: 28, bottom: 16, trailing: 4))
                 .frame(width: CandidatesView.annotationPopupWidth, alignment: .topLeading)
                 .frame(maxHeight: max(200, CGFloat(words.count) * candidates.candidatesLineHeight + CandidatesView.footerHeight))
                 .fixedSize(horizontal: false, vertical: /*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
-                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
+                .optionalBackground(candidates.annotationBackgroundColor, cornerRadius: 10)
                 .opacity(0.9)
             }
         }
@@ -122,7 +125,13 @@ struct VerticalCandidatesView_Previews: PreviewProvider {
     }
 
     private static func fontSize19ViewModel() -> CandidatesViewModel {
-        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, showAnnotationPopover: true, candidatesFontSize: CGFloat(19), annotationFontSize: CGFloat(19))
+        let viewModel = CandidatesViewModel(candidates: words,
+                                            currentPage: 0,
+                                            totalPageCount: 3,
+                                            showAnnotationPopover: true,
+                                            candidatesFontSize: CGFloat(19),
+                                            nsCandidatesFont: NSFont.systemFont(ofSize: CGFloat(19)),
+                                            annotationFontSize: CGFloat(19))
         viewModel.selected = words.first
         viewModel.systemAnnotations = [words.first!.word: String(repeating: "これはシステム辞書の注釈です。", count: 20)]
         viewModel.maxWidth = 1000
@@ -132,6 +141,27 @@ struct VerticalCandidatesView_Previews: PreviewProvider {
     private static func pageWithoutPageNumberViewModel() -> CandidatesViewModel {
         let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, showAnnotationPopover: false)
         viewModel.showPage = false
+        return viewModel
+    }
+
+    private static func customFontViewModel() -> CandidatesViewModel {
+        let fontName = "凸版文久見出しゴシック"
+        let fontSize: CGFloat = 16
+        let font = NSFont(name: fontName, size: fontSize)!
+        let candidatesMarkerFont = Font(NSFont(name: fontName, size: fontSize * 0.9)!)
+        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, showAnnotationPopover: true, candidatesFontSize: fontSize, nsCandidatesFont: font, candidatesMarkerFont: candidatesMarkerFont)
+        viewModel.selected = words.first
+        viewModel.systemAnnotations = [words.first!.word: String(repeating: "これはシステム辞書の注釈です。", count: 20)]
+        viewModel.maxWidth = 1000
+        return viewModel
+    }
+
+    private static func backgroundColorViewModel() -> CandidatesViewModel {
+        let viewModel = CandidatesViewModel(candidates: words, currentPage: 0, totalPageCount: 3, showAnnotationPopover: true)
+        viewModel.selected = words.first
+        viewModel.systemAnnotations = [words.first!.word: String(repeating: "これはシステム辞書の注釈です。", count: 20)]
+        viewModel.candidatesBackgroundColor = .green
+        viewModel.annotationBackgroundColor = .blue
         return viewModel
     }
 
@@ -149,8 +179,14 @@ struct VerticalCandidatesView_Previews: PreviewProvider {
         VerticalCandidatesView(candidates: fontSize19ViewModel(), words: words, currentPage: 0, totalPageCount: 3)
             .background(Color.cyan)
             .previewDisplayName("フォントサイズ19")
+        VerticalCandidatesView(candidates: customFontViewModel(), words: words, currentPage: 0, totalPageCount: 3)
+            .background(Color.cyan)
+            .previewDisplayName("カスタムフォント")
         VerticalCandidatesView(candidates: pageWithoutPageNumberViewModel(), words: words, currentPage: 0, totalPageCount: 3)
             .background(Color.cyan)
             .previewDisplayName("パネル表示 (ページなし)")
+        VerticalCandidatesView(candidates: backgroundColorViewModel(), words: words, currentPage: 0, totalPageCount: 3)
+            .background(Color.cyan)
+            .previewDisplayName("背景色設定")
     }
 }

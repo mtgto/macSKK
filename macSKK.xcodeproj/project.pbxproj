@@ -98,6 +98,9 @@
 		CEA253982E23AB7600618E64 /* DictSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA253972E23AB7600618E64 /* DictSetting.swift */; };
 		CEA2539A2E23DA9000618E64 /* DictSettingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA253992E23DA9000618E64 /* DictSettingTests.swift */; };
 		CEA253E62E2E852000618E64 /* UserDefaults+App.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA253E52E2E852000618E64 /* UserDefaults+App.swift */; };
+		CEA602AA2F02C6FD00E605F2 /* CandidateWindowSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA602A92F02C6FD00E605F2 /* CandidateWindowSettingsView.swift */; };
+		CEA602AC2F02CFB000E605F2 /* OptionalBackgroundModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA602AB2F02CFB000E605F2 /* OptionalBackgroundModifier.swift */; };
+		CEA602AE2F03795D00E605F2 /* ColorEncoding.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA602AD2F03795D00E605F2 /* ColorEncoding.swift */; };
 		CEA78FAA295EBCAC00B67E25 /* StateMachineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA78FA9295EBCAC00B67E25 /* StateMachineTests.swift */; };
 		CEA78FAC2960401F00B67E25 /* String+Transform.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA78FAB2960401F00B67E25 /* String+Transform.swift */; };
 		CEA78FAE2961BA1D00B67E25 /* String+TransformTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA78FAD2961BA1D00B67E25 /* String+TransformTests.swift */; };
@@ -285,6 +288,9 @@
 		CEA253972E23AB7600618E64 /* DictSetting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictSetting.swift; sourceTree = "<group>"; };
 		CEA253992E23DA9000618E64 /* DictSettingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictSettingTests.swift; sourceTree = "<group>"; };
 		CEA253E52E2E852000618E64 /* UserDefaults+App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UserDefaults+App.swift"; sourceTree = "<group>"; };
+		CEA602A92F02C6FD00E605F2 /* CandidateWindowSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CandidateWindowSettingsView.swift; sourceTree = "<group>"; };
+		CEA602AB2F02CFB000E605F2 /* OptionalBackgroundModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OptionalBackgroundModifier.swift; sourceTree = "<group>"; };
+		CEA602AD2F03795D00E605F2 /* ColorEncoding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorEncoding.swift; sourceTree = "<group>"; };
 		CEA78FA9295EBCAC00B67E25 /* StateMachineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateMachineTests.swift; sourceTree = "<group>"; };
 		CEA78FAB2960401F00B67E25 /* String+Transform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Transform.swift"; sourceTree = "<group>"; };
 		CEA78FAD2961BA1D00B67E25 /* String+TransformTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+TransformTests.swift"; sourceTree = "<group>"; };
@@ -483,6 +489,7 @@
 				CED987402BB953E7001B40F9 /* Data+EucJis2004.swift */,
 				CE485A892A8FA5C6008271EF /* UserNotificationDelegate.swift */,
 				CEBEE7862D97D25800C73B6D /* NSEvent+CoreService.swift */,
+				CEA602AD2F03795D00E605F2 /* ColorEncoding.swift */,
 				CE7F9ADA2AB53E31001B1877 /* View */,
 				CEC376E929651DE000D9C432 /* Settings */,
 				CEB088922A81342E00EFD1E3 /* macSKK-Bridging-Header.h */,
@@ -592,6 +599,7 @@
 				CEB52CC42E080B030025542F /* DateConversion */,
 				CE1B00692BA5490E00C830FD /* SKKServDictView.swift */,
 				CE8871312E574CC900E20BFB /* CompletionSettingsView.swift */,
+				CEA602A92F02C6FD00E605F2 /* CandidateWindowSettingsView.swift */,
 				CEE3717429653112000DB2C3 /* SoftwareUpdateView.swift */,
 				CE97887A2A9B93EB00F9B196 /* DirectModeView.swift */,
 				CED098502B95F32600F2E844 /* WorkaroundView.swift */,
@@ -601,6 +609,7 @@
 				CE40D9A02A6D0C2F00D44799 /* SystemDictView.swift */,
 				CE00FCCD2C30E99300AC6EEB /* KeyBinding */,
 				CE2157652B2EA985006E4C41 /* UserDefaultsKeys.swift */,
+				CEA602AB2F02CFB000E605F2 /* OptionalBackgroundModifier.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -874,6 +883,7 @@
 				CE485A8A2A8FA5C6008271EF /* UserNotificationDelegate.swift in Sources */,
 				CE8871322E574CC900E20BFB /* CompletionSettingsView.swift in Sources */,
 				CE84A3EB295DA715009394C4 /* Dict.swift in Sources */,
+				CEA602AC2F02CFB000E605F2 /* OptionalBackgroundModifier.swift in Sources */,
 				CE40D9A12A6D0C2F00D44799 /* SystemDictView.swift in Sources */,
 				CEADA4512B1358D40026E2BD /* InputSource.swift in Sources */,
 				CE84A3E7295DA4DA009394C4 /* Romaji.swift in Sources */,
@@ -913,10 +923,12 @@
 				CEADA44F2B1357090026E2BD /* GeneralView.swift in Sources */,
 				CE84A3DC2957174D009394C4 /* State.swift in Sources */,
 				CE496C8C2B43968A001C623C /* LogView.swift in Sources */,
+				CEA602AA2F02C6FD00E605F2 /* CandidateWindowSettingsView.swift in Sources */,
 				CEA253962E2290AC00618E64 /* SKKServDictSetting.swift in Sources */,
 				CEE3717529653112000DB2C3 /* SoftwareUpdateView.swift in Sources */,
 				CE496C912B440892001C623C /* URL+Additions.swift in Sources */,
 				CE11C7BD2BE47D5D00A35F3D /* KeyBindingView.swift in Sources */,
+				CEA602AE2F03795D00E605F2 /* ColorEncoding.swift in Sources */,
 				CE49A27A2C245F6400D53CFE /* KeyBindingSetView.swift in Sources */,
 				CE39DB212A8DFD8F00BC619F /* MarkedText.swift in Sources */,
 				CEB52CCA2E0D64B10025542F /* DateConversionView.swift in Sources */,

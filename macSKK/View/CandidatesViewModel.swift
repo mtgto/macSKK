@@ -4,6 +4,7 @@
 import Combine
 import Foundation
 import AppKit
+import SwiftUI
 
 /// 現在表示されている変換候補の情報
 enum CurrentCandidates {
@@ -34,10 +35,18 @@ final class CandidatesViewModel: ObservableObject {
     @Published var selectedAnnotations: [Annotation] = []
     /// パネル表示時に注釈を表示するかどうか
     @Published var showAnnotationPopover: Bool
-    /// 変換候補のフォントサイズ
+    /// 変換候補のフォント
+    @Published var nsCandidatesFont: NSFont
+    @Published var candidatesFont: Font
+    /// 変換候補の何番目かを表す数字を表示するフォント。candidatesFontの90%
+    @Published var candidatesMarkerFont: Font
+    /// 変換候補のフォントサイズ。高さの計算に使用する
     @Published var candidatesFontSize: CGFloat
+    /// 変換候補の背景色
+    @Published var candidatesBackgroundColor: Color?
     /// 注釈のフォントサイズ
-    @Published var annotationFontSize: CGFloat
+    @Published var annotationFont: Font
+    @Published var annotationBackgroundColor: Color?
     /// 表示座標から右方向に取れる最大の幅。負数のときは不明なとき
     @Published var maxWidth: CGFloat = -1
     /// 最長のテキストを表示するために必要なビューの横幅。パネル表示のときは注釈部分は除いたリスト部分の幅。
@@ -61,20 +70,26 @@ final class CandidatesViewModel: ObservableObject {
         totalPageCount: Int,
         showAnnotationPopover: Bool,
         candidatesFontSize: CGFloat = 13,
+        nsCandidatesFont: NSFont = NSFont.systemFont(ofSize: 13),
+        candidatesMarkerFont: Font = .system(size: 13 * 0.9),
         annotationFontSize: CGFloat = 13,
+        annotationFont: Font = .system(size: 13),
         showPage: Bool = true
     ) {
+        self.candidatesFontSize = candidatesFontSize
+        self.nsCandidatesFont = nsCandidatesFont
+        self.candidatesFont = Font(nsCandidatesFont)
+        self.candidatesMarkerFont = candidatesMarkerFont
+        self.annotationFont = annotationFont
+        self.showAnnotationPopover = showAnnotationPopover
+        self.showPage = showPage
+
         self.candidates = .panel(words: candidates,
                                  currentPage: currentPage,
                                  totalPageCount: totalPageCount)
-        self.showAnnotationPopover = showAnnotationPopover
-        self.candidatesFontSize = candidatesFontSize
-        self.annotationFontSize = annotationFontSize
-        self.showPage = showPage
         if let first = candidates.first {
             self.selected = first
         }
-
 
         $selected.combineLatest($systemAnnotations).sink { [weak self] (selected, systemAnnotations) in
             guard let self else { return }
@@ -93,16 +108,19 @@ final class CandidatesViewModel: ObservableObject {
         }
         .store(in: &cancellables)
 
-        $candidates.combineLatest(Global.candidateListDirection).map { candidates, listDirection in
+        $nsCandidatesFont
+            .map { font in Font(font) }
+            .assign(to: &self.$candidatesFont)
+
+        $candidates.combineLatest($nsCandidatesFont, Global.candidateListDirection).map { candidates, nsFont, listDirection in
             if case let .panel(words, currentPage, totalPageCount) = candidates {
-                let font = NSFont.systemFont(ofSize: self.candidatesFontSize)
                 switch listDirection {
                 case .vertical:
                     let listWidth = words.map { candidate -> CGFloat in
                         let size = candidate.word.boundingRect(
                             with: CGSize(width: .greatestFiniteMagnitude, height: self.candidatesLineHeight),
                             options: .usesLineFragmentOrigin,
-                            attributes: [.font: font])
+                            attributes: [.font: nsFont])
                         // 未解決の余白(8px) + 添字(16px) + 余白(4px) + テキスト + 余白(4px) + 未解決の余白(22px)
                         // @see https://forums.swift.org/t/swiftui-list-horizontal-insets-macos/52985/5
                         return 16 + 4 + size.width + 4 + 22
@@ -113,12 +131,12 @@ final class CandidatesViewModel: ObservableObject {
                     let pageControlSize = "\(currentPage + 1)/\(totalPageCount)".boundingRect(
                         with: CGSize(width: .greatestFiniteMagnitude, height: self.candidatesLineHeight),
                         options: .usesLineFragmentOrigin,
-                        attributes: [.font: font])
+                        attributes: [.font: nsFont])
                     return words.reduce(4 + pageControlSize.width + 4) { last, candidate -> CGFloat in
                         let size = candidate.word.boundingRect(
                             with: CGSize(width: .greatestFiniteMagnitude, height: self.candidatesLineHeight),
                             options: .usesLineFragmentOrigin,
-                            attributes: [.font: font])
+                            attributes: [.font: nsFont])
                         // 添字(16px) + 余白(4px) + テキスト + 余白(8px)
                         return 16 + 4 + size.width + 8 + last
                     }
