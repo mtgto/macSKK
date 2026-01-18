@@ -94,6 +94,12 @@ macSKKが入力メソッドとして選択されているときに入力メニ�
 | showCandidateForCompletion  | Boolean    | 変換候補の補完を表示するか              |
 | fixedCompletionByPeriod     | Boolean    | ピリオドで最初の補完候補で確定するか    |
 | registerKatakana            | Boolean    | カタカナで確定した場合に辞書に登録するか |
+| candidatesFontFamily        | String     | 変換候補のフォントファミリー名          |
+| candidatesBackgroundColor   | String     | 変換候補の背景色                        |
+| overridesCandidatesBackgroundColor | Boolean | 変換候補の背景色を上書きするか |
+| annotationFontFamily        | String     | 注釈のフォントファミリー名              |
+| annotationBackgroundColor   | String     | 注釈の背景色                            |
+| overridesAnnotationBackgroundColor | Boolean | 注釈の背景色を上書きするか |
 
 ## 機能
 
