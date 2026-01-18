@@ -38,7 +38,6 @@ struct VerticalCandidatesView: View {
                             .padding(EdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 0))
                             .frame(width: 16)
                         Text(candidate.word)
-//                            .font(.system(size: candidates.candidatesFontSize))
                             .font(candidates.candidatesFont)
                             .fixedSize(horizontal: true, vertical: false)
                             .padding(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 4))
