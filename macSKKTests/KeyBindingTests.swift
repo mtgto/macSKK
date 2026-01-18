@@ -93,6 +93,13 @@ final class KeyBindingTests: XCTestCase {
         XCTAssertTrue(KeyBinding.Action.directAbbrev.accepts(inputMode: .direct, inputMethod: .normal))
         XCTAssertFalse(KeyBinding.Action.directAbbrev.accepts(inputMode: .eisu, inputMethod: .normal))
         XCTAssertFalse(KeyBinding.Action.directAbbrev.accepts(inputMode: .hiragana, inputMethod: .normal))
+        let selecting = SelectingState(prev: SelectingState.PrevState(mode: .hiragana, composing: composing),
+                                       yomi: "a",
+                                       candidates: [Candidate("ア")],
+                                       candidateIndex: 0,
+                                       remain: [],
+                                       completion: false)
+        XCTAssertTrue(KeyBinding.Action.abbrev.accepts(inputMode: .direct, inputMethod: .selecting(selecting)))
     }
 
     func testIsDefault() {
