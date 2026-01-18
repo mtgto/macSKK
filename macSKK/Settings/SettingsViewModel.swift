@@ -528,8 +528,8 @@ final class SettingsViewModel: ObservableObject {
                 Global.candidatesPanel.viewModel.candidatesBackgroundColor = candidatesBackgroundColor
                 Global.completionPanel.viewModel.candidatesViewModel.candidatesBackgroundColor = candidatesBackgroundColor
             } else {
-                Global.candidatesPanel.viewModel.candidatesBackgroundColor = .clear
-                Global.completionPanel.viewModel.candidatesViewModel.candidatesBackgroundColor = .clear
+                Global.candidatesPanel.viewModel.candidatesBackgroundColor = nil
+                Global.completionPanel.viewModel.candidatesViewModel.candidatesBackgroundColor = nil
             }
         }.store(in: &cancellables)
 
@@ -581,8 +581,8 @@ final class SettingsViewModel: ObservableObject {
                 Global.candidatesPanel.viewModel.annotationBackgroundColor = annotationBackgroundColor
                 Global.completionPanel.viewModel.candidatesViewModel.annotationBackgroundColor = annotationBackgroundColor
             } else {
-                Global.candidatesPanel.viewModel.annotationBackgroundColor = .clear
-                Global.completionPanel.viewModel.candidatesViewModel.annotationBackgroundColor = .clear
+                Global.candidatesPanel.viewModel.annotationBackgroundColor = nil
+                Global.completionPanel.viewModel.candidatesViewModel.annotationBackgroundColor = nil
             }
         }.store(in: &cancellables)
 

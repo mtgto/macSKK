@@ -17,18 +17,14 @@ struct OptionalBackgroundModifier: ViewModifier {
             if let cornerRadius {
                 content.background(.regularMaterial, in: RoundedRectangle(cornerRadius: cornerRadius))
             } else {
-                content
+                content.background()
             }
         }
     }
 }
 
 extension View {
-    func optionalBackground(_ color: Color?) -> some View {
-        self.modifier(OptionalBackgroundModifier(color: color, cornerRadius: nil))
-    }
-
-    func optionalBackground(_ color: Color?, cornerRadius: CGFloat) -> some View {
-        self.modifier(OptionalBackgroundModifier(color: color, cornerRadius: cornerRadius))
+    func optionalBackground(_ color: Color?, cornerRadius: CGFloat? = nil) -> some View {
+        modifier(OptionalBackgroundModifier(color: color, cornerRadius: cornerRadius))
     }
 }
