@@ -48,6 +48,7 @@ struct HorizontalCandidatesView: View {
                             .padding(.trailing, 8)
                     }
                     .frame(height: candidates.candidatesLineHeight)
+                    .background(candidates.selected == candidate ? Color.accentColor : Color.clear)
                 }
                 if candidates.showPage {
                     Text("\(currentPage + 1) / \(totalPageCount)")
