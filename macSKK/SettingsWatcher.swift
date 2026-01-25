@@ -59,6 +59,12 @@ final class SettingsWatcher: NSObject, Sendable {
 
 extension SettingsWatcher: NSFilePresenter {
     func presentedSubitemDidAppear(at url: URL) {
+        let filename = url.lastPathComponent
+        if filename.hasPrefix("kana-rule") && filename.hasSuffix(".conf") {
+
+        } else {
+            return
+        }
         if url.lastPathComponent == kanaRuleFileName {
             logger.log("ローマ字かな変換ルールファイルが作成されたため読み込みます")
             Task { @MainActor in
@@ -68,6 +74,12 @@ extension SettingsWatcher: NSFilePresenter {
     }
 
     func presentedSubitemDidChange(at url: URL) {
+        let filename = url.lastPathComponent
+        if filename.hasPrefix("kana-rule") && filename.hasSuffix(".conf") {
+            
+        } else {
+            return
+        }
         if url.lastPathComponent == kanaRuleFileName {
             // 削除されたときにaccommodatePresentedSubitemDeletionが呼ばれないがこのメソッドは呼ばれるようだった。
             // そのためこのメソッドで削除のとき同様の処理を行う。

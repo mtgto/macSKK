@@ -7,6 +7,7 @@
 "SettingsNameGeneral" = "一般";
 "SettingsNameDictionaries" = "辞書";
 "SettingsNameCandidateWindow" = "変換候補パネル";
+"SettingsNameKanaRule" = "ローマ字かな変換ルール";
 "SettingsNameDateConversion" = "日付変換";
 "SettingsNameCompletion" = "補完";
 "SettingsNameKeyBinding" = "キーバインド";

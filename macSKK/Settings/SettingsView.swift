@@ -12,6 +12,7 @@ struct SettingsView: View {
         case dateConversion = "SettingsNameDateConversion"
         case completion = "SettingsNameCompletion"
         case keyBinding = "SettingsNameKeyBinding"
+        case kanaRule = "SettingsNameKanaRule"
         case softwareUpdate = "SettingsNameSoftwareUpdate"
         case directMode = "SettingsNameDirectMode"
         case workaround = "SettingsNameWorkaround"
@@ -45,6 +46,8 @@ struct SettingsView: View {
                         Label(section.localizedStringKey, systemImage: "wand.and.rays")
                     case .keyBinding:
                         Label(section.localizedStringKey, systemImage: "keyboard")
+                    case .kanaRule:
+                        Label(section.localizedStringKey, systemImage: "quote.bubble.fill")
                     case .softwareUpdate:
                         Label(section.localizedStringKey, systemImage: "gear.badge")
                     case .directMode:
@@ -85,6 +88,9 @@ struct SettingsView: View {
                     .navigationTitle(selectedSection.localizedStringKey)
             case .keyBinding:
                 KeyBindingView(settingsViewModel: settingsViewModel)
+                    .navigationTitle(selectedSection.localizedStringKey)
+            case .kanaRule:
+                KanaRuleView(settingsViewModel: settingsViewModel)
                     .navigationTitle(selectedSection.localizedStringKey)
             case .softwareUpdate:
                 SoftwareUpdateView(settingsViewModel: settingsViewModel)

@@ -7,6 +7,7 @@
 "SettingsNameGeneral" = "General";
 "SettingsNameDictionaries" = "Dictionaries";
 "SettingsNameCandidateWindow" = "Candidates Panel";
+"SettingsNameKanaRule" = "Romaji-Kana Rule";
 "SettingsNameDateConversion" = "Date Conversion";
 "SettingsNameCompletion" = "Completion";
 "SettingsNameKeyBinding" = "Key Bindings";

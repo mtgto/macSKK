@@ -215,6 +215,10 @@ final class SettingsViewModel: ObservableObject {
     @Published var registerKatakana: Bool
     /// 利用可能なフォントファミリー名
     @Published var availableFontFamilies: [String] = []
+    /// 利用可能なローマ字かな変換ルール
+    @Published var kanaRules: [Romaji] = []
+    /// 選択中のローマ字かな変換ルール
+    @Published var selectedKanaRule: Romaji?
 
     // 辞書ディレクトリ
     let dictionariesDirectoryUrl: URL
@@ -845,6 +849,13 @@ final class SettingsViewModel: ObservableObject {
                     // 辞書設定から移動したファイルを削除する
                     // FIXME: 削除ではなくリネームなら追従する
                     self.dictSettings = self.dictSettings.filter({ $0.filename != url.lastPathComponent })
+                }
+            }.store(in: &cancellables)
+
+        NotificationCenter.default.publisher(for: notificationNameKanaRuleDidAppear).receive(on: RunLoop.main)
+            .sink { [weak self] notification in
+                if let self, let dict = notification.object as? [String: Any] {
+                    
                 }
             }.store(in: &cancellables)
     }
