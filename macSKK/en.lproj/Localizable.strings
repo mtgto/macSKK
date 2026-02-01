@@ -27,6 +27,7 @@
 "SettingsNoteWorkaround" = "you can enable/disable workaround settings from the Input Menu when the target app is in Front-Most.";
 "SettingsHeaderWorkaroundApplication" = "Workaround settings for the application";
 "SettingsDateConversionSubtitle" = "You can reorder the conversions by drag & drop";
+"SettingsNoteKanaRule" = "If you want to customize the romaji-kana rule, place kana rule file in the Settings folder with the file name \"kana-rule*.conf\" and select it on this screen.";
 "LoadingStatusLoaded %lld" = "%lld entries";
 "LoadingStatusLoaded %lld WithError %lld" = "%lld entries (%lld lines of parsing error)";
 "LoadingStatusLoading" = "Loading…";
@@ -122,6 +123,10 @@
 "Format" = "Format";
 "Locale" = "Locale";
 "Calendar" = "Calendar";
+"Default" = "Default";
+"Kana Rule" = "Kana Rule";
+"Show Settings in Finder" = "Show Settings in Finder";
+"Show Default rule file in Finder" = "Show Default rule file in Finder";
 
 "KeyBindingActionHiragana" = "Hiragana Mode";
 "KeyBindingActionTogglekana" = "Toggle Kana Mode";

@@ -72,11 +72,6 @@ struct macSKKApp: App {
         } else {
             do {
                 settingsWatcher = try SettingsWatcher(kanaRuleFileName: "kana-rule.conf")
-                let kanaRuleFileURL = Bundle.main.url(forResource: "kana-rule", withExtension: "conf")!
-                Global.defaultKanaRule = try Romaji(contentsOf: kanaRuleFileURL)
-                if Global.kanaRule == nil {
-                    Global.kanaRule = Global.defaultKanaRule
-                }
             } catch {
                 fatalError("ローマ字かな変換ルールの読み込みでエラーが発生しました: \(error)")
             }
@@ -91,6 +86,22 @@ struct macSKKApp: App {
             server = nil
         }
         if !isTest() {
+            do {
+                if let settingsWatcher {
+                    let kanaRules = try settingsWatcher.availableKanaRules()
+                    settingsViewModel.kanaRules = kanaRules
+                    let kanaRuleFileURL = Bundle.main.url(forResource: "kana-rule", withExtension: "conf")!
+                    Global.defaultKanaRule = try Romaji(contentsOf: kanaRuleFileURL, initialRomaji: nil)
+                    if let selectedKanaRuleId = UserDefaults.app.string(forKey: UserDefaultsKeys.kanaRule),
+                       let selectedKanaRule = kanaRules.first(where: { $0.id == selectedKanaRuleId }) {
+                        Global.kanaRule = selectedKanaRule
+                    } else {
+                        Global.kanaRule = Global.defaultKanaRule
+                    }
+                }
+            } catch {
+                fatalError("カスタマイズされたローマ字かな変換ルールの読み込みでエラーが発生しました: \(error)")
+            }
             do {
                 try setupDictionaries()
             } catch {

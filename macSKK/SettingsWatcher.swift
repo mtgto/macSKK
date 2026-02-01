@@ -2,6 +2,14 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import Cocoa
+import Combine
+
+// ローマ字かな変換ファイルが作成されたイベントの通知の名前。objectはRomaji
+let notificationNameKanaRuleDidAppear = Notification.Name("kanaRuleDidAppear")
+// ローマ字かな変換ファイルが更新されたイベントの通知の名前。objectはRomaji
+let notificationNameKanaRuleDidChange = Notification.Name("kanaRuleDidChange")
+// ローマ字かな変換ファイルが移動されたイベントの通知の名前。objectはRomaji.ID
+let notificationNameKanaRuleDidMove = Notification.Name("kanaRuleDidMove")
 
 /**
  * App Sandbox Data ContainerのSettingsフォルダを監視する
@@ -26,10 +34,6 @@ final class SettingsWatcher: NSObject, Sendable {
         }
         self.presentedItemURL = settingsDirectoryURL
         super.init()
-        let kanaRuleURL = settingsDirectoryURL.appending(path: kanaRuleFileName)
-        if FileManager.default.fileExists(atPath: kanaRuleURL.path) {
-            loadKanaRule(contentsOf: kanaRuleURL)
-        }
         NSFileCoordinator.addFilePresenter(self)
     }
 
@@ -37,22 +41,24 @@ final class SettingsWatcher: NSObject, Sendable {
         NSFileCoordinator.removeFilePresenter(self)
     }
 
-    @MainActor func loadKanaRule(contentsOf url: URL) {
-        do {
-            if try url.isReadable() {
-                let kanaRule = try Romaji(contentsOf: url)
-                if kanaRule.isEmpty {
-                    Global.kanaRule = Global.defaultKanaRule
-                    logger.log("ローマ字かな変換ルールファイルが空のためデフォルトのルールを使用します")
-                } else {
-                    Global.kanaRule = kanaRule
-                    logger.log("独自のローマ字かな変換ルールを適用しました")
+    @MainActor func availableKanaRules() throws -> [Romaji] {
+        let urls = try FileManager.default.contentsOfDirectory(at: settingsDirectoryURL,
+                                                               includingPropertiesForKeys: [.isReadableKey],
+                                                               options: [.skipsHiddenFiles, .skipsSubdirectoryDescendants])
+        return try urls.compactMap { url -> Romaji? in
+            let resourceValues = try url.resourceValues(forKeys: [.isReadableKey])
+            guard let isReadable = resourceValues.isReadable, isReadable else { return nil }
+            let filename = url.lastPathComponent
+            if filename.hasPrefix("kana-rule") && filename.hasSuffix(".conf") {
+                do {
+                    return try Romaji(contentsOf: url, initialRomaji: Global.defaultKanaRule)
+                } catch {
+                    logger.warning("ローマ字かな変換ルール \(filename, privacy: .public) の読み込みに失敗しました: \(String(describing: error), privacy: .public)")
+                    return nil
                 }
             } else {
-                logger.log("ローマ字かな変換ルールファイルとして不適合なファイルであるため読み込みできませんでした")
+                return nil
             }
-        } catch {
-            logger.error("ローマ字かな変換ルールの読み込みでエラーが発生しました: \(error)")
         }
     }
 }
@@ -61,48 +67,30 @@ extension SettingsWatcher: NSFilePresenter {
     func presentedSubitemDidAppear(at url: URL) {
         let filename = url.lastPathComponent
         if filename.hasPrefix("kana-rule") && filename.hasSuffix(".conf") {
-
+            logger.log("ローマ字かな変換ルールファイル \(filename, privacy: .public)が作成されたため読み込みます")
+            Task { @MainActor in
+                let kanaRule = try Romaji(contentsOf: url, initialRomaji: Global.defaultKanaRule)
+                NotificationCenter.default.post(name: notificationNameKanaRuleDidAppear, object: kanaRule)
+            }
         } else {
             return
-        }
-        if url.lastPathComponent == kanaRuleFileName {
-            logger.log("ローマ字かな変換ルールファイルが作成されたため読み込みます")
-            Task { @MainActor in
-                loadKanaRule(contentsOf: url)
-            }
         }
     }
 
     func presentedSubitemDidChange(at url: URL) {
+        // macOS 26.2では同一フォルダ内でのリネームの場合、このメソッドが二回呼び出される
         let filename = url.lastPathComponent
         if filename.hasPrefix("kana-rule") && filename.hasSuffix(".conf") {
-            
-        } else {
-            return
-        }
-        if url.lastPathComponent == kanaRuleFileName {
-            // 削除されたときにaccommodatePresentedSubitemDeletionが呼ばれないがこのメソッドは呼ばれるようだった。
-            // そのためこのメソッドで削除のとき同様の処理を行う。
-            if !FileManager.default.fileExists(atPath: settingsDirectoryURL.appending(path: kanaRuleFileName).path) {
-                logger.log("ローマ字かな変換ルールファイルが存在しなくなったためデフォルトのルールに戻します")
-                Task { @MainActor in
-                    Global.kanaRule = Global.defaultKanaRule
-                }
-                return
+            logger.log("ローマ字かな変換ルールファイル \(filename, privacy: .public)が修正されたため読み込みます")
+            Task { @MainActor in
+                let kanaRule = try Romaji(contentsOf: url, initialRomaji: Global.defaultKanaRule)
+                NotificationCenter.default.post(name: notificationNameKanaRuleDidChange, object: kanaRule)
             }
+        }
+    }
 
-            var relationship: FileManager.URLRelationship = .same
-            do {
-                try FileManager.default.getRelationship(&relationship, ofDirectoryAt: settingsDirectoryURL, toItemAt: url)
-                if case .contains = relationship {
-                    logger.log("ローマ字かな変換ルールファイルが変更されたため読み込みます")
-                    Task { @MainActor in
-                        loadKanaRule(contentsOf: url)
-                    }
-                }
-            } catch {
-                logger.error("ローマ字かな変換ルールファイルが更新されましたが情報取得に失敗しました: \(error)")
-            }
-        }
+    func presentedSubitem(at oldURL: URL, didMoveTo newURL: URL) {
+        logger.log("ファイル \(oldURL.lastPathComponent, privacy: .public) が移動されました")
+        NotificationCenter.default.post(name: notificationNameKanaRuleDidMove, object: oldURL.lastPathComponent)
     }
 }

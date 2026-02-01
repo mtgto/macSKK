@@ -27,6 +27,7 @@
 "SettingsNoteWorkaround" = "設定したいアプリが最前面の状態で、入力メニューからも互換性の設定の有効・無効を設定できます。";
 "SettingsHeaderWorkaroundApplication" = "アプリケーションの互換性の設定";
 "SettingsDateConversionSubtitle" = "項目をドラッグすることで変換順序を入れ替え可能です。";
+"SettingsNoteKanaRule" = "ローマ字かな変換をカスタマイズする場合は、Settingsフォルダに \"kana-rule*.conf\" というファイル名で配置し、この画面で選択してください。";
 "LoadingStatusLoaded %lld" = "%lld エントリ";
 "LoadingStatusLoaded %lld WithError %lld" = "%lld エントリ (%lld行の読み込みエラー)";
 "LoadingStatusLoading" = "読み込み中…";
@@ -122,6 +123,10 @@
 "Format" = "書式";
 "Locale" = "地域";
 "Calendar" = "暦法";
+"Default" = "デフォルト";
+"Kana Rule" = "ローマ字かな変換ルール";
+"Show Settings in Finder" = "設定フォルダをFinderで表示";
+"Show Default rule file in Finder" = "デフォルトのルールをFinderで表示";
 
 "KeyBindingActionHiragana" = "ひらがなモード";
 "KeyBindingActionTogglekana" = "かなカナモード切り替え";

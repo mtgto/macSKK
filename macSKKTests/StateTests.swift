@@ -133,7 +133,7 @@ final class StateTests: XCTestCase {
         state = state.with(romaji: "n")
         XCTAssertEqual(state.yomi(for: .katakana, kanaRule: Romaji.defaultKanaRule), "あいんu")
         // "n" → "ん" のルールがないときは末尾のnは無視される
-        let customizedKanaRule = try Romaji(source: "")
+        let customizedKanaRule = try Romaji(source: "", initialRomaji: nil)
         XCTAssertEqual(state.yomi(for: .katakana, kanaRule: customizedKanaRule), "あいu")
         state = state.with(romaji: "ny")
         XCTAssertEqual(state.yomi(for: .katakana, kanaRule: Romaji.defaultKanaRule), "あいu")
