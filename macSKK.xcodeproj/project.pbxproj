@@ -598,7 +598,6 @@
 				CEADA44E2B1357090026E2BD /* GeneralView.swift */,
 				CE6DBACC2A864A3B00F5A227 /* DictionariesView.swift */,
 				CEB141712A87D16C005E7252 /* DictionaryView.swift */,
-				CEA602AF2F264FC600E605F2 /* KanaRuleView.swift */,
 				CEB52CC42E080B030025542F /* DateConversion */,
 				CE1B00692BA5490E00C830FD /* SKKServDictView.swift */,
 				CE8871312E574CC900E20BFB /* CompletionSettingsView.swift */,
@@ -611,6 +610,7 @@
 				CEC376EA2965211200D9C432 /* KeyEventView.swift */,
 				CE40D9A02A6D0C2F00D44799 /* SystemDictView.swift */,
 				CE00FCCD2C30E99300AC6EEB /* KeyBinding */,
+				CEA602AF2F264FC600E605F2 /* KanaRuleView.swift */,
 				CE2157652B2EA985006E4C41 /* UserDefaultsKeys.swift */,
 				CEA602AB2F02CFB000E605F2 /* OptionalBackgroundModifier.swift */,
 			);

@@ -92,10 +92,10 @@ struct macSKKApp: App {
                     settingsViewModel.kanaRules = kanaRules
                     let kanaRuleFileURL = Bundle.main.url(forResource: "kana-rule", withExtension: "conf")!
                     Global.defaultKanaRule = try Romaji(contentsOf: kanaRuleFileURL, initialRomaji: nil)
-                    if let selectedKanaRuleId = UserDefaults.app.string(forKey: UserDefaultsKeys.kanaRule),
-                       let selectedKanaRule = kanaRules.first(where: { $0.id == selectedKanaRuleId }) {
+                    if let selectedKanaRule = kanaRules.first(where: { $0.id == settingsViewModel.selectedKanaRule }) {
                         Global.kanaRule = selectedKanaRule
                     } else {
+                        settingsViewModel.selectedKanaRule = ""
                         Global.kanaRule = Global.defaultKanaRule
                     }
                 }
@@ -240,6 +240,7 @@ struct macSKKApp: App {
             UserDefaultsKeys.annotationFontFamily: "", // 空文字列はSystem Font
             UserDefaultsKeys.overridesAnnotationBackgroundColor: false,
             UserDefaultsKeys.annotationBackgroundColor: "#FFFFFF",
+            UserDefaultsKeys.kanaRule: "kana-rule.conf",
         ])
     }
 
