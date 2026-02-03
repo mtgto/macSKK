@@ -69,6 +69,7 @@
 		CE5ECF3A2957034D00E7BE7D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CE5ECF392957034D00E7BE7D /* Assets.xcassets */; };
 		CE5ECF3D2957034D00E7BE7D /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CE5ECF3C2957034D00E7BE7D /* Preview Assets.xcassets */; };
 		CE5ECF642957077D00E7BE7D /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = CE5ECF632957077D00E7BE7D /* InfoPlist.strings */; };
+		CE637EF82F30D702001E1998 /* InputModeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE637EF72F30D702001E1998 /* InputModeView.swift */; };
 		CE6599DC2ADBF2630052F8C0 /* SettingsWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE6599DB2ADBF2630052F8C0 /* SettingsWindow.swift */; };
 		CE6BBCC02BCB6B57003BB47F /* Data+EucJis2004.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED987402BB953E7001B40F9 /* Data+EucJis2004.swift */; };
 		CE6BBCC12BCD6721003BB47F /* libiconv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = CE496C972B440CCA001C623C /* libiconv.tbd */; };
@@ -81,6 +82,7 @@
 		CE6DBACF2A8663E600F5A227 /* SKK-JISYO.sample.utf-8 in Resources */ = {isa = PBXBuildFile; fileRef = CE6DBACE2A8663E600F5A227 /* SKK-JISYO.sample.utf-8 */; };
 		CE7F9AD92AADEBF9001B1877 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE7F9AD82AADEBF9001B1877 /* AppDelegate.swift */; };
 		CE7F9ADC2AB53E53001B1877 /* CompletionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE7F9ADB2AB53E53001B1877 /* CompletionView.swift */; };
+		CE821DF92F3C557C004814DE /* InputModeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE821DF82F3C557C004814DE /* InputModeViewModel.swift */; };
 		CE84A3B929570C37009394C4 /* InputController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE84A3B829570C37009394C4 /* InputController.swift */; };
 		CE84A3DC2957174D009394C4 /* State.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE84A3DB2957174D009394C4 /* State.swift */; };
 		CE84A3DE29571797009394C4 /* Action.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE84A3DD29571797009394C4 /* Action.swift */; };
@@ -261,6 +263,7 @@
 		CE5ECF432957034D00E7BE7D /* macSKKTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = macSKKTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		CE5ECF612957061A00E7BE7D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CE5ECF632957077D00E7BE7D /* InfoPlist.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = InfoPlist.strings; sourceTree = "<group>"; };
+		CE637EF72F30D702001E1998 /* InputModeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputModeView.swift; sourceTree = "<group>"; };
 		CE6599DB2ADBF2630052F8C0 /* SettingsWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindow.swift; sourceTree = "<group>"; };
 		CE6DBA8C2A845CE400F5A227 /* Release.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Release.swift; sourceTree = "<group>"; };
 		CE6DBA8E2A845E8B00F5A227 /* ReleaseVersion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReleaseVersion.swift; sourceTree = "<group>"; };
@@ -272,6 +275,7 @@
 		CE6DBACE2A8663E600F5A227 /* SKK-JISYO.sample.utf-8 */ = {isa = PBXFileReference; lastKnownFileType = text; path = "SKK-JISYO.sample.utf-8"; sourceTree = "<group>"; };
 		CE7F9AD82AADEBF9001B1877 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		CE7F9ADB2AB53E53001B1877 /* CompletionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletionView.swift; sourceTree = "<group>"; };
+		CE821DF82F3C557C004814DE /* InputModeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputModeViewModel.swift; sourceTree = "<group>"; };
 		CE84A3B829570C37009394C4 /* InputController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputController.swift; sourceTree = "<group>"; };
 		CE84A3DB2957174D009394C4 /* State.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = State.swift; sourceTree = "<group>"; };
 		CE84A3DD29571797009394C4 /* Action.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Action.swift; sourceTree = "<group>"; };
@@ -563,7 +567,9 @@
 			isa = PBXGroup;
 			children = (
 				CEB52CBB2E0795CB0025542F /* ListFooterControls.swift */,
+				CE821DF82F3C557C004814DE /* InputModeViewModel.swift */,
 				CEF08239296BCDB000646366 /* InputModePanel.swift */,
+				CE637EF72F30D702001E1998 /* InputModeView.swift */,
 				CEF0825C296DB58600646366 /* CandidatesViewModel.swift */,
 				CEF08256296D8CBD00646366 /* CandidatesPanel.swift */,
 				CEF0825A296D8FF000646366 /* CandidatesView.swift */,
@@ -893,6 +899,7 @@
 				CEA253E62E2E852000618E64 /* UserDefaults+App.swift in Sources */,
 				CE1B006D2BA54DE400C830FD /* SKKServClientProtocol.swift in Sources */,
 				CE1B006A2BA5490E00C830FD /* SKKServDictView.swift in Sources */,
+				CE637EF82F30D702001E1998 /* InputModeView.swift in Sources */,
 				94DB63242D329CBF005250B8 /* HorizontalCandidatesView.swift in Sources */,
 				94DB63252D329CBF005250B8 /* VerticalCandidatesView.swift in Sources */,
 				CED0984D2B779E4700F2E844 /* UNNotifier.swift in Sources */,
@@ -937,6 +944,7 @@
 				CE39DB212A8DFD8F00BC619F /* MarkedText.swift in Sources */,
 				CEB52CCA2E0D64B10025542F /* DateConversionView.swift in Sources */,
 				CE40D9A32A6D0C3900D44799 /* SystemDict.swift in Sources */,
+				CE821DF92F3C557C004814DE /* InputModeViewModel.swift in Sources */,
 				CE49A27C2C26F61700D53CFE /* KeyBindingInputsView.swift in Sources */,
 				CEFC174B2E53600600037468 /* Completion.swift in Sources */,
 				CEB52CC82E0C10F20025542F /* DateConversion.swift in Sources */,
