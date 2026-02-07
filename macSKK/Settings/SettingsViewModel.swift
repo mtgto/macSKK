@@ -704,7 +704,7 @@ final class SettingsViewModel: ObservableObject {
             guard let self else { return }
             if selectedKanaRule.isEmpty {
                 logger.log("ローマ字かな変換ルールをデフォルトに変更しました")
-                UserDefaults.app.removeObject(forKey: UserDefaultsKeys.selectedKeyBindingSetId)
+                UserDefaults.app.set("", forKey: UserDefaultsKeys.selectedKeyBindingSetId)
                 Global.kanaRule = Global.defaultKanaRule
             } else {
                 if let kanaRule = self.kanaRules.first(where: { $0.id == selectedKanaRule }) {
