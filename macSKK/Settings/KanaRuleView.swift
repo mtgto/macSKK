@@ -8,16 +8,6 @@ struct KanaRuleView: View {
     var body: some View {
         VStack {
             Form {
-                Picker("Behavior of Comma", selection: $settingsViewModel.comma) {
-                    ForEach(Punctuation.Comma.allCases, id: \.id) { comma in
-                        Text(comma.description).tag(comma)
-                    }
-                }
-                Picker("Behavior of Period", selection: $settingsViewModel.period) {
-                    ForEach(Punctuation.Period.allCases, id: \.id) { period in
-                        Text(period.description).tag(period)
-                    }
-                }
                 Section {
                     Picker("Kana Rule", selection: $settingsViewModel.selectedKanaRule) {
                         Text("Default").tag("")
