@@ -206,7 +206,7 @@ final class StateMachineTests: XCTestCase {
 
     @MainActor func testHandleNormalRomajiKanaRuleQ() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-        Global.kanaRule = try! Romaji(source: "tq,たん")
+        Global.kanaRule = try! Romaji(source: "tq,たん", initialRomaji: nil)
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(2).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.plain("t")])))
@@ -220,7 +220,7 @@ final class StateMachineTests: XCTestCase {
 
     @MainActor func testHandleNormalRomajiKanaRuleAzik() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .direct))
-        Global.kanaRule = try! Romaji(source: [";,っ", ":,<shift>;"].joined(separator: "\n"))
+        Global.kanaRule = try! Romaji(source: [";,っ", ":,<shift>;"].joined(separator: "\n"), initialRomaji: nil)
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(3).sink { events in
             XCTAssertEqual(events[0], .modeChanged(.hiragana))
@@ -240,7 +240,7 @@ final class StateMachineTests: XCTestCase {
 
     @MainActor func testHandleNormalRomajiKanaRuleN() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-        Global.kanaRule = try! Romaji(source: ["nn,ん", "a,あ"].joined(separator: "\n"))
+        Global.kanaRule = try! Romaji(source: ["nn,ん", "a,あ"].joined(separator: "\n"), initialRomaji: nil)
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(2).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.plain("n")])))
@@ -365,7 +365,7 @@ final class StateMachineTests: XCTestCase {
 
     @MainActor func testHandleNormalNoAlphabetRomajiKanaRule() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-        Global.kanaRule = try! Romaji(source: "0a,あ")
+        Global.kanaRule = try! Romaji(source: "0a,あ", initialRomaji: nil)
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(2).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.plain("0")])))
@@ -1693,7 +1693,7 @@ final class StateMachineTests: XCTestCase {
     }
     
     @MainActor func testHandleComposingSpaceAfterPrintable() {
-        Global.kanaRule = try! Romaji(source: "z ,スペース")
+        Global.kanaRule = try! Romaji(source: "z ,スペース", initialRomaji: nil)
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(2).sink { events in
@@ -1707,7 +1707,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleComposingStickyShiftAfterPrintable() {
-        Global.kanaRule = try! Romaji(source: "a;,あせみころん")
+        Global.kanaRule = try! Romaji(source: "a;,あせみころん", initialRomaji: nil)
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(2).sink { events in
@@ -1743,7 +1743,7 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleComposingQAfterPrintable() {
-        Global.kanaRule = try! Romaji(source: "tq,たん")
+        Global.kanaRule = try! Romaji(source: "tq,たん", initialRomaji: nil)
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(3).sink { events in
@@ -1760,7 +1760,7 @@ final class StateMachineTests: XCTestCase {
 
     @MainActor func testHandleComposingRomajiKanaRuleAzik() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-        Global.kanaRule = try! Romaji(source: ["a,あ", ";,っ", ":,<shift>;"].joined(separator: "\n"))
+        Global.kanaRule = try! Romaji(source: ["a,あ", ";,っ", ":,<shift>;"].joined(separator: "\n"), initialRomaji: nil)
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(3).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
@@ -1775,7 +1775,7 @@ final class StateMachineTests: XCTestCase {
 
     @MainActor func testHandleComposingNoAlphabetRomajiKanaRule() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-        Global.kanaRule = try! Romaji(source: ["0a,あ", "i,い"].joined(separator: "\n"))
+        Global.kanaRule = try! Romaji(source: ["0a,あ", "i,い"].joined(separator: "\n"), initialRomaji: nil)
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(3).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("い")])))
@@ -1791,7 +1791,7 @@ final class StateMachineTests: XCTestCase {
 
     @MainActor func testHandleComposingRomajiKanaRuleKigou() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-        Global.kanaRule = try! Romaji(source: [".a,か", ">,<shift>."].joined(separator: "\n"))
+        Global.kanaRule = try! Romaji(source: [".a,か", ">,<shift>."].joined(separator: "\n"), initialRomaji: nil)
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(2).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain(".")])))
@@ -1805,7 +1805,7 @@ final class StateMachineTests: XCTestCase {
 
     @MainActor func testHandleComposingRomajiKanaRuleRomaji() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-        Global.kanaRule = try! Romaji(source: ["ka,か", ">,<shift>k"].joined(separator: "\n"))
+        Global.kanaRule = try! Romaji(source: ["ka,か", ">,<shift>k"].joined(separator: "\n"), initialRomaji: nil)
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(2).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("k")])))

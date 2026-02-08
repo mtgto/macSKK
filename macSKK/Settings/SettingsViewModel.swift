@@ -215,6 +215,10 @@ final class SettingsViewModel: ObservableObject {
     @Published var registerKatakana: Bool
     /// 利用可能なフォントファミリー名
     @Published var availableFontFamilies: [String] = []
+    /// 利用可能なローマ字かな変換ルール
+    @Published var kanaRules: [Romaji] = []
+    /// 選択中のローマ字かな変換ルール。空文字列のときはデフォルト
+    @Published var selectedKanaRule: Romaji.ID
 
     // 辞書ディレクトリ
     let dictionariesDirectoryUrl: URL
@@ -310,6 +314,7 @@ final class SettingsViewModel: ObservableObject {
             dateYomis = []
             dateConversions = []
         }
+        selectedKanaRule = UserDefaults.app.string(forKey: UserDefaultsKeys.kanaRule) ?? ""
         // 利用可能なフォント名をバックグラウンドスレッドで取得
         Task(priority: .background) {
             logger.log("利用可能なフォントを読み込みます")
@@ -695,6 +700,21 @@ final class SettingsViewModel: ObservableObject {
             Global.registerKatakana = registerKatakana
         }.store(in: &cancellables)
 
+        $selectedKanaRule.dropFirst().sink { [weak self] selectedKanaRule in
+            guard let self else { return }
+            if selectedKanaRule.isEmpty {
+                logger.log("ローマ字かな変換ルールをデフォルトに変更しました")
+                UserDefaults.app.set("", forKey: UserDefaultsKeys.selectedKeyBindingSetId)
+                Global.kanaRule = Global.defaultKanaRule
+            } else {
+                if let kanaRule = self.kanaRules.first(where: { $0.id == selectedKanaRule }) {
+                    logger.log("ローマ字かな変換ルールを\(selectedKanaRule, privacy: .public)に変更しました")
+                    UserDefaults.app.set(selectedKanaRule, forKey: UserDefaultsKeys.selectedKeyBindingSetId)
+                    Global.kanaRule = kanaRule
+                }
+            }
+        }.store(in: &cancellables)
+
         NotificationCenter.default.publisher(for: notificationNameDictLoad).receive(on: RunLoop.main).sink { [weak self] notification in
             if let loadEvent = notification.object as? DictLoadEvent, let self {
                 if let userDict = Global.dictionary.userDict as? FileDict, userDict.id == loadEvent.id {
@@ -719,7 +739,7 @@ final class SettingsViewModel: ObservableObject {
             in: .userDomainMask,
             appropriateFor: nil,
             create: false
-        ).appendingPathComponent("Dictionaries")
+        ).appending(path: "Dictionaries")
         selectedInputSourceId = InputSource.defaultInputSourceId
         showAnnotation = true
         inlineCandidateCount = 3
@@ -764,6 +784,7 @@ final class SettingsViewModel: ObservableObject {
             DateConversion(format: "yyyy-MM-dd", locale: .enUS, calendar: .gregorian),
             DateConversion(format: "Gy年M月d日(E)", locale: .jaJP, calendar: .japanese),
         ]
+        selectedKanaRule = ""
     }
 
     // DictionaryViewのPreviewProvider用
@@ -845,6 +866,39 @@ final class SettingsViewModel: ObservableObject {
                     // 辞書設定から移動したファイルを削除する
                     // FIXME: 削除ではなくリネームなら追従する
                     self.dictSettings = self.dictSettings.filter({ $0.filename != url.lastPathComponent })
+                }
+            }.store(in: &cancellables)
+
+        NotificationCenter.default.publisher(for: notificationNameKanaRuleDidAppear).receive(on: RunLoop.main)
+            .sink { [weak self] notification in
+                if let self, let kanaRule = notification.object as? Romaji {
+                    if self.kanaRules.allSatisfy({ $0.id != kanaRule.id }) {
+                        self.kanaRules.append(kanaRule)
+                    }
+                }
+            }.store(in: &cancellables)
+
+        NotificationCenter.default.publisher(for: notificationNameKanaRuleDidChange).receive(on: RunLoop.main)
+            .sink { [weak self] notification in
+                if let self, let kanaRule = notification.object as? Romaji {
+                    if let index = self.kanaRules.firstIndex(where: { $0.id == kanaRule.id }) {
+                        self.kanaRules[index] = kanaRule
+                    } else {
+                        self.kanaRules.append(kanaRule)
+                    }
+                    if self.selectedKanaRule == kanaRule.id {
+                        Global.kanaRule = kanaRule
+                    }
+                }
+            }.store(in: &cancellables)
+
+        NotificationCenter.default.publisher(for: notificationNameKanaRuleDidMove).receive(on: RunLoop.main)
+            .sink { [weak self] notification in
+                if let self, let kanaRuleId = notification.object as? Romaji.ID {
+                    self.kanaRules = self.kanaRules.filter({ $0.id != kanaRuleId })
+                    if self.selectedKanaRule == kanaRuleId {
+                        self.selectedKanaRule = ""
+                    }
                 }
             }.store(in: &cancellables)
     }

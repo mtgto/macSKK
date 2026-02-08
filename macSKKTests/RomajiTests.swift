@@ -7,18 +7,18 @@ import XCTest
 
 class RomajiTests: XCTestCase {
     func testInit() {
-        XCTAssertNoThrow(try Romaji(source: "# hoge"), "#で始まる行はコメント")
-        XCTAssertNoThrow(try Romaji(source: "&sharp;,あ"), "シャープを使いたい場合は &sharp; と書く")
-        XCTAssertThrowsError(try Romaji(source: ",あ"), "1要素目が空")
-        XCTAssertThrowsError(try Romaji(source: "a,"), "2要素目が空")
-        XCTAssertNoThrow(try Romaji(source: "&comma;,あ"), "カンマを使いたい場合は &comma; と書く")
-        XCTAssertNoThrow(try Romaji(source: "+,<shift>っ"), "シフトキーを押しているときの記号のルール")
-        XCTAssertThrowsError(try Romaji(source: "+,<shift>+"), "シフトキーを押しているときの記号のルールで左辺と右辺が一致")
+        XCTAssertNoThrow(try Romaji(source: "# hoge", initialRomaji: nil), "#で始まる行はコメント")
+        XCTAssertNoThrow(try Romaji(source: "&sharp;,あ", initialRomaji: nil), "シャープを使いたい場合は &sharp; と書く")
+        XCTAssertThrowsError(try Romaji(source: ",あ", initialRomaji: nil), "1要素目が空")
+        XCTAssertThrowsError(try Romaji(source: "a,", initialRomaji: nil), "2要素目が空")
+        XCTAssertNoThrow(try Romaji(source: "&comma;,あ", initialRomaji: nil), "カンマを使いたい場合は &comma; と書く")
+        XCTAssertNoThrow(try Romaji(source: "+,<shift>っ", initialRomaji: nil), "シフトキーを押しているときの記号のルール")
+        XCTAssertThrowsError(try Romaji(source: "+,<shift>+", initialRomaji: nil), "シフトキーを押しているときの記号のルールで左辺と右辺が一致")
     }
 
     func testConvert() throws {
         let fileURL = Bundle(for: Self.self).url(forResource: "kana-rule-for-test", withExtension: "conf")!
-        let kanaRule = try Romaji(contentsOf: fileURL)
+        let kanaRule = try Romaji(contentsOf: fileURL, initialRomaji: nil)
         XCTAssertEqual(kanaRule.convert("a", punctuation: .default), Romaji.ConvertedMoji(input: "", kakutei: Romaji.Moji(firstRomaji: "a", kana: "あ")))
         // nだけではまだ「ん」になるかは確定しない (な行などに派生する可能性がある)
         XCTAssertEqual(kanaRule.convert("n", punctuation: .default), Romaji.ConvertedMoji(input: "n", kakutei: nil))
@@ -53,20 +53,20 @@ class RomajiTests: XCTestCase {
 
     func testConvertSpecialCharacters() throws {
         // AZIKのセミコロンを促音(っ)として扱う設定
-        let kanaRule = try Romaji(source: ";,っ")
+        let kanaRule = try Romaji(source: ";,っ", initialRomaji: nil)
         // 入力はセミコロンでもfirstRomajiは "t" になる
         XCTAssertEqual(kanaRule.convert(";", punctuation: .default), Romaji.ConvertedMoji(input: "", kakutei: Romaji.Moji(firstRomaji: "t", kana: "っ")))
     }
 
     func testVu() throws {
-        var kanaRule = try Romaji(source: "vu,う゛")
+        var kanaRule = try Romaji(source: "vu,う゛", initialRomaji: nil)
         XCTAssertEqual(kanaRule.convert("vu", punctuation: .default).kakutei?.kana, "う゛")
-        kanaRule = try Romaji(source: "vu,ゔ")
+        kanaRule = try Romaji(source: "vu,ゔ", initialRomaji: nil)
         XCTAssertEqual(kanaRule.convert("vu", punctuation: .default).kakutei?.kana, "ゔ")
     }
 
     func testIsPrefixLongRule() throws {
-        let kanaRule = try Romaji(source: "abcdefghijklmnopqrstuvwxyz,あ")
+        let kanaRule = try Romaji(source: "abcdefghijklmnopqrstuvwxyz,あ", initialRomaji: nil)
         XCTAssertTrue(kanaRule.isPrefix("a", modifierFlags: [], treatAsAlphabet: false))
         XCTAssertTrue(kanaRule.isPrefix("ab", modifierFlags: [], treatAsAlphabet: false))
         XCTAssertTrue(kanaRule.isPrefix("abcdefghijkl", modifierFlags: [], treatAsAlphabet: false))
@@ -96,6 +96,6 @@ extension Romaji {
     // アプリデフォルトのローマ字かな変換ルール
     static var defaultKanaRule: Romaji {
         let kanaRuleFileURL = Bundle.main.url(forResource: "kana-rule", withExtension: "conf")!
-        return try! Romaji(contentsOf: kanaRuleFileURL)
+        return try! Romaji(contentsOf: kanaRuleFileURL, initialRomaji: nil)
     }
 }

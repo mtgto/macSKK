@@ -66,4 +66,6 @@ struct UserDefaultsKeys {
     static let fixedCompletionByPeriod = "fixedCompletionByPeriod"
     // qキーでカタカナで確定した場合に辞書に登録するか
     static let registerKatakana = "registerKatakana"
+    // 選択中のローマ字かな変換ルールのID
+    static let kanaRule = "kanaRule"
 }

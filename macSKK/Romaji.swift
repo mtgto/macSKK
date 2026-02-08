@@ -6,7 +6,7 @@ import AppKit
 /**
  * ローマ字かな（記号も可）変換ルール
  */
-struct Romaji: Equatable, Sendable {
+struct Romaji: Equatable, Sendable, Identifiable {
     struct Moji: Equatable {
         init(firstRomaji: String, kana: String, katakana: String? = nil, hankaku: String? = nil, remain: String? = nil) {
             self.firstRomaji = firstRomaji
@@ -74,6 +74,9 @@ struct Romaji: Equatable, Sendable {
         case invalid
     }
 
+    /// ファイル名
+    let id: String
+
     /// ローマ字かな変換テーブル
     let table: [String: Moji]
 
@@ -98,14 +101,16 @@ struct Romaji: Equatable, Sendable {
         table.isEmpty && lowercaseMap.isEmpty
     }
 
-    init(contentsOf url: URL) throws {
-        try self.init(source: try String(contentsOf: url, encoding: .utf8))
+    init(contentsOf url: URL, initialRomaji: Romaji?) throws {
+        try self.init(id: url.lastPathComponent,
+                      source: try String(contentsOf: url, encoding: .utf8),
+                      initialRomaji: initialRomaji)
     }
 
-    init(source: String) throws {
-        var table: [String: Moji] = [:]
-        var undecidedInputs: Set<String> = []
-        var lowercaseMap: [String: String] = [:]
+    init(id: ID = "", source: String, initialRomaji: Romaji?) throws {
+        var table: [String: Moji] = initialRomaji?.table ?? [:]
+        var undecidedInputs: Set<String> = initialRomaji?.undecidedInputs ?? []
+        var lowercaseMap: [String: String] = initialRomaji?.lowercaseMap ?? [:]
         var error: RomajiError? = nil
         var lineNumber = 0
         source.enumerateLines { line, stop in
@@ -160,6 +165,7 @@ struct Romaji: Equatable, Sendable {
         if let error {
             throw error
         }
+        self.id = id
         self.table = table
         self.undecidedInputs = undecidedInputs
         self.lowercaseMap = lowercaseMap
