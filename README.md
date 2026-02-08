@@ -100,6 +100,7 @@ macSKKが入力メソッドとして選択されているときに入力メニ�
 | annotationFontFamily        | String     | 注釈のフォントファミリー名              |
 | annotationBackgroundColor   | String     | 注釈の背景色                            |
 | overridesAnnotationBackgroundColor | Boolean | 注釈の背景色を上書きするか |
+| kanaRule                    | String     | ローマ字かな変換ルールファイル名        |
 
 ## 機能
 
@@ -154,11 +155,10 @@ qやlやCtrl-jなど、SKKで使用されるキーバインドを変更できま
 どのキーを入力したときにどのような文字に変換するかをカスタマイズすることができます。
 例えばローマ字入力表のカスタマイズもできますが、それ以外でも句読点としてカンマやピリオドを入力するように設定したり、全角で入力したい記号を設定することができます。
 
-`~/Library/Containers/net.mtgto.inputmethod.macSKK/Data/Documents/Settings/kana-rule.conf` にファイルを置くことで、ローマ字テーブルの変更や記号入力をカスタマイズすることができます。
+`~/Library/Containers/net.mtgto.inputmethod.macSKK/Data/Documents/Settings/` に `kana-rule*.conf` (`kana-rule` で始まり、拡張子が `.conf` であるファイル名) を置くことで、ローマ字テーブルの変更や記号入力をカスタマイズすることができます。
+ファイルを置いたあと、設定画面の「ローマ字かな変換ルール」で使用したいルールファイルを選択してください。
 
-上記のパスにファイルがない場合、もしくは正常に読み込めなかった場合は `~/Library/Input Methods/macSKK.app/Contents/Resources/kana-rule.conf` がデフォルトで使用されます。
-カスタマイズしたい際はmacSKK.app内にある `kana-rule.conf` ファイルもしくは https://github.com/mtgto/macSKK/blob/main/macSKK/kana-rule.conf を元にカスタマイズするのがよいでしょう。
-設定ファイルの変更を監視しているため更新されたら即座に反映されます。
+カスタマイズしたい際は `/Library/Input Methods/macSKK.app/Contents/Resources/` 内にある `kana-rule.conf` ファイルもしくは https://github.com/mtgto/macSKK/blob/main/macSKK/kana-rule.conf を元にカスタマイズするのがよいでしょう。
 
 ローマ字変換ルール設定ファイルはUTF-8 + LF (BOMなし) で作成してください。
 簡単な使い方はデフォルトファイルにもあるので参照してみてください。
