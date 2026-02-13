@@ -68,4 +68,6 @@ struct UserDefaultsKeys {
     static let registerKatakana = "registerKatakana"
     // 選択中のローマ字かな変換ルールのID
     static let kanaRule = "kanaRule"
+    // 入力モードのモーダルの設定
+    static let inputModePanel = "inputModePanel"
 }
