@@ -219,6 +219,8 @@ final class SettingsViewModel: ObservableObject {
     @Published var kanaRules: [Romaji] = []
     /// 選択中のローマ字かな変換ルール。空文字列のときはデフォルト
     @Published var selectedKanaRule: Romaji.ID
+    /// 入力モードごとの色セット
+    @Published var inputModeColorSets: [InputMode: InputModeColorSet]
 
     // 辞書ディレクトリ
     let dictionariesDirectoryUrl: URL
@@ -315,6 +317,22 @@ final class SettingsViewModel: ObservableObject {
             dateConversions = []
         }
         selectedKanaRule = UserDefaults.app.string(forKey: UserDefaultsKeys.kanaRule) ?? ""
+        var inputModeColorSets: [InputMode: InputModeColorSet] = [:]
+        if let dict = UserDefaults.app.dictionary(forKey: UserDefaultsKeys.inputModePanel) {
+            for mode in InputMode.allCases {
+                if let modeDict = dict[mode.rawValue] as? [String: Any],
+                   let setting = InputModeColorSet(modeDict) {
+                    inputModeColorSets[mode] = setting
+                } else {
+                    inputModeColorSets[mode] = .defaultColorSet
+                }
+            }
+        } else {
+            for mode in InputMode.allCases {
+                inputModeColorSets[mode] = .defaultColorSet
+            }
+        }
+        self.inputModeColorSets = inputModeColorSets
         // 利用可能なフォント名をバックグラウンドスレッドで取得
         Task(priority: .background) {
             logger.log("利用可能なフォントを読み込みます")
@@ -715,6 +733,14 @@ final class SettingsViewModel: ObservableObject {
             }
         }.store(in: &cancellables)
 
+        $inputModeColorSets.dropFirst().sink { settings in
+            var dict: [String: Any] = [:]
+            for (mode, setting) in settings {
+                dict[mode.rawValue] = setting.encode()
+            }
+            UserDefaults.app.set(dict, forKey: UserDefaultsKeys.inputModePanel)
+        }.store(in: &cancellables)
+
         NotificationCenter.default.publisher(for: notificationNameDictLoad).receive(on: RunLoop.main).sink { [weak self] notification in
             if let loadEvent = notification.object as? DictLoadEvent, let self {
                 if let userDict = Global.dictionary.userDict as? FileDict, userDict.id == loadEvent.id {
@@ -785,6 +811,13 @@ final class SettingsViewModel: ObservableObject {
             DateConversion(format: "Gy年M月d日(E)", locale: .jaJP, calendar: .japanese),
         ]
         selectedKanaRule = ""
+        inputModeColorSets = Dictionary(uniqueKeysWithValues: InputMode.allCases.map { ($0, .defaultColorSet) })
+    }
+
+    // InputModeSettingsViewのPreviewProvider用
+    internal convenience init(inputModeColorSets: [InputMode: InputModeColorSet]) throws {
+        try self.init()
+        self.inputModeColorSets = inputModeColorSets
     }
 
     // DictionaryViewのPreviewProvider用

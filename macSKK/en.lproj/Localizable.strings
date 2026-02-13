@@ -127,6 +127,11 @@
 "Kana Rule" = "Kana Rule";
 "Show Settings in Finder" = "Show Settings in Finder";
 "Show Default rule file in Finder" = "Show Default rule file in Finder";
+"Hiragana" = "Hiragana";
+"Katakana" = "Katakana";
+"Hankaku" = "Hankaku";
+"Zenkaku" = "Zenkaku";
+"Text Color" = "Text Color";
 
 "KeyBindingActionHiragana" = "Hiragana Mode";
 "KeyBindingActionTogglekana" = "Toggle Kana Mode";

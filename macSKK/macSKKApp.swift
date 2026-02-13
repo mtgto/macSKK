@@ -244,6 +244,11 @@ struct macSKKApp: App {
             UserDefaultsKeys.overridesAnnotationBackgroundColor: false,
             UserDefaultsKeys.annotationBackgroundColor: "#FFFFFF",
             UserDefaultsKeys.kanaRule: "kana-rule.conf",
+            UserDefaultsKeys.inputModePanel: Dictionary(
+                uniqueKeysWithValues: InputMode.allCases.map { mode in
+                    (mode.rawValue, InputModeColorSet.defaultColorSet.encode())
+                }
+            ),
         ])
     }
 

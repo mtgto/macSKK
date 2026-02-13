@@ -127,6 +127,11 @@
 "Kana Rule" = "ローマ字かな変換ルール";
 "Show Settings in Finder" = "設定フォルダをFinderで表示";
 "Show Default rule file in Finder" = "デフォルトのルールをFinderで表示";
+"Hiragana" = "ひらがな";
+"Katakana" = "カタカナ";
+"Hankaku" = "半角カナ";
+"Zenkaku" = "全角英数";
+"Text Color" = "文字色";
 
 "KeyBindingActionHiragana" = "ひらがなモード";
 "KeyBindingActionTogglekana" = "かなカナモード切り替え";

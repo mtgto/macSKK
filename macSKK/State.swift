@@ -769,7 +769,7 @@ struct IMEState {
 }
 
 // 入力モード (値はTISInputSourceID)
-enum InputMode: String {
+enum InputMode: String, CaseIterable {
     case hiragana = "net.mtgto.inputmethod.macSKK.hiragana"
     case katakana = "net.mtgto.inputmethod.macSKK.katakana"
     case hankaku = "net.mtgto.inputmethod.macSKK.hankaku"  // 半角カタカナ
