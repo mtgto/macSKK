@@ -35,7 +35,7 @@ struct KeyBinding: Identifiable, Hashable {
         case stickyShift
         /// デフォルトはEnterキー
         case enter
-        /// 変換候補選択中の確定専用キー。デフォルトは未設定
+        /// 変換候補選択中の確定専用キー。デフォルトはCtrl-jキー
         case kakutei
         /// デフォルトはSpaceキー
         case space
@@ -312,7 +312,7 @@ struct KeyBinding: Identifiable, Hashable {
             case .enter:
                 return KeyBinding(action, [Input(key: .code(0x24), modifierFlags: [], optionalModifierFlags: [.shift, .option])])
             case .kakutei:
-                return KeyBinding(action, [])  // デフォルトは未設定
+                return KeyBinding(action, [Input(key: .character("j"), modifierFlags: .control)])
             case .space:
                 return KeyBinding(action, [Input(key: .code(0x31), modifierFlags: [])])
             case .shiftSpace:
