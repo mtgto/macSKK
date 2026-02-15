@@ -35,6 +35,8 @@ struct KeyBinding: Identifiable, Hashable {
         case stickyShift
         /// デフォルトはEnterキー
         case enter
+        /// 変換候補選択中の確定専用キー。デフォルトは未設定
+        case kakutei
         /// デフォルトはSpaceキー
         case space
         /// 現在の補完候補で変換を開始する。
@@ -126,6 +128,22 @@ struct KeyBinding: Identifiable, Hashable {
             // directAbbrevはinputModeがdirectのときのみ受理
             case .directAbbrev:
                 if case .direct = inputMode {
+                    return true
+                } else {
+                    return false
+                }
+            // kakuteiはcomposingまたはselecting状態のみ受理（normal状態ではhiraganaが優先される）
+            case .kakutei:
+                if case .composing(_) = inputMethod {
+                    return true
+                } else if case .selecting(_) = inputMethod {
+                    return true
+                } else {
+                    return false
+                }
+            // hiraganaはnormal状態のみ受理（composing/selecting状態ではkakuteiが優先される）
+            case .hiragana:
+                if case .normal = inputMethod {
                     return true
                 } else {
                     return false
@@ -293,6 +311,8 @@ struct KeyBinding: Identifiable, Hashable {
                 return KeyBinding(action, [Input(key: .character(";"), modifierFlags: [])])
             case .enter:
                 return KeyBinding(action, [Input(key: .code(0x24), modifierFlags: [], optionalModifierFlags: [.shift, .option])])
+            case .kakutei:
+                return KeyBinding(action, [])  // デフォルトは未設定
             case .space:
                 return KeyBinding(action, [Input(key: .code(0x31), modifierFlags: [])])
             case .shiftSpace:

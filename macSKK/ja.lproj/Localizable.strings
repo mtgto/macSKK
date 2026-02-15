@@ -139,6 +139,7 @@
 "KeyBindingActionJapanese" = "未確定入力開始";
 "KeyBindingActionStickyshift" = "Sticky Shift";
 "KeyBindingActionEnter" = "Enter";
+"KeyBindingActionKakutei" = "確定（モード切り替えなし）";
 "KeyBindingActionSpace" = "Space";
 "KeyBindingActionShiftspace" = "Shift-Space";
 "KeyBindingActionBackwardcandidate" = "前の変換候補を選択";

@@ -139,6 +139,7 @@
 "KeyBindingActionJapanese" = "Start Input Mode";
 "KeyBindingActionStickyshift" = "Sticky Shift";
 "KeyBindingActionEnter" = "Enter";
+"KeyBindingActionKakutei" = "Kakutei (Confirm without mode change)";
 "KeyBindingActionSpace" = "Space";
 "KeyBindingActionShiftspace" = "Shift-Space";
 "KeyBindingActionBackwardcandidate" = "Select backward candidate";

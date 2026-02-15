@@ -384,7 +384,7 @@ final class StateMachine {
             } else {
                 return false
             }
-        case .down, .up:
+        case .kakutei, .down, .up:
             if state.specialState != nil {
                 return true
             } else {
@@ -715,13 +715,13 @@ final class StateMachine {
                 return true
             }
             break
-        case .enter:
+        case .kakutei, .enter:
             // 未確定ローマ字はn以外は入力されずに削除される. nだけは"ん"として変換する
             let fixedText = composing.string(for: state.inputMode, kanaRule: Global.kanaRule)
             state.inputMethod = .normal
             addFixedText(fixedText)
             updateModeIfPrevModeExists()
-            if Global.enterNewLine {
+            if action.keyBind == .enter && Global.enterNewLine {
                 return handle(action)
             }
             return true
@@ -1237,10 +1237,10 @@ final class StateMachine {
         }
 
         switch action.keyBind {
-        case .enter:
+        case .kakutei, .enter:
             // 選択中の変換候補で確定
             fixCurrentSelect()
-            if Global.enterNewLine {
+            if action.keyBind == .enter && Global.enterNewLine {
                 return handle(action)
             }
             return true
