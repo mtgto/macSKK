@@ -17,17 +17,13 @@ let notificationNameKanaRuleDidMove = Notification.Name("kanaRuleDidMove")
  * 現状はローマ字かな変換ルールファイル (kana-rule.conf) のみを対象としています。
  */
 final class SettingsWatcher: NSObject, Sendable {
-    private let kanaRuleFileName: String
     private let settingsDirectoryURL: URL
     // MARK: NSFilePresenter
     let presentedItemURL: URL?
     let presentedItemOperationQueue: OperationQueue = OperationQueue()
 
-    @MainActor init(kanaRuleFileName: String = "kana-rule.conf") throws {
-        self.kanaRuleFileName = kanaRuleFileName
-        settingsDirectoryURL = try FileManager.default.url(
-            for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false
-        ).appending(path: "Settings")
+    @MainActor init(settingsDirectoryURL: URL) throws {
+        self.settingsDirectoryURL = settingsDirectoryURL
         if !FileManager.default.fileExists(atPath: settingsDirectoryURL.path) {
             logger.log("設定フォルダがないため作成します")
             try FileManager.default.createDirectory(at: settingsDirectoryURL, withIntermediateDirectories: true)
