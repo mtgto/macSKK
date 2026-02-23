@@ -1235,6 +1235,10 @@ final class StateMachine {
         }
 
         switch action.keyBind {
+        case .hiragana:
+            // 選択中の変換候補で確定
+            fixCurrentSelect()
+            return true
         case .enter:
             // 選択中の変換候補で確定
             fixCurrentSelect()
@@ -1301,7 +1305,7 @@ final class StateMachine {
                 }
             }
             return true
-        case .stickyShift, .hiragana, .hankakuKana:
+        case .stickyShift, .hankakuKana:
             fixCurrentSelect()
             return handle(action)
         case .cancel:
