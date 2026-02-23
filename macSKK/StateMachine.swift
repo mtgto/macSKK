@@ -588,11 +588,9 @@ final class StateMachine {
             if let converted, converted.kakutei != nil {
                 break
             }
-            // 入力中文字列を確定させてひらがなモードにする
+            // 入力中文字列を確定させる
             state.inputMethod = .normal
             addFixedText(composing.string(for: state.inputMode, kanaRule: Global.kanaRule))
-            state.inputMode = .hiragana
-            inputMethodEventSubject.send(.modeChanged(.hiragana))
             return true
         case .toggleAndFixKana:
             if text.isEmpty {
@@ -1237,6 +1235,10 @@ final class StateMachine {
         }
 
         switch action.keyBind {
+        case .hiragana:
+            // 選択中の変換候補で確定
+            fixCurrentSelect()
+            return true
         case .enter:
             // 選択中の変換候補で確定
             fixCurrentSelect()
@@ -1303,7 +1305,7 @@ final class StateMachine {
                 }
             }
             return true
-        case .stickyShift, .hiragana, .hankakuKana:
+        case .stickyShift, .hankakuKana:
             fixCurrentSelect()
             return handle(action)
         case .cancel:
