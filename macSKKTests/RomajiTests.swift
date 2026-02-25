@@ -14,6 +14,15 @@ class RomajiTests: XCTestCase {
         XCTAssertNoThrow(try Romaji(source: "&comma;,あ", initialRomaji: nil), "カンマを使いたい場合は &comma; と書く")
         XCTAssertNoThrow(try Romaji(source: "+,<shift>っ", initialRomaji: nil), "シフトキーを押しているときの記号のルール")
         XCTAssertThrowsError(try Romaji(source: "+,<shift>+", initialRomaji: nil), "シフトキーを押しているときの記号のルールで左辺と右辺が一致")
+
+        // #!use-default が書かれているルールでは initialRomaji を使う
+        let base = try! Romaji(source: "a,あ", initialRomaji: nil)
+        let withDirective = try! Romaji(source: "#!use-default\ni,い", initialRomaji: base)
+        XCTAssertNotNil(withDirective.convert("a", punctuation: .default).kakutei)
+        XCTAssertNotNil(withDirective.convert("i", punctuation: .default).kakutei)
+        let withoutDirective = try! Romaji(source: "i,い", initialRomaji: base)
+        XCTAssertNil(withoutDirective.convert("a", punctuation: .default).kakutei)
+        XCTAssertNotNil(withoutDirective.convert("i", punctuation: .default).kakutei)
     }
 
     func testConvert() throws {
