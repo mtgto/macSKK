@@ -108,16 +108,20 @@ struct Romaji: Equatable, Sendable, Identifiable {
     }
 
     init(id: ID = "", source: String, initialRomaji: Romaji?) throws {
-        var table: [String: Moji] = initialRomaji?.table ?? [:]
-        var undecidedInputs: Set<String> = initialRomaji?.undecidedInputs ?? []
-        var lowercaseMap: [String: String] = initialRomaji?.lowercaseMap ?? [:]
-        var error: RomajiError? = nil
+        let lines = source.components(separatedBy: .newlines)
+        let usesDefault = lines.contains { $0 == "#!use-default" }
+        if initialRomaji != nil && usesDefault {
+            logger.log("デフォルトのローマ字かな変換ルールの差分のみを適用します")
+        }
+        var table: [String: Moji] = usesDefault ? (initialRomaji?.table ?? [:]) : [:]
+        var undecidedInputs: Set<String> = usesDefault ? (initialRomaji?.undecidedInputs ?? []) : []
+        var lowercaseMap: [String: String] = usesDefault ? (initialRomaji?.lowercaseMap ?? [:]) : [:]
         var lineNumber = 0
-        source.enumerateLines { line, stop in
+        for line in lines {
             lineNumber += 1
             // #で始まる行はコメント行
             if line.starts(with: "#") || line.isEmpty {
-                return
+                continue
             }
             // TODO: 正規表現などで一要素目がキーボードから直接入力できるASCII文字であることを検査する
             let elements = line.split(separator: ",", maxSplits: 5).map {
@@ -125,9 +129,7 @@ struct Romaji: Equatable, Sendable, Identifiable {
             }
             if elements.count < 2 || elements.contains(where: { $0.isEmpty }) {
                 logger.error("ローマ字変換定義ファイルの \(lineNumber) 行目の記述が壊れているため読み込みできません")
-                error = RomajiError.invalid
-                stop = true
-                return
+                throw RomajiError.invalid
             }
             // 第二要素だけがあり、第二要素が "<shift>" + 一文字 のような形式の場合、lowercaseMapの設定として扱う
             if elements.count == 2 && elements[1].hasPrefix("<shift>") && elements[1].count == 8 {
@@ -135,12 +137,10 @@ struct Romaji: Equatable, Sendable, Identifiable {
                 // 簡単な無限ループになってないかの検査
                 guard elements[0] != converted else {
                     logger.error("ローマ字変換定義ファイルの \(lineNumber) 行目のlowercaseMap記述が壊れているため読み込みできません")
-                    error = RomajiError.invalid
-                    stop = true
-                    return
+                    throw RomajiError.invalid
                 }
                 lowercaseMap[elements[0]] = converted
-                return
+                continue
             }
             let firstRomaji = elements.count == 5 ? elements[4] : String(Self.firstRomajis[elements[1].first!] ?? elements[0].first!)
             let hiragana = elements[1]
@@ -161,9 +161,6 @@ struct Romaji: Equatable, Sendable, Identifiable {
                     undecidedInputs.insert(prefix)
                 }
             }
-        }
-        if let error {
-            throw error
         }
         self.id = id
         self.table = table
