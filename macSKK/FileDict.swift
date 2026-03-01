@@ -36,7 +36,8 @@ class FileDict: NSObject, DictProtocol, Identifiable {
     let id: String
     let fileURL: URL
     let type: FileDictType
-    private var version: NSFileVersion?
+    /// 自分自身が最後に保存したときのファイルの更新日時。外部からの変更と区別するために使う
+    private var fileModificationDate: Date?
     /// ファイルの書き込み・読み込みを直列で実行するためのキュー
     private let fileOperationQueue = {
         let queue = OperationQueue()
@@ -86,7 +87,6 @@ class FileDict: NSObject, DictProtocol, Identifiable {
         self.fileURL = fileURL
         self.type = type
         self.dict = MemoryDict(entries: [:], readonly: readonly, saveToUserDict: saveToUserDict)
-        self.version = NSFileVersion.currentVersionOfItem(at: fileURL)
         self.readonly = readonly
         self.saveToUserDict = saveToUserDict
         super.init()
@@ -94,20 +94,19 @@ class FileDict: NSObject, DictProtocol, Identifiable {
         NSFileCoordinator.addFilePresenter(self)
     }
 
-    private init(id: String, fileURL: URL, type: FileDictType, dict: MemoryDict, readonly: Bool, saveToUserDict: Bool, version: NSFileVersion?, hasUnsavedChanges: Bool) {
+    private init(id: String, fileURL: URL, type: FileDictType, dict: MemoryDict, readonly: Bool, saveToUserDict: Bool, hasUnsavedChanges: Bool) {
         self.id = id
         self.fileURL = fileURL
         self.type = type
         self.dict = dict
         self.readonly = readonly
         self.saveToUserDict = saveToUserDict
-        self.version = version
         self.hasUnsavedChanges = hasUnsavedChanges
     }
 
     func with(saveToUserDict: Bool) -> FileDict {
         FileDict(id: id, fileURL: fileURL, type: type, dict: dict, readonly: readonly, saveToUserDict: saveToUserDict,
-                 version: version, hasUnsavedChanges: hasUnsavedChanges)
+                 hasUnsavedChanges: hasUnsavedChanges)
     }
 
     func load() {
@@ -146,7 +145,6 @@ class FileDict: NSObject, DictProtocol, Identifiable {
                             let memoryDict = MemoryDict(dictId: self.id, source: source, readonly: readonly)
                             self.dict = memoryDict
                         }
-                        self.version = NSFileVersion.currentVersionOfItem(at: url)
                         logger.log("辞書 \(self.id, privacy: .public) から \(self.dict.entries.count) エントリ読み込みました")
                         NotificationCenter.default.post(name: notificationNameDictLoad,
                                                         object: DictLoadEvent(id: self.id,
@@ -196,39 +194,46 @@ class FileDict: NSObject, DictProtocol, Identifiable {
             logger.log("辞書 \(self.id, privacy: .public) は変更されていないため保存は行いません")
             return
         }
-        let operation = BlockOperation {
-            guard let data = self.serialize().data(using: self.type.encoding) else {
-                fatalError("辞書 \(self.id) のシリアライズに失敗しました")
-            }
-            var coordinationError: NSError?
-            var writingError: NSError?
-            let fileCoordinator = NSFileCoordinator(filePresenter: self)
-            fileCoordinator.coordinate(writingItemAt: self.fileURL, error: &coordinationError) { [weak self] newURL in
-                if let self {
-                    do {
-                        self.version = try NSFileVersion.addOfItem(at: newURL, withContentsOf: newURL)
-                        logger.log("辞書のバージョンを作成しました")
-                    } catch {
-                        logger.error("辞書のバージョン作成でエラーが発生しました: \(error)")
-                        writingError = error as NSError
-                        return
-                    }
-                    do {
-                        try data.write(to: newURL)
-                        self.hasUnsavedChanges = false
-                        logger.log("辞書を永続化しました。現在のエントリ数は \(dict.entries.count)、シリアライズ後のファイルサイズは\(data.count)バイトです")
-                    } catch {
-                        logger.error("辞書 \(self.id, privacy: .public) の書き込みに失敗しました: \(error)")
-                        writingError = error as NSError
-                    }
-                }
-            }
-            if let error = coordinationError ?? writingError {
-                logger.error("辞書 \(self.id, privacy: .public) の読み込み中にエラーが発生しました: \(error)")
+        guard let data = serialize().data(using: type.encoding) else {
+            fatalError("辞書 \(self.id) のシリアライズに失敗しました")
+        }
+        var coordinationError: NSError?
+        var writingError: NSError?
+        let fileCoordinator = NSFileCoordinator(filePresenter: self)
+        // 一時ファイルに書き込み
+        let tmpURL = fileURL.deletingLastPathComponent().appendingPathComponent(".\(id).tmp")
+        fileCoordinator.coordinate(writingItemAt: tmpURL, error: &coordinationError) { newURL in
+            do {
+                try data.write(to: tmpURL)
+            } catch {
+                logger.error("辞書 \(newURL.lastPathComponent, privacy: .public) の一時ファイルへの書き込みに失敗しました: \(error)")
+                writingError = error as NSError
+                return
             }
         }
-        fileOperationQueue.addOperation(operation)
-        operation.waitUntilFinished()
+        if let error = coordinationError ?? writingError {
+            logger.error("辞書 \(self.id, privacy: .public) の書き込み中にエラーが発生しました: \(error)")
+        }
+        // 一時ファイルを元ファイルとアトミックに入れ替える。
+        // backupItemName を指定することで入れ替え前の内容が .bak として残る。
+        // これにより書き込み中にクラッシュしても元ファイルか .bak のどちらかが必ず残る。
+        let backupName = "\(id).bak"
+        do {
+            try FileManager.default.replaceItem(
+                at: fileURL,
+                withItemAt: tmpURL,
+                backupItemName: backupName,
+                options: [],
+                resultingItemURL: nil
+            )
+            hasUnsavedChanges = false
+            fileModificationDate = try fileURL.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate
+            logger.log("辞書を永続化しました。現在のエントリ数は \(self.dict.entries.count)、シリアライズ後のファイルサイズは\(data.count)バイトです")
+        } catch {
+            logger.error("辞書 \(self.id, privacy: .public) の書き込みに失敗しました: \(error)")
+            try? FileManager.default.removeItem(at: tmpURL)
+            writingError = error as NSError
+        }
     }
 
     deinit {
@@ -310,12 +315,8 @@ class FileDict: NSObject, DictProtocol, Identifiable {
 extension FileDict: NSFilePresenter {
     // 他プログラムでの書き込みなどでは呼ばれないみたい
     func presentedItemDidGain(_ version: NSFileVersion) {
-        if version == self.version {
-            logger.log("辞書 \(self.id, privacy: .public) のバージョンが自分自身に更新されたため何もしません")
-        } else {
-            logger.log("辞書 \(self.id, privacy: .public) のバージョンが更新されたので読み込みます")
-            load()
-        }
+        logger.log("辞書 \(self.id, privacy: .public) のバージョンが更新されたので読み込みます")
+        load()
     }
 
     func presentedItemDidLose(_ version: NSFileVersion) {
@@ -323,20 +324,15 @@ extension FileDict: NSFilePresenter {
         load()
     }
 
-    // NOTE: save() で保存した場合はバージョンが必ず更新されるのでこのメソッドは呼ばれない
-    // IMEとして動いているmacSKK (A) とXcodeからデバッグ起動しているmacSKK (B) の両方がいる場合、
-    // どちらも同じ辞書ファイルを監視しているので、Aが保存してもAのpresentedItemDidChangeは呼び出されないが、
-    // BのpresentedItemDidChangeは呼び出される。
+    // NOTE: 外部エディタで編集したときも、自分自身がNSFileCoordinator経由でsaveした場合もこのメソッドは呼ばれる。
+    // 更新日時が自分自身で保存したときと同じかどうかで判定する。
     func presentedItemDidChange() {
-        guard let version = NSFileVersion.currentVersionOfItem(at: fileURL) else {
-            logger.error("辞書 \(self.id, privacy: .public) のバージョンが存在しません")
+        let modificationDate = (try? fileURL.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate
+        if let modificationDate, modificationDate == fileModificationDate {
+            logger.log("辞書 \(self.id, privacy: .public) の変更は自分自身の保存によるもののため読み込みをスキップします")
             return
         }
-        if version == self.version {
-            logger.log("辞書 \(self.id, privacy: .public) がアプリ外で変更されたため読み込みます")
-        } else {
-            logger.log("辞書 \(self.id, privacy: .public) が変更されたので読み込みます")
-        }
+        logger.log("辞書 \(self.id, privacy: .public) が変更されたため読み込みます")
         load()
     }
 }
