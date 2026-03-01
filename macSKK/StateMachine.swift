@@ -588,9 +588,15 @@ final class StateMachine {
             if let converted, converted.kakutei != nil {
                 break
             }
-            // 入力中文字列を確定させる
+            fallthrough
+        case .enter:
+            // 未確定ローマ字はn以外は入力されずに削除される. nだけは"ん"として変換する
             state.inputMethod = .normal
             addFixedText(composing.string(for: state.inputMode, kanaRule: Global.kanaRule))
+            updateModeIfPrevModeExists()
+            if action.keyBind == .enter && Global.enterNewLine {
+                return handle(action)
+            }
             return true
         case .toggleAndFixKana:
             if text.isEmpty {
@@ -713,16 +719,6 @@ final class StateMachine {
                 return true
             }
             break
-        case .enter:
-            // 未確定ローマ字はn以外は入力されずに削除される. nだけは"ん"として変換する
-            let fixedText = composing.string(for: state.inputMode, kanaRule: Global.kanaRule)
-            state.inputMethod = .normal
-            addFixedText(fixedText)
-            updateModeIfPrevModeExists()
-            if Global.enterNewLine {
-                return handle(action)
-            }
-            return true
         case .backspace:
             if let newComposingState = composing.dropLast() {
                 state.inputMethod = .composing(newComposingState)
