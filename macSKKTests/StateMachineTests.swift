@@ -1654,7 +1654,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleComposingCtrlJ() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(8).sink { events in
+        stateMachine.inputMethodEvent.collect(14).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose])))
             XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("お")])))
             XCTAssertEqual(events[2], .fixedText("お"))
@@ -1662,7 +1662,13 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[4], .markedText(MarkedText([.markerCompose])))
             XCTAssertEqual(events[5], .markedText(MarkedText([.markerCompose, .plain("オ")])))
             XCTAssertEqual(events[6], .fixedText("オ"))
-            XCTAssertEqual(events[7], .markedText(MarkedText([.markerCompose, .plain("オ")])))
+            XCTAssertEqual(events[7], .fixedText("ア"))
+            XCTAssertEqual(events[8], .modeChanged(.direct))
+            XCTAssertEqual(events[9], .markedText(MarkedText([.markerCompose])))
+            XCTAssertEqual(events[10], .markedText(MarkedText([.markerCompose, .plain("i")])))
+            XCTAssertEqual(events[11], .fixedText("i"))
+            XCTAssertEqual(events[12], .modeChanged(.katakana))
+            XCTAssertEqual(events[13], .fixedText("イ"))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ";")))
@@ -1672,7 +1678,11 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ";")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
         XCTAssertTrue(stateMachine.handle(hiraganaAction))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "/")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
+        XCTAssertTrue(stateMachine.handle(hiraganaAction))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
         wait(for: [expectation], timeout: 1.0)
     }
 
