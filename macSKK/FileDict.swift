@@ -89,6 +89,7 @@ class FileDict: NSObject, DictProtocol, Identifiable {
         self.dict = MemoryDict(entries: [:], readonly: readonly, saveToUserDict: saveToUserDict)
         self.readonly = readonly
         self.saveToUserDict = saveToUserDict
+        self.fileModificationDate = try fileURL.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate
         super.init()
         load()
         NSFileCoordinator.addFilePresenter(self)
@@ -226,8 +227,11 @@ class FileDict: NSObject, DictProtocol, Identifiable {
                 options: [],
                 resultingItemURL: nil
             )
+            // URL#resourceValues はキャッシュされた値があればそれを返してしまうため、最新の更新日時を取得する
+            let fileAttributes = try FileManager.default.attributesOfItem(atPath: fileURL.path)
+            fileModificationDate = fileAttributes[.modificationDate] as? Date
             hasUnsavedChanges = false
-            fileModificationDate = try fileURL.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate
+
             logger.log("辞書を永続化しました。現在のエントリ数は \(self.dict.entries.count)、シリアライズ後のファイルサイズは\(data.count)バイトです")
         } catch {
             logger.error("辞書 \(self.id, privacy: .public) の書き込みに失敗しました: \(error)")
@@ -327,10 +331,15 @@ extension FileDict: NSFilePresenter {
     // NOTE: 外部エディタで編集したときも、自分自身がNSFileCoordinator経由でsaveした場合もこのメソッドは呼ばれる。
     // 更新日時が自分自身で保存したときと同じかどうかで判定する。
     func presentedItemDidChange() {
-        let modificationDate = (try? fileURL.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate
-        if let modificationDate, modificationDate == fileModificationDate {
-            logger.log("辞書 \(self.id, privacy: .public) の変更は自分自身の保存によるもののため読み込みをスキップします")
-            return
+        // URL#resourceValues はキャッシュされた値があればそれを返してしまうため、最新の更新日時を取得する
+        if let attributes = try? FileManager.default.attributesOfItem(atPath: fileURL.path),
+           let modificationDate = attributes[.modificationDate] as? Date {
+            if modificationDate == fileModificationDate {
+                logger.log("辞書 \(self.id, privacy: .public) の変更は自分自身の保存によるもののため読み込みをスキップします")
+                return
+            } else {
+                fileModificationDate = modificationDate
+            }
         }
         logger.log("辞書 \(self.id, privacy: .public) が変更されたため読み込みます")
         load()
