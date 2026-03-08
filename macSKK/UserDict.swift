@@ -10,6 +10,7 @@ import Foundation
 /// TODO: ファイル辞書にしかない単語を削除しようとしたときにどうやってそれを記録するか。NG登録?
 class UserDict: NSObject, DictProtocol {
     static let userDictFilename = "skk-jisyo.utf8"
+    static let ignoredPathExtensions = ["tmp", "bak"]
     let dictionariesDirectoryURL: URL
     let userDictFileURL: URL
     /**
@@ -445,6 +446,8 @@ extension UserDict: NSFilePresenter {
 
     // 他フォルダから移動された場合だけでなく他フォルダに移動した場合にも発生する (後者はdidMoveToも発生する)
     func presentedSubitemDidChange(at url: URL) {
+        // ユーザー辞書のバックアップファイルの場合は無視する
+        if Self.ignoredPathExtensions.contains(url.pathExtension) { return }
         // 削除されたときにaccommodatePresentedSubitemDeletionが呼ばれないがこのメソッドは呼ばれるようだった。
         // そのためこのメソッドで削除のとき同様の処理を行う。
         if !FileManager.default.fileExists(atPath: url.path) {
@@ -489,9 +492,10 @@ extension UserDict: NSFilePresenter {
         logger.log("ファイル \(url.lastPathComponent, privacy: .public) が辞書フォルダから削除されます")
     }
 
-    /// ファイルがディレクトリまたは不可視ファイルの場合はfalseを返す
+    /// ファイルがディレクトリ、不可視ファイル、またはバックアップ・一時ファイルの場合はfalseを返す
     /// 読み込み権限がなかったり、App Sandboxのコンテナ外へのシンボリックリンクのように実際には読み込めないファイルについてはtrueを返す
     private func isFile(_ fileURL: URL) throws -> Bool {
+        if Self.ignoredPathExtensions.contains(fileURL.pathExtension) { return false }
         let resourceValues = try fileURL.resourceValues(forKeys: [.isDirectoryKey, .isHiddenKey])
         if let isDirectory = resourceValues.isDirectory, let isHidden = resourceValues.isHidden {
             return !isDirectory && !isHidden
