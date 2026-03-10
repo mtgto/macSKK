@@ -5,6 +5,7 @@ import SwiftUI
 
 struct GeneralView: View {
     @StateObject var settingsViewModel: SettingsViewModel
+    @State private var isShowingInputModeSettings = false
 
     var body: some View {
         VStack {
@@ -44,12 +45,21 @@ struct GeneralView: View {
                         Text(period.description).tag(period)
                     }
                 }
-                Toggle(isOn: $settingsViewModel.showInputIconModal, label: {
-                    Text("Show Input Mode Modal")
-                })
                 Toggle(isOn: $settingsViewModel.registerKatakana, label: {
                     Text("Register fixed katakana word to dict")
                 })
+                Toggle(isOn: $settingsViewModel.showInputIconModal, label: {
+                    Text("Show Input Mode Modal")
+                })
+                HStack {
+                    Spacer()
+                    Button("Customize Input Mode Colors…") {
+                        isShowingInputModeSettings = true
+                    }
+                    .sheet(isPresented: $isShowingInputModeSettings) {
+                        InputModeSettingsView(settingsViewModel: settingsViewModel)
+                    }
+                }
                 Section {
                     Picker("Number of inline candidates", selection: $settingsViewModel.inlineCandidateCount) {
                         ForEach(0..<10) { count in

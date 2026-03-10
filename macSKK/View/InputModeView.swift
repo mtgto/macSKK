@@ -12,7 +12,7 @@ struct InputModeView: View {
                 .renderingMode(.template)
                 .aspectRatio(contentMode: .fit)
                 .foregroundStyle(viewModel.primary)
-                .frame(width: 9, height: 9)
+                .frame(width: 13, height: 13)
                 .padding(.leading, 2)
 //                .border(.red)
             Image(viewModel.imageForInputMode)
@@ -20,12 +20,12 @@ struct InputModeView: View {
                 .renderingMode(.template)
                 .aspectRatio(contentMode: .fit)
                 .foregroundStyle(viewModel.primary)
-                .frame(width: 12, height: 12)
+                .frame(width: 18, height: 18)
                 .padding(.trailing, 1)
                 .padding(.leading, -0.5)
 //                .border(.red)
         }
-        .frame(width: 22, height: 16)
+        .frame(width: 33, height: 24)
         .background(
             RoundedRectangle(cornerRadius: 2, style: .continuous)
                 .fill(viewModel.background)
@@ -37,29 +37,29 @@ struct InputModeView_Previews: PreviewProvider {
     static var previews: some View {
         Grid {
             GridRow {
-                InputModeView(viewModel: InputModeViewModel(primary: .black, background: .white, inputMode: .hiragana, privateMode: false))
-                InputModeView(viewModel: InputModeViewModel(primary: .black, background: .white, inputMode: .katakana, privateMode: false))
-                InputModeView(viewModel: InputModeViewModel(primary: .black, background: .white, inputMode: .hankaku, privateMode: false))
-                InputModeView(viewModel: InputModeViewModel(primary: .black, background: .white, inputMode: .eisu, privateMode: false))
-                InputModeView(viewModel: InputModeViewModel(primary: .black, background: .white, inputMode: .direct, privateMode: false))
+                InputModeView(viewModel: InputModeViewModel(inputMode: .hiragana, privateMode: false))
+                InputModeView(viewModel: InputModeViewModel(inputMode: .katakana, privateMode: false))
+                InputModeView(viewModel: InputModeViewModel(inputMode: .hankaku, privateMode: false))
+                InputModeView(viewModel: InputModeViewModel(inputMode: .eisu, privateMode: false))
+                InputModeView(viewModel: InputModeViewModel(inputMode: .direct, privateMode: false))
             }
             GridRow {
-                InputModeView(viewModel: InputModeViewModel(primary: .black, background: .white, inputMode: .hiragana, privateMode: true))
-                InputModeView(viewModel: InputModeViewModel(primary: .black, background: .white, inputMode: .katakana, privateMode: true))
-                InputModeView(viewModel: InputModeViewModel(primary: .black, background: .white, inputMode: .hankaku, privateMode: true))
-                InputModeView(viewModel: InputModeViewModel(primary: .black, background: .white, inputMode: .eisu, privateMode: true))
-                InputModeView(viewModel: InputModeViewModel(primary: .black, background: .white, inputMode: .direct, privateMode: true))
+                InputModeView(viewModel: InputModeViewModel(inputMode: .hiragana, privateMode: true))
+                InputModeView(viewModel: InputModeViewModel(inputMode: .katakana, privateMode: true))
+                InputModeView(viewModel: InputModeViewModel(inputMode: .hankaku, privateMode: true))
+                InputModeView(viewModel: InputModeViewModel(inputMode: .eisu, privateMode: true))
+                InputModeView(viewModel: InputModeViewModel(inputMode: .direct, privateMode: true))
             }
             GridRow {
-                InputModeView(viewModel: InputModeViewModel(primary: .white, background: .black, inputMode: .hiragana, privateMode: false))
-                InputModeView(viewModel: InputModeViewModel(primary: .white, background: .orange, inputMode: .katakana, privateMode: false))
-                InputModeView(viewModel: InputModeViewModel(primary: .white, background: .green, inputMode: .hankaku, privateMode: false))
-                InputModeView(viewModel: InputModeViewModel(primary: .white, background: .blue, inputMode: .eisu, privateMode: false))
-                InputModeView(viewModel: InputModeViewModel(primary: .white, background: .purple, inputMode: .direct, privateMode: false))
+                InputModeView(viewModel: InputModeViewModel(inputMode: .hiragana, privateMode: false, inputModeColorSets: [.hiragana: InputModeColorSet(textColor: .white, backgroundColor: .black)]))
+                InputModeView(viewModel: InputModeViewModel(inputMode: .katakana, privateMode: false, inputModeColorSets: [.katakana: InputModeColorSet(textColor: .white, backgroundColor: .orange)]))
+                InputModeView(viewModel: InputModeViewModel(inputMode: .hankaku, privateMode: false, inputModeColorSets: [.hankaku: InputModeColorSet(textColor: .white, backgroundColor: .green)]))
+                InputModeView(viewModel: InputModeViewModel(inputMode: .eisu, privateMode: false, inputModeColorSets: [.eisu: InputModeColorSet(textColor: .white, backgroundColor: .blue)]))
+                InputModeView(viewModel: InputModeViewModel(inputMode: .direct, privateMode: false, inputModeColorSets: [.direct: InputModeColorSet(textColor: .white, backgroundColor: .purple)]))
             }
         }
-        .scaleEffect(4.0)
-        .frame(width: 640, height: 320)
+        .scaleEffect(2.0)
+        .frame(width: 480, height: 240)
         .background(.cyan)
         .previewLayout(.sizeThatFits)
     }
