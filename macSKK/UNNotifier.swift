@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import Foundation
-import UserNotifications
+@preconcurrency import UserNotifications
 
 /// 通知センターへの通知処理
 struct UNNotifier {
@@ -10,6 +10,8 @@ struct UNNotifier {
     static let userNotificationReadErrorIdentifier = "net.mtgto.inputmethod.macSKK.userNotification.userDictReadError"
     // ユーザー辞書の書き込みエラーの通知センター用通知のID
     static let userNotificationWriteErrorIdentifier = "net.mtgto.inputmethod.macSKK.userNotification.userDictWriteError"
+    // skkservの自動無効化の通知センター用通知のID
+    static let userNotificationSKKServAutoDisabledIdentifier = "net.mtgto.inputmethod.macSKK.userNotification.skkservAutoDisabled"
 
     static func sendNotificationForUserDict(readError: any Error) {
         let content = UNMutableNotificationContent()
@@ -26,6 +28,15 @@ struct UNNotifier {
         content.body = String(format: String(localized: "UNUserDictReadFailureEntryBody"), failureEntryCount)
 
         let request = UNNotificationRequest(identifier: Self.userNotificationReadErrorIdentifier, content: content, trigger: nil)
+        sendUserNotification(request: request)
+    }
+
+    static func sendNotificationForSKKServAutoDisabled() {
+        let content = UNMutableNotificationContent()
+        content.title = String(localized: "UNSKKServAutoDisabledTitle", comment: "SKKServの自動無効化")
+        content.body = String(localized: "UNSKKServAutoDisabledBody", comment: "SKKServへの接続エラーが連続して発生したため無効化されました")
+
+        let request = UNNotificationRequest(identifier: Self.userNotificationSKKServAutoDisabledIdentifier, content: content, trigger: nil)
         sendUserNotification(request: request)
     }
 
