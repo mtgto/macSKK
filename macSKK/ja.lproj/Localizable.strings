@@ -4,6 +4,7 @@
 "MenuItemDirectInput" = "\"%@\"では直接入力";
 "MenuItemInsertBlankString" = "空文字挿入 (互換性)";
 "MenuItemTreadFirstCharacterAsMarkedText" = "1文字目を未確定扱い (互換性)";
+"MenuItemSKKServ" = "SKKServを利用する";
 "SettingsNameGeneral" = "一般";
 "SettingsNameDictionaries" = "辞書";
 "SettingsNameCandidateWindow" = "変換候補パネル";
@@ -56,6 +57,8 @@
 "UNUserDictReadFailureEntryBody" = "ユーザー辞書の読み込みで %dエントリの読み込みに失敗しました";
 "UNUserDictWriteErrorTitle" = "エラー";
 "UNUserDictWriteErrorBody" = "ユーザー辞書の永続化に失敗しました";
+"UNSKKServAutoDisabledTitle" = "SKKServを無効化しました";
+"UNSKKServAutoDisabledBody" = "skkservへの接続エラーが3回連続したため自動で無効化しました。";
 "User Dictionary" = "ユーザー辞書";
 "Delete" = "削除";
 "Unregistered" = "未登録です";
@@ -105,6 +108,7 @@
 "Response Encoding" = "応答エンコーディング";
 "Save conversion history to User Dictionary" = "ユーザー辞書に変換履歴を保存する";
 "Search completions" = "補完候補を検索する";
+"SKKServAutoDisableThreshold" = "無効化に必要な連続エラーの回数";
 "Yomi" = "読み";
 "Find Candidates" = "変換候補を検索";
 "Find Completions" = "補完候補を検索";

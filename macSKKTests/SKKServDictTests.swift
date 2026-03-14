@@ -23,30 +23,31 @@ final class SKKServDictTests: XCTestCase {
 
     func testRefer() async throws {
         let service = MockedSKKServService(response: "1/変換/返還/")
-        let dict = SKKServDict(destination: destination, service: service, saveToUserDict: false)
+        let dict = SKKServDict(destination: destination, service: service, saveToUserDict: false, autoDisableThreshold: 1)
         XCTAssertEqual(dict.refer("へんかん", option: nil).map { $0.word }, ["変換", "返還"])
     }
 
     func testReferNotFound() async throws {
         let service = MockedSKKServService(response: "4へんかん")
-        let dict = SKKServDict(destination: destination, service: service, saveToUserDict: false)
+        let dict = SKKServDict(destination: destination, service: service, saveToUserDict: false, autoDisableThreshold: 1)
         XCTAssertEqual(dict.refer("へんかん", option: nil).map { $0.word }, [])
     }
 
     func testFindCompletion() async throws {
         let service = MockedSKKServService(response: "1/ほかん/ほかく/")
-        var dict = SKKServDict(destination: destination, service: service, saveToUserDict: false)
+        var dict = SKKServDict(destination: destination, service: service, saveToUserDict: false, autoDisableThreshold: 1)
         XCTAssertEqual(dict.findCompletions(prefix: "ほか"), ["ほかん", "ほかく"])
         // 重複した補完候補、読みと同じ候補、読みを接頭辞としてもたない候補は除外する
         dict = SKKServDict(destination: destination,
                            service: MockedSKKServService(response: "1/ほかん/ほかん/ほか/ほげ/"),
-                           saveToUserDict: false)
+                           saveToUserDict: false,
+                           autoDisableThreshold: 1)
         XCTAssertEqual(dict.findCompletions(prefix: "ほか"), ["ほかん"])
     }
 
     func testFindCompletionNotFound() async throws {
         let service = MockedSKKServService(response: "4ほかん")
-        let dict = SKKServDict(destination: destination, service: service, saveToUserDict: false)
+        let dict = SKKServDict(destination: destination, service: service, saveToUserDict: false, autoDisableThreshold: 1)
         XCTAssertEqual(dict.findCompletions(prefix: "ほかん"), [])
     }
 }

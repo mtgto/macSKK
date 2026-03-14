@@ -70,4 +70,6 @@ struct UserDefaultsKeys {
     static let kanaRule = "kanaRule"
     // 入力モードのモーダルの設定
     static let inputModePanel = "inputModePanel"
+    // skkservへの接続エラーが何回連続したら自動無効化するか
+    static let skkservAutoDisableThreshold = "skkservAutoDisableThreshold"
 }

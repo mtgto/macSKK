@@ -4,6 +4,7 @@
 "MenuItemDirectInput" = "Direct input from \"%@\"";
 "MenuItemInsertBlankString" = "Insert Blank String for Workaround";
 "MenuItemTreadFirstCharacterAsMarkedText" = "Treat First Char as Marked for Workaround";
+"MenuItemSKKServ" = "Use SKKServ";
 "SettingsNameGeneral" = "General";
 "SettingsNameDictionaries" = "Dictionaries";
 "SettingsNameCandidateWindow" = "Candidates Panel";
@@ -56,6 +57,8 @@
 "UNUserDictReadFailureEntryBody" = "Failed to load %d entries of the user dictionary";
 "UNUserDictWriteErrorTitle" = "Error";
 "UNUserDictWriteErrorBody" = "Failed to save the user dictionary";
+"UNSKKServAutoDisabledTitle" = "SKKServ Disabled";
+"UNSKKServAutoDisabledBody" = "SKKServ was automatically disabled after 3 consecutive connection errors.";
 "User Dictionary" = "User Dictionary";
 "Delete" = "Delete";
 "Unregistered" = "Unregistered";
@@ -105,6 +108,7 @@
 "Response Encoding" = "Response Encoding";
 "Save conversion history to User Dictionary" = "Save conversion history to User Dictionary";
 "Search completions" = "Search completions";
+"SKKServAutoDisableThreshold" = "The number of consecutive errors required to disable";
 "Yomi" = "Yomi";
 "Find Candidates" = "Find Candidates";
 "Find Completions" = "Find Completions";

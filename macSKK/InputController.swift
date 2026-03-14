@@ -321,6 +321,12 @@ class InputController: IMKInputController {
             treatFirstCharacterAsMarkedTextMenuItem.state = treatFirstCharacterAsMarkedText ? .on : .off
             preferenceMenu.addItem(treatFirstCharacterAsMarkedTextMenuItem)
         }
+        let skkservMenuItem = NSMenuItem(
+            title: String(localized: "MenuItemSKKServ", comment: "SKKServ"),
+            action: #selector(toggleSKKServ),
+            keyEquivalent: "")
+        skkservMenuItem.state = Global.skkservDict != nil ? .on : .off
+        preferenceMenu.addItem(skkservMenuItem)
         #if DEBUG
         // デバッグ用
         preferenceMenu.addItem(
@@ -403,6 +409,11 @@ class InputController: IMKInputController {
         if let bundleIdentifier = targetApp.bundleIdentifier {
             NotificationCenter.default.post(name: notificationNameToggleTreatFirstCharacterAsMarkedText, object: bundleIdentifier)
         }
+    }
+
+    /// SKKServの有効無効を切り替える
+    @objc func toggleSKKServ() {
+        NotificationCenter.default.post(name: notificationNameToggleSKKServ, object: nil)
     }
 
     #if DEBUG
