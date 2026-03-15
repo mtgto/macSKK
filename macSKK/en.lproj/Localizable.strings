@@ -86,6 +86,7 @@
 "Confirm the first completion by period" = "Confirm the first completion by period";
 "Ignore User Dict in Private Mode" = "Ignore User Dict in Private Mode";
 "Show Input Mode Modal" = "Show Input Mode Modal";
+"Customize Input Mode Colors…" = "Customize Input Mode Colors…";
 "Register fixed katakana word to dict" = "Register fixed katakana word to dict";
 "Direction of candidate list" = "Direction of candidate list";
 "Enter Key confirms a candidate and sends a newline" = "Enter Key confirms a candidate and sends a newline";
@@ -127,6 +128,7 @@
 "Kana Rule" = "Kana Rule";
 "Show Settings in Finder" = "Show Settings in Finder";
 "Show Default rule file in Finder" = "Show Default rule file in Finder";
+"Text Color" = "Text Color";
 
 "KeyBindingActionHiragana" = "Hiragana Mode";
 "KeyBindingActionTogglekana" = "Toggle Kana Mode";
@@ -176,3 +178,9 @@
 "DateYomiRelativeNow" = "Now";
 "DateYomiRelativeTomorrow" = "Tomorrow";
 "DateYomiRelativeYesterday" = "Yesterday";
+
+"InputModeDirect" = "ABC";
+"InputModeHiragana" = "Hiragana";
+"InputModeKatakana" = "Katakana";
+"InputModeHankaku" = "Hankaku";
+"InputModeEisu" = "Zenkaku";

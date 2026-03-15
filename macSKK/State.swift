@@ -769,10 +769,21 @@ struct IMEState {
 }
 
 // 入力モード (値はTISInputSourceID)
-enum InputMode: String {
+enum InputMode: String, CaseIterable {
     case hiragana = "net.mtgto.inputmethod.macSKK.hiragana"
     case katakana = "net.mtgto.inputmethod.macSKK.katakana"
     case hankaku = "net.mtgto.inputmethod.macSKK.hankaku"  // 半角カタカナ
     case eisu = "net.mtgto.inputmethod.macSKK.eisu"  // 全角英数
     case direct = "net.mtgto.inputmethod.macSKK.ascii"  // 直接入力
+
+    // InputModeSettingsViewで使用
+    var localizedLabel: String {
+        switch self {
+        case .hiragana: String(localized: "InputModeHiragana")
+        case .katakana: String(localized: "InputModeKatakana")
+        case .hankaku: String(localized: "InputModeHankaku")
+        case .eisu: String(localized: "InputModeEisu")
+        case .direct: String(localized: "InputModeDirect")
+        }
+    }
 }

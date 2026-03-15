@@ -86,6 +86,7 @@
 "Confirm the first completion by period" = "最初の補完候補をピリオドキーで確定する";
 "Ignore User Dict in Private Mode" = "プライベートモードではユーザー辞書を参照しない";
 "Show Input Mode Modal" = "入力モードアイコンを表示";
+"Customize Input Mode Colors…" = "入力モードの色をカスタマイズ…";
 "Register fixed katakana word to dict" = "カタカナで確定した単語を辞書に登録する";
 "Direction of candidate list" = "変換候補リストの表示方向";
 "Enter Key confirms a candidate and sends a newline" = "Enterキーで変換候補確定後に改行を入力";
@@ -127,6 +128,7 @@
 "Kana Rule" = "ローマ字かな変換ルール";
 "Show Settings in Finder" = "設定フォルダをFinderで表示";
 "Show Default rule file in Finder" = "デフォルトのルールをFinderで表示";
+"Text Color" = "文字色";
 
 "KeyBindingActionHiragana" = "ひらがなモード";
 "KeyBindingActionTogglekana" = "かなカナモード切り替え";
@@ -176,3 +178,9 @@
 "DateYomiRelativeNow" = "現在";
 "DateYomiRelativeTomorrow" = "明日";
 "DateYomiRelativeYesterday" = "昨日";
+
+"InputModeDirect" = "ABC";
+"InputModeHiragana" = "ひらがな";
+"InputModeKatakana" = "カタカナ";
+"InputModeHankaku" = "半角カナ";
+"InputModeEisu" = "全角英数";
