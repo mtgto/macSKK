@@ -32,6 +32,9 @@ struct SKKServDictView: View {
                         Text("Search completions")
                     }
                     .toggleStyle(.switch)
+                    TextField("SKKServAutoDisableThreshold",
+                              value: $settingsViewModel.skkservAutoDisableThreshold,
+                              format: .number)
                 } header: {
                     Text("SKKServDictTitle")
                 }

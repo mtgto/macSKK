@@ -68,4 +68,6 @@ struct UserDefaultsKeys {
     static let registerKatakana = "registerKatakana"
     // 選択中のローマ字かな変換ルールのID
     static let kanaRule = "kanaRule"
+    // skkservへの接続エラーが何回連続したら自動無効化するか
+    static let skkservAutoDisableThreshold = "skkservAutoDisableThreshold"
 }

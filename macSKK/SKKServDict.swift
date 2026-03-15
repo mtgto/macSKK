@@ -9,16 +9,21 @@ import Foundation
  * 複数のskkservを想定してSKKServDict(サーバー数)とSKKServService(1つ)と分けているけど、
  * 当面はサーバー数を1に固定してSKKServDictにXPCとの通信処理をもってきたほうがシンプルかも?
  */
-struct SKKServDict {
+final class SKKServDict {
     private let destination: SKKServDestination
     private let service: any SKKServServiceProtocol
     /// 変換履歴をユーザー辞書に保存するかどうか
     let saveToUserDict: Bool
+    /// 接続エラーが何回連続したら自動無効化するか
+    var autoDisableThreshold: Int
+    /// 接続エラーの連続回数
+    private var consecutiveErrorCount: Int = 0
 
-    init(destination: SKKServDestination, service: any SKKServServiceProtocol = SKKServService(), saveToUserDict: Bool) {
+    init(destination: SKKServDestination, service: any SKKServServiceProtocol = SKKServService(), saveToUserDict: Bool, autoDisableThreshold: Int) {
         self.destination = destination
         self.service = service
         self.saveToUserDict = saveToUserDict
+        self.autoDisableThreshold = autoDisableThreshold
     }
 
     /**
@@ -29,6 +34,7 @@ struct SKKServDict {
     func refer(_ yomi: String, option: DictReferringOption?) -> [Word] {
         do {
             let result = try service.refer(yomi: yomi, destination: destination, timeout: 1.0)
+            consecutiveErrorCount = 0
             // 変換候補が見つかった場合は "1/変換/返還/" のように 1が先頭でスラッシュで区切られた文字列
             // 見つからなかった場合は "4へんかん" のように4が先頭の文字列
             guard result.hasPrefix("1/") else {
@@ -58,6 +64,7 @@ struct SKKServDict {
             } else {
                 logger.error("skkserv辞書の検索でエラーが発生しました: \(error, privacy: .public)")
             }
+            handleConnectionError()
             return []
         }
     }
@@ -65,6 +72,7 @@ struct SKKServDict {
     func findCompletions(prefix: String) -> [String] {
         do {
             let result = try service.completion(yomi: prefix, destination: destination, timeout: 1.0)
+            consecutiveErrorCount = 0
             // 補完結果が見つかった場合は "1/ほかん/ほかんこうほ/" のように 1が先頭でスラッシュで区切られた文字列
             // 見つからなかた場合は "4ほかん" のように4が先頭の文字列
             guard result.hasPrefix("1/") else {
@@ -95,7 +103,17 @@ struct SKKServDict {
             } else {
                 logger.error("skkserv辞書の検索でエラーが発生しました: \(error, privacy: .public)")
             }
+            handleConnectionError()
             return []
+        }
+    }
+
+    private func handleConnectionError() {
+        consecutiveErrorCount += 1
+        if consecutiveErrorCount >= autoDisableThreshold {
+            logger.log("skkservへの接続エラーが\(self.consecutiveErrorCount)回連続したため無効化します")
+            NotificationCenter.default.post(name: notificationNameSKKServAutoDisabled, object: nil)
+            consecutiveErrorCount = 0
         }
     }
 
