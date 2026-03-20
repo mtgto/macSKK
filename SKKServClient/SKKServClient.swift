@@ -27,7 +27,7 @@ class SKKServClient: NSObject, SKKServClientProtocol {
                 connection.send(message: message) { error in
                     if let error {
                         logger.log("skkservへの書き込みに失敗したため接続をリセットします")
-                        self.connection = nil
+                        connection.forceCancel()
                         return reply(nil, error)
                     }
                     connection.receive { result in
@@ -40,7 +40,7 @@ class SKKServClient: NSObject, SKKServClientProtocol {
                             }
                         case .failure(let error):
                             logger.log("skkservからの読み込みに失敗したため接続をリセットします")
-                            self.connection = nil
+                            connection.forceCancel()
                             reply(nil, error)
                         }
                     }
@@ -70,7 +70,7 @@ class SKKServClient: NSObject, SKKServClientProtocol {
                 connection.send(message: message) { error in
                     if let error {
                         logger.log("skkservへの書き込みに失敗したため接続をリセットします")
-                        self.connection = nil
+                        connection.forceCancel()
                         return reply(nil, self.convertNWError(error))
                     }
                     connection.receive { result in
@@ -91,9 +91,9 @@ class SKKServClient: NSObject, SKKServClientProtocol {
                             logger.error("skkservからの応答を文字列として解釈できませんでした")
                             reply(nil, SKKServClientError.invalidResponse)
                         case .failure(let error):
-                            reply(nil, self.convertNWError(error))
                             logger.log("skkservからの読み込みに失敗したため接続をリセットします")
-                            self.connection = nil
+                            connection.forceCancel()
+                            reply(nil, self.convertNWError(error))
                         }
                     }
                 }
@@ -128,7 +128,7 @@ class SKKServClient: NSObject, SKKServClientProtocol {
                 connection.send(message: message) { error in
                     if let error {
                         logger.log("skkservへの書き込みに失敗したため接続をリセットします")
-                        self.connection = nil
+                        connection.forceCancel()
                         return reply(nil, self.convertNWError(error))
                     }
                     connection.receive { result in
@@ -149,9 +149,9 @@ class SKKServClient: NSObject, SKKServClientProtocol {
                             logger.error("skkservからの応答を文字列として解釈できませんでした")
                             reply(nil, SKKServClientError.invalidResponse)
                         case .failure(let error):
-                            reply(nil, self.convertNWError(error))
                             logger.log("skkservからの読み込みに失敗したため接続をリセットします")
-                            self.connection = nil
+                            connection.forceCancel()
+                            reply(nil, self.convertNWError(error))
                         }
                     }
                 }
