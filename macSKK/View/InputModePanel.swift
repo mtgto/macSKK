@@ -2,44 +2,39 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import Cocoa
+import SwiftUI
 
 /// 入力モードをフローティングモーダルで表示するパネル
 @MainActor
 class InputModePanel: NSPanel {
-    private let imageView: NSImageView
-    private let imageSize: CGSize
+    private let viewModel: InputModeViewModel
+    private let viewSize: CGSize
 
     init() {
-        imageSize = CGSize(width: 33, height: 24)
-        imageView = NSImageView(frame: .zero)
+        viewSize = CGSize(width: 33, height: 24)
+        viewModel = InputModeViewModel(inputMode: .hiragana, privateMode: false)
         super.init(contentRect: .zero, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: true)
-        imageView.imageScaling = .scaleProportionallyUpOrDown
         backgroundColor = .clear
         isOpaque = false
         ignoresMouseEvents = true
         hasShadow = false
-        contentView = imageView
-        setContentSize(imageSize)
+        let hostingController = NSHostingController(rootView: InputModeView(viewModel: viewModel))
+        contentViewController = hostingController
+        setContentSize(viewSize)
+    }
+
+    func updateColorSets(_ colorSets: [InputMode: InputModeColorSet]) {
+        viewModel.inputModeColorSets = colorSets
     }
 
     func show(at point: NSPoint, mode: InputMode, privateMode: Bool, windowLevel: NSWindow.Level) {
         // 画像の高さ分だけ下にずらす
-        let origin = NSPoint(x: point.x, y: point.y - imageSize.height)
-        let rect = NSRect(origin: origin, size: imageSize)
+        let origin = NSPoint(x: point.x, y: point.y - viewSize.height)
+        let rect = NSRect(origin: origin, size: viewSize)
         setFrame(rect, display: true)
         level = windowLevel
-        switch mode {
-        case .hiragana:
-            imageView.image = NSImage(named: privateMode ? "icon-hiragana-locked" : "icon-hiragana")
-        case .katakana:
-            imageView.image = NSImage(named: privateMode ? "icon-katakana-locked" : "icon-katakana")
-        case .hankaku:
-            imageView.image = NSImage(named: privateMode ? "icon-hankaku-locked" : "icon-hankaku")
-        case .eisu:
-            imageView.image = NSImage(named: privateMode ? "icon-eisu-locked" : "icon-eisu")
-        case .direct:
-            imageView.image = NSImage(named: privateMode ? "icon-direct-locked" : "icon-direct")
-        }
+        viewModel.inputMode = mode
+        viewModel.privateMode = privateMode
 
         alphaValue = 1.0
         // Note: orderFront(nil) だと "Warning: Window NSWindow 0x13b72dbe0 ordered front from a non-active application

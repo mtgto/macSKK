@@ -69,6 +69,7 @@
 		CE5ECF3A2957034D00E7BE7D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CE5ECF392957034D00E7BE7D /* Assets.xcassets */; };
 		CE5ECF3D2957034D00E7BE7D /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CE5ECF3C2957034D00E7BE7D /* Preview Assets.xcassets */; };
 		CE5ECF642957077D00E7BE7D /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = CE5ECF632957077D00E7BE7D /* InfoPlist.strings */; };
+		CE637EF82F30D702001E1998 /* InputModeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE637EF72F30D702001E1998 /* InputModeView.swift */; };
 		CE6599DC2ADBF2630052F8C0 /* SettingsWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE6599DB2ADBF2630052F8C0 /* SettingsWindow.swift */; };
 		CE6BBCC02BCB6B57003BB47F /* Data+EucJis2004.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED987402BB953E7001B40F9 /* Data+EucJis2004.swift */; };
 		CE6BBCC12BCD6721003BB47F /* libiconv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = CE496C972B440CCA001C623C /* libiconv.tbd */; };
@@ -81,6 +82,7 @@
 		CE6DBACF2A8663E600F5A227 /* SKK-JISYO.sample.utf-8 in Resources */ = {isa = PBXBuildFile; fileRef = CE6DBACE2A8663E600F5A227 /* SKK-JISYO.sample.utf-8 */; };
 		CE7F9AD92AADEBF9001B1877 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE7F9AD82AADEBF9001B1877 /* AppDelegate.swift */; };
 		CE7F9ADC2AB53E53001B1877 /* CompletionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE7F9ADB2AB53E53001B1877 /* CompletionView.swift */; };
+		CE821DF92F3C557C004814DE /* InputModeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE821DF82F3C557C004814DE /* InputModeViewModel.swift */; };
 		CE84A3B929570C37009394C4 /* InputController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE84A3B829570C37009394C4 /* InputController.swift */; };
 		CE84A3DC2957174D009394C4 /* State.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE84A3DB2957174D009394C4 /* State.swift */; };
 		CE84A3DE29571797009394C4 /* Action.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE84A3DD29571797009394C4 /* Action.swift */; };
@@ -127,6 +129,8 @@
 		CEC061CA2ABB0A7900A11614 /* CompletionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEC061C92ABB0A7900A11614 /* CompletionViewModel.swift */; };
 		CEC376E82965199500D9C432 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEC376E72965199500D9C432 /* SettingsView.swift */; };
 		CEC376EB2965211200D9C432 /* KeyEventView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEC376EA2965211200D9C432 /* KeyEventView.swift */; };
+		CECC65122F3F4357002B07F4 /* InputModeSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CECC65112F3F4357002B07F4 /* InputModeSettingsView.swift */; };
+		CECC65142F3F4357002B07F4 /* InputModeColorSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CECC65132F3F4357002B07F4 /* InputModeColorSet.swift */; };
 		CED0984D2B779E4700F2E844 /* UNNotifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED0984C2B779E4700F2E844 /* UNNotifier.swift */; };
 		CED098512B95F32600F2E844 /* WorkaroundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED098502B95F32600F2E844 /* WorkaroundView.swift */; };
 		CED1CA1E2BAFBE0600C32AE3 /* SKKServDictTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED1CA1D2BAFBE0600C32AE3 /* SKKServDictTests.swift */; };
@@ -261,6 +265,7 @@
 		CE5ECF432957034D00E7BE7D /* macSKKTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = macSKKTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		CE5ECF612957061A00E7BE7D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CE5ECF632957077D00E7BE7D /* InfoPlist.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = InfoPlist.strings; sourceTree = "<group>"; };
+		CE637EF72F30D702001E1998 /* InputModeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputModeView.swift; sourceTree = "<group>"; };
 		CE6599DB2ADBF2630052F8C0 /* SettingsWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindow.swift; sourceTree = "<group>"; };
 		CE6DBA8C2A845CE400F5A227 /* Release.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Release.swift; sourceTree = "<group>"; };
 		CE6DBA8E2A845E8B00F5A227 /* ReleaseVersion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReleaseVersion.swift; sourceTree = "<group>"; };
@@ -272,6 +277,7 @@
 		CE6DBACE2A8663E600F5A227 /* SKK-JISYO.sample.utf-8 */ = {isa = PBXFileReference; lastKnownFileType = text; path = "SKK-JISYO.sample.utf-8"; sourceTree = "<group>"; };
 		CE7F9AD82AADEBF9001B1877 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		CE7F9ADB2AB53E53001B1877 /* CompletionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletionView.swift; sourceTree = "<group>"; };
+		CE821DF82F3C557C004814DE /* InputModeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputModeViewModel.swift; sourceTree = "<group>"; };
 		CE84A3B829570C37009394C4 /* InputController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputController.swift; sourceTree = "<group>"; };
 		CE84A3DB2957174D009394C4 /* State.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = State.swift; sourceTree = "<group>"; };
 		CE84A3DD29571797009394C4 /* Action.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Action.swift; sourceTree = "<group>"; };
@@ -320,6 +326,8 @@
 		CEC061C92ABB0A7900A11614 /* CompletionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletionViewModel.swift; sourceTree = "<group>"; };
 		CEC376E72965199500D9C432 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		CEC376EA2965211200D9C432 /* KeyEventView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyEventView.swift; sourceTree = "<group>"; };
+		CECC65112F3F4357002B07F4 /* InputModeSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputModeSettingsView.swift; sourceTree = "<group>"; };
+		CECC65132F3F4357002B07F4 /* InputModeColorSet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputModeColorSet.swift; sourceTree = "<group>"; };
 		CED0984C2B779E4700F2E844 /* UNNotifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UNNotifier.swift; sourceTree = "<group>"; };
 		CED098502B95F32600F2E844 /* WorkaroundView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkaroundView.swift; sourceTree = "<group>"; };
 		CED1CA1D2BAFBE0600C32AE3 /* SKKServDictTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServDictTests.swift; sourceTree = "<group>"; };
@@ -563,7 +571,9 @@
 			isa = PBXGroup;
 			children = (
 				CEB52CBB2E0795CB0025542F /* ListFooterControls.swift */,
+				CE821DF82F3C557C004814DE /* InputModeViewModel.swift */,
 				CEF08239296BCDB000646366 /* InputModePanel.swift */,
+				CE637EF72F30D702001E1998 /* InputModeView.swift */,
 				CEF0825C296DB58600646366 /* CandidatesViewModel.swift */,
 				CEF08256296D8CBD00646366 /* CandidatesPanel.swift */,
 				CEF0825A296D8FF000646366 /* CandidatesView.swift */,
@@ -596,6 +606,8 @@
 				CEA253952E2290AC00618E64 /* SKKServDictSetting.swift */,
 				CEC376E72965199500D9C432 /* SettingsView.swift */,
 				CEADA44E2B1357090026E2BD /* GeneralView.swift */,
+				CECC65112F3F4357002B07F4 /* InputModeSettingsView.swift */,
+				CECC65132F3F4357002B07F4 /* InputModeColorSet.swift */,
 				CE6DBACC2A864A3B00F5A227 /* DictionariesView.swift */,
 				CEB141712A87D16C005E7252 /* DictionaryView.swift */,
 				CEB52CC42E080B030025542F /* DateConversion */,
@@ -893,6 +905,7 @@
 				CEA253E62E2E852000618E64 /* UserDefaults+App.swift in Sources */,
 				CE1B006D2BA54DE400C830FD /* SKKServClientProtocol.swift in Sources */,
 				CE1B006A2BA5490E00C830FD /* SKKServDictView.swift in Sources */,
+				CE637EF82F30D702001E1998 /* InputModeView.swift in Sources */,
 				94DB63242D329CBF005250B8 /* HorizontalCandidatesView.swift in Sources */,
 				94DB63252D329CBF005250B8 /* VerticalCandidatesView.swift in Sources */,
 				CED0984D2B779E4700F2E844 /* UNNotifier.swift in Sources */,
@@ -928,6 +941,8 @@
 				CE496C8C2B43968A001C623C /* LogView.swift in Sources */,
 				CEA602AA2F02C6FD00E605F2 /* CandidateWindowSettingsView.swift in Sources */,
 				CEA253962E2290AC00618E64 /* SKKServDictSetting.swift in Sources */,
+				CECC65122F3F4357002B07F4 /* InputModeSettingsView.swift in Sources */,
+				CECC65142F3F4357002B07F4 /* InputModeColorSet.swift in Sources */,
 				CEE3717529653112000DB2C3 /* SoftwareUpdateView.swift in Sources */,
 				CE496C912B440892001C623C /* URL+Additions.swift in Sources */,
 				CE11C7BD2BE47D5D00A35F3D /* KeyBindingView.swift in Sources */,
@@ -937,6 +952,7 @@
 				CE39DB212A8DFD8F00BC619F /* MarkedText.swift in Sources */,
 				CEB52CCA2E0D64B10025542F /* DateConversionView.swift in Sources */,
 				CE40D9A32A6D0C3900D44799 /* SystemDict.swift in Sources */,
+				CE821DF92F3C557C004814DE /* InputModeViewModel.swift in Sources */,
 				CE49A27C2C26F61700D53CFE /* KeyBindingInputsView.swift in Sources */,
 				CEFC174B2E53600600037468 /* Completion.swift in Sources */,
 				CEB52CC82E0C10F20025542F /* DateConversion.swift in Sources */,
