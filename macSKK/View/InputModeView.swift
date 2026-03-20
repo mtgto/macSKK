@@ -14,7 +14,6 @@ struct InputModeView: View {
                 .foregroundStyle(viewModel.primary)
                 .frame(width: 13, height: 13)
                 .padding(.leading, 2)
-//                .border(.red)
             Image(viewModel.imageForInputMode)
                 .resizable()
                 .renderingMode(.template)
@@ -23,7 +22,6 @@ struct InputModeView: View {
                 .frame(width: 18, height: 18)
                 .padding(.trailing, 1)
                 .padding(.leading, -0.5)
-//                .border(.red)
         }
         .frame(width: 33, height: 24)
         .background(
