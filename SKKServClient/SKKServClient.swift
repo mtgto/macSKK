@@ -247,13 +247,7 @@ class SKKServClient: NSObject, SKKServClientProtocol {
 extension NWConnection {
     func send(message: NWProtocolFramer.Message, callback: @escaping (NWError?) -> Void) {
         let context = NWConnection.ContentContext(identifier: "SKKServRequest", metadata: [message])
-        send(content: nil, contentContext: context, isComplete: true, completion: .contentProcessed({ error in
-            if let error {
-                callback(error)
-            } else {
-                callback(nil)
-            }
-        }))
+        send(content: nil, contentContext: context, isComplete: true, completion: .contentProcessed(callback))
     }
 
     func receive(callback: @escaping (Result<Data?, NWError>) -> Void) {
