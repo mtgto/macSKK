@@ -409,7 +409,7 @@ final class SettingsViewModel: ObservableObject {
             UserDefaults.app.set(setting.encode(), forKey: UserDefaultsKeys.skkservClient)
         }.store(in: &cancellables)
 
-        $skkservAutoDisableThreshold.dropFirst().sink { threshold in
+        $skkservAutoDisableThreshold.dropFirst().removeDuplicates().sink { threshold in
             Global.skkservDict?.autoDisableThreshold = threshold
             UserDefaults.app.set(threshold, forKey: UserDefaultsKeys.skkservAutoDisableThreshold)
             logger.log("SKKServの接続エラーによる自動無効化の閾値が\(threshold)回に設定されました。")

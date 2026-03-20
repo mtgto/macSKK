@@ -18,6 +18,8 @@ final class SKKServDict {
     var autoDisableThreshold: Int
     /// 接続エラーの連続回数
     private var consecutiveErrorCount: Int = 0
+    /// 自動無効化されたかどうか
+    private var isAutoDisabled: Bool = false
 
     init(destination: SKKServDestination, service: any SKKServServiceProtocol = SKKServService(), saveToUserDict: Bool, autoDisableThreshold: Int) {
         self.destination = destination
@@ -32,6 +34,7 @@ final class SKKServDict {
      * TCP接続が切れたり接続タイムアウトや応答のタイムアウトした場合はログだけ出力して空配列を返す。
      */
     func refer(_ yomi: String, option: DictReferringOption?) -> [Word] {
+        if isAutoDisabled { return [] }
         do {
             let result = try service.refer(yomi: yomi, destination: destination, timeout: 1.0)
             consecutiveErrorCount = 0
@@ -70,6 +73,7 @@ final class SKKServDict {
     }
 
     func findCompletions(prefix: String) -> [String] {
+        if isAutoDisabled { return [] }
         do {
             let result = try service.completion(yomi: prefix, destination: destination, timeout: 1.0)
             consecutiveErrorCount = 0
@@ -112,8 +116,8 @@ final class SKKServDict {
         consecutiveErrorCount += 1
         if consecutiveErrorCount >= autoDisableThreshold {
             logger.log("skkservへの接続エラーが\(self.consecutiveErrorCount)回連続したため無効化します")
+            isAutoDisabled = true
             NotificationCenter.default.post(name: notificationNameSKKServAutoDisabled, object: nil)
-            consecutiveErrorCount = 0
         }
     }
 
