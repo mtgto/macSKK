@@ -353,6 +353,7 @@ final class SettingsViewModel: ObservableObject {
         Global.candidateListDirection.send(candidateListDirection)
         Global.findCompletionFromAllDicts = findCompletionFromAllDicts
         Global.registerKatakana = registerKatakana
+        Global.inputModePanel.updateColorSets(inputModeColorSets)
 
         // SKK-JISYO.Lのようなファイルの読み込みが遅いのでバックグラウンドで処理
         $dictSettings.filter({ !$0.isEmpty }).receive(on: DispatchQueue.global()).sink { dictSettings in
@@ -739,6 +740,7 @@ final class SettingsViewModel: ObservableObject {
                 dict[mode.rawValue] = setting.encode()
             }
             UserDefaults.app.set(dict, forKey: UserDefaultsKeys.inputModePanel)
+            Global.inputModePanel.updateColorSets(settings)
         }.store(in: &cancellables)
 
         NotificationCenter.default.publisher(for: notificationNameDictLoad).receive(on: RunLoop.main).sink { [weak self] notification in

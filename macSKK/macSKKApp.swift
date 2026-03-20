@@ -114,7 +114,6 @@ struct macSKKApp: App {
             setupReleaseFetcher()
             setupDirectMode()
             setupSettingsNotification()
-            setupInputModeColorSets()
         }
     }
 
@@ -352,15 +351,6 @@ struct macSKKApp: App {
             for await notification in NotificationCenter.default.notifications(named: notificationNameOpenSettings) {
                 settingsWindowController.showWindow(notification.object)
                 NSApp.activate(ignoringOtherApps: true)
-            }
-        }
-    }
-
-    private func setupInputModeColorSets() {
-        Global.inputModePanel.updateColorSets(settingsViewModel.inputModeColorSets)
-        Task {
-            for await colorSets in settingsViewModel.$inputModeColorSets.values {
-                Global.inputModePanel.updateColorSets(colorSets)
             }
         }
     }
