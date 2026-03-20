@@ -169,17 +169,17 @@ class SKKServClient: NSObject, SKKServClientProtocol {
 
     @objc func disconnect() {
         connection?.forceCancel()
-        connection = nil
     }
 
     private func connect(destination: SKKServDestination, callback: @escaping (Result<NWConnection?, any Error>) -> Void) {
-        if let connection, case .ready = connection.state {
+        // NOTE: connectionの読み取りはXPCスレッドから、書き込みはSelf.queue上のstateUpdateHandlerから行われるため
+        // 厳密にはread-write raceが残る。実害としては古い値を見て余分な接続を試みる程度。
+        if let connection, case .ready = connection.state, connection.endpoint == destination.endpoint {
             callback(.success(connection))
             return
         }
-        // readyでない既存接続は破棄して新規接続を試みる
+        // readyでない既存接続、または接続先が変わった場合は破棄して新規接続を試みる
         connection?.forceCancel()
-        self.connection = nil
 
         let connection = NWConnection(to: destination.endpoint, using: .skkserv)
         var callbackCalled = false
@@ -216,7 +216,7 @@ class SKKServClient: NSObject, SKKServClientProtocol {
             case .preparing:
                 break
             case .cancelled:
-                break
+                self.connection = nil
             @unknown default:
                 fatalError("Unknown status")
             }
