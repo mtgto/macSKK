@@ -172,22 +172,29 @@ class SKKServClient: NSObject, SKKServClientProtocol {
         connection = nil
     }
 
-    func connect(destination: SKKServDestination, callback: @escaping (Result<NWConnection?, any Error>) -> Void) {
-        if let connection {
+    private func connect(destination: SKKServDestination, callback: @escaping (Result<NWConnection?, any Error>) -> Void) {
+        if let connection, case .ready = connection.state {
             callback(.success(connection))
             return
         }
+        // readyでない既存接続は破棄して新規接続を試みる
+        connection?.forceCancel()
+        self.connection = nil
+
         let connection = NWConnection(to: destination.endpoint, using: .skkserv)
-        self.connection = connection
+        var callbackCalled = false
         connection.stateUpdateHandler = { state in
             switch state {
             case .ready:
                 logger.log("skkservとの接続に成功しました")
+                callbackCalled = true
+                self.connection = connection
                 callback(.success(connection))
             case .waiting(let error):
                 // 接続先がbind + listenされてない場合には "POSIXErrorCode(rawValue: 61): Connection refused" が発生する
                 // listenされているがacceptされない場合は "POSIXErrorCode(rawValue: 60): Operation timed out" が発生する
                 // (NWProtocolTCP.OptionsでTCPのconnectionTimeoutが設定されていた場合。設定されてない場合は永久に待つっぽい)
+                callbackCalled = true
                 if case .posix(let code) = error {
                     if code == POSIXError.ECONNREFUSED {
                         callback(.failure(SKKServClientError.connectionRefused))
@@ -198,14 +205,18 @@ class SKKServClient: NSObject, SKKServClientProtocol {
                     }
                 }
                 callback(.failure(error))
+                connection.forceCancel()
             case .failed(let error):
+                guard !callbackCalled else { return }
+                callbackCalled = true
+                self.connection = nil
                 callback(.failure(error))
             case .setup:
                 break
             case .preparing:
                 break
             case .cancelled:
-                callback(.success(nil))
+                break
             @unknown default:
                 fatalError("Unknown status")
             }
