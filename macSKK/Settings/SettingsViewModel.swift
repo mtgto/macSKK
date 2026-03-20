@@ -221,6 +221,8 @@ final class SettingsViewModel: ObservableObject {
     @Published var selectedKanaRule: Romaji.ID
     /// 入力モードごとの色セット
     @Published var inputModeColorSets: [InputMode: InputModeColorSet]
+    /// skkservへの接続エラーが何回連続したら自動無効化するか
+    @Published var skkservAutoDisableThreshold: Int
 
     // 辞書ディレクトリ
     let dictionariesDirectoryUrl: URL
@@ -317,6 +319,8 @@ final class SettingsViewModel: ObservableObject {
             dateConversions = []
         }
         selectedKanaRule = UserDefaults.app.string(forKey: UserDefaultsKeys.kanaRule) ?? ""
+        skkservAutoDisableThreshold = UserDefaults.app.integer(forKey: UserDefaultsKeys.skkservAutoDisableThreshold)
+
         var inputModeColorSets: [InputMode: InputModeColorSet] = [:]
         if let dict = UserDefaults.app.dictionary(forKey: UserDefaultsKeys.inputModePanel) {
             for mode in InputMode.allCases {
@@ -333,6 +337,7 @@ final class SettingsViewModel: ObservableObject {
             }
         }
         self.inputModeColorSets = inputModeColorSets
+
         // 利用可能なフォント名をバックグラウンドスレッドで取得
         Task(priority: .background) {
             logger.log("利用可能なフォントを読み込みます")
@@ -395,13 +400,19 @@ final class SettingsViewModel: ObservableObject {
             if setting.enabled {
                 let destination = SKKServDestination(host: setting.address, port: setting.port, encoding: setting.encoding)
                 logger.log("skkserv辞書を設定します")
-                Global.skkservDict = SKKServDict(destination: destination, saveToUserDict: setting.saveToUserDict)
+                Global.skkservDict = SKKServDict(destination: destination, saveToUserDict: setting.saveToUserDict, autoDisableThreshold: self.skkservAutoDisableThreshold)
             } else {
                 logger.log("skkserv辞書は無効化されています")
                 Global.skkservDict = nil
             }
             Global.searchCompletionsSkkserv = setting.enableCompletion
             UserDefaults.app.set(setting.encode(), forKey: UserDefaultsKeys.skkservClient)
+        }.store(in: &cancellables)
+
+        $skkservAutoDisableThreshold.dropFirst().removeDuplicates().sink { threshold in
+            Global.skkservDict?.autoDisableThreshold = threshold
+            UserDefaults.app.set(threshold, forKey: UserDefaultsKeys.skkservAutoDisableThreshold)
+            logger.log("SKKServの接続エラーによる自動無効化の閾値が\(threshold)回に設定されました。")
         }.store(in: &cancellables)
 
         $directModeApplications.dropFirst().sink { applications in
@@ -472,6 +483,25 @@ final class SettingsViewModel: ObservableObject {
                                                                                  treatFirstCharacterAsMarkedText: true))
                     }
                 }
+            }
+            .store(in: &cancellables)
+
+        NotificationCenter.default.publisher(for: notificationNameSKKServAutoDisabled)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                self.skkservDictSetting.enabled = false
+                self.skkservDictSetting = self.skkservDictSetting
+                UNNotifier.sendNotificationForSKKServAutoDisabled()
+            }
+            .store(in: &cancellables)
+
+        NotificationCenter.default.publisher(for: notificationNameToggleSKKServ)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                self.skkservDictSetting.enabled.toggle()
+                self.skkservDictSetting = self.skkservDictSetting
             }
             .store(in: &cancellables)
 
@@ -814,6 +844,7 @@ final class SettingsViewModel: ObservableObject {
         ]
         selectedKanaRule = ""
         inputModeColorSets = Dictionary(uniqueKeysWithValues: InputMode.allCases.map { ($0, .defaultColorSet) })
+        skkservAutoDisableThreshold = 3
     }
 
     // InputModeSettingsViewのPreviewProvider用

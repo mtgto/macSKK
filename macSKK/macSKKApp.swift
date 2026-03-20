@@ -4,7 +4,7 @@
 import Combine
 import InputMethodKit
 import SwiftUI
-import UserNotifications
+@preconcurrency import UserNotifications
 import os
 
 let logger: Logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "main")
@@ -18,6 +18,10 @@ let notificationNameToggleTreatFirstCharacterAsMarkedText = Notification.Name("t
 let notificationNameOpenSettings = Notification.Name("openSettings")
 // インラインで表示する変換候補の数を変更したときに通知される通知の名前
 let notificationNameInlineCandidateCount = Notification.Name("inlineCandidateCount")
+// skkservへの接続エラーが連続して自動無効化されたときに通知される通知の名前
+let notificationNameSKKServAutoDisabled = Notification.Name("skkservAutoDisabled")
+// skkservの有効無効を切り替えたいときに通知される通知の名前
+let notificationNameToggleSKKServ = Notification.Name("toggleSKKServ")
 
 func isTest() -> Bool {
     return ProcessInfo.processInfo.environment["MACSKK_IS_TEST"] == "1"
@@ -249,6 +253,7 @@ struct macSKKApp: App {
                     (mode.rawValue, InputModeColorSet.defaultColorSet.encode())
                 }
             ),
+            UserDefaultsKeys.skkservAutoDisableThreshold: 3,
         ])
     }
 
