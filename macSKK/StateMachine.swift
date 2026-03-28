@@ -1031,23 +1031,58 @@ final class StateMachine {
             // ローマ字が確定してresult.inputがない
             // StickyShiftでokuriが[]になっている、またはShift押しながら入力した
             if let moji = converted.kakutei {
-                if converted.input.isEmpty {
-                    // いまの入力が送り仮名とならないことを判定
-                    // まだ読み部分が空ならば常に送り仮名ではない
-                    // シフトを押しながら入力した文字がアルファベットじゃないなら送り仮名ではない (記号なので)
-                    // 未確定文字列の先頭にカーソルがあるときはシフト押していてもいなくても送り仮名ではない
-                    if text.isEmpty || (okuri == nil && !(action.shiftIsPressed() && moji.kana.isHiragana)) || composing.cursor == 0 {
-                        if isShift || (action.shiftIsPressed() && moji.kana.isHiragana) {
-                            state.inputMethod = .composing(composing.appendText(moji).resetRomaji().with(isShift: true))
-                        } else {
-                            state.inputMethod = .normal
-                            addFixedText(moji.string(for: state.inputMode))
-                            return true
-                        }
+                // n + 母音以外を入力して「ん」が確定したときや同一の子音を連続入力して促音が確定したときなど
+                if !converted.input.isEmpty {
+                    if !isShift {
+                        addFixedText(moji.string(for: state.inputMode))
+                        state.inputMethod = .normal
+                        return handleNormalPrintable(input: converted.input, action: action, specialState: specialState)
+                    }
+                    let newComposing: ComposingState
+                    if let okuri {
+                        newComposing = ComposingState(isShift: true,
+                                                      text: text,
+                                                      okuri: okuri + [moji],
+                                                      romaji: converted.input)
                     } else {
-                        // 送り仮名が1文字以上確定した時点で変換を開始する
-                        // 変換候補がないときは辞書登録へ
-                        // カーソル位置がnilじゃないときはその前までで変換を試みる
+                        newComposing = ComposingState(isShift: true,
+                                                      text: composing.subText() + [moji.kana] + (composing.remain() ?? []),
+                                                      okuri: action.shiftIsPressed() ? [] : nil,
+                                                      romaji: converted.input,
+                                                      cursor: composing.cursor.map { $0 + 1 })
+                    }
+                    if let inputConverted = useKanaRuleIfPresent(inputMode: state.inputMode, romaji: converted.input, input: "") {
+                        return handleComposingPrintable(input: inputConverted.input,
+                                                        converted: inputConverted,
+                                                        action: action,
+                                                        composing: newComposing,
+                                                        specialState: specialState)
+                    }
+                    state.inputMethod = .composing(newComposing)
+                    updateMarkedText()
+                    return true
+                }
+                // 送り仮名トリガーかどうかを判定
+                // まだ読み部分が空ならば常に送り仮名ではない
+                // シフトを押しながら入力した文字がアルファベットじゃないなら送り仮名ではない (記号なので)
+                // 未確定文字列の先頭にカーソルがあるときはシフト押していてもいなくても送り仮名ではない
+                // シフトを押しながら入力し、`gq,が<okuri>い` のように送り仮名ありのルールを含んでいる場合は送り仮名あり
+                let isOkuriTrigger = !text.isEmpty
+                    && (okuri != nil || (action.shiftIsPressed() && moji.kana.isHiragana))
+                    && composing.cursor != 0
+                // 送り仮名が1文字以上確定した時点で変換を開始する
+                // 変換候補がないときは辞書登録へ
+                // カーソル位置がnilじゃないときはその前までで変換を試みる
+                if isOkuriTrigger {
+                    if let ruleOkuri = Global.kanaRule.okuriTable[composing.romaji + input] {
+                        // <okuri> ルール: kana から okuri を除いた部分をよみに追加し ruleOkuri を送り仮名として変換開始
+                        let yomi = String(moji.kana.dropLast(ruleOkuri.kana.count))
+                        let newComposing = ComposingState(isShift: true,
+                                                          text: composing.text + [yomi],
+                                                          okuri: [ruleOkuri],
+                                                          romaji: "")
+                        return handleComposingStartConvert(action, composing: newComposing, specialState: specialState)
+                    } else {
                         let newComposing = ComposingState(isShift: true,
                                                           text: composing.text,
                                                           okuri: (okuri ?? []) + [moji],
@@ -1055,36 +1090,38 @@ final class StateMachine {
                                                           cursor: composing.cursor)
                         return handleComposingStartConvert(action, composing: newComposing, specialState: specialState)
                     }
-                } else {  // !converted.input.isEmpty
-                    // n + 母音以外を入力して「ん」が確定したときや同一の子音を連続入力して促音が確定したときなど
-                    if isShift {
-                        let newComposingState: ComposingState
-                        if let okuri {
-                            newComposingState = ComposingState(isShift: true,
-                                                               text: text,
-                                                               okuri: okuri + [moji],
-                                                               romaji: converted.input)
-                        } else {
-                            newComposingState = ComposingState(isShift: true,
-                                                               text: composing.subText() + [moji.kana] + (composing.remain() ?? []),
-                                                               okuri: action.shiftIsPressed() ? [] : nil,
-                                                               romaji: converted.input,
-                                                               cursor: composing.cursor.map { $0 + 1 })
+                }
+                // シフトなし（またはisShiftでない）→ 確定出力してノーマルモードへ
+                guard isShift || (action.shiftIsPressed() && moji.kana.isHiragana) else {
+                    state.inputMethod = .normal
+                    addFixedText(moji.string(for: state.inputMode))
+                    return true
+                }
+                // composingを更新
+                let newComposing = composing.appendText(moji).resetRomaji().with(isShift: true)
+                if let ruleOkuri = Global.kanaRule.okuriTable[composing.romaji + input] {
+                    let yomi = String(moji.kana.dropLast(ruleOkuri.kana.count))
+                    if action.shiftIsPressed() {
+                        if text.isEmpty && !isShift {
+                            // 通常モードから <okuri> ルール + シフトあり → かなを確定出力し okuri かなを読みとして composing 開始
+                            addFixedText(Romaji.Moji(firstRomaji: moji.firstRomaji, kana: yomi).string(for: state.inputMode))
+                            state.inputMethod = .composing(
+                                ComposingState(isShift: true, text: ruleOkuri.kana.map { String($0) }, romaji: ""))
+                            updateMarkedText()
+                            return true
                         }
-                        if let inputConverted = useKanaRuleIfPresent(inputMode: state.inputMode, romaji: converted.input, input: "") {
-                            return handleComposingPrintable(input: inputConverted.input,
-                                                            converted: inputConverted,
-                                                            action: action,
-                                                            composing: newComposingState,
-                                                            specialState: specialState)
-                        } else {
-                            state.inputMethod = .composing(newComposingState)
-                        }
+                        // <okuri> ルール + シフトあり → 辞書変換起動
+                        let convertComposing = ComposingState(isShift: true,
+                                                              text: composing.text + [yomi],
+                                                              okuri: [ruleOkuri],
+                                                              romaji: "")
+                        return handleComposingStartConvert(action, composing: convertComposing, specialState: specialState)
                     } else {
-                        addFixedText(moji.string(for: state.inputMode))
-                        state.inputMethod = .normal
-                        return handleNormalPrintable(input: converted.input, action: action, specialState: specialState)
+                        // <okuri> ルール + シフトなし → kana="がい" のまま追記
+                        state.inputMethod = .composing(newComposing)
                     }
+                } else {
+                    state.inputMethod = .composing(newComposing)
                 }
                 updateMarkedText()
             } else if Global.kanaRule.isPrefix(input, modifierFlags: action.event.modifierFlags, treatAsAlphabet: action.treatAsAlphabet) {

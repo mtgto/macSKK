@@ -58,6 +58,26 @@ class RomajiTests: XCTestCase {
         XCTAssertEqual(kanaRule.lowercaseMap["+"], ";")
         XCTAssertEqual(kanaRule.lowercaseMap[":"], ";")
         XCTAssertEqual(kanaRule.convert("#", punctuation: .default), Romaji.ConvertedMoji(input: "", kakutei: Romaji.Moji(firstRomaji: "s", kana: "しゃーぷ")))
+        // gq: <okuri>付きの小文字ルール (g + q → がい、okuriTable["gq"]=Moji(kana:"い"))
+        XCTAssertEqual(kanaRule.convert("gq", punctuation: .default).kakutei?.kana, "がい")
+        XCTAssertEqual(kanaRule.okuriTable["gq"]?.kana, "い")
+    }
+
+    func testOkuri() throws {
+        // <okuri> パースの正常系・エラー系
+        XCTAssertNoThrow(try Romaji(source: "gq,が<okuri>い", initialRomaji: nil), "<okuri>付きの正常なルール")
+        XCTAssertThrowsError(try Romaji(source: "gq,<okuri>い", initialRomaji: nil), "kana部分が空")
+        XCTAssertThrowsError(try Romaji(source: "gq,が<okuri>", initialRomaji: nil), "okuri部分が空")
+        XCTAssertThrowsError(try Romaji(source: "gq,が<okuri>い<okuri>う", initialRomaji: nil), "<okuri>が複数")
+        // kana+okuri が結合されて変換結果に含まれ、okuriTable にも Moji として登録される
+        let kanaRule = try Romaji(source: "gq,が<okuri>い", initialRomaji: nil)
+        let converted = kanaRule.convert("gq", punctuation: .default)
+        XCTAssertEqual(converted.kakutei?.kana, "がい")
+        XCTAssertEqual(kanaRule.okuriTable["gq"]?.kana, "い")
+        XCTAssertEqual(kanaRule.okuriTable["gq"]?.firstRomaji, "i")
+        // okuri なしのルールは okuriTable に登録されない
+        let kanaRule2 = try Romaji(source: "hr,は", initialRomaji: nil)
+        XCTAssertNil(kanaRule2.okuriTable["hr"])
     }
 
     func testConvertSpecialCharacters() throws {
