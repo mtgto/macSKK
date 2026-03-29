@@ -27,7 +27,7 @@ class SKKServClient: NSObject, SKKServClientProtocol {
                 connection.send(message: message) { error in
                     if let error {
                         logger.log("skkservへの書き込みに失敗したため接続をリセットします")
-                        self.connection = nil
+                        connection.forceCancel()
                         return reply(nil, error)
                     }
                     connection.receive { result in
@@ -40,7 +40,7 @@ class SKKServClient: NSObject, SKKServClientProtocol {
                             }
                         case .failure(let error):
                             logger.log("skkservからの読み込みに失敗したため接続をリセットします")
-                            self.connection = nil
+                            connection.forceCancel()
                             reply(nil, error)
                         }
                     }
@@ -70,7 +70,7 @@ class SKKServClient: NSObject, SKKServClientProtocol {
                 connection.send(message: message) { error in
                     if let error {
                         logger.log("skkservへの書き込みに失敗したため接続をリセットします")
-                        self.connection = nil
+                        connection.forceCancel()
                         return reply(nil, self.convertNWError(error))
                     }
                     connection.receive { result in
@@ -91,9 +91,9 @@ class SKKServClient: NSObject, SKKServClientProtocol {
                             logger.error("skkservからの応答を文字列として解釈できませんでした")
                             reply(nil, SKKServClientError.invalidResponse)
                         case .failure(let error):
-                            reply(nil, self.convertNWError(error))
                             logger.log("skkservからの読み込みに失敗したため接続をリセットします")
-                            self.connection = nil
+                            connection.forceCancel()
+                            reply(nil, self.convertNWError(error))
                         }
                     }
                 }
@@ -128,7 +128,7 @@ class SKKServClient: NSObject, SKKServClientProtocol {
                 connection.send(message: message) { error in
                     if let error {
                         logger.log("skkservへの書き込みに失敗したため接続をリセットします")
-                        self.connection = nil
+                        connection.forceCancel()
                         return reply(nil, self.convertNWError(error))
                     }
                     connection.receive { result in
@@ -149,9 +149,9 @@ class SKKServClient: NSObject, SKKServClientProtocol {
                             logger.error("skkservからの応答を文字列として解釈できませんでした")
                             reply(nil, SKKServClientError.invalidResponse)
                         case .failure(let error):
-                            reply(nil, self.convertNWError(error))
                             logger.log("skkservからの読み込みに失敗したため接続をリセットします")
-                            self.connection = nil
+                            connection.forceCancel()
+                            reply(nil, self.convertNWError(error))
                         }
                     }
                 }
@@ -169,25 +169,32 @@ class SKKServClient: NSObject, SKKServClientProtocol {
 
     @objc func disconnect() {
         connection?.forceCancel()
-        connection = nil
     }
 
-    func connect(destination: SKKServDestination, callback: @escaping (Result<NWConnection?, any Error>) -> Void) {
-        if let connection {
+    private func connect(destination: SKKServDestination, callback: @escaping (Result<NWConnection?, any Error>) -> Void) {
+        // NOTE: connectionの読み取りはXPCスレッドから、書き込みはSelf.queue上のstateUpdateHandlerから行われるため
+        // 厳密にはread-write raceが残る。実害としては古い値を見て余分な接続を試みる程度。
+        if let connection, case .ready = connection.state, connection.endpoint == destination.endpoint {
             callback(.success(connection))
             return
         }
+        // readyでない既存接続、または接続先が変わった場合は破棄して新規接続を試みる
+        connection?.forceCancel()
+
         let connection = NWConnection(to: destination.endpoint, using: .skkserv)
-        self.connection = connection
+        var callbackCalled = false
         connection.stateUpdateHandler = { state in
             switch state {
             case .ready:
                 logger.log("skkservとの接続に成功しました")
+                callbackCalled = true
+                self.connection = connection
                 callback(.success(connection))
             case .waiting(let error):
                 // 接続先がbind + listenされてない場合には "POSIXErrorCode(rawValue: 61): Connection refused" が発生する
                 // listenされているがacceptされない場合は "POSIXErrorCode(rawValue: 60): Operation timed out" が発生する
                 // (NWProtocolTCP.OptionsでTCPのconnectionTimeoutが設定されていた場合。設定されてない場合は永久に待つっぽい)
+                callbackCalled = true
                 if case .posix(let code) = error {
                     if code == POSIXError.ECONNREFUSED {
                         callback(.failure(SKKServClientError.connectionRefused))
@@ -198,14 +205,18 @@ class SKKServClient: NSObject, SKKServClientProtocol {
                     }
                 }
                 callback(.failure(error))
+                connection.forceCancel()
             case .failed(let error):
+                guard !callbackCalled else { return }
+                callbackCalled = true
+                self.connection = nil
                 callback(.failure(error))
             case .setup:
                 break
             case .preparing:
                 break
             case .cancelled:
-                callback(.success(nil))
+                self.connection = nil
             @unknown default:
                 fatalError("Unknown status")
             }
@@ -236,13 +247,7 @@ class SKKServClient: NSObject, SKKServClientProtocol {
 extension NWConnection {
     func send(message: NWProtocolFramer.Message, callback: @escaping (NWError?) -> Void) {
         let context = NWConnection.ContentContext(identifier: "SKKServRequest", metadata: [message])
-        send(content: nil, contentContext: context, isComplete: true, completion: .contentProcessed({ error in
-            if let error {
-                callback(error)
-            } else {
-                callback(nil)
-            }
-        }))
+        send(content: nil, contentContext: context, isComplete: true, completion: .contentProcessed(callback))
     }
 
     func receive(callback: @escaping (Result<Data?, NWError>) -> Void) {
