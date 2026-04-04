@@ -79,6 +79,8 @@ struct Romaji: Equatable, Sendable, Identifiable {
 
     /// ローマ字かな変換テーブル
     let table: [String: Moji]
+    /// `<okuri>` デリミタで指定された送り仮名テーブル (例: `gq,が<okuri>い` のようなルールがあれば `["gq": Moji(firstRomaji: "i", kana: "い")]` が登録される)
+    let okuriTable: [String: Moji]
 
     /**
      * シフトキーで別の記号に変換される文字についてシフトを押しながら押したとするための対応表。
@@ -114,6 +116,7 @@ struct Romaji: Equatable, Sendable, Identifiable {
             logger.log("デフォルトのローマ字かな変換ルールの差分のみを適用します")
         }
         var table: [String: Moji] = usesDefault ? (initialRomaji?.table ?? [:]) : [:]
+        var okuriTable: [String: Moji] = usesDefault ? (initialRomaji?.okuriTable ?? [:]) : [:]
         var undecidedInputs: Set<String> = usesDefault ? (initialRomaji?.undecidedInputs ?? []) : []
         var lowercaseMap: [String: String] = usesDefault ? (initialRomaji?.lowercaseMap ?? [:]) : [:]
         var lineNumber = 0
@@ -142,16 +145,35 @@ struct Romaji: Equatable, Sendable, Identifiable {
                 lowercaseMap[elements[0]] = converted
                 continue
             }
-            let firstRomaji = elements.count == 5 ? elements[4] : String(Self.firstRomajis[elements[1].first!] ?? elements[0].first!)
             let hiragana = elements[1]
+            // 第二要素に "<okuri>" が含まれる場合、かな部分と送り仮名に分割する
+            let kana: String
+            let okuri: String?
+            if hiragana.contains("<okuri>") {
+                let parts = hiragana.components(separatedBy: "<okuri>")
+                guard parts.count == 2, !parts[0].isEmpty, !parts[1].isEmpty else {
+                    logger.error("ローマ字変換定義ファイルの \(lineNumber) 行目の<okuri>記述が壊れているため読み込みできません")
+                    throw RomajiError.invalid
+                }
+                kana = parts[0]
+                okuri = parts[1]
+            } else {
+                kana = hiragana
+                okuri = nil
+            }
+            let firstRomaji = elements.count == 5 ? elements[4] : String(Self.firstRomajis[kana.first!] ?? elements[0].first!)
             let katakana = elements.count > 2 ? elements[2] : nil
             let hankaku = elements.count > 3 ? elements[3] : nil
             let remain = elements.count > 4 ? elements[4] : nil
             table[elements[0]] = Moji(firstRomaji: firstRomaji,
-                                      kana: hiragana,
+                                      kana: kana + (okuri ?? ""),
                                       katakana: katakana,
                                       hankaku: hankaku,
                                       remain: remain)
+            if let okuri, let firstChar = okuri.first {
+                let okuriFirstRomaji = String(Self.firstRomajis[firstChar] ?? firstChar)
+                okuriTable[elements[0]] = Moji(firstRomaji: okuriFirstRomaji, kana: okuri)
+            }
             if elements[0].count > 1 {
                 for n in stride(from: elements[0].count - 1, to: 0, by: -1) {
                     let prefix = String(elements[0].prefix(n))
@@ -164,6 +186,7 @@ struct Romaji: Equatable, Sendable, Identifiable {
         }
         self.id = id
         self.table = table
+        self.okuriTable = okuriTable
         self.undecidedInputs = undecidedInputs
         self.lowercaseMap = lowercaseMap
     }

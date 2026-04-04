@@ -238,6 +238,38 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    @MainActor func testHandleNormalOkuriRuleWithoutShift() {
+        // 通常モードで `gq,が<okuri>い` ルールがある状態で gq を入力すると "がい" が確定入力される
+        Global.kanaRule = try! Romaji(source: "gq,が<okuri>い", initialRomaji: nil)
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(2).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.plain("g")])))
+            XCTAssertEqual(events[1], .fixedText("がい"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "g")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    @MainActor func testHandleNormalOkuriRuleWithShift() {
+        // 通常モードで `gq,が<okuri>い` ルールがある状態で g + Shift+Q を入力すると
+        // "が" が確定入力され、"い" が読みとしてcomposingに入る
+        Global.kanaRule = try! Romaji(source: "gq,が<okuri>い", initialRomaji: nil)
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(3).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.plain("g")])))
+            XCTAssertEqual(events[1], .fixedText("が"))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("い")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "g")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q", withShift: true)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     @MainActor func testHandleNormalRomajiKanaRuleN() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         Global.kanaRule = try! Romaji(source: ["nn,ん", "a,あ"].joined(separator: "\n"), initialRomaji: nil)
@@ -2380,6 +2412,57 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(enterAction))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "z")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ".")))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    @MainActor func testHandleComposingOkuriRuleWithShift() {
+        // kana-rule.conf の <okuri> デリミタを含むルール (gq,が<okuri>い) のテスト
+        // ▽ね + g + Shift+Q → ねが に対して い を送り仮名として辞書変換を開始する
+        // 辞書に "ねがi" エントリがないため単語登録モードへ
+        Global.kanaRule = try! Romaji(source: ["ne,ね", "gq,が<okuri>い"].joined(separator: "\n"), initialRomaji: nil)
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(10).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("n")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("ね")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("ねg")])))
+            XCTAssertEqual(events[3], .modeChanged(.hiragana))
+            XCTAssertEqual(events[4], .markedText(MarkedText([.plain("[登録：ねが*い]")])))
+            XCTAssertEqual(events[5], .markedText(MarkedText([.markerCompose, .plain("ねがい")])))
+            XCTAssertEqual(events[6], .markedText(MarkedText([])))
+            XCTAssertEqual(events[7], .markedText(MarkedText([.markerCompose, .plain("g")])))
+            XCTAssertEqual(events[8], .modeChanged(.hiragana))
+            XCTAssertEqual(events[9], .markedText(MarkedText([.plain("[登録：が*い]")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "g")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(cancelAction))
+        XCTAssertTrue(stateMachine.handle(cancelAction))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "g", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q", withShift: true)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    @MainActor func testHandleComposingOkuriRuleWithoutShift() {
+        // kana-rule.conf の <okuri> デリミタを含むルール (gq,が<okuri>い) で
+        // シフトなし入力の場合: ▽ね + g + q → ▽ねがい（変換起動しない）
+        Global.kanaRule = try! Romaji(source: ["ne,ね", "gq,が<okuri>い"].joined(separator: "\n"), initialRomaji: nil)
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(4).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("n")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("ね")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("ねg")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("ねがい")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "g")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
         wait(for: [expectation], timeout: 1.0)
     }
 
