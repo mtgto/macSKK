@@ -1,4 +1,9 @@
 # CHANGELOG
+## v2.12.0 (2026-04-05)
+
+- kana-rule.confに`<okuri>`デリミタによる送り仮名付きルールのサポートを追加 (#450)
+- GitHub Actions環境をXcode 26.4に変更 (before 26.3) (#451)
+
 ## v2.11.1 (2026-03-29)
 
 - SKKServClientのバグ修正 (#449)
