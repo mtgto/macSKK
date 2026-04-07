@@ -127,7 +127,7 @@ class MemoryDictTests: XCTestCase {
         // okuriAriYomisはソートしてない。そのうちするかも
     }
 
-    func testAdd() throws {
+    @MainActor func testAdd() throws {
         var dict = MemoryDict(entries: [:], readonly: false)
         XCTAssertEqual(dict.entryCount, 0)
         let word1 = Word("井")
@@ -158,7 +158,7 @@ class MemoryDictTests: XCTestCase {
         XCTAssertEqual(dict.refer("いt", option: nil), [Word("行", okuri: "った"), Word("行")])
     }
 
-    func testDelete() throws {
+    @MainActor func testDelete() throws {
         var dict = MemoryDict(entries: ["あr": [Word("有"), Word("在")], "え": [Word("絵"), Word("柄")]], readonly: false)
         XCTAssertFalse(dict.entries.isEmpty)
         XCTAssertEqual(dict.okuriAriYomis, ["あr"])
@@ -183,14 +183,14 @@ class MemoryDictTests: XCTestCase {
         XCTAssertTrue(dict.entries.isEmpty)
     }
 
-    func testDeleteOkuriBlock() throws {
+    @MainActor func testDeleteOkuriBlock() throws {
         var dict = MemoryDict(entries: ["あr": [Word("有", okuri: "る"), Word("有", okuri: "り"), Word("有")]], readonly: false)
         XCTAssertTrue(dict.delete(yomi: "あr", word: "有"))
         XCTAssertEqual(dict.refer("あr", option: nil), [], "あr を読みとして持つ変換候補が全て削除された")
         XCTAssertEqual(dict.okuriAriYomis, [])
     }
 
-    func testFindCompletions() {
+    @MainActor func testFindCompletions() {
         var dict = MemoryDict(entries: [:], readonly: false)
         XCTAssertEqual(dict.findCompletions(prefix: ""), [], "辞書が空だと空")
         dict.add(yomi: "あいうえおか", word: Word("アイウエオカ"))
@@ -203,7 +203,7 @@ class MemoryDictTests: XCTestCase {
         XCTAssertEqual(dict.findCompletions(prefix: "だい"), [], "数値変換の読みは補完候補とはしない")
     }
 
-    func testFindCompletionsBinarySearch() {
+    @MainActor func testFindCompletionsBinarySearch() {
         let source = """
             ;; okuri-ari entries.
             ;; okuri-nasi entries.
@@ -229,7 +229,7 @@ class MemoryDictTests: XCTestCase {
         XCTAssertEqual(dict.findCompletions(prefix: "え"), [])
     }
 
-    func testReferWithOption() {
+    @MainActor func testReferWithOption() {
         let dict = MemoryDict(entries: ["あき>": [Word("空き")],
                                         "あき": [Word("秋")],
                                         ">し": [Word("氏")],
@@ -246,7 +246,7 @@ class MemoryDictTests: XCTestCase {
         XCTAssertEqual(dict.refer("いt", option: .okuri("った")), [Word("行", okuri: "った"), Word("言")])
     }
 
-    func testReverseRefer() {
+    @MainActor func testReverseRefer() {
         let dict = MemoryDict(entries: ["あr": [Word("有"), Word("在")], "え": [Word("絵"), Word("柄")]], readonly: false)
         XCTAssertEqual(dict.reverseRefer("絵"), "え")
         XCTAssertEqual(dict.reverseRefer("柄"), "え")

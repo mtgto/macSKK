@@ -6,17 +6,18 @@ import Combine
 
 @testable import macSKK
 
-final class FileDictTests: XCTestCase {
+@MainActor final class FileDictTests: XCTestCase {
     let fileURL = Bundle(for: FileDictTests.self).url(forResource: "empty", withExtension: "txt")!
     var cancellables: Set<AnyCancellable> = []
 
-    func testLoadContainsBom() throws {
+    func testLoadContainsBom() async throws {
         let fileURL = Bundle(for: Self.self).url(forResource: "utf8-bom", withExtension: "txt")!
         let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: true, saveToUserDict: true)
+        await dict.load()
         XCTAssertEqual(dict.dict.entries, ["ゆにこーど": [Word("ユニコード")]])
     }
 
-    func testLoadJson() throws {
+    func testLoadJson() async throws {
         let expectation = XCTestExpectation()
         NotificationCenter.default.publisher(for: notificationNameDictLoad).sink { notification in
             if let loadEvent = notification.object as? DictLoadEvent {
@@ -29,12 +30,13 @@ final class FileDictTests: XCTestCase {
         }.store(in: &cancellables)
         let fileURL = Bundle(for: Self.self).url(forResource: "SKK-JISYO.test", withExtension: "json")!
         let dict = try FileDict(contentsOf: fileURL, type: .json, readonly: true, saveToUserDict: true)
+        await dict.load()
         XCTAssertEqual(dict.dict.refer("い", option: nil).map({ $0.word }).sorted(), ["伊", "胃"])
         XCTAssertEqual(dict.dict.refer("あr", option: nil).map({ $0.word }).sorted(), ["在;注釈として解釈されない", "有"])
-        wait(for: [expectation], timeout: 1.0)
+        await fulfillment(of: [expectation], timeout: 1.0)
     }
 
-    func testLoadJsonBroken() throws {
+    func testLoadJsonBroken() async throws {
         let expectation = XCTestExpectation()
         NotificationCenter.default.publisher(for: notificationNameDictLoad).sink { notification in
             if let loadEvent = notification.object as? DictLoadEvent {
@@ -44,8 +46,9 @@ final class FileDictTests: XCTestCase {
             }
         }.store(in: &cancellables)
         let fileURL = Bundle(for: Self.self).url(forResource: "SKK-JISYO.broken", withExtension: "json")!
-        _ = try FileDict(contentsOf: fileURL, type: .json, readonly: true, saveToUserDict: true)
-        wait(for: [expectation], timeout: 1.0)
+        let dict = try FileDict(contentsOf: fileURL, type: .json, readonly: true, saveToUserDict: true)
+        await dict.load()
+        await fulfillment(of: [expectation], timeout: 1.0)
     }
 
     func testAdd() throws {

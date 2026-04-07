@@ -39,12 +39,12 @@ protocol DictProtocol {
      *   - yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
      *   - option: 辞書を引くときに接頭辞、接尾辞や送り仮名ブロックから検索するかどうか。nilなら通常のエントリから検索する
      */
-    func refer(_ yomi: String, option: DictReferringOption?) -> [Word]
+    @MainActor func refer(_ yomi: String, option: DictReferringOption?) -> [Word]
 
     /**
      * 辞書を逆引きし、最初に見つかった読みを返す
      */
-    func reverseRefer(_ word: String) -> String?
+    @MainActor func reverseRefer(_ word: String) -> String?
 
     /**
      * 辞書にエントリを追加する。
@@ -53,7 +53,7 @@ protocol DictProtocol {
      *   - yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
      *   - word: SKK辞書の変換候補。
      */
-    mutating func add(yomi: String, word: Word)
+    @MainActor mutating func add(yomi: String, word: Word)
 
     /**
      * 辞書からエントリを削除する。
@@ -65,7 +65,7 @@ protocol DictProtocol {
      *   - word: SKK辞書の変換候補。
      * - Returns: エントリを削除できたかどうか
      */
-    mutating func delete(yomi: String, word: Word.Word) -> Bool
+    @MainActor mutating func delete(yomi: String, word: Word.Word) -> Bool
 
     /**
      * 現在入力中のprefixに続く入力候補を返す。見つからなければ空配列を返す。
@@ -78,7 +78,7 @@ protocol DictProtocol {
      * - prefixと読みが完全に一致する場合は補完候補とはしない
      * - 数値変換用の読みは補完候補としない
      */
-    func findCompletions(prefix: String) -> [String]
+    @MainActor func findCompletions(prefix: String) -> [String]
 
     /**
      * この辞書から返した変換候補をユーザー辞書に保存するかどうか

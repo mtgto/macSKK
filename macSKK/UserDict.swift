@@ -8,9 +8,9 @@ import Foundation
 /// v0.22.0以降はskkservサーバーを辞書としても利用することが可能。
 ///
 /// TODO: ファイル辞書にしかない単語を削除しようとしたときにどうやってそれを記録するか。NG登録?
-class UserDict: NSObject, DictProtocol {
-    static let userDictFilename = "skk-jisyo.utf8"
-    static let ignoredPathExtensions = ["tmp", "bak"]
+@MainActor class UserDict: NSObject, DictProtocol {
+    nonisolated static let userDictFilename = "skk-jisyo.utf8"
+    nonisolated static let ignoredPathExtensions = ["tmp", "bak"]
     let dictionariesDirectoryURL: URL
     let userDictFileURL: URL
     /**
@@ -34,8 +34,8 @@ class UserDict: NSObject, DictProtocol {
     let saveToUserDict = true
 
     // MARK: NSFilePresenter
-    let presentedItemURL: URL?
-    let presentedItemOperationQueue: OperationQueue = OperationQueue()
+    nonisolated let presentedItemURL: URL?
+    nonisolated let presentedItemOperationQueue: OperationQueue = OperationQueue()
 
     init(dicts: [any DictProtocol], userDictEntries: [String: [Word]]? = nil, privateMode: CurrentValueSubject<Bool, Never>, ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>, dateYomis: [DateConversion.Yomi], dateConversions: [DateConversion]) throws {
         self.dicts = dicts
@@ -68,6 +68,9 @@ class UserDict: NSObject, DictProtocol {
         }
         super.init()
         NSFileCoordinator.addFilePresenter(self)
+        if let userDict = self.userDict as? FileDict {
+            Task { await userDict.load() }
+        }
 
         savePublisher
             // 短期間に複数の保存要求があっても60秒に一回にまとめる
@@ -247,7 +250,7 @@ class UserDict: NSObject, DictProtocol {
      * ユーザー辞書のみから検索して他のSKK辞書は参照しない。すべての辞書から参照する場合は ``referDicts(_:option:skkservDict:findFromAllDicts:)`` を使用すること。
      * プライベートモードで入力したエントリは参照しない。
      */
-    func refer(_ yomi: String, option: DictReferringOption? = nil) -> [Word] {
+    @MainActor func refer(_ yomi: String, option: DictReferringOption? = nil) -> [Word] {
         if let userDict {
             if privateMode.value && ignoreUserDictInPrivateMode.value {
                 return []
@@ -265,7 +268,7 @@ class UserDict: NSObject, DictProtocol {
      * プライベートモードで入力したエントリは参照しない。
      * ユーザー辞書以外の辞書は参照しない。
      */
-    func reverseRefer(_ word: String) -> String? {
+    @MainActor func reverseRefer(_ word: String) -> String? {
         if let userDict = userDict {
             if !privateMode.value || !ignoreUserDictInPrivateMode.value {
                 if let yomi = userDict.reverseRefer(word) {
@@ -285,7 +288,7 @@ class UserDict: NSObject, DictProtocol {
      *   - yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
      *   - word: SKK辞書の変換候補。
      */
-    func add(yomi: String, word: Word) {
+    @MainActor func add(yomi: String, word: Word) {
         logger.log("ユーザー辞書に読み \(yomi, privacy: .public), 変換 \(word.word, privacy: .public) を登録する")
         if !privateMode.value {
             if let dict = userDict as? FileDict {
@@ -312,7 +315,7 @@ class UserDict: NSObject, DictProtocol {
      *    - word: SKK辞書の変換候補。
      *  - Returns: エントリを削除できたかどうか。プライベートモード時はなにも削除せずに常にtrueを返す。
      */
-    func delete(yomi: String, word: Word.Word) -> Bool {
+    @MainActor func delete(yomi: String, word: Word.Word) -> Bool {
         if privateMode.value {
             return true
         } else if let dict = userDict as? FileDict {
@@ -335,7 +338,7 @@ class UserDict: NSObject, DictProtocol {
      * - prefixと読みが完全に一致する場合は補完候補とはしない
      * - 数値変換用の読みは補完候補としない
      */
-    func findCompletions(prefix: String) -> [String] {
+    @MainActor func findCompletions(prefix: String) -> [String] {
         if prefix.isEmpty {
             return []
         }
@@ -430,7 +433,7 @@ class UserDict: NSObject, DictProtocol {
 }
 
 extension UserDict: NSFilePresenter {
-    func presentedSubitemDidAppear(at url: URL) {
+    nonisolated func presentedSubitemDidAppear(at url: URL) {
         do {
             if try isFile(url) {
                 logger.log("新しいファイル \(url.lastPathComponent, privacy: .public) が作成されました")
@@ -445,7 +448,7 @@ extension UserDict: NSFilePresenter {
     }
 
     // 他フォルダから移動された場合だけでなく他フォルダに移動した場合にも発生する (後者はdidMoveToも発生する)
-    func presentedSubitemDidChange(at url: URL) {
+    nonisolated func presentedSubitemDidChange(at url: URL) {
         // ユーザー辞書のバックアップファイルの場合は無視する
         if Self.ignoredPathExtensions.contains(url.pathExtension) { return }
         // 削除されたときにaccommodatePresentedSubitemDeletionが呼ばれないがこのメソッドは呼ばれるようだった。
@@ -480,7 +483,7 @@ extension UserDict: NSFilePresenter {
     }
 
     // 子要素を他フォルダに移動した場合に発生する
-    func presentedSubitem(at oldURL: URL, didMoveTo newURL: URL) {
+    nonisolated func presentedSubitem(at oldURL: URL, didMoveTo newURL: URL) {
         logger.log("ファイル \(oldURL.lastPathComponent, privacy: .public) が辞書フォルダから移動されました")
         NotificationCenter.default.post(name: notificationNameDictFileDidMove, object: oldURL)
     }
@@ -488,13 +491,13 @@ extension UserDict: NSFilePresenter {
     // NOTE: 本来ディレクトリ内のファイルが削除したときに呼ばれるはずだが、なぜか呼び出されない。
     // macOSのバグかもしれない?
     // @see https://stackoverflow.com/questions/50439658/swift-cocoa-how-to-watch-folder-for-changes#comment120683334_50443763
-    func accommodatePresentedSubitemDeletion(at url: URL) async throws {
+    nonisolated func accommodatePresentedSubitemDeletion(at url: URL) async throws {
         logger.log("ファイル \(url.lastPathComponent, privacy: .public) が辞書フォルダから削除されます")
     }
 
     /// ファイルがディレクトリ、不可視ファイル、またはバックアップ・一時ファイルの場合はfalseを返す
     /// 読み込み権限がなかったり、App Sandboxのコンテナ外へのシンボリックリンクのように実際には読み込めないファイルについてはtrueを返す
-    private func isFile(_ fileURL: URL) throws -> Bool {
+    nonisolated private func isFile(_ fileURL: URL) throws -> Bool {
         if Self.ignoredPathExtensions.contains(fileURL.pathExtension) { return false }
         let resourceValues = try fileURL.resourceValues(forKeys: [.isDirectoryKey, .isHiddenKey])
         if let isDirectory = resourceValues.isDirectory, let isHidden = resourceValues.isHidden {

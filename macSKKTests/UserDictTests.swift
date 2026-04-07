@@ -6,7 +6,7 @@ import Combine
 
 @testable import macSKK
 
-final class UserDictTests: XCTestCase {
+@MainActor final class UserDictTests: XCTestCase {
     @MainActor func testRefer() throws {
         let dict1 = MemoryDict(entries: ["い": [Word("胃"), Word("伊"), Word("位")]], readonly: true, saveToUserDict: false)
         let dict2 = MemoryDict(entries: ["い": [Word("胃"), Word("意")]], readonly: true, saveToUserDict: true)
