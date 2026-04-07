@@ -2466,6 +2466,33 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    @MainActor func testHandleComposingOkuriRuleWithShiftCursor() {
+        // kana-rule.conf の <okuri> デリミタを含むルール (gq,が<okuri>い) のテストのカーソル移動あり
+        Global.kanaRule = try! Romaji(source: ["a,あ", "ne,ね", "gq,が<okuri>い"].joined(separator: "\n"), initialRomaji: nil)
+        Global.dictionary.setEntries(["ねがi": [Word("願")]])
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(8).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .cursor, .plain("あ")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("n"), .cursor, .plain("あ")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("ね"), .cursor, .plain("あ")])))
+            XCTAssertEqual(events[4], .markedText(MarkedText([.markerCompose, .plain("ねg"), .cursor, .plain("あ")])))
+            XCTAssertEqual(events[5], .markedText(MarkedText([.markerSelect, .emphasized("願い"), .cursor, .plain("あ")])))
+            XCTAssertEqual(events[6], .fixedText("願い"))
+            XCTAssertEqual(events[7], .markedText(MarkedText([.markerCompose, .plain("あ")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(leftKeyAction))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "g")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(enterAction))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     @MainActor func testHandleRegisteringEnter() {
         Global.dictionary.setEntries(["お": [Word("尾")]])
 
