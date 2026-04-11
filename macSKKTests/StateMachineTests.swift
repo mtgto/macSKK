@@ -2422,7 +2422,7 @@ final class StateMachineTests: XCTestCase {
         Global.kanaRule = try! Romaji(source: ["ne,ね", "gq,が<okuri>い"].joined(separator: "\n"), initialRomaji: nil)
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(10).sink { events in
+        stateMachine.inputMethodEvent.collect(17).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("n")])))
             XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("ね")])))
             XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("ねg")])))
@@ -2433,6 +2433,13 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[7], .markedText(MarkedText([.markerCompose, .plain("g")])))
             XCTAssertEqual(events[8], .modeChanged(.hiragana))
             XCTAssertEqual(events[9], .markedText(MarkedText([.plain("[登録：が*い]")])))
+            XCTAssertEqual(events[10], .markedText(MarkedText([.markerCompose, .plain("がい")])))
+            XCTAssertEqual(events[11], .markedText(MarkedText([])))
+            XCTAssertEqual(events[12], .markedText(MarkedText([.markerCompose, .plain("n")])))
+            XCTAssertEqual(events[13], .markedText(MarkedText([.markerCompose, .plain("ね")])))
+            XCTAssertEqual(events[14], .markedText(MarkedText([.markerCompose, .plain("ね*g")])))
+            XCTAssertEqual(events[15], .modeChanged(.hiragana))
+            XCTAssertEqual(events[16], .markedText(MarkedText([.plain("[登録：ね*がい]")])))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n", withShift: true)))
@@ -2443,6 +2450,12 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(cancelAction))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "g", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(cancelAction))
+        XCTAssertTrue(stateMachine.handle(cancelAction))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "g", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
         wait(for: [expectation], timeout: 1.0)
     }
 
@@ -2463,6 +2476,33 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "g")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    @MainActor func testHandleComposingOkuriRuleWithShiftCursor() {
+        // kana-rule.conf の <okuri> デリミタを含むルール (gq,が<okuri>い) のテストのカーソル移動あり
+        Global.kanaRule = try! Romaji(source: ["a,あ", "ne,ね", "gq,が<okuri>い"].joined(separator: "\n"), initialRomaji: nil)
+        Global.dictionary.setEntries(["ねがi": [Word("願")]])
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(8).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .cursor, .plain("あ")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("n"), .cursor, .plain("あ")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("ね"), .cursor, .plain("あ")])))
+            XCTAssertEqual(events[4], .markedText(MarkedText([.markerCompose, .plain("ねg"), .cursor, .plain("あ")])))
+            XCTAssertEqual(events[5], .markedText(MarkedText([.markerSelect, .emphasized("願い"), .cursor, .plain("あ")])))
+            XCTAssertEqual(events[6], .fixedText("願い"))
+            XCTAssertEqual(events[7], .markedText(MarkedText([.markerCompose, .plain("あ")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(leftKeyAction))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "g")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(enterAction))
         wait(for: [expectation], timeout: 1.0)
     }
 
