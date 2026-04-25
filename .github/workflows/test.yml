@@ -21,6 +21,7 @@ defaults:
 jobs:
   test:
     runs-on: macos-26
+    timeout-minutes: 5
     steps:
     # https://github.com/actions/runner-images/blob/main/images/macos/macos-26-arm64-Readme.md#xcode
     - name: Select Xcode version

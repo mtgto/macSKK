@@ -4,7 +4,7 @@
 import Foundation
 
 /// 実ファイルをもたないSKK辞書
-struct MemoryDict: DictProtocol {
+struct MemoryDict: DictProtocol, Sendable {
     /**
      * 読み込み専用で保存しないかどうか
      *
@@ -114,7 +114,7 @@ struct MemoryDict: DictProtocol {
     var entryCount: Int { return entries.count }
 
     // MARK: DictProtocol
-    func refer(_ yomi: String, option: DictReferringOption?) -> [Word] {
+    @MainActor func refer(_ yomi: String, option: DictReferringOption?) -> [Word] {
         if let option {
             switch option {
             case .prefix:
@@ -135,7 +135,7 @@ struct MemoryDict: DictProtocol {
         }
     }
 
-    func reverseRefer(_ word: String) -> String? {
+    @MainActor func reverseRefer(_ word: String) -> String? {
         // 全探索
         for (yomi, candidates) in entries {
             if candidates.contains(where: { $0.word == word }) {
@@ -154,7 +154,7 @@ struct MemoryDict: DictProtocol {
     /// - Parameters:
     ///   - yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
     ///   - word: SKK辞書の変換候補。
-    mutating func add(yomi: String, word: Word) {
+    @MainActor mutating func add(yomi: String, word: Word) {
         if var words = entries[yomi] {
             let removed: Word?
             let index = words.firstIndex { $0.word == word.word && $0.okuri == word.okuri }
@@ -196,7 +196,7 @@ struct MemoryDict: DictProtocol {
     ///   - yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
     ///   - word: SKK辞書の変換候補。
     /// - Returns: エントリを削除できたかどうか
-    mutating func delete(yomi: String, word: Word.Word) -> Bool {
+    @MainActor mutating func delete(yomi: String, word: Word.Word) -> Bool {
         if let words = entries[yomi] {
             let filtered = words.filter { $0.word != word }
             if words.count != filtered.count {

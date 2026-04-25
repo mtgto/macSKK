@@ -139,6 +139,12 @@ enum CandidateListDirection: Int, CaseIterable, Identifiable {
 
 @MainActor
 final class SettingsViewModel: ObservableObject {
+    /// 辞書ファイルの読み込みに使うOperationQueue
+    private let dictLoadQueue: OperationQueue = {
+        let queue = OperationQueue()
+        queue.name = "net.mtgto.inputmethod.macSKK.dictLoad"
+        return queue
+    }()
     /// CheckUpdaterで取得した最新のリリース。取得前はnil
     @Published var latestRelease: Release? = nil
     /// リリースの確認中かどうか
@@ -361,40 +367,42 @@ final class SettingsViewModel: ObservableObject {
         Global.inputModePanel.updateColorSets(inputModeColorSets)
 
         // SKK-JISYO.Lのようなファイルの読み込みが遅いのでバックグラウンドで処理
-        $dictSettings.filter({ !$0.isEmpty }).receive(on: DispatchQueue.global()).sink { dictSettings in
-            let enabledDicts = dictSettings.compactMap { dictSetting -> FileDict? in
-                let dict = Global.dictionary.fileDict(id: dictSetting.id)
-                if dictSetting.enabled {
-                    // 無効だった辞書が有効化された、もしくは辞書のエンコーディング設定が変わったら読み込む
-                    if dictSetting.type.encoding != dict?.type.encoding {
-                        let fileURL = dictionariesDirectoryUrl.appendingPathComponent(dictSetting.filename)
-                        do {
-                            logger.log("SKK辞書 \(dictSetting.filename, privacy: .public) を読み込みます")
-                            let fileDict = try FileDict(contentsOf: fileURL, type: dictSetting.type, readonly: true, saveToUserDict: dictSetting.saveToUserDict)
-                            logger.log("SKK辞書 \(dictSetting.filename, privacy: .public) から \(fileDict.entryCount) エントリ読み込みました")
-                            return fileDict
-                        } catch {
-                            dictSetting.enabled = false
-                            logger.log("SKK辞書 \(dictSetting.filename, privacy: .public) の読み込みに失敗しました!: \(error)")
-                            return nil
+        Task {
+            for await dictSettings in $dictSettings.values where !dictSettings.isEmpty {
+                var enabledDicts: [FileDict] = []
+                await withTaskGroup { group in
+                    for dictSetting in dictSettings {
+                        let dict = Global.dictionary.fileDict(id: dictSetting.id)
+                        if dictSetting.enabled {
+                            // 無効だった辞書が有効化された、もしくは辞書のエンコーディング設定が変わったら読み込む
+                            if dictSetting.type.encoding != dict?.type.encoding {
+                                let fileURL = dictionariesDirectoryUrl.appendingPathComponent(dictSetting.filename)
+                                do {
+                                    logger.log("SKK辞書 \(dictSetting.filename, privacy: .public) を読み込みます")
+                                    let fileDict = try FileDict(contentsOf: fileURL, type: dictSetting.type, readonly: true, saveToUserDict: dictSetting.saveToUserDict)
+                                    enabledDicts.append(fileDict)
+                                    group.addTask { await fileDict.load(queue: self.dictLoadQueue) }
+                                } catch {
+                                    dictSetting.enabled = false
+                                    logger.log("SKK辞書 \(dictSetting.filename, privacy: .public) の読み込みに失敗しました!: \(error)")
+                                }
+                            } else if let dict, dictSetting.saveToUserDict != dict.saveToUserDict {
+                                logger.log("SKK辞書 \(dictSetting.filename, privacy: .public) の変換候補をユーザー辞書に保存する設定を\(dictSetting.saveToUserDict ? "有効" : "無効", privacy: .public)に変更しました")
+                                enabledDicts.append(dict.with(saveToUserDict: dictSetting.saveToUserDict))
+                            } else if let dict {
+                                enabledDicts.append(dict)
+                            }
+                        } else {
+                            if dict != nil {
+                                logger.log("SKK辞書 \(dictSetting.filename, privacy: .public) を無効化します")
+                            }
                         }
-                    } else if let dict, dictSetting.saveToUserDict != dict.saveToUserDict {
-                        logger.log("SKK辞書 \(dictSetting.filename, privacy: .public) の変換候補をユーザー辞書に保存する設定を\(dictSetting.saveToUserDict ? "有効" : "無効", privacy: .public)に変更しました")
-                        return dict.with(saveToUserDict: dictSetting.saveToUserDict)
-                    } else {
-                        return dict
                     }
-                } else {
-                    if dict != nil {
-                        logger.log("SKK辞書 \(dictSetting.filename, privacy: .public) を無効化します")
-                    }
-                    return nil
                 }
+                Global.dictionary.dicts = enabledDicts
+                UserDefaults.app.set(self.dictSettings.map { $0.encode() }, forKey: UserDefaultsKeys.dictionaries)
             }
-            Global.dictionary.dicts = enabledDicts
-            UserDefaults.app.set(self.dictSettings.map { $0.encode() }, forKey: UserDefaultsKeys.dictionaries)
         }
-        .store(in: &cancellables)
 
         $skkservDictSetting.sink { setting in
             if setting.enabled {

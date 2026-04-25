@@ -29,7 +29,7 @@ enum FileDictType: Equatable {
 }
 
 /// 実ファイルをもつSKK辞書
-class FileDict: NSObject, DictProtocol, Identifiable {
+@MainActor class FileDict: NSObject, DictProtocol, Identifiable {
     // FIXME: URLResourceのfileResourceIdentifierKeyをidとして使ってもいいかもしれない。
     // FIXME: ただしこの値は再起動したら同一性が保証されなくなるのでIDとしての永続化はできない
     // FIXME: iCloud Documentsとかでてくるとディレクトリが複数になるけど、ひとまずファイル名だけもっておけばよさそう。
@@ -38,12 +38,6 @@ class FileDict: NSObject, DictProtocol, Identifiable {
     let type: FileDictType
     /// 自分自身が最後に保存したときのファイルの更新日時。外部からの変更と区別するために使う
     private var fileModificationDate: Date?
-    /// ファイルの書き込み・読み込みを直列で実行するためのキュー
-    private let fileOperationQueue = {
-        let queue = OperationQueue()
-        queue.maxConcurrentOperationCount = 1
-        return queue
-    }()
     /// 保存してない変更があるかどうか (UIDocumentのパクり)
     private(set) var hasUnsavedChanges: Bool = false
     private(set) var dict: MemoryDict
@@ -74,8 +68,8 @@ class FileDict: NSObject, DictProtocol, Identifiable {
     }
 
     // MARK: NSFilePresenter
-    var presentedItemURL: URL? { fileURL }
-    let presentedItemOperationQueue: OperationQueue = {
+    nonisolated var presentedItemURL: URL? { fileURL }
+    nonisolated let presentedItemOperationQueue: OperationQueue = {
         let queue = OperationQueue()
         queue.maxConcurrentOperationCount = 1
         return queue
@@ -91,7 +85,6 @@ class FileDict: NSObject, DictProtocol, Identifiable {
         self.saveToUserDict = saveToUserDict
         self.fileModificationDate = try fileURL.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate
         super.init()
-        load()
         NSFileCoordinator.addFilePresenter(self)
     }
 
@@ -110,64 +103,69 @@ class FileDict: NSObject, DictProtocol, Identifiable {
                  hasUnsavedChanges: hasUnsavedChanges)
     }
 
-    func load() {
-        let operation = BlockOperation {
-            var coordinationError: NSError?
-            var readingError: NSError?
+    func load(queue: OperationQueue = OperationQueue()) async {
+        let id = self.id
+        let fileURL = self.fileURL
+        let type = self.type
+        let readonly = self.readonly
+
+        NotificationCenter.default.post(name: notificationNameDictLoad,
+                                        object: DictLoadEvent(id: id, status: .loading))
+
+        // ファイルI/O + パースはOperationQueue上で実行し、MainActorをブロックしない
+        let result: Result<MemoryDict, any Error> = await withCheckedContinuation { continuation in
             let fileCoordinator = NSFileCoordinator(filePresenter: self)
-            NotificationCenter.default.post(name: notificationNameDictLoad,
-                                            object: DictLoadEvent(id: self.id,
-                                                                  status: .loading))
-            fileCoordinator.coordinate(readingItemAt: self.fileURL, error: &coordinationError) { [weak self] url in
-                if let self {
-                    do {
-                        if case .json = self.type {
-                            let decoder = JSONDecoder()
-                            decoder.keyDecodingStrategy = .convertFromSnakeCase
-                            let jisyo = try decoder.decode(JsonJisyo.self, from: try Data(contentsOf: url))
-                            if jisyo.version != "0.0.0" {
-                                logger.warning("JSON辞書のバージョンが未対応のバージョンのため無視します")
-                                throw FileDictError.decode
-                            }
-                            let okuriAriEntries = jisyo.okuriAri.mapValues({
-                                $0.map { Word($0) }
-                            })
-                            let okuriNashiEntries = jisyo.okuriNasi.mapValues({
-                                $0.map { Word($0) }
-                            })
-                            let memoryDict = MemoryDict(okuriAriEntries: okuriAriEntries, okuriNashiEntries: okuriNashiEntries, readonly: readonly)
-                            self.dict = memoryDict
-                        } else if case .traditional(let encoding) = self.type {
-                            let source = try self.loadString(url, encoding: encoding)
-                            if source.isEmpty {
-                                // 辞書ファイルを書き込み中に読み込んでしまった?
-                                logger.warning("辞書 \(self.id) を読み込んだところ0バイトだったため更新を無視します")
-                            }
-                            let memoryDict = MemoryDict(dictId: self.id, source: source, readonly: readonly)
-                            self.dict = memoryDict
+            let intent = NSFileAccessIntent.readingIntent(with: fileURL, options: [])
+            fileCoordinator.coordinate(with: [intent], queue: queue) { error in
+                if let error {
+                    continuation.resume(returning: .failure(error))
+                    return
+                }
+                let url = intent.url
+                do {
+                    if case .json = type {
+                        let decoder = JSONDecoder()
+                        decoder.keyDecodingStrategy = .convertFromSnakeCase
+                        let jisyo = try decoder.decode(JsonJisyo.self, from: try Data(contentsOf: url))
+                        if jisyo.version != "0.0.0" {
+                            logger.warning("JSON辞書のバージョンが未対応のバージョンのため無視します")
+                            throw FileDictError.decode
                         }
-                        logger.log("辞書 \(self.id, privacy: .public) から \(self.dict.entries.count) エントリ読み込みました")
-                        NotificationCenter.default.post(name: notificationNameDictLoad,
-                                                        object: DictLoadEvent(id: self.id,
-                                                                              status: .loaded(success: dict.entryCount, failure: dict.failedEntryCount)))
-                    } catch {
-                        logger.error("辞書 \(self.id, privacy: .public) の読み込みでエラーが発生しました: \(error)")
-                        NotificationCenter.default.post(name: notificationNameDictLoad,
-                                                        object: DictLoadEvent(id: self.id,
-                                                                              status: .fail(error)))
-                        readingError = error as NSError
+                        let okuriAriEntries = jisyo.okuriAri.mapValues { $0.map { Word($0) } }
+                        let okuriNashiEntries = jisyo.okuriNasi.mapValues { $0.map { Word($0) } }
+                        continuation.resume(returning: .success(MemoryDict(okuriAriEntries: okuriAriEntries, okuriNashiEntries: okuriNashiEntries, readonly: readonly)))
+                    } else if case .traditional(let encoding) = type {
+                        let source = try Self.loadString(url, encoding: encoding)
+                        if source.isEmpty {
+                            // 辞書ファイルを書き込み中に読み込んでしまった?
+                            logger.warning("辞書 \(id) を読み込んだところ0バイトだったため更新を無視します")
+                        }
+                        continuation.resume(returning: .success(MemoryDict(dictId: id, source: source, readonly: readonly)))
+                    } else {
+                        continuation.resume(returning: .failure(FileDictError.decode))
                     }
+                } catch {
+                    continuation.resume(returning: .failure(error))
                 }
             }
-            if let error = coordinationError ?? readingError {
-                logger.error("辞書 \(self.id, privacy: .public) の読み込み中にエラーが発生しました: \(error)")
-            }
         }
-        fileOperationQueue.addOperation(operation)
-        operation.waitUntilFinished()
+
+        // 状態変更は MainActor 上で実行
+        switch result {
+        case .success(let memoryDict):
+            self.dict = memoryDict
+            logger.log("辞書 \(self.id, privacy: .public) から \(self.dict.entries.count) エントリ読み込みました")
+            NotificationCenter.default.post(name: notificationNameDictLoad,
+                                            object: DictLoadEvent(id: self.id,
+                                                                  status: .loaded(success: dict.entryCount, failure: dict.failedEntryCount)))
+        case .failure(let error):
+            logger.error("辞書 \(self.id, privacy: .public) の読み込みでエラーが発生しました: \(error)")
+            NotificationCenter.default.post(name: notificationNameDictLoad,
+                                            object: DictLoadEvent(id: self.id, status: .fail(error)))
+        }
     }
 
-    private func loadString(_ url: URL, encoding: String.Encoding) throws -> String {
+    nonisolated private static func loadString(_ url: URL, encoding: String.Encoding) throws -> String {
         if encoding == .japaneseEUC {
             let data = try Data(contentsOf: url)
             return try data.eucJis2004String()
@@ -190,7 +188,7 @@ class FileDict: NSObject, DictProtocol, Identifiable {
         return try String(contentsOf: url, encoding: encoding)
     }
 
-    func save() {
+    @MainActor func save() {
         if !hasUnsavedChanges {
             logger.log("辞書 \(self.id, privacy: .public) は変更されていないため保存は行いません")
             return
@@ -279,15 +277,15 @@ class FileDict: NSObject, DictProtocol, Identifiable {
     var failedEntryCount: Int { return dict.failedEntryCount }
 
     // MARK: DictProtocol
-    func refer(_ yomi: String, option: DictReferringOption?) -> [Word] {
+    @MainActor func refer(_ yomi: String, option: DictReferringOption?) -> [Word] {
         return dict.refer(yomi, option: option)
     }
 
-    func reverseRefer(_ word: String) -> String? {
+    @MainActor func reverseRefer(_ word: String) -> String? {
         return dict.reverseRefer(word)
     }
 
-    func add(yomi: String, word: Word) {
+    @MainActor func add(yomi: String, word: Word) {
         dict.add(yomi: yomi, word: word)
         NotificationCenter.default.post(name: notificationNameDictLoad,
                                         object: DictLoadEvent(id: self.id,
@@ -295,7 +293,7 @@ class FileDict: NSObject, DictProtocol, Identifiable {
         hasUnsavedChanges = true
     }
 
-    func delete(yomi: String, word: Word.Word) -> Bool {
+    @MainActor func delete(yomi: String, word: Word.Word) -> Bool {
         if dict.delete(yomi: yomi, word: word) {
             hasUnsavedChanges = true
             NotificationCenter.default.post(name: notificationNameDictLoad,
@@ -317,31 +315,27 @@ class FileDict: NSObject, DictProtocol, Identifiable {
 }
 
 extension FileDict: NSFilePresenter {
-    // 他プログラムでの書き込みなどでは呼ばれないみたい
-    func presentedItemDidGain(_ version: NSFileVersion) {
-        logger.log("辞書 \(self.id, privacy: .public) のバージョンが更新されたので読み込みます")
-        load()
-    }
-
-    func presentedItemDidLose(_ version: NSFileVersion) {
-        logger.log("辞書 \(self.id, privacy: .public) が更新されたので読み込みます (バージョン情報が消失)")
-        load()
-    }
-
     // NOTE: 外部エディタで編集したときも、自分自身がNSFileCoordinator経由でsaveした場合もこのメソッドは呼ばれる。
     // 更新日時が自分自身で保存したときと同じかどうかで判定する。
-    func presentedItemDidChange() {
+    nonisolated func presentedItemDidChange() {
         // URL#resourceValues はキャッシュされた値があればそれを返してしまうため、最新の更新日時を取得する
-        if let attributes = try? FileManager.default.attributesOfItem(atPath: fileURL.path),
-           let modificationDate = attributes[.modificationDate] as? Date {
-            if modificationDate == fileModificationDate {
-                logger.log("辞書 \(self.id, privacy: .public) の変更は自分自身の保存によるもののため読み込みをスキップします")
-                return
-            } else {
-                fileModificationDate = modificationDate
-            }
+        let modificationDate: Date?
+        if let attributes = try? FileManager.default.attributesOfItem(atPath: fileURL.path) {
+            modificationDate = attributes[.modificationDate] as? Date
+        } else {
+            modificationDate = nil
         }
-        logger.log("辞書 \(self.id, privacy: .public) が変更されたため読み込みます")
-        load()
+        Task { @MainActor in
+            if let modificationDate {
+                if modificationDate == self.fileModificationDate {
+                    logger.log("辞書 \(self.id, privacy: .public) の変更は自分自身の保存によるもののため読み込みをスキップします")
+                    return
+                } else {
+                    self.fileModificationDate = modificationDate
+                }
+            }
+            logger.log("辞書 \(self.id, privacy: .public) が変更されたため読み込みます")
+            await self.load()
+        }
     }
 }
