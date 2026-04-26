@@ -38,6 +38,10 @@
 		CE1B006D2BA54DE400C830FD /* SKKServClientProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF3D8752B9EF0C000BD1D3A /* SKKServClientProtocol.swift */; };
 		CE1E7BAB2E406B6700C2E410 /* URL+AdditionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE1E7BAA2E406B6700C2E410 /* URL+AdditionsTests.swift */; };
 		CE2157662B2EA985006E4C41 /* UserDefaultsKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE2157652B2EA985006E4C41 /* UserDefaultsKeys.swift */; };
+		CE2573CF2F9E547C00533A05 /* Data+Gzip.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE2573CE2F9E547C00533A05 /* Data+Gzip.swift */; };
+		CE2573D12F9E557800533A05 /* Data+GzipTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE2573D02F9E557800533A05 /* Data+GzipTests.swift */; };
+		CE2573D32F9E562000533A05 /* SKK-JISYO.test.utf8.gz in Resources */ = {isa = PBXBuildFile; fileRef = CE2573D22F9E562000533A05 /* SKK-JISYO.test.utf8.gz */; };
+		CE2573D52F9E566900533A05 /* SKK-JISYO.test.json.gz in Resources */ = {isa = PBXBuildFile; fileRef = CE2573D42F9E566900533A05 /* SKK-JISYO.test.json.gz */; };
 		CE2F3B132C030C9A00CE342B /* KeyBindingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE2F3B122C030C9A00CE342B /* KeyBindingTests.swift */; };
 		CE313A1F2AF5213700A49142 /* Candidate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE313A1E2AF5213700A49142 /* Candidate.swift */; };
 		CE39DB212A8DFD8F00BC619F /* MarkedText.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE39DB202A8DFD8F00BC619F /* MarkedText.swift */; };
@@ -231,6 +235,10 @@
 		CE1B006B2BA54D9800C830FD /* SKKServService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServService.swift; sourceTree = "<group>"; };
 		CE1E7BAA2E406B6700C2E410 /* URL+AdditionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URL+AdditionsTests.swift"; sourceTree = "<group>"; };
 		CE2157652B2EA985006E4C41 /* UserDefaultsKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsKeys.swift; sourceTree = "<group>"; };
+		CE2573CE2F9E547C00533A05 /* Data+Gzip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Gzip.swift"; sourceTree = "<group>"; };
+		CE2573D02F9E557800533A05 /* Data+GzipTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+GzipTests.swift"; sourceTree = "<group>"; };
+		CE2573D22F9E562000533A05 /* SKK-JISYO.test.utf8.gz */ = {isa = PBXFileReference; lastKnownFileType = archive.gzip; path = "SKK-JISYO.test.utf8.gz"; sourceTree = "<group>"; };
+		CE2573D42F9E566900533A05 /* SKK-JISYO.test.json.gz */ = {isa = PBXFileReference; lastKnownFileType = archive.gzip; path = "SKK-JISYO.test.json.gz"; sourceTree = "<group>"; };
 		CE2F3B122C030C9A00CE342B /* KeyBindingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyBindingTests.swift; sourceTree = "<group>"; };
 		CE313A1E2AF5213700A49142 /* Candidate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Candidate.swift; sourceTree = "<group>"; };
 		CE39DB202A8DFD8F00BC619F /* MarkedText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkedText.swift; sourceTree = "<group>"; };
@@ -497,6 +505,7 @@
 				CED7F51E2AB5F4A7007FC6BD /* Character+Additions.swift */,
 				CE496C902B440892001C623C /* URL+Additions.swift */,
 				CED987402BB953E7001B40F9 /* Data+EucJis2004.swift */,
+				CE2573CE2F9E547C00533A05 /* Data+Gzip.swift */,
 				CE485A892A8FA5C6008271EF /* UserNotificationDelegate.swift */,
 				CEBEE7862D97D25800C73B6D /* NSEvent+CoreService.swift */,
 				CEA602AD2F03795D00E605F2 /* ColorEncoding.swift */,
@@ -557,6 +566,7 @@
 				CEA78FAD2961BA1D00B67E25 /* String+TransformTests.swift */,
 				CE8DFE082CBEAA1F00A24230 /* Character+AdditionsTests.swift */,
 				CE496C942B440BBD001C623C /* Data+EucJis2004Tests.swift */,
+				CE2573D02F9E557800533A05 /* Data+GzipTests.swift */,
 				CEA253992E23DA9000618E64 /* DictSettingTests.swift */,
 				CEA253932E228E2000618E64 /* SKKServDictSettingTests.swift */,
 				CE06CA332AAC199500E80E5E /* UserDict+Utilities.swift */,
@@ -652,6 +662,8 @@
 				CEF03F7E2C69AA8F009B05B2 /* SKK-JISYO.broken.json */,
 				CE496C922B440B9B001C623C /* euc-jis-2004.txt */,
 				CE3E44A82B52C89800105798 /* kana-rule-for-test.conf */,
+				CE2573D22F9E562000533A05 /* SKK-JISYO.test.utf8.gz */,
+				CE2573D42F9E566900533A05 /* SKK-JISYO.test.json.gz */,
 			);
 			path = fixture;
 			sourceTree = "<group>";
@@ -827,6 +839,8 @@
 				CE06CA2D2AAC172F00E80E5E /* empty.txt in Resources */,
 				CE0326A02C5D1DD6000FF691 /* SKK-JISYO.test.json in Resources */,
 				CEF03F7F2C69AA8F009B05B2 /* SKK-JISYO.broken.json in Resources */,
+				CE2573D52F9E566900533A05 /* SKK-JISYO.test.json.gz in Resources */,
+				CE2573D32F9E562000533A05 /* SKK-JISYO.test.utf8.gz in Resources */,
 				CE53D8CA2D7D8BF30013806A /* release.json in Resources */,
 				CE3E44AB2B536F8300105798 /* kana-rule.conf in Resources */,
 				CE3E44A52B4ED2D700105798 /* utf8-bom.txt in Resources */,
@@ -902,6 +916,7 @@
 				CE40D9A12A6D0C2F00D44799 /* SystemDictView.swift in Sources */,
 				CEADA4512B1358D40026E2BD /* InputSource.swift in Sources */,
 				CE84A3E7295DA4DA009394C4 /* Romaji.swift in Sources */,
+				CE2573CF2F9E547C00533A05 /* Data+Gzip.swift in Sources */,
 				CEA253E62E2E852000618E64 /* UserDefaults+App.swift in Sources */,
 				CE1B006D2BA54DE400C830FD /* SKKServClientProtocol.swift in Sources */,
 				CE1B006A2BA5490E00C830FD /* SKKServDictView.swift in Sources */,
@@ -996,6 +1011,7 @@
 				CE6DBA912A846C1700F5A227 /* ReleaseVersionTests.swift in Sources */,
 				CE39FA952BEB942B00E293F0 /* Character+KeyCode.swift in Sources */,
 				CEA78FAE2961BA1D00B67E25 /* String+TransformTests.swift in Sources */,
+				CE2573D12F9E557800533A05 /* Data+GzipTests.swift in Sources */,
 				B3C350D6E32E35775AE1FF56 /* DateConversionYomiTests.swift in Sources */,
 				5ED234BA230E39DFF095D272 /* DateConversionTests.swift in Sources */,
 			);
