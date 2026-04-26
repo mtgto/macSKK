@@ -916,15 +916,15 @@ final class SettingsViewModel: ObservableObject {
         NotificationCenter.default.publisher(for: notificationNameDictFileDidAppear).receive(on: RunLoop.main)
             .sink { [weak self] notification in
                 if let self, let url = notification.object as? URL {
+                    let lowercasedFilename = url.lastPathComponent.lowercased()
                     if self.dictSettings.allSatisfy({ $0.filename != url.lastPathComponent }) {
-                        let type: FileDictType = if url.pathExtension == "json" {
+                        let type: FileDictType =
+                        if lowercasedFilename.hasSuffix(".json") || lowercasedFilename.hasSuffix(".json.gz") {
                             .json
+                        } else if url.lastPathComponent.contains("utf8") {
+                            .traditional(.utf8)
                         } else {
-                            if url.lastPathComponent.contains("utf8") {
-                                .traditional(.utf8)
-                            } else {
-                                .traditional(.japaneseEUC)
-                            }
+                            .traditional(.japaneseEUC)
                         }
                         self.dictSettings.append(DictSetting(filename: url.lastPathComponent,
                                                              enabled: false,
