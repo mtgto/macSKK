@@ -1017,17 +1017,6 @@ final class StateMachine {
 
         switch state.inputMode {
         case .hiragana, .katakana, .hankaku:
-            // lowercaseMapにエントリがある場合はエントリの方のキーが入力されたと見做す
-            if let mappedEvent = Global.kanaRule.convertKeyEvent(action.event) {
-                return handleComposing(
-                    Action(keyBind: Global.keyBinding.action(event: mappedEvent, inputMode: state.inputMode, inputMethod: state.inputMethod),
-                           event: mappedEvent,
-                           textInput: action.textInput,
-                           treatAsAlphabet: true),
-                    composing: composing,
-                    specialState: specialState
-                )
-            }
             // ローマ字が確定してresult.inputがない
             // StickyShiftでokuriが[]になっている、またはShift押しながら入力した
             if let moji = converted.kakutei {
@@ -1145,6 +1134,17 @@ final class StateMachine {
                 }
                 updateMarkedText()
             } else {
+                // lowercaseMapにエントリがある場合はエントリの方のキーが入力されたと見做す
+                if let mappedEvent = Global.kanaRule.convertKeyEvent(action.event) {
+                    return handleComposing(
+                        Action(keyBind: Global.keyBinding.action(event: mappedEvent, inputMode: state.inputMode, inputMethod: state.inputMethod),
+                               event: mappedEvent,
+                               textInput: action.textInput,
+                               treatAsAlphabet: true),
+                        composing: composing,
+                        specialState: specialState
+                    )
+                }
                 // 非ローマ字で特殊な記号でない場合。数字が読みとして使われている場合などを想定。
                 if okuri == nil {
                     // ローマ字が残っていた場合は消去してキー入力をそのままくっつける
