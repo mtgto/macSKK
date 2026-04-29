@@ -284,6 +284,22 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    // https://github.com/mtgto/macSKK/issues/455
+    @MainActor func testHandleNormalKanaRuleShiftSemicolon() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        Global.kanaRule = try! Romaji(source: ";,っ\nz:,：\n:,<shift>;", initialRomaji: nil)
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(2).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.plain("z")])))
+            XCTAssertEqual(events[1], .fixedText("："))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "z")))
+        // 英字配列で `:` 入力 (`:` はShift+;)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ":", characterIgnoringModifier: ";", withShift: true)))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     @MainActor func testHandleNormalSpace() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
@@ -1759,6 +1775,22 @@ final class StateMachineTests: XCTestCase {
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: false)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ";")))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    // https://github.com/mtgto/macSKK/issues/455
+    @MainActor func testHandleComposeKanaRuleShiftSemicolon() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        Global.kanaRule = try! Romaji(source: ";,っ\nz:,：\n:,<shift>;", initialRomaji: nil)
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(2).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("z")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("：")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "z", withShift: true)))
+        // 英字配列で `:` 入力 (`:` はShift+;)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ":", characterIgnoringModifier: ";", withShift: true)))
         wait(for: [expectation], timeout: 1.0)
     }
 
