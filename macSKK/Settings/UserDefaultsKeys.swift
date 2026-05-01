@@ -58,6 +58,8 @@ struct UserDefaultsKeys {
     static let ignoreUserDictInPrivateMode = "ignoreUserDictInPrivateMode"
     // 入力モードのモーダルを表示するかどうか
     static let showInputModePanel = "showInputModePanel"
+    // ▽と▼を非表示にするかどうか
+    static let hideMarkedTextMarkers = "hideMarkedTextMarkers"
     // 候補リストの表示方向
     static let candidateListDirection = "candidateListDirection"
     // 日時変換の変換後のリスト

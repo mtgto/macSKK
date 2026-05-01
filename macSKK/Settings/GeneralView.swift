@@ -51,6 +51,9 @@ struct GeneralView: View {
                 Toggle(isOn: $settingsViewModel.showInputIconModal, label: {
                     Text("Show Input Mode Modal")
                 })
+                Toggle(isOn: $settingsViewModel.hideMarkedTextMarkers, label: {
+                    Text("Hide Marked Text Markers")
+                })
                 HStack {
                     Spacer()
                     Button("Customize Input Mode Colors…") {

@@ -40,9 +40,17 @@ struct MarkedText: Equatable {
         var attributedString: AttributedString {
             switch self {
             case .markerCompose:
-                return Self.plain("▽").attributedString
+                return Self.plain(
+                    UserDefaults.app.bool(forKey: UserDefaultsKeys.hideMarkedTextMarkers)
+                        ? ""
+                        : "▽"
+                ).attributedString
             case .markerSelect:
-                return Self.emphasized("▼").attributedString
+                return Self.emphasized(
+                    UserDefaults.app.bool(forKey: UserDefaultsKeys.hideMarkedTextMarkers)
+                        ? ""
+                        : "▼"
+                ).attributedString
             case .plain(let text):
                 return AttributedString(text, attributes: .init([.underlineStyle: NSUnderlineStyle.single.rawValue]))
             case .emphasized(let text):
@@ -77,7 +85,9 @@ struct MarkedText: Equatable {
         for element in elements {
             switch element {
             case .markerSelect, .markerCompose:
-                location += 1
+                if !UserDefaults.app.bool(forKey: UserDefaultsKeys.hideMarkedTextMarkers) {
+                    location += 1
+                }
             case .plain(let string):
                 location += string.count
             case .emphasized(let string):

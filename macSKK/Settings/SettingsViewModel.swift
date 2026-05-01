@@ -209,6 +209,8 @@ final class SettingsViewModel: ObservableObject {
     @Published var ignoreUserDictInPrivateMode: Bool
     /// 入力モードのモーダルを表示するかどうか
     @Published var showInputIconModal: Bool
+    /// ▽と▼を非表示にするかどうか
+    @Published var hideMarkedTextMarkers: Bool
     /// 変換候補リストの表示方向
     @Published var candidateListDirection: CandidateListDirection
     /// 日時変換の読みリスト
@@ -314,6 +316,7 @@ final class SettingsViewModel: ObservableObject {
         period = Punctuation.Period(rawValue: UserDefaults.app.integer(forKey: UserDefaultsKeys.punctuation)) ?? .default
         ignoreUserDictInPrivateMode = UserDefaults.app.bool(forKey: UserDefaultsKeys.ignoreUserDictInPrivateMode)
         showInputIconModal = UserDefaults.app.bool(forKey: UserDefaultsKeys.showInputModePanel)
+        hideMarkedTextMarkers = UserDefaults.app.bool(forKey: UserDefaultsKeys.hideMarkedTextMarkers)
         candidateListDirection = CandidateListDirection(rawValue: UserDefaults.app.integer(forKey: UserDefaultsKeys.candidateListDirection)) ?? .vertical
         if let dateConversionDict = UserDefaults.app.dictionary(forKey: UserDefaultsKeys.dateConversions),
            let dateConversionsRaw = dateConversionDict["conversions"] as? [[String: Any]],
@@ -729,6 +732,11 @@ final class SettingsViewModel: ObservableObject {
             logger.log("入力モードアイコンを\(showInputModePanel ? "表示" : "非表示", privacy: .public)に変更しました")
         }.store(in: &cancellables)
 
+        $hideMarkedTextMarkers.dropFirst().sink { hideMarkedTextMarkers in
+            UserDefaults.app.set(hideMarkedTextMarkers, forKey: UserDefaultsKeys.hideMarkedTextMarkers)
+            logger.log("▽と▼を\(hideMarkedTextMarkers ? "非表示" : "表示", privacy: .public)に変更しました")
+        }.store(in: &cancellables)
+
         $candidateListDirection.dropFirst().sink { candidateListDirection in
             UserDefaults.app.set(candidateListDirection.rawValue, forKey: UserDefaultsKeys.candidateListDirection)
             logger.log("変換候補リストを\(candidateListDirection == .vertical ? "縦" : "横", privacy: .public)で表示するように変更しました")
@@ -840,6 +848,7 @@ final class SettingsViewModel: ObservableObject {
         period = Punctuation.default.period
         ignoreUserDictInPrivateMode = false
         showInputIconModal = true
+        hideMarkedTextMarkers = false
         candidateListDirection = .vertical
         dateYomis = [
             DateConversion.Yomi(yomi: "today", relative: .now),
