@@ -89,7 +89,10 @@
 "Confirm the first completion by period" = "Confirm the first completion by period";
 "Ignore User Dict in Private Mode" = "Ignore User Dict in Private Mode";
 "Show Input Mode Modal" = "Show Input Mode Modal";
-"Hide Marked Text Markers" = "Hide ▽ and ▼";
+"Show Marked Text Marker" = "Show ▽ and ▼";
+"ShowMarkedTextMarkerAlways" = "Show";
+"ShowMarkedTextMarkerMinimal" = "Hide as much as possible (prioritize input handling)";
+"ShowMarkedTextMarkerNever" = "Never show";
 "Customize Input Mode Colors…" = "Customize Input Mode Colors…";
 "Register fixed katakana word to dict" = "Register fixed katakana word to dict";
 "Direction of candidate list" = "Direction of candidate list";

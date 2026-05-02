@@ -137,6 +137,39 @@ enum CandidateListDirection: Int, CaseIterable, Identifiable {
     }
 }
 
+/// ▽と▼の表示
+enum ShowMarkedTextMarker: String, CaseIterable, Identifiable {
+    typealias ID = String
+    var id: ID { rawValue }
+
+    /// 表示する
+    case always
+    /// できるだけ表示しない（入力処理を優先）
+    /// ▽と▼を表示しない場合、未確定文字列を入力中にもかかわらず未確定文字列が空になってしまう場合がある。
+    /// 具体的にはabbrevやStickyShiftで入力を開始した場合。
+    /// この場合において、以下のような特定のアプリケーションにおいてスラッシュやセミコロンが直接入力されてしまう。
+    /// この症状を避けるため、未確定文字列が空になるときは▽と▼を表示するようにする。
+    /// - IntelliJ IDEA
+    /// - Ghostty
+    /// - Kitty
+    /// - VSCode内蔵のTerminal
+    /// （なお、普通にシフトキーを押して入力を開始した際に最初の文字を消すと▽が表示されるが、許容する）
+    case minimal
+    /// まったく表示しない
+    case never
+
+    var description: String {
+        switch self {
+        case .always:
+            String(localized: "ShowMarkedTextMarkerAlways")
+        case .minimal:
+            String(localized: "ShowMarkedTextMarkerMinimal")
+        case .never:
+            String(localized: "ShowMarkedTextMarkerNever")
+        }
+    }
+}
+
 @MainActor
 final class SettingsViewModel: ObservableObject {
     /// 辞書ファイルの読み込みに使うOperationQueue
@@ -209,8 +242,8 @@ final class SettingsViewModel: ObservableObject {
     @Published var ignoreUserDictInPrivateMode: Bool
     /// 入力モードのモーダルを表示するかどうか
     @Published var showInputIconModal: Bool
-    /// ▽と▼を非表示にするかどうか
-    @Published var hideMarkedTextMarkers: Bool
+    /// ▽と▼の表示
+    @Published var showMarkedTextMarker: ShowMarkedTextMarker
     /// 変換候補リストの表示方向
     @Published var candidateListDirection: CandidateListDirection
     /// 日時変換の読みリスト
@@ -316,7 +349,7 @@ final class SettingsViewModel: ObservableObject {
         period = Punctuation.Period(rawValue: UserDefaults.app.integer(forKey: UserDefaultsKeys.punctuation)) ?? .default
         ignoreUserDictInPrivateMode = UserDefaults.app.bool(forKey: UserDefaultsKeys.ignoreUserDictInPrivateMode)
         showInputIconModal = UserDefaults.app.bool(forKey: UserDefaultsKeys.showInputModePanel)
-        hideMarkedTextMarkers = UserDefaults.app.bool(forKey: UserDefaultsKeys.hideMarkedTextMarkers)
+        showMarkedTextMarker = ShowMarkedTextMarker(rawValue: UserDefaults.app.string(forKey: UserDefaultsKeys.showMarkedTextMarker) ?? "") ?? .always
         candidateListDirection = CandidateListDirection(rawValue: UserDefaults.app.integer(forKey: UserDefaultsKeys.candidateListDirection)) ?? .vertical
         if let dateConversionDict = UserDefaults.app.dictionary(forKey: UserDefaultsKeys.dateConversions),
            let dateConversionsRaw = dateConversionDict["conversions"] as? [[String: Any]],
@@ -732,9 +765,9 @@ final class SettingsViewModel: ObservableObject {
             logger.log("入力モードアイコンを\(showInputModePanel ? "表示" : "非表示", privacy: .public)に変更しました")
         }.store(in: &cancellables)
 
-        $hideMarkedTextMarkers.dropFirst().sink { hideMarkedTextMarkers in
-            UserDefaults.app.set(hideMarkedTextMarkers, forKey: UserDefaultsKeys.hideMarkedTextMarkers)
-            logger.log("▽と▼を\(hideMarkedTextMarkers ? "非表示" : "表示", privacy: .public)に変更しました")
+        $showMarkedTextMarker.dropFirst().sink { showMarkedTextMarker in
+            UserDefaults.app.set(showMarkedTextMarker.rawValue, forKey: UserDefaultsKeys.showMarkedTextMarker)
+            logger.log("▽と▼の表示を\(showMarkedTextMarker.description, privacy: .public)に変更しました")
         }.store(in: &cancellables)
 
         $candidateListDirection.dropFirst().sink { candidateListDirection in
@@ -848,7 +881,7 @@ final class SettingsViewModel: ObservableObject {
         period = Punctuation.default.period
         ignoreUserDictInPrivateMode = false
         showInputIconModal = true
-        hideMarkedTextMarkers = false
+        showMarkedTextMarker = .always
         candidateListDirection = .vertical
         dateYomis = [
             DateConversion.Yomi(yomi: "today", relative: .now),

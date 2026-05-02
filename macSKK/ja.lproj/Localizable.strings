@@ -89,7 +89,10 @@
 "Confirm the first completion by period" = "最初の補完候補をピリオドキーで確定する";
 "Ignore User Dict in Private Mode" = "プライベートモードではユーザー辞書を参照しない";
 "Show Input Mode Modal" = "入力モードアイコンを表示";
-"Hide Marked Text Markers" = "▽と▼を表示しない";
+"Show Marked Text Marker" = "▽と▼の表示";
+"ShowMarkedTextMarkerAlways" = "表示する";
+"ShowMarkedTextMarkerMinimal" = "できるだけ表示しない（入力処理を優先）";
+"ShowMarkedTextMarkerNever" = "まったく表示しない";
 "Customize Input Mode Colors…" = "入力モードの色をカスタマイズ…";
 "Register fixed katakana word to dict" = "カタカナで確定した単語を辞書に登録する";
 "Direction of candidate list" = "変換候補リストの表示方向";
