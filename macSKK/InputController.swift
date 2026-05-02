@@ -67,12 +67,12 @@ class InputController: IMKInputController {
                     }
                     textInput.insertText(text, replacementRange: Self.notFoundRange)
                 case .markedText(let markedText):
-                    let attributedText = markedText.attributedString
-                    let cursorRange: NSRange = markedText.cursorRange() ?? Self.notFoundRange
+                    let attributedText = markedText.attributedString(Global.showMarkedTextMarker)
+                    let cursorRange: NSRange = markedText.cursorRange(Global.showMarkedTextMarker) ?? Self.notFoundRange
                     // Thingsのメモ欄などで最初の一文字をShift押しながら入力すると "▽あ" が直接入力されてしまうことがあるのを回避するワークグラウンド
                     if case .markerCompose = markedText.elements.first, markedText.elements.count == 2,
                        case let .plain(text) = markedText.elements[1], text.count == 1 {
-                        textInput.setMarkedText(NSAttributedString(MarkedText.Element.markerCompose.attributedString),
+                        textInput.setMarkedText(NSAttributedString(MarkedText([.markerCompose]).attributedString(Global.showMarkedTextMarker)),
                                                 selectionRange: cursorRange,
                                                 replacementRange: Self.notFoundRange)
                     }

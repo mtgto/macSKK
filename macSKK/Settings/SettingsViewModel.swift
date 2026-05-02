@@ -401,6 +401,7 @@ final class SettingsViewModel: ObservableObject {
         Global.findCompletionFromAllDicts = findCompletionFromAllDicts
         Global.registerKatakana = registerKatakana
         Global.inputModePanel.updateColorSets(inputModeColorSets)
+        Global.showMarkedTextMarker = showMarkedTextMarker
 
         // SKK-JISYO.Lのようなファイルの読み込みが遅いのでバックグラウンドで処理
         Task {
@@ -768,6 +769,7 @@ final class SettingsViewModel: ObservableObject {
         $showMarkedTextMarker.dropFirst().sink { showMarkedTextMarker in
             UserDefaults.app.set(showMarkedTextMarker.rawValue, forKey: UserDefaultsKeys.showMarkedTextMarker)
             logger.log("▽と▼の表示を\(showMarkedTextMarker.description, privacy: .public)に変更しました")
+            Global.showMarkedTextMarker = showMarkedTextMarker
         }.store(in: &cancellables)
 
         $candidateListDirection.dropFirst().sink { candidateListDirection in
