@@ -221,6 +221,7 @@ struct macSKKApp: App {
             UserDefaultsKeys.privateMode: false,
             UserDefaultsKeys.ignoreUserDictInPrivateMode: false,
             UserDefaultsKeys.showInputModePanel: true,
+            UserDefaultsKeys.showMarkedTextMarker: ShowMarkedTextMarker.always.rawValue,
             UserDefaultsKeys.candidateListDirection: CandidateListDirection.vertical.rawValue,
             UserDefaultsKeys.dateConversions: [
                 "yomis": [
