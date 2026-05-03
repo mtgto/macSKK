@@ -1,7 +1,7 @@
 # CHANGELOG
 ## v2.13.0 (2026-05-03)
 
-- ▽と▼を非表示にする設定を追加 (#457) by @takezo
+- ▽と▼を非表示にする設定を追加 (#457) by @tekezo
 - MarkedText.attributedStringのリファクタ (#458)
 
 Jetbrains製品, Ghostty, Kitty, VSCode内蔵のTerminalなどAbbrevモードやStickyShiftで問題が生じるアプリもあるようなので、気になる場合は「まったく表示しない」ではなく「できるだけ表示しない（入力処理を優先）」を選んでみてください。
