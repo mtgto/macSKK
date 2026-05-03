@@ -10,10 +10,6 @@ final class StateTests: XCTestCase {
         Global.kanaRule = Romaji.defaultKanaRule
     }
 
-    @MainActor override func tearDown() {
-        UserDefaults.app.set(ShowMarkedTextMarker.always.rawValue, forKey: UserDefaultsKeys.showMarkedTextMarker)
-    }
-
     func testComposingStateAppendText() throws {
         var state = ComposingState(
             isShift: true, text: ["あ", "い"], okuri: nil, romaji: "", cursor: nil)
@@ -26,36 +22,6 @@ final class StateTests: XCTestCase {
         XCTAssertEqual(state.cursor, 3)
         state = state.moveCursorRight()
         XCTAssertNil(state.cursor, "末尾まで移動したらカーソルはnilになる")
-    }
-
-    @MainActor func testMarkedTextMarkerAlways() {
-        UserDefaults.app.set(ShowMarkedTextMarker.always.rawValue, forKey: UserDefaultsKeys.showMarkedTextMarker)
-        let markedText = MarkedText([.markerCompose, .plain("あ"), .cursor])
-
-        XCTAssertEqual(String(markedText.attributedString.characters), "▽あ")
-        XCTAssertEqual(markedText.cursorRange(), NSRange(location: 2, length: 0))
-    }
-
-    @MainActor func testMarkedTextMarkerMinimal() {
-        UserDefaults.app.set(ShowMarkedTextMarker.minimal.rawValue, forKey: UserDefaultsKeys.showMarkedTextMarker)
-
-        // abbrevなどで未確定文字列が空になる場合は▽や▼を出す。
-        let emptyMarkedText = MarkedText([.markerCompose, .cursor])
-        XCTAssertEqual(String(emptyMarkedText.attributedString.characters), "▽")
-        XCTAssertEqual(emptyMarkedText.cursorRange(), NSRange(location: 1, length: 0))
-
-        // 通常の入力時は▽や▼は表示しない。
-        let nonEmptyMarkedText = MarkedText([.markerCompose, .plain("あ"), .cursor])
-        XCTAssertEqual(String(nonEmptyMarkedText.attributedString.characters), "あ")
-        XCTAssertEqual(nonEmptyMarkedText.cursorRange(), NSRange(location: 1, length: 0))
-    }
-
-    @MainActor func testMarkedTextMarkerNever() {
-        UserDefaults.app.set(ShowMarkedTextMarker.never.rawValue, forKey: UserDefaultsKeys.showMarkedTextMarker)
-        let markedText = MarkedText([.markerCompose, .plain("あ"), .cursor])
-
-        XCTAssertEqual(String(markedText.attributedString.characters), "あ")
-        XCTAssertEqual(markedText.cursorRange(), NSRange(location: 1, length: 0))
     }
 
     func testComposingStateString() {

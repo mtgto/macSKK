@@ -58,6 +58,7 @@ struct macSKKApp: App {
             let settingsViewModel = try SettingsViewModel(dictionariesDirectoryUrl: dictionariesDirectoryUrl)
             let settingsWindow = SettingsWindow(settingsViewModel: settingsViewModel)
             Global.privateMode.send(UserDefaults.app.bool(forKey: UserDefaultsKeys.privateMode))
+            Global.showMarkedTextMarker = ShowMarkedTextMarker(rawValue: UserDefaults.app.string(forKey: UserDefaultsKeys.showMarkedTextMarker) ?? "") ?? .always
 
             // SettingsViewModelの初期化が終わったあとにユーザー辞書を読み込まないと辞書のロード状態が設定されない
             Global.dictionary = try UserDict(dicts: [],

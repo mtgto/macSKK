@@ -47,6 +47,8 @@ import Combine
     static var selectingBackspace: SelectingBackspace = .default
     /// カンマかピリオドを入力したときに入力する句読点の設定
     static var punctuation: Punctuation = .default
+    /// ▽と▼の表示
+    static var showMarkedTextMarker: ShowMarkedTextMarker = .always
     /// 変換候補パネルの表示方向
     static var candidateListDirection = CurrentValueSubject<CandidateListDirection, Never>(.vertical)
     /// ピリオドで補完候補の最初の要素で確定するか
