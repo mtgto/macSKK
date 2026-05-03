@@ -1,4 +1,12 @@
 # CHANGELOG
+## v2.13.0 (2026-05-03)
+
+- ▽と▼を非表示にする設定を追加 (#457) by @takezo
+- MarkedText.attributedStringのリファクタ (#458)
+
+Jetbrains製品, Ghostty, Kitty, VSCode内蔵のTerminalなどAbbrevモードやStickyShiftで問題が生じるアプリもあるようなので、気になる場合は「まったく表示しない」ではなく「できるだけ表示しない（入力処理を優先）」を選んでみてください。
+https://github.com/mtgto/macSKK/pull/457#issuecomment-4363094755
+
 ## v2.12.3 (2026-05-01)
 
 - `<shift>`ルールと競合するローマ字かな変換ルールがある場合は確定できる変換を優先する (#456)
