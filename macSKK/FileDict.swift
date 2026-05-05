@@ -126,7 +126,7 @@ enum FileDictType: Equatable {
                     if case .json = type {
                         let decoder = JSONDecoder()
                         decoder.keyDecodingStrategy = .convertFromSnakeCase
-                        let jisyo = try decoder.decode(JsonJisyo.self, from: try Data(contentsOf: url))
+                        let jisyo = try decoder.decode(JsonJisyo.self, from: try self.loadData(url))
                         if jisyo.version != "0.0.0" {
                             logger.warning("JSON辞書のバージョンが未対応のバージョンのため無視します")
                             throw FileDictError.decode
@@ -135,7 +135,7 @@ enum FileDictType: Equatable {
                         let okuriNashiEntries = jisyo.okuriNasi.mapValues { $0.map { Word($0) } }
                         continuation.resume(returning: .success(MemoryDict(okuriAriEntries: okuriAriEntries, okuriNashiEntries: okuriNashiEntries, readonly: readonly)))
                     } else if case .traditional(let encoding) = type {
-                        let source = try Self.loadString(url, encoding: encoding)
+                        let source = try Self.loadString(try self.loadData(url), encoding: encoding)
                         if source.isEmpty {
                             // 辞書ファイルを書き込み中に読み込んでしまった?
                             logger.warning("辞書 \(id) を読み込んだところ0バイトだったため更新を無視します")
@@ -165,13 +165,17 @@ enum FileDictType: Equatable {
         }
     }
 
-    nonisolated private static func loadString(_ url: URL, encoding: String.Encoding) throws -> String {
+    /// ファイルを読み込み、gzip圧縮されている場合は展開して返す
+    nonisolated private func loadData(_ url: URL) throws -> Data {
+        let data = try Data(contentsOf: url)
+        return data.isGzipped ? try data.gunzipped() : data
+    }
+
+    nonisolated private static func loadString(_ data: Data, encoding: String.Encoding) throws -> String {
         if encoding == .japaneseEUC {
-            let data = try Data(contentsOf: url)
             return try data.eucJis2004String()
             // JIS X 2013 を使ったEUC-JIS-2004の場合があるため失敗したらiconvでUTF-8に変換する
         } else if encoding == .utf8 {
-            let data = try Data(contentsOf: url)
             // UTF-8 BOMがついているか検査
             if data.starts(with: [0xEF, 0xBB, 0xBF]) {
                 guard let string = String(data: data.suffix(from: 3), encoding: .utf8) else {
@@ -185,7 +189,10 @@ enum FileDictType: Equatable {
                 return string
             }
         }
-        return try String(contentsOf: url, encoding: encoding)
+        guard let string = String(data: data, encoding: encoding) else {
+            throw FileDictError.decode
+        }
+        return string
     }
 
     @MainActor func save() {

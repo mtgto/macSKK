@@ -51,6 +51,20 @@ import Combine
         await fulfillment(of: [expectation], timeout: 1.0)
     }
 
+    func testLoadGzippedTraditional() async throws {
+        let fileURL = Bundle(for: Self.self).url(forResource: "SKK-JISYO.test", withExtension: "utf8.gz")!
+        let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: true, saveToUserDict: true)
+        await dict.load()
+        XCTAssertEqual(dict.dict.refer("じてん", option: nil).map({ $0.word }), ["辞典", "事典", "字典"])
+    }
+
+    func testLoadGzippedJson() async throws {
+        let fileURL = Bundle(for: Self.self).url(forResource: "SKK-JISYO.test", withExtension: "json.gz")!
+        let dict = try FileDict(contentsOf: fileURL, type: .json, readonly: true, saveToUserDict: true)
+        await dict.load()
+        XCTAssertEqual(dict.dict.refer("い", option: nil).map({ $0.word }).sorted(), ["伊", "胃"])
+    }
+
     func testAdd() throws {
         let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: true, saveToUserDict: true)
         XCTAssertEqual(dict.entryCount, 0)
