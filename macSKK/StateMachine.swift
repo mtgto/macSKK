@@ -433,6 +433,13 @@ final class StateMachine {
         guard let input = event.charactersIgnoringModifiers else {
             return false
         }
+        // 単語登録中は先頭のスペースを無視する（設定されている場合）
+        if input == " ",
+           case .register(let registerState, _) = specialState,
+           Global.ignoreLeadingSpacesWhenRegistering,
+           registerState.text.isEmpty {
+            return true
+        }
         if event.modifierFlags.contains(.control) || event.modifierFlags.contains(.command) || event.modifierFlags.contains(.function) {
             // 単語登録中や登録解除中はtrueを返してなにもしない
             return state.specialState != nil

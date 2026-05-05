@@ -95,6 +95,7 @@
 "ShowMarkedTextMarkerNever" = "Never show";
 "Customize Input Mode Colors…" = "Customize Input Mode Colors…";
 "Register fixed katakana word to dict" = "Register fixed katakana word to dict";
+"Ignore leading spaces when registering a word" = "Ignore leading spaces when registering a word";
 "Direction of candidate list" = "Direction of candidate list";
 "Enter Key confirms a candidate and sends a newline" = "Enter Key confirms a candidate and sends a newline";
 "Show Completion" = "Show Completion";

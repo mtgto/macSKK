@@ -22,6 +22,7 @@ final class StateMachineTests: XCTestCase {
         Global.selectingBackspace = SelectingBackspace.default
         Global.candidateListDirection.send(.vertical)
         Global.keyBinding = KeyBindingSet.defaultKeyBindingSet
+        Global.ignoreLeadingSpacesWhenRegistering = true
     }
 
     @MainActor func testHandleNormalSimple() {
@@ -2945,6 +2946,70 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(upKeyAction))
         XCTAssertTrue(stateMachine.handle(downKeyAction))
         Pasteboard.stringForTest = nil
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    @MainActor func testHandleRegisteringLeadingSpace() {
+        Global.ignoreLeadingSpacesWhenRegistering = false
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(4).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("い")])))
+            XCTAssertEqual(events[1], .modeChanged(.hiragana))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.plain("[登録：い]")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.plain("[登録：い]"), .plain(" ")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i", withShift: true)))
+        // 単語登録に入る
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        // スペースが追加される
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    @MainActor func testHandleRegisteringIgnoreLeadingSpaces() {
+        Global.ignoreLeadingSpacesWhenRegistering = true
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        var events: [InputMethodEvent] = []
+        stateMachine.inputMethodEvent.sink { event in
+            events.append(event)
+        }.store(in: &cancellables)
+
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i", withShift: true)))
+        // 単語登録に入る
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertEqual(events, [
+            .markedText(MarkedText([.markerCompose, .plain("い")])),
+            .modeChanged(.hiragana),
+            .markedText(MarkedText([.plain("[登録：い]")]))
+        ])
+
+        // スペースが無視される
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertEqual(events.count, 3)
+
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u")))
+        XCTAssertEqual(events.last, .markedText(MarkedText([.plain("[登録：い]"), .plain("う")])))
+    }
+
+    @MainActor func testHandleRegisteringDoesNotIgnoreSpaceActionAssignedToNonSpaceKey() {
+        Global.ignoreLeadingSpacesWhenRegistering = true
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(4).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("い")])))
+            XCTAssertEqual(events[1], .modeChanged(.hiragana))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.plain("[登録：い]")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.plain("[登録：い]"), .plain("う")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        // .spaceとして割り当てられている他の文字は無視しない
+        XCTAssertTrue(stateMachine.handle(Action(
+            keyBind: .space,
+            event: generateNSEvent(character: "u", characterIgnoringModifiers: "u"))))
         wait(for: [expectation], timeout: 1.0)
     }
 
