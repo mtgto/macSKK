@@ -57,6 +57,8 @@ import Combine
     static var searchCompletionsSkkserv: Bool = false
     /// qキーでカタカナで確定したときに辞書に保存するか
     static var registerKatakana = false
+    /// 単語登録中に先頭のスペースを無視するか
+    static var ignoreLeadingSpacesWhenRegistering = true
     /// 現在のモードを表示するパネル
     private let inputModePanel: InputModePanel
     /// 変換候補を表示するパネル

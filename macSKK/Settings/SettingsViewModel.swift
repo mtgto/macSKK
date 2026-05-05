@@ -254,6 +254,8 @@ final class SettingsViewModel: ObservableObject {
     @Published var dateConversions: [DateConversion]
     /// qキーでカタカナで確定した場合に辞書に登録するか
     @Published var registerKatakana: Bool
+    /// 単語登録中に先頭のスペースを無視するか
+    @Published var ignoreLeadingSpacesWhenRegistering: Bool
     /// 利用可能なフォントファミリー名
     @Published var availableFontFamilies: [String] = []
     /// 利用可能なローマ字かな変換ルール
@@ -344,6 +346,7 @@ final class SettingsViewModel: ObservableObject {
         showCandidateForCompletion = UserDefaults.app.bool(forKey: UserDefaultsKeys.showCandidateForCompletion)
         fixedCompletionByPeriod = UserDefaults.app.bool(forKey: UserDefaultsKeys.fixedCompletionByPeriod)
         registerKatakana = UserDefaults.app.bool(forKey: UserDefaultsKeys.registerKatakana)
+        ignoreLeadingSpacesWhenRegistering = UserDefaults.app.bool(forKey: UserDefaultsKeys.ignoreLeadingSpacesWhenRegistering)
         selectingBackspace = SelectingBackspace(rawValue: UserDefaults.app.integer(forKey: UserDefaultsKeys.selectingBackspace)) ?? SelectingBackspace.default
         comma = Punctuation.Comma(rawValue: UserDefaults.app.integer(forKey: UserDefaultsKeys.punctuation)) ?? .default
         period = Punctuation.Period(rawValue: UserDefaults.app.integer(forKey: UserDefaultsKeys.punctuation)) ?? .default
@@ -400,6 +403,7 @@ final class SettingsViewModel: ObservableObject {
         Global.candidateListDirection.send(candidateListDirection)
         Global.findCompletionFromAllDicts = findCompletionFromAllDicts
         Global.registerKatakana = registerKatakana
+        Global.ignoreLeadingSpacesWhenRegistering = ignoreLeadingSpacesWhenRegistering
         Global.inputModePanel.updateColorSets(inputModeColorSets)
         Global.showMarkedTextMarker = showMarkedTextMarker
 
@@ -800,6 +804,12 @@ final class SettingsViewModel: ObservableObject {
             Global.registerKatakana = registerKatakana
         }.store(in: &cancellables)
 
+        $ignoreLeadingSpacesWhenRegistering.dropFirst().sink { ignoreLeadingSpacesWhenRegistering in
+            UserDefaults.app.set(ignoreLeadingSpacesWhenRegistering, forKey: UserDefaultsKeys.ignoreLeadingSpacesWhenRegistering)
+            logger.log("単語登録中に先頭のスペースを無視する設定を\(ignoreLeadingSpacesWhenRegistering ? "有効" : "無効", privacy: .public)に変更しました")
+            Global.ignoreLeadingSpacesWhenRegistering = ignoreLeadingSpacesWhenRegistering
+        }.store(in: &cancellables)
+
         $selectedKanaRule.dropFirst().sink { [weak self] selectedKanaRule in
             guard let self else { return }
             if selectedKanaRule.isEmpty {
@@ -877,6 +887,7 @@ final class SettingsViewModel: ObservableObject {
         showCandidateForCompletion = true
         fixedCompletionByPeriod = true
         registerKatakana = false
+        ignoreLeadingSpacesWhenRegistering = true
         systemDict = .daijirin
         selectingBackspace = SelectingBackspace.default
         comma = Punctuation.default.comma

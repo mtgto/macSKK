@@ -68,6 +68,8 @@ struct UserDefaultsKeys {
     static let fixedCompletionByPeriod = "fixedCompletionByPeriod"
     // qキーでカタカナで確定した場合に辞書に登録するか
     static let registerKatakana = "registerKatakana"
+    // 単語登録中に先頭のスペースを無視するか
+    static let ignoreLeadingSpacesWhenRegistering = "ignoreLeadingSpacesWhenRegistering"
     // 選択中のローマ字かな変換ルールのID
     static let kanaRule = "kanaRule"
     // 入力モードのモーダルの設定
