@@ -23,6 +23,8 @@ final class StateMachineTests: XCTestCase {
         Global.candidateListDirection.send(.vertical)
         Global.keyBinding = KeyBindingSet.defaultKeyBindingSet
         Global.ignoreLeadingSpacesWhenRegistering = true
+        Global.backToSelectingFromRegistering = false
+        Global.fixRegisteringWordAsKatakana = false
     }
 
     @MainActor func testHandleNormalSimple() {
@@ -3010,6 +3012,187 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(Action(
             keyBind: .space,
             event: generateNSEvent(character: "u", characterIgnoringModifiers: "u"))))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    @MainActor func testHandleRegisteringBackToSelecting() {
+        // 単語登録中に空文字列で前候補キーを押したときに候補選択に戻る（設定されているときの挙動）
+        Global.backToSelectingFromRegistering = true
+        Global.dictionary.setEntries(["と": [Word("戸"), Word("都")]])
+
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(9).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("t")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("と")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerSelect, .emphasized("戸")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerSelect, .emphasized("都")])))
+            XCTAssertEqual(events[4], .modeChanged(.hiragana))
+            XCTAssertEqual(events[5], .markedText(MarkedText([.plain("[登録：と]")])))
+            XCTAssertEqual(events[6], .markedText(MarkedText([.markerSelect, .emphasized("都")])))
+            XCTAssertEqual(events[7], .markedText(MarkedText([.markerSelect, .emphasized("戸")])))
+            XCTAssertEqual(events[8], .markedText(MarkedText([.markerSelect, .emphasized("都")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(Action(
+            keyBind: .backwardCandidate,
+            event: generateNSEvent(character: "x", characterIgnoringModifiers: "x"))))
+        XCTAssertNil(stateMachine.state.specialState)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "x")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    @MainActor func testHandleRegisteringBackToSelectingDisabled() {
+        // 単語登録中に空文字列で前候補キーを押したときに候補選択に戻る（設定されていないときの挙動）
+        Global.dictionary.setEntries(["と": [Word("戸"), Word("都")]])
+
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(7).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("t")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("と")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerSelect, .emphasized("戸")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerSelect, .emphasized("都")])))
+            XCTAssertEqual(events[4], .modeChanged(.hiragana))
+            XCTAssertEqual(events[5], .markedText(MarkedText([.plain("[登録：と]")])))
+            XCTAssertEqual(events[6], .markedText(MarkedText([.plain("[登録：と]"), .plain("x")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(Action(
+            keyBind: .backwardCandidate,
+            event: generateNSEvent(character: "x", characterIgnoringModifiers: "x"))))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    @MainActor func testHandleRegisteringBackToSelectingByBackspace() {
+        // 単語登録中に空文字列で前候補キーを押したときに候補選択に戻る（設定されているときの挙動）
+        // （バックスペースでも戻る設定がされている場合）
+        Global.backToSelectingFromRegistering = true
+        Global.selectingBackspace = .cancel
+        Global.dictionary.setEntries(["と": [Word("戸"), Word("都")]])
+
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(8).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("t")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("と")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerSelect, .emphasized("戸")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerSelect, .emphasized("都")])))
+            XCTAssertEqual(events[4], .modeChanged(.hiragana))
+            XCTAssertEqual(events[5], .markedText(MarkedText([.plain("[登録：と]")])))
+            XCTAssertEqual(events[6], .markedText(MarkedText([.markerSelect, .emphasized("都")])))
+            XCTAssertEqual(events[7], .markedText(MarkedText([.markerSelect, .emphasized("戸")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(backspaceAction))
+        XCTAssertNil(stateMachine.state.specialState)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "x")))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    @MainActor func testHandleRegisteringEmptyToggleKanaInputWithDefaultKeyBinding() {
+        // 単語登録中に空文字列でqキーを押したときにカタカナで確定する（設定されているときの挙動）
+        Global.fixRegisteringWordAsKatakana = true
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(4).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("い")])))
+            XCTAssertEqual(events[1], .modeChanged(.hiragana))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.plain("[登録：い]")])))
+            XCTAssertEqual(events[3], .fixedText("イ"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
+        XCTAssertNil(stateMachine.state.specialState)
+        XCTAssertEqual(stateMachine.state.inputMethod, .normal)
+        XCTAssertEqual(stateMachine.state.inputMode, .hiragana)
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    @MainActor func testHandleRegisteringEmptyToggleKanaInputWithKatakanaMode() {
+        // 単語登録中に空文字列でqキーを押したときにカタカナで確定する（設定されているときの挙動）
+        // カタカナモードでは単語登録中に空文字列でqキーを押したときにひらがなで確定する
+        Global.fixRegisteringWordAsKatakana = true
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .katakana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(5).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("イ")])))
+            XCTAssertEqual(events[1], .modeChanged(.hiragana))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.plain("[登録：い]")])))
+            XCTAssertEqual(events[3], .modeChanged(.katakana))
+            XCTAssertEqual(events[4], .fixedText("い"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
+        XCTAssertNil(stateMachine.state.specialState)
+        XCTAssertEqual(stateMachine.state.inputMethod, .normal)
+        XCTAssertEqual(stateMachine.state.inputMode, .katakana)
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    @MainActor func testHandleRegisteringEmptyToggleKanaInputWithoutKeyBinding() {
+        // 単語登録中に空文字列でqキーを押したときにカタカナで確定する（設定されているときの挙動）
+        // （.toggleKanaが設定されておらず、.toggleAndFixKanaのみ設定されている場合）
+        Global.fixRegisteringWordAsKatakana = true
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(4).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("い")])))
+            XCTAssertEqual(events[1], .modeChanged(.hiragana))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.plain("[登録：い]")])))
+            XCTAssertEqual(events[3], .fixedText("イ"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(Action(
+            keyBind: nil,
+            event: generateNSEvent(character: "q", characterIgnoringModifiers: "q"))))
+        XCTAssertNil(stateMachine.state.specialState)
+        XCTAssertEqual(stateMachine.state.inputMethod, .normal)
+        XCTAssertEqual(stateMachine.state.inputMode, .hiragana)
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    @MainActor func testHandleRegisteringEmptyToggleKanaInputDisabled() {
+        // 単語登録中に空文字列でqキーを押したときにカタカナで確定する（設定されていないときの挙動）
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(4).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("い")])))
+            XCTAssertEqual(events[1], .modeChanged(.hiragana))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.plain("[登録：い]")])))
+            XCTAssertEqual(events[3], .modeChanged(.katakana))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(Action(
+            keyBind: .toggleKana,
+            event: generateNSEvent(character: "q", characterIgnoringModifiers: "q"))))
+        XCTAssertNotNil(stateMachine.state.specialState)
+        XCTAssertEqual(stateMachine.state.inputMethod, .normal)
+        XCTAssertEqual(stateMachine.state.inputMode, .katakana)
         wait(for: [expectation], timeout: 1.0)
     }
 

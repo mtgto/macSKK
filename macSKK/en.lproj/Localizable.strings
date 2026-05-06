@@ -96,6 +96,8 @@
 "Customize Input Mode Colors…" = "Customize Input Mode Colors…";
 "Register fixed katakana word to dict" = "Register fixed katakana word to dict";
 "Ignore leading spaces when registering a word" = "Ignore leading spaces when registering a word";
+"Back to selecting candidates from empty word registration" = "Back to selecting candidates from empty word registration";
+"Fix katakana from empty word registration" = "Fix katakana from empty word registration";
 "Direction of candidate list" = "Direction of candidate list";
 "Enter Key confirms a candidate and sends a newline" = "Enter Key confirms a candidate and sends a newline";
 "Show Completion" = "Show Completion";

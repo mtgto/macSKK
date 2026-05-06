@@ -70,6 +70,10 @@ struct UserDefaultsKeys {
     static let registerKatakana = "registerKatakana"
     // 単語登録中に先頭のスペースを無視するか
     static let ignoreLeadingSpacesWhenRegistering = "ignoreLeadingSpacesWhenRegistering"
+    // 単語登録中に空文字列で前候補キーを押したときに候補選択に戻るか
+    static let backToSelectingFromRegistering = "backToSelectingFromRegistering"
+    // 単語登録中に空文字列でqキーを押したときにカタカナで確定するか
+    static let fixRegisteringWordAsKatakana = "fixRegisteringWordAsKatakana"
     // 選択中のローマ字かな変換ルールのID
     static let kanaRule = "kanaRule"
     // 入力モードのモーダルの設定
