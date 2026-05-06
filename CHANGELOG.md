@@ -1,4 +1,11 @@
 # CHANGELOG
+## v2.14.0 (2026-05-06)
+
+- gzip圧縮された辞書ファイルに対応 (#454)
+- `build_restart.sh`の対象に`/Library/Input Methods/macSKK.app`を追加 (#459) by @tekezo
+- 単語登録中に先頭スペースを無視する設定の追加（デフォルトで有効） (#460) by @tekezo
+- README.mdを更新（ログを見る場所をConsole.appから設定画面のログに変更） (#461) by @tekezo
+
 ## v2.13.0 (2026-05-03)
 
 - ▽と▼を非表示にする設定を追加 (#457) by @tekezo
