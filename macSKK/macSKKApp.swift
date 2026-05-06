@@ -14,6 +14,8 @@ let notificationNameToggleDirectMode = Notification.Name("toggleDirectMode")
 let notificationNameToggleInsertBlankString = Notification.Name("toggleInsertBlankString")
 // 1文字目を常に未確定扱いするワークアラウンドの有効無効を切り替えたいときに通知される通知の名前。
 let notificationNameToggleTreatFirstCharacterAsMarkedText = Notification.Name("toggleTreatFirstCharacterAsMarkedText")
+// 空のときには▽▼を表示するワークアラウンドの有効無効を切り替えたいときに通知される通知の名前。
+let notificationNameToggleShowMarkerWhenEmpty = Notification.Name("toggleShowMarkerWhenEmpty")
 // 設定画面を開きたいときに通知される通知の名前
 let notificationNameOpenSettings = Notification.Name("openSettings")
 // インラインで表示する変換候補の数を変更したときに通知される通知の名前
@@ -48,6 +50,7 @@ struct macSKKApp: App {
     init() {
         // 環境設定の初期値をSettingsViewModelより先に行う
         Self.setupUserDefaults()
+        Self.migrateUserDefaults()
         do {
             dictionariesDirectoryUrl = try FileManager.default.url(
                 for: .documentDirectory,
@@ -58,7 +61,7 @@ struct macSKKApp: App {
             let settingsViewModel = try SettingsViewModel(dictionariesDirectoryUrl: dictionariesDirectoryUrl)
             let settingsWindow = SettingsWindow(settingsViewModel: settingsViewModel)
             Global.privateMode.send(UserDefaults.app.bool(forKey: UserDefaultsKeys.privateMode))
-            Global.showMarkedTextMarker = ShowMarkedTextMarker(rawValue: UserDefaults.app.string(forKey: UserDefaultsKeys.showMarkedTextMarker) ?? "") ?? .always
+            Global.showMarkedTextMarker = UserDefaults.app.bool(forKey: UserDefaultsKeys.showsMarkedTextMarker)
 
             // SettingsViewModelの初期化が終わったあとにユーザー辞書を読み込まないと辞書のロード状態が設定されない
             Global.dictionary = try UserDict(dicts: [],
@@ -187,6 +190,14 @@ struct macSKKApp: App {
         }
     }
 
+    private static func migrateUserDefaults() {
+        // v2.13.0 - v2.14.x まであったshowMarkedTextMarkerのマイグレーション
+        if let oldValue = UserDefaults.app.string(forKey: "showMarkedTextMarker") {
+            UserDefaults.app.set(oldValue != "never", forKey: UserDefaultsKeys.showsMarkedTextMarker)
+            UserDefaults.app.removeObject(forKey: "showMarkedTextMarker")
+        }
+    }
+
     private static func setupUserDefaults() {
         UserDefaults.app.register(defaults: [
             UserDefaultsKeys.dictionaries: [],
@@ -196,10 +207,10 @@ struct macSKKApp: App {
             UserDefaultsKeys.inlineCandidateCount: 3,
             UserDefaultsKeys.selectCandidateKeys: "123456789",
             UserDefaultsKeys.workarounds: [
-                ["bundleIdentifier": "net.kovidgoyal.kitty", "insertBlankString": true, "treatFirstCharacterAsMarkedText": false],
-                ["bundleIdentifier": "jp.naver.line.mac", "insertBlankString": true, "treatFirstCharacterAsMarkedText": false],
-                ["bundleIdentifier": "org.alacritty", "insertBlankString": true, "treatFirstCharacterAsMarkedText": false],
-                ["bundleIdentifier": "co.zeit.hyper", "insertBlankString": false, "treatFirstCharacterAsMarkedText": true],
+                ["bundleIdentifier": "net.kovidgoyal.kitty", "insertBlankString": true, "treatFirstCharacterAsMarkedText": false, "showMarkerWhenEmpty": true],
+                ["bundleIdentifier": "jp.naver.line.mac", "insertBlankString": true, "treatFirstCharacterAsMarkedText": false, "showMarkerWhenEmpty": false],
+                ["bundleIdentifier": "org.alacritty", "insertBlankString": true, "treatFirstCharacterAsMarkedText": false, "showMarkerWhenEmpty": true],
+                ["bundleIdentifier": "co.zeit.hyper", "insertBlankString": false, "treatFirstCharacterAsMarkedText": true, "showMarkerWhenEmpty": true],
             ],
             // NSFont.preferredFont(forTextStyle: .body).pointSize と同じサイズ
             UserDefaultsKeys.candidatesFontSize: 13,
@@ -222,7 +233,7 @@ struct macSKKApp: App {
             UserDefaultsKeys.privateMode: false,
             UserDefaultsKeys.ignoreUserDictInPrivateMode: false,
             UserDefaultsKeys.showInputModePanel: true,
-            UserDefaultsKeys.showMarkedTextMarker: ShowMarkedTextMarker.always.rawValue,
+            UserDefaultsKeys.showsMarkedTextMarker: true,
             UserDefaultsKeys.candidateListDirection: CandidateListDirection.vertical.rawValue,
             UserDefaultsKeys.dateConversions: [
                 "yomis": [

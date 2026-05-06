@@ -8,6 +8,7 @@ struct WorkaroundApplicationView: View {
     @Binding var bundleIdentifier: String
     @Binding var insertBlankString: Bool
     @Binding var treatFirstCharacterAsMarkedText: Bool
+    @Binding var showMarkerWhenEmpty: Bool
     @Binding var isShowingSheet: Bool
 
     var body: some View {
@@ -17,6 +18,8 @@ struct WorkaroundApplicationView: View {
                 Toggle("Insert Blank String", isOn: $insertBlankString)
                     .toggleStyle(.switch)
                 Toggle("Treat First Character as Marked Text", isOn: $treatFirstCharacterAsMarkedText)
+                    .toggleStyle(.switch)
+                Toggle("Show Marker When Empty", isOn: $showMarkerWhenEmpty)
                     .toggleStyle(.switch)
             } header: {
                 Text("SettingsHeaderWorkaroundApplication")
@@ -32,7 +35,8 @@ struct WorkaroundApplicationView: View {
                     Button {
                         settingsViewModel.upsertWorkaroundApplication(bundleIdentifier: bundleIdentifier,
                                                                       insertBlankString: insertBlankString,
-                                                                      treatFirstCharacterAsMarkedText: treatFirstCharacterAsMarkedText)
+                                                                      treatFirstCharacterAsMarkedText: treatFirstCharacterAsMarkedText,
+                                                                      showMarkerWhenEmpty: showMarkerWhenEmpty)
                         isShowingSheet = false
                     } label: {
                         Text(settingsViewModel.workaroundApplications.contains(where: { $0.bundleIdentifier == bundleIdentifier })  ? "Done" : "Add")
@@ -52,5 +56,6 @@ struct WorkaroundApplicationView: View {
                               bundleIdentifier: .constant("net.mtgto.inputmethod.macSKK"),
                               insertBlankString: .constant(true),
                               treatFirstCharacterAsMarkedText: .constant(true),
+                              showMarkerWhenEmpty: .constant(false),
                               isShowingSheet: .constant(true))
 }

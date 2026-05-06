@@ -52,8 +52,7 @@ struct MarkedText: Equatable {
         self.elements = elements
     }
 
-    func attributedString(_ showMarkedTextMarker: ShowMarkedTextMarker) -> AttributedString {
-        let showMarker = resolveShowMarker(showMarkedTextMarker)
+    func attributedString(_ showMarker: Bool) -> AttributedString {
         var result = AttributedString()
         for element in elements {
             switch element {
@@ -79,9 +78,8 @@ struct MarkedText: Equatable {
         return result
     }
 
-    func cursorRange(_ showMarkedTextMarker: ShowMarkedTextMarker) -> NSRange? {
+    func cursorRange(_ showMarker: Bool) -> NSRange? {
         var location: Int = 0
-        let showMarker = resolveShowMarker(showMarkedTextMarker)
         for element in elements {
             switch element {
             case .markerSelect, .markerCompose:
@@ -95,19 +93,5 @@ struct MarkedText: Equatable {
             }
         }
         return nil
-    }
-
-    /// showMarkedTextMarkerの設定が.minimalのとき、▽や▼を消すと未確定文字列が空になる場合だけマーカーを表示する。
-    /// この挙動が必要な理由は.minimalの説明を参照。
-    private func resolveShowMarker(_ showMarkedTextMarker: ShowMarkedTextMarker) -> Bool {
-        switch showMarkedTextMarker {
-        case .always:
-            return true
-        case .never:
-            return false
-        case .minimal:
-            // .plainや.emphasizedのテキストが空の場合は未確定文字列が空になるので▽や▼を出す必要がある。
-            return elements.compactMap(\.text).allSatisfy(\.isEmpty)
-        }
     }
 }

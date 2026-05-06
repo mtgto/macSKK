@@ -61,6 +61,8 @@ struct WorkaroundApplication: Identifiable, Equatable {
     let insertBlankString: Bool
     /// 1文字目を常に未確定扱いするか
     let treatFirstCharacterAsMarkedText: Bool
+    /// 空のときには▽▼を表示するか
+    let showMarkerWhenEmpty: Bool
     var icon: NSImage?
     var displayName: String?
 
@@ -74,6 +76,7 @@ struct WorkaroundApplication: Identifiable, Equatable {
         return WorkaroundApplication(bundleIdentifier: bundleIdentifier,
                                      insertBlankString: insertBlankString,
                                      treatFirstCharacterAsMarkedText: treatFirstCharacterAsMarkedText,
+                                     showMarkerWhenEmpty: showMarkerWhenEmpty,
                                      icon: icon,
                                      displayName: displayName)
     }
@@ -82,6 +85,16 @@ struct WorkaroundApplication: Identifiable, Equatable {
         return WorkaroundApplication(bundleIdentifier: bundleIdentifier,
                                      insertBlankString: insertBlankString,
                                      treatFirstCharacterAsMarkedText: treatFirstCharacterAsMarkedText,
+                                     showMarkerWhenEmpty: showMarkerWhenEmpty,
+                                     icon: icon,
+                                     displayName: displayName)
+    }
+
+    func with(showMarkerWhenEmpty: Bool) -> Self {
+        return WorkaroundApplication(bundleIdentifier: bundleIdentifier,
+                                     insertBlankString: insertBlankString,
+                                     treatFirstCharacterAsMarkedText: treatFirstCharacterAsMarkedText,
+                                     showMarkerWhenEmpty: showMarkerWhenEmpty,
                                      icon: icon,
                                      displayName: displayName)
     }
@@ -137,38 +150,6 @@ enum CandidateListDirection: Int, CaseIterable, Identifiable {
     }
 }
 
-/// ▽と▼の表示
-enum ShowMarkedTextMarker: String, CaseIterable, Identifiable {
-    typealias ID = String
-    var id: ID { rawValue }
-
-    /// 表示する
-    case always
-    /// できるだけ表示しない（入力処理を優先）
-    /// ▽と▼を表示しない場合、未確定文字列を入力中にもかかわらず未確定文字列が空になってしまう場合がある。
-    /// 具体的にはabbrevやStickyShiftで入力を開始した場合。
-    /// この場合において、以下のような特定のアプリケーションにおいてスラッシュやセミコロンが直接入力されてしまう。
-    /// この症状を避けるため、未確定文字列が空になるときは▽と▼を表示するようにする。
-    /// - IntelliJ IDEA
-    /// - Ghostty
-    /// - Kitty
-    /// - VSCode内蔵のTerminal
-    /// （なお、普通にシフトキーを押して入力を開始した際に最初の文字を消すと▽が表示されるが、許容する）
-    case minimal
-    /// まったく表示しない
-    case never
-
-    var description: String {
-        switch self {
-        case .always:
-            String(localized: "ShowMarkedTextMarkerAlways")
-        case .minimal:
-            String(localized: "ShowMarkedTextMarkerMinimal")
-        case .never:
-            String(localized: "ShowMarkedTextMarkerNever")
-        }
-    }
-}
 
 @MainActor
 final class SettingsViewModel: ObservableObject {
@@ -242,8 +223,8 @@ final class SettingsViewModel: ObservableObject {
     @Published var ignoreUserDictInPrivateMode: Bool
     /// 入力モードのモーダルを表示するかどうか
     @Published var showInputIconModal: Bool
-    /// ▽と▼の表示
-    @Published var showMarkedTextMarker: ShowMarkedTextMarker
+    /// ▽と▼を表示するか
+    @Published var showMarkedTextMarker: Bool
     /// 変換候補リストの表示方向
     @Published var candidateListDirection: CandidateListDirection
     /// 日時変換の読みリスト
@@ -310,9 +291,12 @@ final class SettingsViewModel: ObservableObject {
                 let insertBlankString = workaround["insertBlankString"] as? Bool {
                 // treatFirstCharacterAsMarkedTextはv2.1+ で追加された
                 let treatFirstCharacterAsMarkedText = workaround["treatFirstCharacterAsMarkedText"] as? Bool ?? false
+                // showMarkerWhenEmptyはv2.15+ で追加された
+                let showMarkerWhenEmpty = workaround["showMarkerWhenEmpty"] as? Bool ?? false
                 return WorkaroundApplication(bundleIdentifier: bundleIdentifier,
                                              insertBlankString: insertBlankString,
-                                             treatFirstCharacterAsMarkedText: treatFirstCharacterAsMarkedText)
+                                             treatFirstCharacterAsMarkedText: treatFirstCharacterAsMarkedText,
+                                             showMarkerWhenEmpty: showMarkerWhenEmpty)
             } else {
                 return nil
             }
@@ -352,7 +336,7 @@ final class SettingsViewModel: ObservableObject {
         period = Punctuation.Period(rawValue: UserDefaults.app.integer(forKey: UserDefaultsKeys.punctuation)) ?? .default
         ignoreUserDictInPrivateMode = UserDefaults.app.bool(forKey: UserDefaultsKeys.ignoreUserDictInPrivateMode)
         showInputIconModal = UserDefaults.app.bool(forKey: UserDefaultsKeys.showInputModePanel)
-        showMarkedTextMarker = ShowMarkedTextMarker(rawValue: UserDefaults.app.string(forKey: UserDefaultsKeys.showMarkedTextMarker) ?? "") ?? .always
+        showMarkedTextMarker = UserDefaults.app.bool(forKey: UserDefaultsKeys.showsMarkedTextMarker)
         candidateListDirection = CandidateListDirection(rawValue: UserDefaults.app.integer(forKey: UserDefaultsKeys.candidateListDirection)) ?? .vertical
         if let dateConversionDict = UserDefaults.app.dictionary(forKey: UserDefaultsKeys.dateConversions),
            let dateConversionsRaw = dateConversionDict["conversions"] as? [[String: Any]],
@@ -476,6 +460,7 @@ final class SettingsViewModel: ObservableObject {
                 "bundleIdentifier": $0.bundleIdentifier,
                 "insertBlankString": $0.insertBlankString,
                 "treatFirstCharacterAsMarkedText": $0.treatFirstCharacterAsMarkedText,
+                "showMarkerWhenEmpty": $0.showMarkerWhenEmpty,
             ] }
             UserDefaults.app.set(settings, forKey: UserDefaultsKeys.workarounds)
         }.store(in: &cancellables)
@@ -483,6 +468,7 @@ final class SettingsViewModel: ObservableObject {
         $workaroundApplications.sink { applications in
             Global.insertBlankStringBundleIdentifiers.send(applications.filter { $0.insertBlankString }.map { $0.bundleIdentifier })
             Global.treatFirstCharacterAsMarkedTextBundleIdentifiers.send(applications.filter { $0.treatFirstCharacterAsMarkedText }.map { $0.bundleIdentifier })
+            Global.showMarkerWhenEmptyBundleIdentifiers.send(applications.filter { $0.showMarkerWhenEmpty }.map { $0.bundleIdentifier })
         }.store(in: &cancellables)
 
         NotificationCenter.default.publisher(for: notificationNameToggleDirectMode)
@@ -511,7 +497,8 @@ final class SettingsViewModel: ObservableObject {
                         logger.log("Bundle Identifier \"\(bundleIdentifier, privacy: .public)\" の空文字挿入の互換性が設定されました。")
                         self.workaroundApplications.append(WorkaroundApplication(bundleIdentifier: bundleIdentifier,
                                                                                  insertBlankString: true,
-                                                                                 treatFirstCharacterAsMarkedText: false))
+                                                                                 treatFirstCharacterAsMarkedText: false,
+                                                                                 showMarkerWhenEmpty: false))
                     }
                 }
             }
@@ -529,7 +516,26 @@ final class SettingsViewModel: ObservableObject {
                         logger.log("Bundle Identifier \"\(bundleIdentifier, privacy: .public)\" の1文字目を常に未確定扱いする互換性が設定されました。")
                         self.workaroundApplications.append(WorkaroundApplication(bundleIdentifier: bundleIdentifier,
                                                                                  insertBlankString: false,
-                                                                                 treatFirstCharacterAsMarkedText: true))
+                                                                                 treatFirstCharacterAsMarkedText: true,
+                                                                                 showMarkerWhenEmpty: false))
+                    }
+                }
+            }
+            .store(in: &cancellables)
+
+        NotificationCenter.default.publisher(for: notificationNameToggleShowMarkerWhenEmpty)
+            .sink { [weak self] notification in
+                if let self, let bundleIdentifier = notification.object as? String {
+                    if let index = self.workaroundApplications.firstIndex(where: { $0.bundleIdentifier == bundleIdentifier }) {
+                        let newShowMarkerWhenEmpty = !self.workaroundApplications[index].showMarkerWhenEmpty
+                        logger.log("Bundle Identifier \"\(bundleIdentifier, privacy: .public)\" の空のときには▽▼を表示する互換性が\(newShowMarkerWhenEmpty ? "設定" : "解除", privacy: .public)されました。")
+                        self.workaroundApplications[index] = self.workaroundApplications[index].with(showMarkerWhenEmpty: newShowMarkerWhenEmpty)
+                    } else {
+                        logger.log("Bundle Identifier \"\(bundleIdentifier, privacy: .public)\" の空のときには▽▼を表示する互換性が設定されました。")
+                        self.workaroundApplications.append(WorkaroundApplication(bundleIdentifier: bundleIdentifier,
+                                                                                 insertBlankString: false,
+                                                                                 treatFirstCharacterAsMarkedText: false,
+                                                                                 showMarkerWhenEmpty: true))
                     }
                 }
             }
@@ -771,8 +777,8 @@ final class SettingsViewModel: ObservableObject {
         }.store(in: &cancellables)
 
         $showMarkedTextMarker.dropFirst().sink { showMarkedTextMarker in
-            UserDefaults.app.set(showMarkedTextMarker.rawValue, forKey: UserDefaultsKeys.showMarkedTextMarker)
-            logger.log("▽と▼の表示を\(showMarkedTextMarker.description, privacy: .public)に変更しました")
+            UserDefaults.app.set(showMarkedTextMarker, forKey: UserDefaultsKeys.showsMarkedTextMarker)
+            logger.log("▽と▼の表示を\(showMarkedTextMarker ? "表示" : "非表示", privacy: .public)に変更しました")
             Global.showMarkedTextMarker = showMarkedTextMarker
         }.store(in: &cancellables)
 
@@ -894,7 +900,7 @@ final class SettingsViewModel: ObservableObject {
         period = Punctuation.default.period
         ignoreUserDictInPrivateMode = false
         showInputIconModal = true
-        showMarkedTextMarker = .always
+        showMarkedTextMarker = true
         candidateListDirection = .vertical
         dateYomis = [
             DateConversion.Yomi(yomi: "today", relative: .now),
@@ -1073,18 +1079,20 @@ final class SettingsViewModel: ObservableObject {
     }
 
     /// 互換性設定を追加 or 更新する
-    func upsertWorkaroundApplication(bundleIdentifier: String, insertBlankString: Bool, treatFirstCharacterAsMarkedText: Bool) {
+    func upsertWorkaroundApplication(bundleIdentifier: String, insertBlankString: Bool, treatFirstCharacterAsMarkedText: Bool, showMarkerWhenEmpty: Bool) {
         if let index = workaroundApplications.firstIndex(where: { $0.bundleIdentifier == bundleIdentifier }) {
             let application = workaroundApplications[index]
             workaroundApplications[index] = WorkaroundApplication(bundleIdentifier: application.bundleIdentifier,
                                                                   insertBlankString: insertBlankString,
                                                                   treatFirstCharacterAsMarkedText: treatFirstCharacterAsMarkedText,
+                                                                  showMarkerWhenEmpty: showMarkerWhenEmpty,
                                                                   icon: application.icon,
                                                                   displayName: application.displayName)
         } else {
             workaroundApplications.append(WorkaroundApplication(bundleIdentifier: bundleIdentifier,
                                                                 insertBlankString: insertBlankString,
-                                                                treatFirstCharacterAsMarkedText: treatFirstCharacterAsMarkedText))
+                                                                treatFirstCharacterAsMarkedText: treatFirstCharacterAsMarkedText,
+                                                                showMarkerWhenEmpty: showMarkerWhenEmpty))
         }
     }
 
