@@ -4,6 +4,7 @@
 "MenuItemDirectInput" = "Direct input from \"%@\"";
 "MenuItemInsertBlankString" = "Insert Blank String for Workaround";
 "MenuItemTreadFirstCharacterAsMarkedText" = "Treat First Char as Marked for Workaround";
+"MenuItemShowMarkerWhenEmpty" = "Show Marker When Empty for Workaround";
 "MenuItemSKKServ" = "Use SKKServ";
 "SettingsNameGeneral" = "General";
 "SettingsNameDictionaries" = "Dictionaries";
@@ -90,9 +91,6 @@
 "Ignore User Dict in Private Mode" = "Ignore User Dict in Private Mode";
 "Show Input Mode Modal" = "Show Input Mode Modal";
 "Show Marked Text Marker" = "Show ▽ and ▼";
-"ShowMarkedTextMarkerAlways" = "Show";
-"ShowMarkedTextMarkerMinimal" = "Hide as much as possible (prioritize input handling)";
-"ShowMarkedTextMarkerNever" = "Never show";
 "Customize Input Mode Colors…" = "Customize Input Mode Colors…";
 "Register fixed katakana word to dict" = "Register fixed katakana word to dict";
 "Ignore leading spaces when registering a word" = "Ignore leading spaces when registering a word";
@@ -102,6 +100,7 @@
 "Show Candidate for Completion" = "Show Candidate for Completion";
 "Insert Blank String" = "Insert Blank String";
 "Treat First Character as Marked Text" = "Treat First Character as Marked Text";
+"Show Marker When Empty" = "Show Marker When Empty";
 "Enabled" = "Enabled";
 "Disabled" = "Disabled";
 "Add…" = "Add…";

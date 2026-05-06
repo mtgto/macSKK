@@ -4,6 +4,7 @@
 "MenuItemDirectInput" = "\"%@\"では直接入力";
 "MenuItemInsertBlankString" = "空文字挿入 (互換性)";
 "MenuItemTreadFirstCharacterAsMarkedText" = "1文字目を未確定扱い (互換性)";
+"MenuItemShowMarkerWhenEmpty" = "空のときには▽▼を表示 (互換性)";
 "MenuItemSKKServ" = "SKKServを利用する";
 "SettingsNameGeneral" = "一般";
 "SettingsNameDictionaries" = "辞書";
@@ -89,10 +90,7 @@
 "Confirm the first completion by period" = "最初の補完候補をピリオドキーで確定する";
 "Ignore User Dict in Private Mode" = "プライベートモードではユーザー辞書を参照しない";
 "Show Input Mode Modal" = "入力モードアイコンを表示";
-"Show Marked Text Marker" = "▽と▼の表示";
-"ShowMarkedTextMarkerAlways" = "表示する";
-"ShowMarkedTextMarkerMinimal" = "できるだけ表示しない（入力処理を優先）";
-"ShowMarkedTextMarkerNever" = "まったく表示しない";
+"Show Marked Text Marker" = "▽と▼を表示する";
 "Customize Input Mode Colors…" = "入力モードの色をカスタマイズ…";
 "Register fixed katakana word to dict" = "カタカナで確定した単語を辞書に登録する";
 "Ignore leading spaces when registering a word" = "単語登録中に先頭スペースを無視する";
@@ -102,6 +100,7 @@
 "Show Candidate for Completion" = "変換候補を補完候補として表示";
 "Insert Blank String" = "空文字挿入";
 "Treat First Character as Marked Text" = "1文字目を常に未確定扱い";
+"Show Marker When Empty" = "空のときには▽▼を表示";
 "Enabled" = "有効";
 "Disabled" = "無効";
 "Add…" = "追加…";
