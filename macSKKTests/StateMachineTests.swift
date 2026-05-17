@@ -23,6 +23,7 @@ final class StateMachineTests: XCTestCase {
         Global.candidateListDirection.send(.vertical)
         Global.keyBinding = KeyBindingSet.defaultKeyBindingSet
         Global.ignoreLeadingSpacesWhenRegistering = true
+        Global.backToSelectingFromRegistering = false
     }
 
     @MainActor func testHandleNormalSimple() {
@@ -3010,6 +3011,121 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(Action(
             keyBind: .space,
             event: generateNSEvent(character: "u", characterIgnoringModifiers: "u"))))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    @MainActor func testHandleRegisteringBackToSelecting() {
+        // 単語登録中に空文字列で前候補キーもしくはバックスペースキーで候補選択に戻る（設定されているときの前候補キーの挙動）
+        Global.backToSelectingFromRegistering = true
+        Global.dictionary.setEntries(["と": [Word("戸"), Word("都")]])
+
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(9).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("t")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("と")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerSelect, .emphasized("戸")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerSelect, .emphasized("都")])))
+            XCTAssertEqual(events[4], .modeChanged(.hiragana))
+            XCTAssertEqual(events[5], .markedText(MarkedText([.plain("[登録：と]")])))
+            XCTAssertEqual(events[6], .markedText(MarkedText([.markerSelect, .emphasized("都")])))
+            XCTAssertEqual(events[7], .markedText(MarkedText([.markerSelect, .emphasized("戸")])))
+            XCTAssertEqual(events[8], .markedText(MarkedText([.markerSelect, .emphasized("都")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(Action(
+            keyBind: .backwardCandidate,
+            event: generateNSEvent(character: "x", characterIgnoringModifiers: "x"))))
+        XCTAssertNil(stateMachine.state.specialState)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "x")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    @MainActor func testHandleRegisteringBackToSelectingDisabled() {
+        // 単語登録中に空文字列で前候補キーもしくはバックスペースキーで候補選択に戻る（設定されていないときの前候補キーの挙動）
+        Global.dictionary.setEntries(["と": [Word("戸"), Word("都")]])
+
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(7).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("t")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("と")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerSelect, .emphasized("戸")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerSelect, .emphasized("都")])))
+            XCTAssertEqual(events[4], .modeChanged(.hiragana))
+            XCTAssertEqual(events[5], .markedText(MarkedText([.plain("[登録：と]")])))
+            XCTAssertEqual(events[6], .markedText(MarkedText([.plain("[登録：と]"), .plain("x")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(Action(
+            keyBind: .backwardCandidate,
+            event: generateNSEvent(character: "x", characterIgnoringModifiers: "x"))))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    @MainActor func testHandleRegisteringBackToSelectingByBackspace() {
+        // 単語登録中に空文字列で前候補キーもしくはバックスペースキーで候補選択に戻る（設定されているときのバックスペースキーの挙動）
+        Global.backToSelectingFromRegistering = true
+        Global.dictionary.setEntries(["と": [Word("戸"), Word("都")]])
+
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(8).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("t")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("と")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerSelect, .emphasized("戸")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerSelect, .emphasized("都")])))
+            XCTAssertEqual(events[4], .modeChanged(.hiragana))
+            XCTAssertEqual(events[5], .markedText(MarkedText([.plain("[登録：と]")])))
+            XCTAssertEqual(events[6], .markedText(MarkedText([.markerSelect, .emphasized("都")])))
+            XCTAssertEqual(events[7], .markedText(MarkedText([.markerSelect, .emphasized("戸")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(backspaceAction))
+        XCTAssertNil(stateMachine.state.specialState)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "x")))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    @MainActor func testHandleRegisteringBackToSelectingByBackspaceDisabled() {
+        // 単語登録中に空文字列で前候補キーもしくはバックスペースキーで候補選択に戻る（設定されていないときのバックスペースキーの挙動）
+        Global.dictionary.setEntries(["と": [Word("戸"), Word("都")]])
+
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(7).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("t")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("と")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerSelect, .emphasized("戸")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerSelect, .emphasized("都")])))
+            XCTAssertEqual(events[4], .modeChanged(.hiragana))
+            XCTAssertEqual(events[5], .markedText(MarkedText([.plain("[登録：と]")])))
+            XCTAssertEqual(events[6], .markedText(MarkedText([.plain("[登録：と]")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(backspaceAction))
+        XCTAssertNotNil(stateMachine.state.specialState)
         wait(for: [expectation], timeout: 1.0)
     }
 

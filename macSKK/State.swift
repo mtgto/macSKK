@@ -482,6 +482,13 @@ struct RegisterState: SpecialStateProtocol {
     struct PrevState: Equatable {
         let mode: InputMode
         let composing: ComposingState
+        let selecting: SelectingState?
+
+        init(mode: InputMode, composing: ComposingState, selecting: SelectingState? = nil) {
+            self.mode = mode
+            self.composing = composing
+            self.selecting = selecting
+        }
     }
     /// 辞書登録状態に遷移する前の状態。
     let prev: PrevState

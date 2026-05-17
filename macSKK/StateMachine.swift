@@ -299,6 +299,14 @@ final class StateMachine {
             return false
         case .backspace:
             if let specialState = state.specialState {
+                // 単語登録中に空文字列で前候補キーもしくはバックスペースキーで候補選択に戻る（設定されている場合）
+                if Global.backToSelectingFromRegistering,
+                    case .register(let registerState, let prevRegisterStates) = specialState,
+                    registerState.text.isEmpty
+                {
+                    backToSelectingFromRegister(registerState: registerState, prevRegisterStates: prevRegisterStates)
+                    return true
+                }
                 state.specialState = specialState.dropLast()
                 updateMarkedText()
                 return true
@@ -421,7 +429,17 @@ final class StateMachine {
         case .eisu:
             // 何もしない (OSがIMEの切り替えはしてくれる)
             return true
-        case .space, .shiftSpace, .unregister, .backwardCandidate, .toggleAndFixKana, .affix, nil:
+        case .backwardCandidate:
+            // 単語登録中に空文字列で前候補キーもしくはバックスペースキーで候補選択に戻る（設定されている場合）
+            if Global.backToSelectingFromRegistering,
+                case .register(let registerState, let prevRegisterStates) = specialState,
+                registerState.text.isEmpty
+            {
+                backToSelectingFromRegister(registerState: registerState, prevRegisterStates: prevRegisterStates)
+                return true
+            }
+            break
+        case .space, .shiftSpace, .unregister, .toggleAndFixKana, .affix, nil:
             break
         }
 
@@ -1474,7 +1492,8 @@ final class StateMachine {
                 state.specialState = .register(RegisterState(
                     prev: RegisterState.PrevState(
                         mode: selecting.prev.mode,
-                        composing: selecting.prev.composing),
+                        composing: selecting.prev.composing,
+                        selecting: selecting),
                     yomi: selecting.yomi),
                 prev: prev + [registerState])
                 state.inputMethod = .normal
@@ -1491,7 +1510,8 @@ final class StateMachine {
                     RegisterState(
                         prev: RegisterState.PrevState(
                             mode: selecting.prev.mode,
-                            composing: selecting.prev.composing),
+                            composing: selecting.prev.composing,
+                            selecting: selecting),
                         yomi: selecting.yomi),
                     prev: [])
                 state.inputMethod = .normal
@@ -1641,6 +1661,20 @@ final class StateMachine {
     /// 「う゛」は「ゔ」にしてから引く
     @MainActor func candidates(for yomi: String, option: DictReferringOption? = nil) -> [Candidate] {
         return Global.dictionary.referDicts(yomi.replacing("う゛", with: "ゔ"), option: option)
+    }
+
+    /// 単語登録中から候補選択に戻る
+    @MainActor private func backToSelectingFromRegister(registerState: RegisterState, prevRegisterStates: [RegisterState]) {
+        state.inputMode = registerState.prev.mode
+        state.specialState = prevRegisterStates.last.map { .register($0, prev: prevRegisterStates.dropLast()) }
+        if let selectingState = registerState.prev.selecting {
+            state.inputMethod = .selecting(selectingState)
+            updateCandidates(selecting: selectingState)
+        } else {
+            state.inputMethod = .composing(registerState.prev.composing.uniteOkuri())
+            updateCandidates(selecting: nil)
+        }
+        updateMarkedText()
     }
 
     /**

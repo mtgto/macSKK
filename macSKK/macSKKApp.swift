@@ -244,6 +244,7 @@ struct macSKKApp: App {
             UserDefaultsKeys.fixedCompletionByPeriod: true,
             UserDefaultsKeys.registerKatakana: false,
             UserDefaultsKeys.ignoreLeadingSpacesWhenRegistering: true,
+            UserDefaultsKeys.backToSelectingFromRegistering: false,
             UserDefaultsKeys.candidatesFontFamily: "", // 空文字列はSystem Font
             UserDefaultsKeys.overridesCandidatesBackgroundColor: false,
             UserDefaultsKeys.candidatesBackgroundColor: "#FFFFFF",
