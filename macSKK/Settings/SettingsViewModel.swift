@@ -103,6 +103,8 @@ enum SelectingBackspace: Int, CaseIterable, Identifiable {
     /// インライン時、変換候補リスト表示時を問わず変換候補の末尾一字を削除して確定する。
     /// skkeletonのデフォルトの挙動。
     case dropLastAlways = 2
+    /// 前候補キーと同じ動きをする。
+    case backwardCandidate = 3
 
     // v1.2.0までの挙動
     static let `default` = cancel
@@ -115,6 +117,8 @@ enum SelectingBackspace: Int, CaseIterable, Identifiable {
             return String(localized: "SelectingBackspaceDropLastInlineOnly")
         case .dropLastAlways:
             return String(localized: "SelectingBackspaceDropLastAlways")
+        case .backwardCandidate:
+            return String(localized: "SelectingBackspaceBackwardCandidate")
         }
     }
 }

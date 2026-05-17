@@ -177,6 +177,7 @@
 "SelectingBackspaceCancel" = "Go back one step";
 "SelectingBackspaceDropLastInlineOnly" = "Delete a last character & commit in Inline";
 "SelectingBackspaceDropLastAlways" = "Delete a last character & commit always";
+"SelectingBackspaceBackwardCandidate" = "Select backward candidate";
 "Follow Romaji-Kana Rule" = "Follow Romaji-Kana Rule";
 "EnterKey" = "Enter \"%@\"";
 "DuplicatedKeyBindingName" = "Copy of %@";

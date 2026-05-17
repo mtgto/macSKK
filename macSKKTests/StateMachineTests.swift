@@ -3446,6 +3446,31 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    @MainActor func testHandleSelectingBackspaceBackwardCandidate() throws {
+        Global.selectingBackspace = .backwardCandidate
+        let dict = MemoryDict(entries: ["あu": [Word("会"), Word("合")]], readonly: true)
+        Global.dictionary = try UserDict(dicts: [dict],
+                                         privateMode: CurrentValueSubject<Bool, Never>(false),
+                                         ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
+                                         dateYomis: [],
+                                         dateConversions: [])
+        Global.dictionary.setEntries([:])
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(4).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerSelect, .emphasized("会う")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerSelect, .emphasized("合う")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerSelect, .emphasized("会う")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(backspaceAction))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     @MainActor func testHandleSelectingTab() {
         Global.dictionary.setEntries(["お": [Word("尾")]])
 

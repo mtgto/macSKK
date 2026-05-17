@@ -1332,6 +1332,9 @@ final class StateMachine {
                 // 変換候補の末尾を一字消して確定
                 fixCurrentSelect(dropLast: true)
                 return true
+            case .backwardCandidate:
+                // 前候補キーと同じ動き
+                return handleSelectingPrevious(diff: -1, selecting: selecting)
             }
         case .up:
             if case .vertical = Global.candidateListDirection.value {

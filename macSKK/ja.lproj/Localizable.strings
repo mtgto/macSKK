@@ -177,6 +177,7 @@
 "SelectingBackspaceCancel" = "一つ前の状態に戻す";
 "SelectingBackspaceDropLastInlineOnly" = "インライン時は一文字削除して確定";
 "SelectingBackspaceDropLastAlways" = "常に一文字削除して確定";
+"SelectingBackspaceBackwardCandidate" = "前候補に戻す";
 "Follow Romaji-Kana Rule" = "ローマ字かな変換ルールに従う";
 "EnterKey" = "\"%@\" を入力";
 "DuplicatedKeyBindingName" = "%@ のコピー";
