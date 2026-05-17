@@ -34,6 +34,8 @@ class InputController: IMKInputController {
     private var insertBlankString: Bool = false
     /// 1文字目を常に未確定扱いするワークアラウンドを適用するかどうか
     private var treatFirstCharacterAsMarkedText: Bool = false
+    /// 空のときには▽▼を表示するワークアラウンドを適用するかどうか
+    private var showMarkerWhenEmpty: Bool = false
 
     @MainActor override init!(server: IMKServer!, delegate: Any!, client inputClient: Any!) {
         super.init(server: server, delegate: delegate, client: inputClient)
@@ -67,12 +69,18 @@ class InputController: IMKInputController {
                     }
                     textInput.insertText(text, replacementRange: Self.notFoundRange)
                 case .markedText(let markedText):
-                    let attributedText = markedText.attributedString(Global.showMarkedTextMarker)
-                    let cursorRange: NSRange = markedText.cursorRange(Global.showMarkedTextMarker) ?? Self.notFoundRange
+                    let showMarker: Bool
+                    if showMarkerWhenEmpty && !Global.showMarkedTextMarker {
+                        showMarker = markedText.elements.compactMap(\.text).allSatisfy(\.isEmpty)
+                    } else {
+                        showMarker = Global.showMarkedTextMarker
+                    }
+                    let attributedText = markedText.attributedString(showMarker)
+                    let cursorRange: NSRange = markedText.cursorRange(showMarker) ?? Self.notFoundRange
                     // Thingsのメモ欄などで最初の一文字をShift押しながら入力すると "▽あ" が直接入力されてしまうことがあるのを回避するワークグラウンド
                     if case .markerCompose = markedText.elements.first, markedText.elements.count == 2,
                        case let .plain(text) = markedText.elements[1], text.count == 1 {
-                        textInput.setMarkedText(NSAttributedString(MarkedText([.markerCompose]).attributedString(Global.showMarkedTextMarker)),
+                        textInput.setMarkedText(NSAttributedString(MarkedText([.markerCompose]).attributedString(showMarker)),
                                                 selectionRange: cursorRange,
                                                 replacementRange: Self.notFoundRange)
                     }
@@ -158,6 +166,11 @@ class InputController: IMKInputController {
                 let enabled = bundleIdentifiers.contains(bundleIdentifier)
                 self.treatFirstCharacterAsMarkedText = enabled
                 self.stateMachine.enableMarkedTextWorkaround = enabled
+            }
+        }.store(in: &cancellables)
+        Global.showMarkerWhenEmptyBundleIdentifiers.sink { [weak self] bundleIdentifiers in
+            if let bundleIdentifier = self?.targetApp.bundleIdentifier {
+                self?.showMarkerWhenEmpty = bundleIdentifiers.contains(bundleIdentifier)
             }
         }.store(in: &cancellables)
         // 読みが更新されたときに補完候補の検索を行う処理
@@ -320,6 +333,9 @@ class InputController: IMKInputController {
             let treatFirstCharacterAsMarkedTextMenuItem = NSMenuItem(title: String(localized: "MenuItemTreadFirstCharacterAsMarkedText"), action: #selector(toggleTreatFirstCharacterAsMarkedText), keyEquivalent: "")
             treatFirstCharacterAsMarkedTextMenuItem.state = treatFirstCharacterAsMarkedText ? .on : .off
             preferenceMenu.addItem(treatFirstCharacterAsMarkedTextMenuItem)
+            let showMarkerWhenEmptyMenuItem = NSMenuItem(title: String(localized: "MenuItemShowMarkerWhenEmpty"), action: #selector(toggleShowMarkerWhenEmpty), keyEquivalent: "")
+            showMarkerWhenEmptyMenuItem.state = showMarkerWhenEmpty ? .on : .off
+            preferenceMenu.addItem(showMarkerWhenEmptyMenuItem)
         }
         let skkservMenuItem = NSMenuItem(
             title: String(localized: "MenuItemSKKServ", comment: "SKKServ"),
@@ -408,6 +424,13 @@ class InputController: IMKInputController {
     @objc func toggleTreatFirstCharacterAsMarkedText() {
         if let bundleIdentifier = targetApp.bundleIdentifier {
             NotificationCenter.default.post(name: notificationNameToggleTreatFirstCharacterAsMarkedText, object: bundleIdentifier)
+        }
+    }
+
+    /// 現在最前面にあるアプリで、ワークアラウンドの空のときには▽▼を表示するかの有効無効を切り替える
+    @objc func toggleShowMarkerWhenEmpty() {
+        if let bundleIdentifier = targetApp.bundleIdentifier {
+            NotificationCenter.default.post(name: notificationNameToggleShowMarkerWhenEmpty, object: bundleIdentifier)
         }
     }
 

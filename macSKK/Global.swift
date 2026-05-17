@@ -24,6 +24,8 @@ import Combine
     static let insertBlankStringBundleIdentifiers = CurrentValueSubject<[String], Never>([])
     /// 1文字目を常に未確定扱いするワークアラウンドを適用するBundle Identifierの集合
     static let treatFirstCharacterAsMarkedTextBundleIdentifiers = CurrentValueSubject<[String], Never>([])
+    /// 空のときには▽▼を表示するワークアラウンドを適用するBundle Identifierの集合
+    static let showMarkerWhenEmptyBundleIdentifiers = CurrentValueSubject<[String], Never>([])
     /// ユーザー辞書だけでなくすべての辞書から補完候補を検索するか？
     static var findCompletionFromAllDicts = false
     /// 現在のローマ字かな変換ルール
@@ -47,8 +49,8 @@ import Combine
     static var selectingBackspace: SelectingBackspace = .default
     /// カンマかピリオドを入力したときに入力する句読点の設定
     static var punctuation: Punctuation = .default
-    /// ▽と▼の表示
-    static var showMarkedTextMarker: ShowMarkedTextMarker = .always
+    /// ▽と▼を表示するか
+    static var showMarkedTextMarker: Bool = true
     /// 変換候補パネルの表示方向
     static var candidateListDirection = CurrentValueSubject<CandidateListDirection, Never>(.vertical)
     /// ピリオドで補完候補の最初の要素で確定するか
