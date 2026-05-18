@@ -24,6 +24,7 @@ final class StateMachineTests: XCTestCase {
         Global.keyBinding = KeyBindingSet.defaultKeyBindingSet
         Global.ignoreLeadingSpacesWhenRegistering = true
         Global.backToSelectingFromRegistering = false
+        Global.yomiCompletionByTabInRegistering = false
     }
 
     @MainActor func testHandleNormalSimple() {
@@ -3189,6 +3190,7 @@ final class StateMachineTests: XCTestCase {
 
     @MainActor func testHandleRegisteringTab() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        Global.yomiCompletionByTabInRegistering = true
         let expectation = XCTestExpectation()
         stateMachine.inputMethodEvent.collect(12).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
