@@ -314,9 +314,11 @@ final class StateMachine {
                 return false
             }
         case .tab:
-            if case .register(let registerState, _) = state.specialState, Global.yomiCompletionByTabInRegistering {
-                state.inputMethod = .composing(registerState.prev.composing)
-                updateMarkedText()
+            if case .register(let registerState, _) = state.specialState {
+                if Global.yomiCompletionByTabInRegistering, registerState.text.isEmpty {
+                    state.inputMethod = .composing(registerState.prev.composing)
+                    updateMarkedText()
+                }
                 return true
             }
             return false
