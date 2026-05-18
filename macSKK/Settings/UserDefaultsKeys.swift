@@ -78,4 +78,6 @@ struct UserDefaultsKeys {
     static let inputModePanel = "inputModePanel"
     // skkservへの接続エラーが何回連続したら自動無効化するか
     static let skkservAutoDisableThreshold = "skkservAutoDisableThreshold"
+    // 単語登録中にタブキーで読みを補完する
+    static let yomiCompletionByTabInRegistering = "yomiCompletionByTabInRegistering"
 }

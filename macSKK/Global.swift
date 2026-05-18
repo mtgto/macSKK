@@ -63,6 +63,8 @@ import Combine
     static var ignoreLeadingSpacesWhenRegistering = true
     /// 単語登録中に空文字列で前候補キーもしくはバックスペースキーで候補選択に戻るか
     static var backToSelectingFromRegistering = false
+    /// 辞書登録時にタブキーで読みの文字列を補完するか
+    static var yomiCompletionByTabInRegistering = false
     /// 現在のモードを表示するパネル
     private let inputModePanel: InputModePanel
     /// 変換候補を表示するパネル

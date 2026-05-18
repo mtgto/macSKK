@@ -95,6 +95,7 @@
 "Register fixed katakana word to dict" = "カタカナで確定した単語を辞書に登録する";
 "Ignore leading spaces when registering a word" = "単語登録中に先頭スペースを無視する";
 "Back to selecting candidates from empty word registration" = "単語登録中に前候補キーもしくはバックスペースキーで候補選択に戻る";
+"Complete yomi by Tab key in word registration" = "単語登録中にTabで読みを入力する";
 "Direction of candidate list" = "変換候補リストの表示方向";
 "Enter Key confirms a candidate and sends a newline" = "Enterキーで変換候補確定後に改行を入力";
 "Show Completion" = "補完候補を表示";
