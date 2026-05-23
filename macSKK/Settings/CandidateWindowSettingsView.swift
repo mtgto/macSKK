@@ -9,10 +9,10 @@ struct CandidateWindowSettingsView: View {
         Form {
             Section(header: Text("Candidates")) {
                 Picker("Font Name", selection: $settingsViewModel.candidatesFontFamily) {
-                    Text("System").tag("")
+                    Text("Default").tag("")
                     Divider()
-                    ForEach(settingsViewModel.availableFontFamilies, id: \.self) { fontFamily in
-                        Text(fontFamily)
+                    ForEach(settingsViewModel.availableFontFamilies) { fontFamily in
+                        Text(fontFamily.localizedName).tag(fontFamily.id)
                     }
                 }
                 .disabled(settingsViewModel.availableFontFamilies.isEmpty)
@@ -28,10 +28,10 @@ struct CandidateWindowSettingsView: View {
             }
             Section(header: Text("Annotation")) {
                 Picker("Font Name", selection: $settingsViewModel.annotationFontFamily) {
-                    Text("System").tag("")
+                    Text("Default").tag("")
                     Divider()
-                    ForEach(settingsViewModel.availableFontFamilies, id: \.self) { fontFamily in
-                        Text(fontFamily)
+                    ForEach(settingsViewModel.availableFontFamilies) { fontFamily in
+                        Text(fontFamily.localizedName).tag(fontFamily.id)
                     }
                 }
                 Picker("Annotation font size", selection: $settingsViewModel.annotationFontSize) {
