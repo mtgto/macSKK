@@ -54,6 +54,9 @@ struct GeneralView: View {
                 Toggle(isOn: $settingsViewModel.backToSelectingFromRegistering, label: {
                     Text("Back to selecting candidates from empty word registration")
                 })
+                Toggle(isOn: $settingsViewModel.yomiCompletionByTabInRegistering, label: {
+                    Text("Complete yomi by Tab key in word registration")
+                })
                 Toggle(isOn: $settingsViewModel.showInputIconModal, label: {
                     Text("Show Input Mode Modal")
                 })

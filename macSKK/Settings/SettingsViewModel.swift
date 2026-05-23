@@ -243,6 +243,8 @@ final class SettingsViewModel: ObservableObject {
     @Published var ignoreLeadingSpacesWhenRegistering: Bool
     /// 単語登録中に空文字列で前候補キーもしくはバックスペースキーで候補選択に戻るか
     @Published var backToSelectingFromRegistering: Bool
+    /// 辞書登録時にタブキーで読みの文字列を補完するか
+    @Published var yomiCompletionByTabInRegistering: Bool
     /// 利用可能なフォントファミリー名
     @Published var availableFontFamilies: [String] = []
     /// 利用可能なローマ字かな変換ルール
@@ -338,6 +340,7 @@ final class SettingsViewModel: ObservableObject {
         registerKatakana = UserDefaults.app.bool(forKey: UserDefaultsKeys.registerKatakana)
         ignoreLeadingSpacesWhenRegistering = UserDefaults.app.bool(forKey: UserDefaultsKeys.ignoreLeadingSpacesWhenRegistering)
         backToSelectingFromRegistering = UserDefaults.app.bool(forKey: UserDefaultsKeys.backToSelectingFromRegistering)
+        yomiCompletionByTabInRegistering = UserDefaults.app.bool(forKey: UserDefaultsKeys.yomiCompletionByTabInRegistering)
         selectingBackspace = SelectingBackspace(rawValue: UserDefaults.app.integer(forKey: UserDefaultsKeys.selectingBackspace)) ?? SelectingBackspace.default
         comma = Punctuation.Comma(rawValue: UserDefaults.app.integer(forKey: UserDefaultsKeys.punctuation)) ?? .default
         period = Punctuation.Period(rawValue: UserDefaults.app.integer(forKey: UserDefaultsKeys.punctuation)) ?? .default
@@ -396,6 +399,7 @@ final class SettingsViewModel: ObservableObject {
         Global.registerKatakana = registerKatakana
         Global.ignoreLeadingSpacesWhenRegistering = ignoreLeadingSpacesWhenRegistering
         Global.backToSelectingFromRegistering = backToSelectingFromRegistering
+        Global.yomiCompletionByTabInRegistering = yomiCompletionByTabInRegistering
         Global.inputModePanel.updateColorSets(inputModeColorSets)
         Global.showMarkedTextMarker = showMarkedTextMarker
 
@@ -830,6 +834,12 @@ final class SettingsViewModel: ObservableObject {
             Global.backToSelectingFromRegistering = backToSelectingFromRegistering
         }.store(in: &cancellables)
 
+        $yomiCompletionByTabInRegistering.dropFirst().sink { yomiCompletionByTabInRegistering in
+            UserDefaults.app.set(yomiCompletionByTabInRegistering, forKey: UserDefaultsKeys.yomiCompletionByTabInRegistering)
+            logger.log("辞書登録時にタブキーで読みを補完する設定を\(yomiCompletionByTabInRegistering ? "有効" : "無効", privacy: .public)に変更しました")
+            Global.yomiCompletionByTabInRegistering = yomiCompletionByTabInRegistering
+        }.store(in: &cancellables)
+
         $selectedKanaRule.dropFirst().sink { [weak self] selectedKanaRule in
             guard let self else { return }
             if selectedKanaRule.isEmpty {
@@ -909,6 +919,7 @@ final class SettingsViewModel: ObservableObject {
         registerKatakana = false
         ignoreLeadingSpacesWhenRegistering = true
         backToSelectingFromRegistering = false
+        yomiCompletionByTabInRegistering = false
         systemDict = .daijirin
         selectingBackspace = SelectingBackspace.default
         comma = Punctuation.default.comma

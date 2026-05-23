@@ -24,6 +24,7 @@ final class StateMachineTests: XCTestCase {
         Global.keyBinding = KeyBindingSet.defaultKeyBindingSet
         Global.ignoreLeadingSpacesWhenRegistering = true
         Global.backToSelectingFromRegistering = false
+        Global.yomiCompletionByTabInRegistering = false
     }
 
     @MainActor func testHandleNormalSimple() {
@@ -3184,6 +3185,45 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i", withShift: true)))
         XCTAssertTrue(stateMachine.handle(hiraganaAction))
         Pasteboard.stringForTest = nil
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    @MainActor func testHandleRegisteringTab() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        Global.yomiCompletionByTabInRegistering = true
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(14).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("あい")])))
+            XCTAssertEqual(events[2], .modeChanged(.hiragana))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.plain("[登録：あい]")])))
+            XCTAssertEqual(events[4], .markedText(MarkedText([.plain("[登録：あい]"), .plain("う")])))
+            XCTAssertEqual(events[5], .markedText(MarkedText([.plain("[登録：あい]")])))
+            // 単語登録で空文字列のときにTabキーを押すと単語登録までの読みが補完される
+            XCTAssertEqual(events[6], .markedText(MarkedText([.plain("[登録：あい]"), .markerCompose, .plain("あい")])))
+            XCTAssertEqual(events[7], .markedText(MarkedText([.plain("[登録：あい]"), .markerCompose, .plain("あ")])))
+            XCTAssertEqual(events[8], .markedText(MarkedText([.plain("[登録：あい]")])))
+            XCTAssertEqual(events[9], .markedText(MarkedText([.markerCompose, .plain("あい")])))
+            XCTAssertEqual(events[10], .markedText(MarkedText([.markerCompose, .plain("あい*k")])))
+            XCTAssertEqual(events[11], .modeChanged(.hiragana))
+            XCTAssertEqual(events[12], .markedText(MarkedText([.plain("[登録：あい*く]")])))
+            XCTAssertEqual(events[13], .markedText(MarkedText([.plain("[登録：あい*く]"), .markerCompose, .plain("あい*く")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u")))
+        XCTAssertTrue(stateMachine.handle(tabAction)) // 単語登録モードで文字が入力されているので補完されない
+        XCTAssertTrue(stateMachine.handle(backspaceAction))
+        XCTAssertTrue(stateMachine.handle(tabAction)) // 単語登録モードで文字が入力されていないので補完される
+        XCTAssertTrue(stateMachine.handle(tabAction)) // 補完済みなら何も起きない
+        XCTAssertTrue(stateMachine.handle(backspaceAction))
+        XCTAssertTrue(stateMachine.handle(cancelAction))
+        XCTAssertTrue(stateMachine.handle(cancelAction))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "k", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u")))
+        XCTAssertTrue(stateMachine.handle(tabAction))
         wait(for: [expectation], timeout: 1.0)
     }
 
