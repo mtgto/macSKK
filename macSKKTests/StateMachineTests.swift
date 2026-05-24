@@ -2415,6 +2415,45 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    @MainActor func testHandleComposingSelectCompletionByKey() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(5).sink { events in
+            // "a" → ▽あ
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
+            // "1" → completionSetAt が 0.3 秒以内のため読みとして入力
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("あ1")])))
+            // ESC → ▽あ1 を破棄
+            XCTAssertEqual(events[2], .markedText(MarkedText([])))
+            // shift+a → ▽あ
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("あ")])))
+            // "1" → completionSetAt が 0.3 秒以上前のため補完候補 "朝" で確定
+            XCTAssertEqual(events[4], .fixedText("朝"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+
+        let candidates: Completion = .candidates([
+            Candidate("朝", original: Candidate.Original(midashi: "あさ", word: "朝")),
+            Candidate("麻", original: Candidate.Original(midashi: "あさ", word: "麻")),
+        ])
+
+        // 表示から規定時間以内に数字キーを押すと読みとして入力される
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        stateMachine.completion = candidates
+        stateMachine.completionSetAt = Date()
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "1")))
+        XCTAssertTrue(stateMachine.handle(cancelAction))
+
+        // completionSetAt が 規定時間以上前なら補完候補で確定する
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        stateMachine.completion = candidates
+        stateMachine.completionSetAt = Date(timeIntervalSinceNow: -(stateMachine.completionConfirmationTimeLimit + 0.1))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "1")))
+        XCTAssertEqual(Global.dictionary.refer("あさ"), [Word("朝")])
+
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     @MainActor func testHandleComposingPeriod() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         Global.fixedCompletionByPeriod = true
