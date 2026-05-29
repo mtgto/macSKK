@@ -154,6 +154,10 @@ enum CandidateListDirection: Int, CaseIterable, Identifiable {
     }
 }
 
+struct FontFamily: Identifiable {
+    let id: String
+    let localizedName: String
+}
 
 @MainActor
 final class SettingsViewModel: ObservableObject {
@@ -186,13 +190,13 @@ final class SettingsViewModel: ObservableObject {
     /// 変換候補のフォントサイズ
     @Published var candidatesFontSize: Int
     /// 変換候補のフォントファミリー名。空文字列のときはSystem Font
-    @Published var candidatesFontFamily: String
+    @Published var candidatesFontFamily: FontFamily.ID
     /// 変換候補の背景色をカスタマイズするか
     @Published var overridesCandidatesBackgroundColor: Bool
     /// 変換候補の背景色
     @Published var candidatesBackgroundColor: Color
     // 注釈候補のフォントファミリー名。空文字列のときはSystem Font
-    @Published var annotationFontFamily: String
+    @Published var annotationFontFamily: FontFamily.ID
     /// 注釈のフォントサイズ
     @Published var annotationFontSize: Int
     /// 注釈の背景色をカスタマイズするか
@@ -245,8 +249,8 @@ final class SettingsViewModel: ObservableObject {
     @Published var backToSelectingFromRegistering: Bool
     /// 辞書登録時にタブキーで読みの文字列を補完するか
     @Published var yomiCompletionByTabInRegistering: Bool
-    /// 利用可能なフォントファミリー名
-    @Published var availableFontFamilies: [String] = []
+    /// 利用可能なフォントファミリー
+    @Published var availableFontFamilies: [FontFamily] = []
     /// 利用可能なローマ字かな変換ルール
     @Published var kanaRules: [Romaji] = []
     /// 選択中のローマ字かな変換ルール。空文字列のときはデフォルト
@@ -380,7 +384,10 @@ final class SettingsViewModel: ObservableObject {
         // 利用可能なフォント名をバックグラウンドスレッドで取得
         Task(priority: .background) {
             logger.log("利用可能なフォントを読み込みます")
-            availableFontFamilies = NSFontManager.shared.availableFontFamilies
+            let manager = NSFontManager.shared
+            availableFontFamilies = manager.availableFontFamilies.map { familyName in
+                FontFamily(id: familyName, localizedName: manager.localizedName(forFamily: familyName, face: nil))
+            }
             logger.log("利用可能なフォントを\(self.availableFontFamilies.count)種類読み込みました")
         }
 
