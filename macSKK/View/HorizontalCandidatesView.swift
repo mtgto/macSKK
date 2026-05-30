@@ -35,14 +35,13 @@ struct HorizontalCandidatesView: View {
                 ForEach(Array(words.enumerated()), id: \.element) { index, candidate in
                     HStack(alignment: .firstTextBaseline, spacing: 0) {
                         Text(String(Global.selectCandidateKeys[index]).uppercased())
-                            // 変換候補の90%のフォントサイズ
-                            .font(.system(size: candidates.candidatesFontSize * 0.9))
+                            .font(candidates.candidatesMarkerFont)
                             // 目立たないようにする
                             .foregroundStyle(candidates.selected == candidate ? Color(NSColor.selectedMenuItemTextColor.withAlphaComponent(0.8)) : Color(NSColor.secondaryLabelColor))
                             .frame(width: 16, alignment: .trailing)
                             .padding(.trailing, 4)
                         Text(candidate.word)
-                            .font(.system(size: candidates.candidatesFontSize))
+                            .font(candidates.candidatesFont)
                             .foregroundStyle(candidates.selected == candidate ? Color(NSColor.selectedMenuItemTextColor) : Color(NSColor.textColor))
                             .fixedSize(horizontal: true, vertical: false)
                             .padding(.trailing, 8)
