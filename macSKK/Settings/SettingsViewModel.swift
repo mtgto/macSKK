@@ -637,8 +637,6 @@ final class SettingsViewModel: ObservableObject {
 
         $overridesCandidatesBackgroundColor.dropFirst().sink { overridesCandidatesBackgroundColor in
             UserDefaults.app.set(overridesCandidatesBackgroundColor, forKey: UserDefaultsKeys.overridesCandidatesBackgroundColor)
-            Global.candidatesPanel.viewModel.candidatesBackgroundColor = nil
-            Global.completionPanel.viewModel.candidatesViewModel.candidatesBackgroundColor = nil
             logger.log("変換候補の背景色を上書きするかの設定を\(overridesCandidatesBackgroundColor ? "有効" : "無効", privacy: .public)にしました")
         }.store(in: &cancellables)
 
@@ -647,8 +645,6 @@ final class SettingsViewModel: ObservableObject {
                 UserDefaults.app.set(serialized, forKey: UserDefaultsKeys.candidatesBackgroundColor)
                 logger.log("変換候補の背景色を\(serialized, privacy: .public)に変更しました")
             }
-            Global.candidatesPanel.viewModel.candidatesBackgroundColor = candidatesBackgroundColor
-            Global.completionPanel.viewModel.candidatesViewModel.candidatesBackgroundColor = candidatesBackgroundColor
         }.store(in: &cancellables)
 
         $overridesCandidatesBackgroundColor.combineLatest($candidatesBackgroundColor).sink { (overridesCandidatesBackgroundColor, candidatesBackgroundColor) in
@@ -690,8 +686,6 @@ final class SettingsViewModel: ObservableObject {
 
         $overridesAnnotationBackgroundColor.dropFirst().sink { overridesAnnotationBackgroundColor in
             UserDefaults.app.set(overridesAnnotationBackgroundColor, forKey: UserDefaultsKeys.overridesAnnotationBackgroundColor)
-            Global.candidatesPanel.viewModel.annotationBackgroundColor = nil
-            Global.completionPanel.viewModel.candidatesViewModel.annotationBackgroundColor = nil
             logger.log("注釈の背景色を上書きするかの設定を\(overridesAnnotationBackgroundColor ? "有効" : "無効", privacy: .public)にしました")
         }.store(in: &cancellables)
 
@@ -700,8 +694,6 @@ final class SettingsViewModel: ObservableObject {
                 UserDefaults.app.set(serialized, forKey: UserDefaultsKeys.annotationBackgroundColor)
                 logger.log("注釈の背景色を\(serialized, privacy: .public)に変更しました")
             }
-            Global.candidatesPanel.viewModel.annotationBackgroundColor = annotationBackgroundColor
-            Global.completionPanel.viewModel.candidatesViewModel.annotationBackgroundColor = annotationBackgroundColor
         }.store(in: &cancellables)
 
         $overridesAnnotationBackgroundColor.combineLatest($annotationBackgroundColor).sink { (overridesAnnotationBackgroundColor, annotationBackgroundColor) in
