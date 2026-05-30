@@ -43,7 +43,14 @@ final class StateMachine {
     let yomiEvent: AnyPublisher<YomiEvent, Never>
     private let yomiEventSubject = PassthroughSubject<YomiEvent, Never>()
     /// 読みの一部と補完結果(読み)のペア
-    var completion: Completion? = nil
+    var completion: Completion? = nil {
+        didSet {
+            completionSetAt = completion == nil ? nil : Date()
+        }
+    }
+    /// completionがセットされた日時。一定時間経過後に確定キーが押されたら確定とみなすために使用する
+    var completionSetAt: Date? = nil
+    let completionConfirmationTimeLimit: TimeInterval = 0.5
 
     // TODO: displayCandidateCountを環境設定にするかも
     /// 変換候補パネルを表示するまで表示する変換候補の数
@@ -582,10 +589,24 @@ final class StateMachine {
         if action.keyBind == nil && (event.modifierFlags.contains(.control) || event.modifierFlags.contains(.command)) {
             return true
         } else if let input, !event.modifierFlags.contains(.control) {
-            // 補完候補が変換候補であり、fixedCompletionByPeriodが有効で、ピリオドキーが入力された場合先頭の補完候補で確定する
-            if input == "." && !event.modifierFlags.contains(.shift) && Global.fixedCompletionByPeriod {
-                if case .candidates(let candidates) = completion, let candidate = candidates.first, let original = candidate.original {
+            if case .candidates(let candidateWords) = completion, let candidate = candidateWords.first, let original = candidate.original {
+                // 補完候補が変換候補であり、fixedCompletionByPeriodが有効で、ピリオドキーが入力された場合先頭の補完候補で確定する
+                if input == "." && !event.modifierFlags.contains(.shift) && Global.fixedCompletionByPeriod {
                     addWordToUserDict(yomi: original.midashi,  okuri: nil, candidate: candidate)
+                    state.inputMethod = .normal
+                    addFixedText(candidate.word)
+                    return true
+                }
+                // 補完候補が表示されてから一定時間経過後に確定キーが押された場合は補完候補で確定する
+                if let displayedAt = completionSetAt,
+                   displayedAt.timeIntervalSinceNow <= -completionConfirmationTimeLimit,
+                   let first = input.lowercased().first,
+                   let index = Global.selectCandidateKeys.firstIndex(of: first), index < candidateWords.count {
+                    let candidate = candidateWords[index]
+                    if let original = candidate.original {
+                        addWordToUserDict(yomi: original.midashi, okuri: nil, candidate: candidate)
+                    }
+                    completion = nil
                     state.inputMethod = .normal
                     addFixedText(candidate.word)
                     return true
