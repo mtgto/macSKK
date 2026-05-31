@@ -52,11 +52,8 @@ final class StateMachine {
     var completionSetAt: Date? = nil
     let completionConfirmationTimeLimit: TimeInterval = 0.5
 
-    // TODO: displayCandidateCountを環境設定にするかも
     /// 変換候補パネルを表示するまで表示する変換候補の数
     var inlineCandidateCount: Int
-    /// 変換候補パネルに一度に表示する変換候補の数
-    let displayCandidateCount = 9
     /// 1文字で確定するローマ字やq/lなどのモード変更などで未確定文字列を一度表示するワークグラウンドが有効かどうか
     /// xterm.jsを利用しているVSCodeのターミナルやHyperなどaiueoで直接入力されてしまう環境向け
     var enableMarkedTextWorkaround: Bool
@@ -1340,7 +1337,7 @@ final class StateMachine {
                 if selecting.candidateIndex >= inlineCandidateCount {
                     // 前ページの先頭
                     diff =
-                        -((selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount) - displayCandidateCount
+                        -((selecting.candidateIndex - inlineCandidateCount) % Global.displayCandidateCount) - Global.displayCandidateCount
                 } else {
                     diff = -1
                 }
@@ -1349,7 +1346,7 @@ final class StateMachine {
                 if selecting.candidateIndex >= inlineCandidateCount {
                     // 前ページの先頭
                     let diff =
-                        -((selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount) - displayCandidateCount
+                        -((selecting.candidateIndex - inlineCandidateCount) % Global.displayCandidateCount) - Global.displayCandidateCount
                     return handleSelectingPrevious(diff: diff, selecting: selecting)
                 } else {
                     // インライン選択中は変換候補の末尾を一字消して確定
@@ -1420,7 +1417,7 @@ final class StateMachine {
             }
         case .startOfLine:
             // 現ページの先頭
-            let diff = -(selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount
+            let diff = -(selecting.candidateIndex - inlineCandidateCount) % Global.displayCandidateCount
             if diff < 0 {
                 let newSelectingState = selecting.addCandidateIndex(diff: diff)
                 state.inputMethod = .selecting(newSelectingState)
@@ -1431,7 +1428,7 @@ final class StateMachine {
         case .endOfLine:
             // 現ページの末尾
             let diff = min(
-                displayCandidateCount - (selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount,
+                Global.displayCandidateCount - (selecting.candidateIndex - inlineCandidateCount) % Global.displayCandidateCount,
                 selecting.candidates.count - selecting.candidateIndex - 1
             )
             if diff > 0 {
@@ -1479,8 +1476,8 @@ final class StateMachine {
 
         if let input = action.event.charactersIgnoringModifiers {
             if selecting.candidateIndex >= inlineCandidateCount {
-                if let first = input.lowercased().first, let index = Global.selectCandidateKeys.firstIndex(of: first), index < displayCandidateCount {
-                    let diff = index - (selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount
+                if let first = input.lowercased().first, let index = Global.selectCandidateKeys.firstIndex(of: first), index < Global.displayCandidateCount {
+                    let diff = index - (selecting.candidateIndex - inlineCandidateCount) % Global.displayCandidateCount
                     if selecting.candidateIndex + diff < selecting.candidates.count {
                         let newSelecting = selecting.addCandidateIndex(diff: diff)
                         fixCurrentSelect(selecting: newSelecting)
@@ -1562,7 +1559,7 @@ final class StateMachine {
     @MainActor private func handleSelectingPreviousPage(selecting: SelectingState) -> Bool {
         if selecting.candidateIndex >= inlineCandidateCount {
             // 前ページの先頭
-            let diff = -((selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount) - displayCandidateCount
+            let diff = -((selecting.candidateIndex - inlineCandidateCount) % Global.displayCandidateCount) - Global.displayCandidateCount
             return handleSelectingPrevious(diff: diff, selecting: selecting)
         } else {
             return handleSelectingPrevious(diff: -1, selecting: selecting)
@@ -1575,7 +1572,7 @@ final class StateMachine {
      */
     @MainActor private func handleSelectingNextPage(_ action: Action, selecting: SelectingState, specialState: SpecialState?) -> Bool {
         if selecting.candidateIndex >= inlineCandidateCount {
-            let diff = displayCandidateCount - (selecting.candidateIndex - inlineCandidateCount) % displayCandidateCount
+            let diff = Global.displayCandidateCount - (selecting.candidateIndex - inlineCandidateCount) % Global.displayCandidateCount
             return handleSelectingNext(action, diff: diff, selecting: selecting, specialState: specialState)
         } else {
             return handleSelectingNext(action, diff: 1, selecting: selecting, specialState: specialState)
@@ -1675,10 +1672,10 @@ final class StateMachine {
                                selected: selecting.candidates[selecting.candidateIndex]))
             } else {
                 var start = selecting.candidateIndex - inlineCandidateCount
-                let currentPage = start / displayCandidateCount
-                let totalPageCount = (selecting.candidates.count - inlineCandidateCount - 1) / displayCandidateCount + 1
-                start = start - start % displayCandidateCount + inlineCandidateCount
-                let candidates = selecting.candidates[start..<min(start + displayCandidateCount, selecting.candidates.count)]
+                let currentPage = start / Global.displayCandidateCount
+                let totalPageCount = (selecting.candidates.count - inlineCandidateCount - 1) / Global.displayCandidateCount + 1
+                start = start - start % Global.displayCandidateCount + inlineCandidateCount
+                let candidates = selecting.candidates[start..<min(start + Global.displayCandidateCount, selecting.candidates.count)]
                 candidateEventSubject.send(
                     Candidates(page: Candidates.Page(words: Array(candidates), current: currentPage, total: totalPageCount),
                                selected: selecting.candidates[selecting.candidateIndex]))
