@@ -190,6 +190,22 @@ class MemoryDictTests: XCTestCase {
         XCTAssertEqual(dict.okuriAriYomis, [])
     }
 
+    @MainActor func testDeleteExactCandidate() throws {
+        var dict = MemoryDict(entries: ["あr": [Word("有", okuri: "る"), Word("有", okuri: "り"), Word("有")]], readonly: false)
+        XCTAssertTrue(dict.delete(yomi: "あr", word: Word("有", okuri: "る")))
+        XCTAssertEqual(dict.refer("あr", option: nil), [Word("有", okuri: "り"), Word("有")])
+        XCTAssertEqual(dict.okuriAriYomis, ["あr"])
+        XCTAssertFalse(dict.delete(yomi: "あr", word: Word("有", okuri: "る")), "削除済")
+
+        XCTAssertTrue(dict.delete(yomi: "あr", word: Word("有")))
+        XCTAssertEqual(dict.refer("あr", option: nil), [Word("有", okuri: "り")])
+        XCTAssertEqual(dict.okuriAriYomis, ["あr"])
+
+        XCTAssertTrue(dict.delete(yomi: "あr", word: Word("有", okuri: "り")))
+        XCTAssertEqual(dict.refer("あr", option: nil), [])
+        XCTAssertEqual(dict.okuriAriYomis, [])
+    }
+
     @MainActor func testFindCompletions() {
         var dict = MemoryDict(entries: [:], readonly: false)
         XCTAssertEqual(dict.findCompletions(prefix: ""), [], "辞書が空だと空")

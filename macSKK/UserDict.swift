@@ -8,6 +8,16 @@ import Foundation
 /// v0.22.0以降はskkservサーバーを辞書としても利用することが可能。
 ///
 /// TODO: ファイル辞書にしかない単語を削除しようとしたときにどうやってそれを記録するか。NG登録?
+struct RecentRegisteredEntry: Hashable, Identifiable {
+    var id: Self { self }
+    let yomi: String
+    let word: Word
+
+    var menuTitle: String {
+        String(format: String(localized: "MenuItemDeleteRecentRegisteredEntry"), Entry(yomi: yomi, candidates: [word]).serialize())
+    }
+}
+
 @MainActor class UserDict: NSObject, DictProtocol {
     nonisolated static let userDictFilename = "skk-jisyo.utf8"
     nonisolated static let ignoredPathExtensions = ["tmp", "bak"]
@@ -32,6 +42,8 @@ import Foundation
     private let ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>
     private var cancellables: Set<AnyCancellable> = []
     let saveToUserDict = true
+    private(set) var recentRegisteredEntries: [RecentRegisteredEntry] = []
+    private let maxRecentRegisteredEntryCount = 3
 
     // MARK: NSFilePresenter
     nonisolated let presentedItemURL: URL?
@@ -293,6 +305,7 @@ import Foundation
         if !privateMode.value {
             if let dict = userDict as? FileDict {
                 dict.add(yomi: yomi, word: word)
+                addRecentRegisteredEntry(yomi: yomi, word: word)
                 savePublisher.send(())
             }
         }
@@ -320,9 +333,32 @@ import Foundation
             return true
         } else if let dict = userDict as? FileDict {
             if dict.delete(yomi: yomi, word: word) {
+                logger.log("ユーザー辞書からエントリ \(Entry(yomi: yomi, candidates: [Word(word)]).serialize(), privacy: .public) を削除しました")
                 savePublisher.send(())
                 return true
             }
+        }
+        return false
+    }
+
+    /** 変換文字列だけでなく okuri も一致する候補だけを削除する。 */
+    @MainActor func delete(yomi: String, word: Word) -> Bool {
+        if privateMode.value {
+            return true
+        } else if let dict = userDict as? FileDict {
+            if dict.delete(yomi: yomi, word: word) {
+                logger.log("ユーザー辞書からエントリ \(Entry(yomi: yomi, candidates: [word]).serialize(), privacy: .public) を削除しました")
+                savePublisher.send(())
+                return true
+            }
+        }
+        return false
+    }
+
+    @MainActor func deleteRecentRegisteredEntry(_ entry: RecentRegisteredEntry) -> Bool {
+        if delete(yomi: entry.yomi, word: entry.word) {
+            removeRecentRegisteredEntry(entry)
+            return true
         }
         return false
     }
@@ -424,6 +460,19 @@ import Foundation
         } else {
             return false
         }
+    }
+
+    private func addRecentRegisteredEntry(yomi: String, word: Word) {
+        let entry = RecentRegisteredEntry(yomi: yomi, word: word)
+        recentRegisteredEntries.removeAll { $0 == entry }
+        recentRegisteredEntries.insert(entry, at: 0)
+        if recentRegisteredEntries.count > maxRecentRegisteredEntryCount {
+            recentRegisteredEntries.removeLast(recentRegisteredEntries.count - maxRecentRegisteredEntryCount)
+        }
+    }
+
+    private func removeRecentRegisteredEntry(_ entry: RecentRegisteredEntry) {
+        recentRegisteredEntries.removeAll { $0 == entry }
     }
 
     private func wordToCandidate(_ word: Word, original: Candidate.Original?, saveToUserDict: Bool) -> Candidate {

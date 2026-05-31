@@ -181,6 +181,8 @@
 "Follow Romaji-Kana Rule" = "Follow Romaji-Kana Rule";
 "EnterKey" = "Enter \"%@\"";
 "DuplicatedKeyBindingName" = "Copy of %@";
+"MenuItemCancelRecentRegisteredEntry" = "Cancel Recent Dictionary Registrations";
+"MenuItemDeleteRecentRegisteredEntry" = "Delete %@";
 
 "LocaleJa_Jp" = "Japan";
 "LocaleEn_Us" = "US";

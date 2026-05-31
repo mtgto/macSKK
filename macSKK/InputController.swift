@@ -315,6 +315,31 @@ class InputController: IMKInputController {
                 withTitle: String(localized: "MenuItemSaveDict", comment: "Save User Dictionary"),
                 action: #selector(saveDict), keyEquivalent: "")
         }
+        if !Global.privateMode.value && !Global.dictionary.recentRegisteredEntries.isEmpty {
+            preferenceMenu.addItem(.separator())
+            let recentRegisteredEntriesHeaderItem = NSMenuItem(title: String(localized: "MenuItemCancelRecentRegisteredEntry"),
+                                                               action: nil,
+                                                               keyEquivalent: "")
+            recentRegisteredEntriesHeaderItem.isEnabled = false
+            preferenceMenu.addItem(recentRegisteredEntriesHeaderItem)
+            for (index, entry) in Global.dictionary.recentRegisteredEntries.enumerated() {
+                // item.tagを使ってindexを指定するやり方ではactionが呼ばれないため、
+                // 引数なしselectorにし、indexごとにメソッドを分ける。
+                let action: Selector = switch index {
+                case 0:
+                    #selector(deleteRecentRegisteredEntry0)
+                case 1:
+                    #selector(deleteRecentRegisteredEntry1)
+                default:
+                    #selector(deleteRecentRegisteredEntry2)
+                }
+                let item = NSMenuItem(title: entry.menuTitle,
+                                      action: action,
+                                      keyEquivalent: "")
+                preferenceMenu.addItem(item)
+            }
+            preferenceMenu.addItem(.separator())
+        }
         let privateModeItem = NSMenuItem(title: String(localized: "MenuItemPrivateMode", comment: "Private mode"),
                                          action: #selector(togglePrivateMode),
                                          keyEquivalent: "")
@@ -400,6 +425,29 @@ class InputController: IMKInputController {
 
     @objc func saveDict() {
         Global.dictionary.save()
+    }
+
+    @objc func deleteRecentRegisteredEntry0() {
+        deleteRecentRegisteredEntry(at: 0)
+    }
+
+    @objc func deleteRecentRegisteredEntry1() {
+        deleteRecentRegisteredEntry(at: 1)
+    }
+
+    @objc func deleteRecentRegisteredEntry2() {
+        deleteRecentRegisteredEntry(at: 2)
+    }
+
+    private func deleteRecentRegisteredEntry(at index: Int) {
+        guard index < Global.dictionary.recentRegisteredEntries.count else {
+            logger.error("直近登録エントリの削除メニューが選択されましたが、削除対象のindex \(index) が範囲外です")
+            return
+        }
+        let entry = Global.dictionary.recentRegisteredEntries[index]
+        if !Global.dictionary.deleteRecentRegisteredEntry(entry) {
+            logger.error("直近登録エントリ \(entry.yomi, privacy: .public) \(entry.word.word, privacy: .public) を削除できませんでした")
+        }
     }
 
     @objc func togglePrivateMode() {

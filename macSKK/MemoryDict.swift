@@ -220,6 +220,33 @@ struct MemoryDict: DictProtocol, Sendable {
         return false
     }
 
+    /// 辞書から指定された変換候補だけを削除する。
+    ///
+    /// 送り仮名ブロックつきの同じ変換候補がある場合も、okuri が一致する候補だけを削除する。
+    @MainActor mutating func delete(yomi: String, word: Word) -> Bool {
+        if let words = entries[yomi] {
+            let filtered = words.filter { $0.word != word.word || $0.okuri != word.okuri }
+            if words.count != filtered.count {
+                if filtered.isEmpty {
+                    entries.removeValue(forKey: yomi)
+                    if yomi.isOkuriAri {
+                        if let index = okuriAriYomis.firstIndex(of: yomi) {
+                            okuriAriYomis.remove(at: index)
+                        }
+                    } else {
+                        if let index = okuriNashiYomis.firstIndex(of: yomi) {
+                            okuriNashiYomis.remove(at: index)
+                        }
+                    }
+                } else {
+                    entries[yomi] = filtered
+                }
+                return true
+            }
+        }
+        return false
+    }
+
     /**
      * 現在入力中のprefixに続く入力候補を返す。見つからなければ空配列を返す。
      *
