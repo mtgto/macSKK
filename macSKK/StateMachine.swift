@@ -1599,7 +1599,7 @@ final class StateMachine {
     ///     - 空文字列で確定する
     ///   - 状態がUnregister (ユーザー辞書から削除するか質問中)
     ///     - 空文字列で確定する
-    func commitComposition() {
+    @MainActor func commitComposition() {
         if state.specialState != nil {
             state.inputMethod = .normal
             state.specialState = nil
@@ -1664,7 +1664,7 @@ final class StateMachine {
     }
 
     /// 現在の変換候補選択状態をcandidateEventSubject.sendする
-    private func updateCandidates(selecting: SelectingState?) {
+    @MainActor private func updateCandidates(selecting: SelectingState?) {
         if let selecting {
             if selecting.candidateIndex < inlineCandidateCount {
                 candidateEventSubject.send(

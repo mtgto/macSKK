@@ -23,6 +23,11 @@ struct GeneralView: View {
                         Text(listDirection.description).tag(listDirection)
                     }
                 }
+                Picker("Number of candidates in panel", selection: $settingsViewModel.displayCandidateCount) {
+                    ForEach(1..<10) { count in
+                        Text("\(count)").tag(count)
+                    }
+                }
                 Toggle(isOn: $settingsViewModel.showAnnotation, label: {
                     Text("Show Annotation")
                 })
