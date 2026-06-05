@@ -323,19 +323,10 @@ class InputController: IMKInputController {
             recentRegisteredEntriesHeaderItem.isEnabled = false
             preferenceMenu.addItem(recentRegisteredEntriesHeaderItem)
             for (index, entry) in Global.dictionary.recentRegisteredEntries.enumerated() {
-                // item.tagを使ってindexを指定するやり方ではactionが呼ばれないため、
-                // 引数なしselectorにし、indexごとにメソッドを分ける。
-                let action: Selector = switch index {
-                case 0:
-                    #selector(deleteRecentRegisteredEntry0)
-                case 1:
-                    #selector(deleteRecentRegisteredEntry1)
-                default:
-                    #selector(deleteRecentRegisteredEntry2)
-                }
                 let item = NSMenuItem(title: entry.menuTitle,
-                                      action: action,
+                                      action: #selector(deleteRecentRegisteredEntry),
                                       keyEquivalent: "")
+                item.tag = index
                 preferenceMenu.addItem(item)
             }
             preferenceMenu.addItem(.separator())
@@ -427,26 +418,20 @@ class InputController: IMKInputController {
         Global.dictionary.save()
     }
 
-    @objc func deleteRecentRegisteredEntry0() {
-        deleteRecentRegisteredEntry(at: 0)
-    }
+    @objc func deleteRecentRegisteredEntry(_ sender: Any?) {
+        // IMKInputControllerでNSMenuItemにアクセスするにはkIMKCommandMenuItemNameを使う必要がある
+        if let sender = sender as? [String: Any],
+           let menuItem = sender[kIMKCommandMenuItemName] as? NSMenuItem {
+            let index = menuItem.tag
+            guard index < Global.dictionary.recentRegisteredEntries.count else {
+                logger.error("直近登録エントリの削除メニューが選択されましたが、削除対象のindex \(index) が範囲外です")
+                return
+            }
 
-    @objc func deleteRecentRegisteredEntry1() {
-        deleteRecentRegisteredEntry(at: 1)
-    }
-
-    @objc func deleteRecentRegisteredEntry2() {
-        deleteRecentRegisteredEntry(at: 2)
-    }
-
-    private func deleteRecentRegisteredEntry(at index: Int) {
-        guard index < Global.dictionary.recentRegisteredEntries.count else {
-            logger.error("直近登録エントリの削除メニューが選択されましたが、削除対象のindex \(index) が範囲外です")
-            return
-        }
-        let entry = Global.dictionary.recentRegisteredEntries[index]
-        if !Global.dictionary.deleteRecentRegisteredEntry(entry) {
-            logger.error("直近登録エントリ \(entry.yomi, privacy: .public) \(entry.word.word, privacy: .public) を削除できませんでした")
+            let entry = Global.dictionary.recentRegisteredEntries[index]
+            if !Global.dictionary.deleteRecentRegisteredEntry(entry) {
+                logger.error("直近登録エントリ \(entry.yomi, privacy: .public) \(entry.word.word, privacy: .public) を削除できませんでした")
+            }
         }
     }
 

@@ -6,6 +6,8 @@
 "MenuItemTreadFirstCharacterAsMarkedText" = "1文字目を未確定扱い (互換性)";
 "MenuItemShowMarkerWhenEmpty" = "空のときには▽▼を表示 (互換性)";
 "MenuItemSKKServ" = "SKKServを利用する";
+"MenuItemCancelRecentRegisteredEntry" = "直近の辞書登録をキャンセルする";
+"MenuItemDeleteRecentRegisteredEntry" = "%@ を削除する";
 "SettingsNameGeneral" = "一般";
 "SettingsNameDictionaries" = "辞書";
 "SettingsNameCandidateWindow" = "変換候補パネル";
@@ -181,8 +183,6 @@
 "Follow Romaji-Kana Rule" = "ローマ字かな変換ルールに従う";
 "EnterKey" = "\"%@\" を入力";
 "DuplicatedKeyBindingName" = "%@ のコピー";
-"MenuItemCancelRecentRegisteredEntry" = "直近の辞書登録をキャンセルする";
-"MenuItemDeleteRecentRegisteredEntry" = "%@ を削除する";
 
 "LocaleJa_Jp" = "日本";
 "LocaleEn_Us" = "アメリカ合衆国";

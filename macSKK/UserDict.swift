@@ -4,10 +4,6 @@
 import Combine
 import Foundation
 
-/// ユーザー辞書。マイ辞書 (単語登録対象。ファイル名固定) とファイル辞書 をまとめて参照することができる。
-/// v0.22.0以降はskkservサーバーを辞書としても利用することが可能。
-///
-/// TODO: ファイル辞書にしかない単語を削除しようとしたときにどうやってそれを記録するか。NG登録?
 struct RecentRegisteredEntry: Hashable, Identifiable {
     var id: Self { self }
     let yomi: String
@@ -18,6 +14,10 @@ struct RecentRegisteredEntry: Hashable, Identifiable {
     }
 }
 
+/// ユーザー辞書。マイ辞書 (単語登録対象。ファイル名固定) とファイル辞書 をまとめて参照することができる。
+/// v0.22.0以降はskkservサーバーを辞書としても利用することが可能。
+///
+/// TODO: ファイル辞書にしかない単語を削除しようとしたときにどうやってそれを記録するか。NG登録?
 @MainActor class UserDict: NSObject, DictProtocol {
     nonisolated static let userDictFilename = "skk-jisyo.utf8"
     nonisolated static let ignoredPathExtensions = ["tmp", "bak"]
