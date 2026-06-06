@@ -4248,6 +4248,18 @@ final class StateMachineTests: XCTestCase {
         XCTAssertEqual(Global.dictionary.refer("いt"), [Word("言", okuri: "った", annotation: nil)])
     }
 
+    @MainActor func testAddWordToUserDictRecentRegisteredEntry() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let recentRegisteredEntryCount = Global.dictionary.recentRegisteredEntries.count
+
+        stateMachine.addWordToUserDict(yomi: "あ", okuri: nil, candidate: Candidate("亜"))
+        XCTAssertEqual(Global.dictionary.recentRegisteredEntries.count, recentRegisteredEntryCount)
+
+        stateMachine.addWordToUserDict(yomi: "い", okuri: nil, candidate: Candidate("伊"), source: .registering)
+        XCTAssertEqual(Global.dictionary.recentRegisteredEntries.count, recentRegisteredEntryCount + 1)
+        XCTAssertEqual(Global.dictionary.recentRegisteredEntries.first, RecentRegisteredEntry(yomi: "い", word: Word("伊")))
+    }
+
     // Ctrl-jを押した
     var hiraganaAction: Action {
         Action(keyBind: .hiragana, event: generateNSEvent(character: "j", characterIgnoringModifiers: "j", modifierFlags: .control))

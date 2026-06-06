@@ -69,7 +69,7 @@ import Combine
         XCTAssertEqual(userDict.refer("い").map { $0.word }, ["位"])
         privateMode.send(true)
         // addのテスト
-        userDict.add(yomi: "い", word: word)
+        userDict.add(yomi: "い", word: word, source: .conversion)
         // referは変化しない
         XCTAssertEqual(userDict.refer("い").map { $0.word }, ["位"])
         // deleteのテスト
