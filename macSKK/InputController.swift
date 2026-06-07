@@ -315,16 +315,16 @@ class InputController: IMKInputController {
                 withTitle: String(localized: "MenuItemSaveDict", comment: "Save User Dictionary"),
                 action: #selector(saveDict), keyEquivalent: "")
         }
-        if !Global.privateMode.value && !Global.dictionary.recentRegisteredEntries.isEmpty {
+        if !Global.privateMode.value && !Global.dictionary.recentRegisteredCandidates.isEmpty {
             preferenceMenu.addItem(.separator())
-            let recentRegisteredEntriesHeaderItem = NSMenuItem(title: String(localized: "MenuItemCancelRecentRegisteredEntry"),
-                                                               action: nil,
-                                                               keyEquivalent: "")
-            recentRegisteredEntriesHeaderItem.isEnabled = false
-            preferenceMenu.addItem(recentRegisteredEntriesHeaderItem)
-            for (index, entry) in Global.dictionary.recentRegisteredEntries.enumerated() {
+            let recentRegisteredCandidatesHeaderItem = NSMenuItem(title: String(localized: "MenuItemUndoRecentRegisteredCandidate"),
+                                                                   action: nil,
+                                                                   keyEquivalent: "")
+            recentRegisteredCandidatesHeaderItem.isEnabled = false
+            preferenceMenu.addItem(recentRegisteredCandidatesHeaderItem)
+            for (index, entry) in Global.dictionary.recentRegisteredCandidates.enumerated() {
                 let item = NSMenuItem(title: entry.menuTitle,
-                                      action: #selector(deleteRecentRegisteredEntry),
+                                      action: #selector(deleteRecentRegisteredCandidate),
                                       keyEquivalent: "")
                 item.tag = index
                 preferenceMenu.addItem(item)
@@ -418,18 +418,18 @@ class InputController: IMKInputController {
         Global.dictionary.save()
     }
 
-    @objc func deleteRecentRegisteredEntry(_ sender: Any?) {
+    @objc func deleteRecentRegisteredCandidate(_ sender: Any?) {
         // IMKInputControllerでNSMenuItemにアクセスするにはkIMKCommandMenuItemNameを使う必要がある
         if let sender = sender as? [String: Any],
            let menuItem = sender[kIMKCommandMenuItemName] as? NSMenuItem {
             let index = menuItem.tag
-            guard index < Global.dictionary.recentRegisteredEntries.count else {
+            guard index < Global.dictionary.recentRegisteredCandidates.count else {
                 logger.error("直近登録エントリの削除メニューが選択されましたが、削除対象のindex \(index) が範囲外です")
                 return
             }
 
-            let entry = Global.dictionary.recentRegisteredEntries[index]
-            if !Global.dictionary.deleteRecentRegisteredEntry(entry) {
+            let entry = Global.dictionary.recentRegisteredCandidates[index]
+            if !Global.dictionary.delete(yomi: entry.yomi, word: entry.word) {
                 logger.error("直近登録エントリ \(entry.yomi, privacy: .public) \(entry.word.word, privacy: .public) を削除できませんでした")
             }
         }

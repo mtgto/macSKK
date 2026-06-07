@@ -4248,16 +4248,16 @@ final class StateMachineTests: XCTestCase {
         XCTAssertEqual(Global.dictionary.refer("いt"), [Word("言", okuri: "った", annotation: nil)])
     }
 
-    @MainActor func testAddWordToUserDictRecentRegisteredEntry() {
+    @MainActor func testAddWordToUserDictRecentRegisteredCandidate() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-        let recentRegisteredEntryCount = Global.dictionary.recentRegisteredEntries.count
+        let recentRegisteredCandidateCount = Global.dictionary.recentRegisteredCandidates.count
 
         stateMachine.addWordToUserDict(yomi: "あ", okuri: nil, candidate: Candidate("亜"))
-        XCTAssertEqual(Global.dictionary.recentRegisteredEntries.count, recentRegisteredEntryCount)
+        XCTAssertEqual(Global.dictionary.recentRegisteredCandidates.count, recentRegisteredCandidateCount)
 
         stateMachine.addWordToUserDict(yomi: "い", okuri: nil, candidate: Candidate("伊"), source: .registering)
-        XCTAssertEqual(Global.dictionary.recentRegisteredEntries.count, recentRegisteredEntryCount + 1)
-        XCTAssertEqual(Global.dictionary.recentRegisteredEntries.first, RecentRegisteredEntry(yomi: "い", word: Word("伊")))
+        XCTAssertEqual(Global.dictionary.recentRegisteredCandidates.count, recentRegisteredCandidateCount + 1)
+        XCTAssertEqual(Global.dictionary.recentRegisteredCandidates.first, RecentRegisteredCandidate(yomi: "い", word: Word("伊")))
     }
 
     // Ctrl-jを押した
