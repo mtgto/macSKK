@@ -317,7 +317,7 @@ class InputController: IMKInputController {
         }
         if !Global.privateMode.value && !Global.dictionary.recentRegisteredEntries.isEmpty {
             preferenceMenu.addItem(.separator())
-            let recentRegisteredEntriesHeaderItem = NSMenuItem(title: String(localized: "MenuItemCancelRecentRegisteredEntry"),
+            let recentRegisteredEntriesHeaderItem = NSMenuItem(title: String(localized: "MenuItemUndoRecentRegisteredEntry"),
                                                                action: nil,
                                                                keyEquivalent: "")
             recentRegisteredEntriesHeaderItem.isEnabled = false
@@ -429,7 +429,7 @@ class InputController: IMKInputController {
             }
 
             let entry = Global.dictionary.recentRegisteredEntries[index]
-            if !Global.dictionary.deleteRecentRegisteredEntry(entry) {
+            if !Global.dictionary.delete(yomi: entry.yomi, word: entry.word) {
                 logger.error("直近登録エントリ \(entry.yomi, privacy: .public) \(entry.word.word, privacy: .public) を削除できませんでした")
             }
         }

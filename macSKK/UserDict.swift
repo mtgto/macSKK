@@ -10,7 +10,7 @@ struct RecentRegisteredEntry: Hashable, Identifiable {
     let word: Word
 
     var menuTitle: String {
-        String(format: String(localized: "MenuItemDeleteRecentRegisteredEntry"), Entry(yomi: yomi, candidates: [word]).serialize())
+        Entry(yomi: yomi, candidates: [word]).serialize()
     }
 }
 
@@ -305,6 +305,7 @@ enum UserDictAddSource {
      * - Parameters:
      *   - yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
      *   - word: SKK辞書の変換候補。
+     *   - source: 追加の呼び元。単語登録からの追加の場合のみ直近の辞書登録履歴に記録する。
      */
     @MainActor func add(yomi: String, word: Word, source: UserDictAddSource) {
         logger.log("ユーザー辞書に読み \(yomi, privacy: .public), 変換 \(word.word, privacy: .public) を登録する")
@@ -342,6 +343,7 @@ enum UserDictAddSource {
         } else if let dict = userDict as? FileDict {
             if dict.delete(yomi: yomi, word: word) {
                 logger.log("ユーザー辞書からエントリ \(Entry(yomi: yomi, candidates: [Word(word)]).serialize(), privacy: .public) を削除しました")
+                recentRegisteredEntries.removeAll { $0.yomi == yomi && $0.word.word == word }
                 savePublisher.send(())
                 return true
             }
@@ -356,17 +358,10 @@ enum UserDictAddSource {
         } else if let dict = userDict as? FileDict {
             if dict.delete(yomi: yomi, word: word) {
                 logger.log("ユーザー辞書からエントリ \(Entry(yomi: yomi, candidates: [word]).serialize(), privacy: .public) を削除しました")
+                recentRegisteredEntries.removeAll { $0.yomi == yomi && $0.word == word }
                 savePublisher.send(())
                 return true
             }
-        }
-        return false
-    }
-
-    @MainActor func deleteRecentRegisteredEntry(_ entry: RecentRegisteredEntry) -> Bool {
-        if delete(yomi: entry.yomi, word: entry.word) {
-            removeRecentRegisteredEntry(entry)
-            return true
         }
         return false
     }
@@ -477,10 +472,6 @@ enum UserDictAddSource {
         if recentRegisteredEntries.count > maxRecentRegisteredEntryCount {
             recentRegisteredEntries.removeLast(recentRegisteredEntries.count - maxRecentRegisteredEntryCount)
         }
-    }
-
-    private func removeRecentRegisteredEntry(_ entry: RecentRegisteredEntry) {
-        recentRegisteredEntries.removeAll { $0 == entry }
     }
 
     private func wordToCandidate(_ word: Word, original: Candidate.Original?, saveToUserDict: Bool) -> Candidate {
