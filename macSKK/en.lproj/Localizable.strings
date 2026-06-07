@@ -6,7 +6,7 @@
 "MenuItemTreadFirstCharacterAsMarkedText" = "Treat First Char as Marked for Workaround";
 "MenuItemShowMarkerWhenEmpty" = "Show Marker When Empty for Workaround";
 "MenuItemSKKServ" = "Use SKKServ";
-"MenuItemUndoRecentRegisteredEntry" = "Undo Recent Dictionary Registrations";
+"MenuItemUndoRecentRegisteredCandidate" = "Undo Recent Dictionary Registrations";
 "SettingsNameGeneral" = "General";
 "SettingsNameDictionaries" = "Dictionaries";
 "SettingsNameCandidateWindow" = "Candidates Panel";

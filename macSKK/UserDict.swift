@@ -4,7 +4,8 @@
 import Combine
 import Foundation
 
-struct RecentRegisteredEntry: Hashable, Identifiable {
+/// 最近登録した変換候補
+struct RecentRegisteredCandidate: Hashable, Identifiable {
     var id: Self { self }
     let yomi: String
     let word: Word
@@ -48,8 +49,8 @@ enum UserDictAddSource {
     /// プライベートモード時に変換候補にユーザー辞書を無視するかどうか
     private let ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>
     private var cancellables: Set<AnyCancellable> = []
-    private(set) var recentRegisteredEntries: [RecentRegisteredEntry] = []
-    private let maxRecentRegisteredEntryCount = 3
+    private(set) var recentRegisteredCandidates: [RecentRegisteredCandidate] = []
+    private let maxRecentRegisteredCandidateCount = 3
 
     // MARK: NSFilePresenter
     nonisolated let presentedItemURL: URL?
@@ -313,7 +314,7 @@ enum UserDictAddSource {
             if let dict = userDict as? FileDict {
                 dict.add(yomi: yomi, word: word)
                 if source == .registering {
-                    addRecentRegisteredEntry(yomi: yomi, word: word)
+                    addRecentRegisteredCandidate(yomi: yomi, word: word)
                 }
                 savePublisher.send(())
             }
@@ -343,7 +344,7 @@ enum UserDictAddSource {
         } else if let dict = userDict as? FileDict {
             if dict.delete(yomi: yomi, word: word) {
                 logger.log("ユーザー辞書からエントリ \(Entry(yomi: yomi, candidates: [Word(word)]).serialize(), privacy: .public) を削除しました")
-                recentRegisteredEntries.removeAll { $0.yomi == yomi && $0.word.word == word }
+                recentRegisteredCandidates.removeAll { $0.yomi == yomi && $0.word.word == word }
                 savePublisher.send(())
                 return true
             }
@@ -358,7 +359,7 @@ enum UserDictAddSource {
         } else if let dict = userDict as? FileDict {
             if dict.delete(yomi: yomi, word: word) {
                 logger.log("ユーザー辞書からエントリ \(Entry(yomi: yomi, candidates: [word]).serialize(), privacy: .public) を削除しました")
-                recentRegisteredEntries.removeAll { $0.yomi == yomi && $0.word == word }
+                recentRegisteredCandidates.removeAll { $0.yomi == yomi && $0.word == word }
                 savePublisher.send(())
                 return true
             }
@@ -465,12 +466,12 @@ enum UserDictAddSource {
         }
     }
 
-    private func addRecentRegisteredEntry(yomi: String, word: Word) {
-        let entry = RecentRegisteredEntry(yomi: yomi, word: word)
-        recentRegisteredEntries.removeAll { $0 == entry }
-        recentRegisteredEntries.insert(entry, at: 0)
-        if recentRegisteredEntries.count > maxRecentRegisteredEntryCount {
-            recentRegisteredEntries.removeLast(recentRegisteredEntries.count - maxRecentRegisteredEntryCount)
+    private func addRecentRegisteredCandidate(yomi: String, word: Word) {
+        let entry = RecentRegisteredCandidate(yomi: yomi, word: word)
+        recentRegisteredCandidates.removeAll { $0 == entry }
+        recentRegisteredCandidates.insert(entry, at: 0)
+        if recentRegisteredCandidates.count > maxRecentRegisteredCandidateCount {
+            recentRegisteredCandidates.removeLast(recentRegisteredCandidates.count - maxRecentRegisteredCandidateCount)
         }
     }
 
