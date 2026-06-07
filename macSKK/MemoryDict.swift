@@ -187,42 +187,16 @@ struct MemoryDict: DictProtocol, Sendable {
         }
     }
 
-    /// 辞書からエントリを削除する。
-    ///
-    /// 辞書にないエントリ (ファイル辞書) の削除は無視されます。
-    /// 読みの配列の順序は変更されません。
-    ///
-    /// - Parameters:
-    ///   - yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
-    ///   - word: SKK辞書の変換候補。
-    /// - Returns: エントリを削除できたかどうか
-    @MainActor mutating func delete(yomi: String, word: Word.Word) -> Bool {
-        if let words = entries[yomi] {
-            let filtered = words.filter { $0.word != word }
-            if words.count != filtered.count {
-                if filtered.isEmpty {
-                    entries.removeValue(forKey: yomi)
-                    if yomi.isOkuriAri {
-                        if let index = okuriAriYomis.firstIndex(of: yomi) {
-                            okuriAriYomis.remove(at: index)
-                        }
-                    } else {
-                        if let index = okuriNashiYomis.firstIndex(of: yomi) {
-                            okuriNashiYomis.remove(at: index)
-                        }
-                    }
-                } else {
-                    entries[yomi] = filtered
-                }
-                return true
-            }
-        }
-        return false
-    }
-
-    /// 辞書から指定された変換候補だけを削除する。
-    ///
-    /// 送り仮名ブロックつきの同じ変換候補がある場合も、okuri が一致する候補だけを削除する。
+    /**
+     * 辞書からエントリを削除する。
+     *
+     * 送り仮名ブロックつきの同じ変換候補がある場合も、okuri が一致する候補だけを削除する。
+     *
+     * - Parameters:
+     *   - yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
+     *   - word: SKK辞書の変換候補。
+     * - Returns: エントリを削除できたかどうか
+     */
     @MainActor mutating func delete(yomi: String, word: Word) -> Bool {
         if let words = entries[yomi] {
             let filtered = words.filter { $0.word != word.word || $0.okuri != word.okuri }

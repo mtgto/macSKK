@@ -4045,6 +4045,42 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    @MainActor func testHandleSelectingUnregisterOkuri() {
+        Global.dictionary.setEntries([
+            "おおk": [Word("多", okuri: "く"), Word("大", okuri: "き")],
+            "おおi": [Word("多", okuri: "い")],
+        ])
+
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(10).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("お")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("おお")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("おお*k")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerSelect, .emphasized("大き")])))
+            XCTAssertEqual(events[4], .markedText(MarkedText([.plain("おおk /大/ を削除します(yes/no)")])))
+            XCTAssertEqual(events[5], .markedText(MarkedText([.plain("おおk /大/ を削除します(yes/no)"), .plain("y")])))
+            XCTAssertEqual(events[6], .markedText(MarkedText([.plain("おおk /大/ を削除します(yes/no)"), .plain("ye")])))
+            XCTAssertEqual(events[7], .markedText(MarkedText([.plain("おおk /大/ を削除します(yes/no)"), .plain("yes")])))
+            XCTAssertEqual(events[8], .modeChanged(.hiragana))
+            XCTAssertEqual(events[9], .markedText(MarkedText([])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "k", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "x", withShift: true)))
+        "yes".forEach { character in
+            XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: character)))
+        }
+        XCTAssertTrue(stateMachine.handle(enterAction))
+        XCTAssertEqual(Global.dictionary.refer("おおk", option: .okuri("き")), [])
+        // 送り仮名オプションがないため "おおk" で "多" がヒットする
+        XCTAssertEqual(Global.dictionary.refer("おおk"), [Word("多", okuri: "く")])
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     @MainActor func testHandleSelectingRememberCursor() {
         Global.dictionary.setEntries(["え": [Word("絵")], "えr": [Word("得")]])
 
