@@ -311,6 +311,17 @@ enum FileDictType: Equatable {
         return false
     }
 
+    @MainActor func delete(yomi: String, word: Word) -> Bool {
+        if dict.delete(yomi: yomi, word: word) {
+            hasUnsavedChanges = true
+            NotificationCenter.default.post(name: notificationNameDictLoad,
+                                            object: DictLoadEvent(id: self.id,
+                                                                  status: .loaded(success: dict.entryCount, failure: dict.failedEntryCount)))
+            return true
+        }
+        return false
+    }
+
     func findCompletions(prefix: String) -> [String] {
         return dict.findCompletions(prefix: prefix)
     }

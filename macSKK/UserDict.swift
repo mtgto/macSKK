@@ -4,11 +4,28 @@
 import Combine
 import Foundation
 
+struct RecentRegisteredEntry: Hashable, Identifiable {
+    var id: Self { self }
+    let yomi: String
+    let word: Word
+
+    var menuTitle: String {
+        String(format: String(localized: "MenuItemDeleteRecentRegisteredEntry"), Entry(yomi: yomi, candidates: [word]).serialize())
+    }
+}
+
+enum UserDictAddSource {
+    /// 変換候補を選択してユーザー辞書に追加するとき
+    case conversion
+    /// 単語登録からユーザー辞書に追加するとき
+    case registering
+}
+
 /// ユーザー辞書。マイ辞書 (単語登録対象。ファイル名固定) とファイル辞書 をまとめて参照することができる。
 /// v0.22.0以降はskkservサーバーを辞書としても利用することが可能。
 ///
 /// TODO: ファイル辞書にしかない単語を削除しようとしたときにどうやってそれを記録するか。NG登録?
-@MainActor class UserDict: NSObject, DictProtocol {
+@MainActor class UserDict: NSObject {
     nonisolated static let userDictFilename = "skk-jisyo.utf8"
     nonisolated static let ignoredPathExtensions = ["tmp", "bak"]
     let dictionariesDirectoryURL: URL
@@ -31,7 +48,8 @@ import Foundation
     /// プライベートモード時に変換候補にユーザー辞書を無視するかどうか
     private let ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>
     private var cancellables: Set<AnyCancellable> = []
-    let saveToUserDict = true
+    private(set) var recentRegisteredEntries: [RecentRegisteredEntry] = []
+    private let maxRecentRegisteredEntryCount = 3
 
     // MARK: NSFilePresenter
     nonisolated let presentedItemURL: URL?
@@ -135,7 +153,7 @@ import Foundation
         }
         // ユーザー辞書、それ以外の辞書の順に参照する
         candidates.append(contentsOf: refer(yomi, option: option).map { word in
-            return wordToCandidate(word, original: nil, saveToUserDict: saveToUserDict)
+            return wordToCandidate(word, original: nil, saveToUserDict: true)
         })
         if findFromAllDicts {
             dicts.forEach { dict in
@@ -163,7 +181,7 @@ import Foundation
                     return Candidate(convertedWord,
                                      annotations: annotations,
                                      original: Candidate.Original(midashi: midashi, word: word.word),
-                                     saveToUserDict: saveToUserDict)
+                                     saveToUserDict: true)
                 })
                 if findFromAllDicts {
                     dicts.forEach { dict in
@@ -288,11 +306,14 @@ import Foundation
      *   - yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
      *   - word: SKK辞書の変換候補。
      */
-    @MainActor func add(yomi: String, word: Word) {
+    @MainActor func add(yomi: String, word: Word, source: UserDictAddSource) {
         logger.log("ユーザー辞書に読み \(yomi, privacy: .public), 変換 \(word.word, privacy: .public) を登録する")
         if !privateMode.value {
             if let dict = userDict as? FileDict {
                 dict.add(yomi: yomi, word: word)
+                if source == .registering {
+                    addRecentRegisteredEntry(yomi: yomi, word: word)
+                }
                 savePublisher.send(())
             }
         }
@@ -320,9 +341,32 @@ import Foundation
             return true
         } else if let dict = userDict as? FileDict {
             if dict.delete(yomi: yomi, word: word) {
+                logger.log("ユーザー辞書からエントリ \(Entry(yomi: yomi, candidates: [Word(word)]).serialize(), privacy: .public) を削除しました")
                 savePublisher.send(())
                 return true
             }
+        }
+        return false
+    }
+
+    /** 変換文字列だけでなく okuri も一致する候補だけを削除する。 */
+    @MainActor func delete(yomi: String, word: Word) -> Bool {
+        if privateMode.value {
+            return true
+        } else if let dict = userDict as? FileDict {
+            if dict.delete(yomi: yomi, word: word) {
+                logger.log("ユーザー辞書からエントリ \(Entry(yomi: yomi, candidates: [word]).serialize(), privacy: .public) を削除しました")
+                savePublisher.send(())
+                return true
+            }
+        }
+        return false
+    }
+
+    @MainActor func deleteRecentRegisteredEntry(_ entry: RecentRegisteredEntry) -> Bool {
+        if delete(yomi: entry.yomi, word: entry.word) {
+            removeRecentRegisteredEntry(entry)
+            return true
         }
         return false
     }
@@ -424,6 +468,19 @@ import Foundation
         } else {
             return false
         }
+    }
+
+    private func addRecentRegisteredEntry(yomi: String, word: Word) {
+        let entry = RecentRegisteredEntry(yomi: yomi, word: word)
+        recentRegisteredEntries.removeAll { $0 == entry }
+        recentRegisteredEntries.insert(entry, at: 0)
+        if recentRegisteredEntries.count > maxRecentRegisteredEntryCount {
+            recentRegisteredEntries.removeLast(recentRegisteredEntries.count - maxRecentRegisteredEntryCount)
+        }
+    }
+
+    private func removeRecentRegisteredEntry(_ entry: RecentRegisteredEntry) {
+        recentRegisteredEntries.removeAll { $0 == entry }
     }
 
     private func wordToCandidate(_ word: Word, original: Candidate.Original?, saveToUserDict: Bool) -> Candidate {

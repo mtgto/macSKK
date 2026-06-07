@@ -236,7 +236,11 @@ final class StateMachine {
                         }
                         updateMarkedText()
                     } else {
-                        addWordToUserDict(yomi: registerState.yomi, okuri: registerState.okuri, candidate: Candidate(registerState.text))
+                        addWordToUserDict(
+                            yomi: registerState.yomi,
+                            okuri: registerState.okuri,
+                            candidate: Candidate(registerState.text),
+                            source: .registering)
                         if let last = prev.last {
                             state.specialState = .register(last, prev: prev.dropLast())
                         } else {
@@ -1718,10 +1722,17 @@ final class StateMachine {
      *   - okuri: 送り仮名として確定したひらがな。"A Ru" のように入力した場合 "る" の部分。
      *   - candidate: 追加したい変換候補
      */
-    @MainActor func addWordToUserDict(yomi: String, okuri: String?, candidate: Candidate, annotation: Annotation? = nil) {
+    @MainActor func addWordToUserDict(
+        yomi: String,
+        okuri: String?,
+        candidate: Candidate,
+        annotation: Annotation? = nil,
+        source: UserDictAddSource = .conversion
+    ) {
         if candidate.saveToUserDict {
             Global.dictionary.add(yomi: candidate.toMidashiString(yomi: yomi),
-                                  word: Word(candidate.candidateString, okuri: okuri, annotation: annotation))
+                                  word: Word(candidate.candidateString, okuri: okuri, annotation: annotation),
+                                  source: source)
         }
     }
 
