@@ -246,10 +246,12 @@ enum UserDictAddSource {
             return []
         }
         var results: [String] = findCompletions(prefix: prefix)
+        // 重複排除は順序を保ちつつSetでメンバーシップ判定する (Array.containsだと該当読み数Mに対しO(M^2)になる)
+        var seen = Set(results)
         if findFromAllDicts {
             for dict in dicts {
                 for yomi in dict.findCompletions(prefix: prefix) {
-                    if !results.contains(yomi) {
+                    if seen.insert(yomi).inserted {
                         results.append(yomi)
                     }
                 }
@@ -257,7 +259,7 @@ enum UserDictAddSource {
         }
         if let skkservDict {
             for yomi in skkservDict.findCompletions(prefix: prefix) {
-                if !results.contains(yomi) {
+                if seen.insert(yomi).inserted {
                     results.append(yomi)
                 }
             }
@@ -368,17 +370,19 @@ enum UserDictAddSource {
             return []
         }
         var results: [String] = []
+        // 重複排除は順序を保ちつつSetでメンバーシップ判定する (Array.containsだと読み数に対しO(n^2)になる)
+        var seen = Set<String>()
         if !privateMode.value || !ignoreUserDictInPrivateMode.value {
             if let userDict {
                 for yomi in userDict.findCompletions(prefix: prefix) {
-                    if !results.contains(yomi) {
+                    if seen.insert(yomi).inserted {
                         results.append(yomi)
                     }
                 }
             }
         }
         dateYomis.forEach { dateYomi in
-            if dateYomi.yomi.hasPrefix(prefix) && !results.contains(dateYomi.yomi) {
+            if dateYomi.yomi.hasPrefix(prefix) && seen.insert(dateYomi.yomi).inserted {
                 results.append(dateYomi.yomi)
             }
         }
