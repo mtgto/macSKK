@@ -2448,7 +2448,7 @@ final class StateMachineTests: XCTestCase {
         // completionSetAt が 規定時間以上前なら補完候補で確定する
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
         stateMachine.completion = candidates
-        stateMachine.completionSetAt = Date(timeIntervalSinceNow: -(stateMachine.completionConfirmationTimeLimit + 0.1))
+        stateMachine.completionSetAt = Date(timeIntervalSinceNow: -(Global.completionConfirmationTimeLimit + 0.1))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "1")))
         XCTAssertEqual(Global.dictionary.refer("あさ"), [Word("朝")])
 
