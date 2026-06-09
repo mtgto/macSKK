@@ -20,6 +20,12 @@ struct CompletionSettingsView: View {
                         Text("Confirm the first completion by period")
                     })
                     .disabled(!settingsViewModel.showCompletion || !settingsViewModel.showCandidateForCompletion)
+                    Picker("Completion Confirmation Time Limit", selection: $settingsViewModel.completionConfirmationTimeLimit) {
+                        ForEach(stride(from: 100, through: 1000, by: 100).map { $0 }, id: \.self) { ms in
+                            Text(String(format: "%.1f", Double(ms) / 1000)).tag(ms)
+                        }
+                    }
+                    .disabled(!settingsViewModel.showCompletion || !settingsViewModel.showCandidateForCompletion)
                 }
                 Toggle(isOn: $settingsViewModel.findCompletionFromAllDicts, label: {
                     Text("Find completion from all dictionaries")

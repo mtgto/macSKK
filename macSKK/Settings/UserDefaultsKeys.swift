@@ -82,4 +82,6 @@ struct UserDefaultsKeys {
     static let yomiCompletionByTabInRegistering = "yomiCompletionByTabInRegistering"
     // 変換候補パネルに一度に表示する変換候補の数
     static let displayCandidateCount = "displayCandidateCount"
+    // 読み入力から候補選択に切り替わるまでの時間 (ミリ秒)。最小100、最大1000、100単位
+    static let completionConfirmationTimeLimit = "completionConfirmationTimeLimit"
 }

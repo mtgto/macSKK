@@ -271,6 +271,7 @@ struct macSKKApp: App {
             ),
             UserDefaultsKeys.skkservAutoDisableThreshold: 3,
             UserDefaultsKeys.displayCandidateCount: 9,
+            UserDefaultsKeys.completionConfirmationTimeLimit: 500,
         ])
     }
 

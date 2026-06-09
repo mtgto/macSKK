@@ -78,6 +78,7 @@
 "Number of inline candidates" = "Number of inline candidates";
 "Number of candidates in panel" = "Number of candidates in panel";
 "Backspace in selecting candidates" = "Backspace in selecting candidates";
+"Completion Confirmation Time Limit" = "Time to switch from yomi input to candidate selection (seconds)";
 "Behavior of Comma" = "Behavior of Comma";
 "Behavior of Period" = "Behavior of Period";
 "Candidates font size" = "Candidates font size";
