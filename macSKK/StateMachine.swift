@@ -268,9 +268,9 @@ final class StateMachine {
                     return true
                 } else if case .unregister(let unregisterState, let prev) = specialState {
                     if unregisterState.text == "yes" {
-                        let word = unregisterState.prev.selecting.candidates[
-                            unregisterState.prev.selecting.candidateIndex]
-                        _ = Global.dictionary.delete(yomi: unregisterState.prev.selecting.yomi, word: word.word)
+                        let selecting = unregisterState.prev.selecting
+                        let word = selecting.candidates[selecting.candidateIndex]
+                        _ = Global.dictionary.delete(yomi: selecting.yomi, word: Word(word.word, okuri: selecting.okuri))
 
                         if let prevMode = unregisterState.prev.selecting.prev.composing.prevMode {
                             // Abbrevモードの終了時の戻り先が指定されていれば、そちらに戻る

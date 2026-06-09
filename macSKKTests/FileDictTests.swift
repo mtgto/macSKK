@@ -78,9 +78,9 @@ import Combine
     func testDelete() throws {
         let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: true, saveToUserDict: true)
         dict.setEntries(["あr": [Word("有"), Word("在")]], readonly: true)
-        XCTAssertFalse(dict.delete(yomi: "あr", word: "或"))
+        XCTAssertFalse(dict.delete(yomi: "あr", word: Word("或")))
         XCTAssertFalse(dict.hasUnsavedChanges)
-        XCTAssertTrue(dict.delete(yomi: "あr", word: "在"))
+        XCTAssertTrue(dict.delete(yomi: "あr", word: Word("在")))
         XCTAssertTrue(dict.hasUnsavedChanges)
     }
 
@@ -116,7 +116,7 @@ import Combine
         ].joined(separator: "\n")
         XCTAssertEqual(dict.serialize(), expected)
         // 追加更新した場合は順序を変更する。削除更新した場合は順序を変更しない
-        XCTAssertTrue(dict.delete(yomi: "あ", word: "亜"))
+        XCTAssertTrue(dict.delete(yomi: "あ", word: Word("亜")))
         dict.add(yomi: "あr", word: Word("或"))
         expected = [
             FileDict.headers[0],

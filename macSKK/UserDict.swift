@@ -322,7 +322,7 @@ enum UserDictAddSource {
     }
 
     /**
-     *  ユーザー辞書からエントリを削除する。
+     *  ユーザー辞書からエントリを削除する。変換文字列と送り仮名が一致する候補だけを削除する。
      *
      *  ユーザー辞書にないエントリ (ファイル辞書) の削除は無視されます。
      *  (ユーザー辞書に入力履歴があれば削除されるが、元のファイル辞書は更新されない)
@@ -338,21 +338,6 @@ enum UserDictAddSource {
      *    - word: SKK辞書の変換候補。
      *  - Returns: エントリを削除できたかどうか。プライベートモード時はなにも削除せずに常にtrueを返す。
      */
-    @MainActor func delete(yomi: String, word: Word.Word) -> Bool {
-        if privateMode.value {
-            return true
-        } else if let dict = userDict as? FileDict {
-            if dict.delete(yomi: yomi, word: word) {
-                logger.log("ユーザー辞書からエントリ \(Entry(yomi: yomi, candidates: [Word(word)]).serialize(), privacy: .public) を削除しました")
-                recentRegisteredCandidates.removeAll { $0.yomi == yomi && $0.word.word == word }
-                savePublisher.send(())
-                return true
-            }
-        }
-        return false
-    }
-
-    /** 変換文字列だけでなく okuri も一致する候補だけを削除する。 */
     @MainActor func delete(yomi: String, word: Word) -> Bool {
         if privateMode.value {
             return true

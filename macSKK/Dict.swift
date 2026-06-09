@@ -58,14 +58,15 @@ protocol DictProtocol {
     /**
      * 辞書からエントリを削除する。
      *
-     * 辞書にないエントリ (ファイル辞書) の削除は無視されます。
+     * 辞書にないエントリ (ファイル辞書) の削除は無視される。
+     * 送り仮名ブロックつきの同じ変換候補がある場合は `word.okuri` が一致する候補だけを削除する。
      *
      * - Parameters:
      *   - yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
      *   - word: SKK辞書の変換候補。
      * - Returns: エントリを削除できたかどうか
      */
-    @MainActor mutating func delete(yomi: String, word: Word.Word) -> Bool
+    @MainActor mutating func delete(yomi: String, word: Word) -> Bool
 
     /**
      * 現在入力中のprefixに続く入力候補を返す。見つからなければ空配列を返す。
@@ -78,7 +79,7 @@ protocol DictProtocol {
      * - prefixと読みが完全に一致する場合は補完候補とはしない
      * - 数値変換用の読みは補完候補としない
      */
-    @MainActor func findCompletions(prefix: String) -> [String]
+    func findCompletions(prefix: String) -> [String]
 
     /**
      * この辞書から返した変換候補をユーザー辞書に保存するかどうか

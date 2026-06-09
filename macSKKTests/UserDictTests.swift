@@ -73,7 +73,7 @@ import Combine
         // referは変化しない
         XCTAssertEqual(userDict.refer("い").map { $0.word }, ["位"])
         // deleteのテスト
-        XCTAssertTrue(userDict.delete(yomi: "い", word: "井"))
+        XCTAssertTrue(userDict.delete(yomi: "い", word: Word("井")))
     }
 
     @MainActor func testReferDictsDateConversion() throws {
