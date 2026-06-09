@@ -187,6 +187,8 @@ final class SettingsViewModel: ObservableObject {
     @Published var showAnnotation: Bool
     /// インラインで表示する変換候補の数。
     @Published var inlineCandidateCount: Int
+    /// 変換候補パネルに一度に表示する変換候補の数
+    @Published var displayCandidateCount: Int
     /// 変換候補のフォントサイズ
     @Published var candidatesFontSize: Int
     /// 変換候補のフォントファミリー名。空文字列のときはSystem Font
@@ -276,6 +278,7 @@ final class SettingsViewModel: ObservableObject {
         }
         showAnnotation = UserDefaults.app.bool(forKey: UserDefaultsKeys.showAnnotation)
         inlineCandidateCount = UserDefaults.app.integer(forKey: UserDefaultsKeys.inlineCandidateCount)
+        displayCandidateCount = UserDefaults.app.integer(forKey: UserDefaultsKeys.displayCandidateCount)
         candidatesFontSize = UserDefaults.app.integer(forKey: UserDefaultsKeys.candidatesFontSize)
         candidatesFontFamily = UserDefaults.app.string(forKey: UserDefaultsKeys.candidatesFontFamily) ?? ""
         overridesCandidatesBackgroundColor = UserDefaults.app.bool(forKey: UserDefaultsKeys.overridesCandidatesBackgroundColor)
@@ -407,6 +410,7 @@ final class SettingsViewModel: ObservableObject {
         Global.ignoreLeadingSpacesWhenRegistering = ignoreLeadingSpacesWhenRegistering
         Global.backToSelectingFromRegistering = backToSelectingFromRegistering
         Global.yomiCompletionByTabInRegistering = yomiCompletionByTabInRegistering
+        Global.displayCandidateCount = displayCandidateCount
         Global.inputModePanel.updateColorSets(inputModeColorSets)
         Global.showMarkedTextMarker = showMarkedTextMarker
 
@@ -599,6 +603,12 @@ final class SettingsViewModel: ObservableObject {
             UserDefaults.app.set(inlineCandidateCount, forKey: UserDefaultsKeys.inlineCandidateCount)
             NotificationCenter.default.post(name: notificationNameInlineCandidateCount, object: inlineCandidateCount)
             logger.log("インラインで表示する変換候補の数を\(inlineCandidateCount)個に変更しました")
+        }.store(in: &cancellables)
+
+        $displayCandidateCount.dropFirst().sink { displayCandidateCount in
+            UserDefaults.app.set(displayCandidateCount, forKey: UserDefaultsKeys.displayCandidateCount)
+            Global.displayCandidateCount = displayCandidateCount
+            logger.log("変換候補パネルに一度に表示する変換候補の数を\(displayCandidateCount)個に変更しました")
         }.store(in: &cancellables)
 
         $candidatesFontFamily.dropFirst().sink { candidatesFontFamily in
@@ -891,6 +901,7 @@ final class SettingsViewModel: ObservableObject {
         selectedInputSourceId = InputSource.defaultInputSourceId
         showAnnotation = true
         inlineCandidateCount = 3
+        displayCandidateCount = 9
         workaroundApplications = []
         candidatesFontSize = 13
         candidatesFontFamily = ""

@@ -25,6 +25,7 @@ final class StateMachineTests: XCTestCase {
         Global.ignoreLeadingSpacesWhenRegistering = true
         Global.backToSelectingFromRegistering = false
         Global.yomiCompletionByTabInRegistering = false
+        Global.displayCandidateCount = 9
     }
 
     @MainActor func testHandleNormalSimple() {
@@ -3724,6 +3725,38 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(leftKeyAction)) // 前ページ移動
         Global.selectingBackspace = .dropLastInlineOnly
         XCTAssertTrue(stateMachine.handle(backspaceAction)) // selectingBackspaceがdropLastAlwaysじゃないときは前ページ遷移として機能する
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    @MainActor func testHandleSelectingDisplayCandidateCount() {
+        Global.dictionary.setEntries(["あ": "123456789".map { Word(String($0)) }])
+        Global.displayCandidateCount = 3
+
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.candidateEvent.collect(5).sink { events in
+            // インライン表示中 (page == nil)
+            XCTAssertNil(events[0]?.page)
+            XCTAssertNil(events[1]?.page)
+            XCTAssertNil(events[2]?.page)
+            // パネル表示 page 0: "4","5","6"
+            XCTAssertEqual(events[3]?.selected.word, "4")
+            XCTAssertEqual(events[3]?.page?.words.map(\.word), ["4", "5", "6"])
+            XCTAssertEqual(events[3]?.page?.current, 0)
+            XCTAssertEqual(events[3]?.page?.total, 2)
+            // スペースで次ページ: page 1: "7","8","9"
+            XCTAssertEqual(events[4]?.selected.word, "7")
+            XCTAssertEqual(events[4]?.page?.words.map(\.word), ["7", "8", "9"])
+            XCTAssertEqual(events[4]?.page?.current, 1)
+            XCTAssertEqual(events[4]?.page?.total, 2)
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
         wait(for: [expectation], timeout: 1.0)
     }
 

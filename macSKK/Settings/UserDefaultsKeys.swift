@@ -80,4 +80,6 @@ struct UserDefaultsKeys {
     static let skkservAutoDisableThreshold = "skkservAutoDisableThreshold"
     // 単語登録中にタブキーで読みを補完する
     static let yomiCompletionByTabInRegistering = "yomiCompletionByTabInRegistering"
+    // 変換候補パネルに一度に表示する変換候補の数
+    static let displayCandidateCount = "displayCandidateCount"
 }

@@ -51,6 +51,8 @@ import Combine
     static var punctuation: Punctuation = .default
     /// ▽と▼を表示するか
     static var showMarkedTextMarker: Bool = true
+    /// 変換候補パネルに一度に表示する変換候補の数
+    static var displayCandidateCount: Int = 9
     /// 変換候補パネルの表示方向
     static var candidateListDirection = CurrentValueSubject<CandidateListDirection, Never>(.vertical)
     /// ピリオドで補完候補の最初の要素で確定するか

@@ -237,7 +237,7 @@ class InputController: IMKInputController {
                         self.stateMachine.completion = nil
                     } else {
                         // 先頭1ページ分だけ変換候補パネルに表示する。
-                        Global.completionPanel.viewModel.completion = .candidates(Array(candidates.prefix(9)))
+                        Global.completionPanel.viewModel.completion = .candidates(Array(candidates.prefix(Global.displayCandidateCount)))
                         if cursorPosition != .zero {
                             Global.completionPanel.show(at: cursorPosition, windowLevel: windowLevel(for: textInput))
                         }
