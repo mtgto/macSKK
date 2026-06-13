@@ -5,6 +5,8 @@ import SwiftUI
 struct CompletionSettingsView: View {
     @StateObject var settingsViewModel: SettingsViewModel
 
+    private static let timeLimitNever = 86_400_000 // 1日
+
     var body: some View {
         VStack {
             Form {
@@ -19,6 +21,14 @@ struct CompletionSettingsView: View {
                     Toggle(isOn: $settingsViewModel.fixedCompletionByPeriod, label: {
                         Text("Confirm the first completion by period")
                     })
+                    .disabled(!settingsViewModel.showCompletion || !settingsViewModel.showCandidateForCompletion)
+                    Picker("Completion Confirmation Time Limit", selection: $settingsViewModel.completionConfirmationTimeLimit) {
+                        ForEach(stride(from: 100, through: 1000, by: 100).map { $0 }, id: \.self) { ms in
+                            Text(String(format: "%.1f", Double(ms) / 1000)).tag(ms)
+                        }
+                        Divider()
+                        Text("24 Hours").tag(Self.timeLimitNever)
+                    }
                     .disabled(!settingsViewModel.showCompletion || !settingsViewModel.showCandidateForCompletion)
                 }
                 Toggle(isOn: $settingsViewModel.findCompletionFromAllDicts, label: {

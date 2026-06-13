@@ -53,6 +53,8 @@ import Combine
     static var showMarkedTextMarker: Bool = true
     /// 変換候補パネルに一度に表示する変換候補の数
     static var displayCandidateCount: Int = 9
+    /// 読み入力から候補選択に切り替わるまでの時間
+    static var completionConfirmationTimeLimit: TimeInterval = 0.5
     /// 変換候補パネルの表示方向
     static var candidateListDirection = CurrentValueSubject<CandidateListDirection, Never>(.vertical)
     /// ピリオドで補完候補の最初の要素で確定するか

@@ -50,7 +50,6 @@ final class StateMachine {
     }
     /// completionがセットされた日時。一定時間経過後に確定キーが押されたら確定とみなすために使用する
     var completionSetAt: Date? = nil
-    let completionConfirmationTimeLimit: TimeInterval = 0.5
 
     /// 変換候補パネルを表示するまで表示する変換候補の数
     var inlineCandidateCount: Int
@@ -600,7 +599,7 @@ final class StateMachine {
                 }
                 // 補完候補が表示されてから一定時間経過後に確定キーが押された場合は補完候補で確定する
                 if let displayedAt = completionSetAt,
-                   displayedAt.timeIntervalSinceNow <= -completionConfirmationTimeLimit,
+                   displayedAt.timeIntervalSinceNow <= -Global.completionConfirmationTimeLimit,
                    let first = input.lowercased().first,
                    let index = Global.selectCandidateKeys.firstIndex(of: first), index < candidateWords.count {
                     let candidate = candidateWords[index]

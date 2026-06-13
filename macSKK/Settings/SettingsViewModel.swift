@@ -261,6 +261,8 @@ final class SettingsViewModel: ObservableObject {
     @Published var inputModeColorSets: [InputMode: InputModeColorSet]
     /// skkservへの接続エラーが何回連続したら自動無効化するか
     @Published var skkservAutoDisableThreshold: Int
+    /// 読み入力から候補選択に切り替わるまでの時間 (ミリ秒)。最小100、最大1000、100単位
+    @Published var completionConfirmationTimeLimit: Int
 
     // 辞書ディレクトリ
     let dictionariesDirectoryUrl: URL
@@ -366,6 +368,7 @@ final class SettingsViewModel: ObservableObject {
         }
         selectedKanaRule = UserDefaults.app.string(forKey: UserDefaultsKeys.kanaRule) ?? ""
         skkservAutoDisableThreshold = UserDefaults.app.integer(forKey: UserDefaultsKeys.skkservAutoDisableThreshold)
+        completionConfirmationTimeLimit = UserDefaults.app.integer(forKey: UserDefaultsKeys.completionConfirmationTimeLimit)
 
         var inputModeColorSets: [InputMode: InputModeColorSet] = [:]
         if let dict = UserDefaults.app.dictionary(forKey: UserDefaultsKeys.inputModePanel) {
@@ -413,6 +416,7 @@ final class SettingsViewModel: ObservableObject {
         Global.displayCandidateCount = displayCandidateCount
         Global.inputModePanel.updateColorSets(inputModeColorSets)
         Global.showMarkedTextMarker = showMarkedTextMarker
+        Global.completionConfirmationTimeLimit = Double(completionConfirmationTimeLimit) / 1000
 
         // SKK-JISYO.Lのようなファイルの読み込みが遅いのでバックグラウンドで処理
         Task {
@@ -469,6 +473,12 @@ final class SettingsViewModel: ObservableObject {
             Global.skkservDict?.autoDisableThreshold = threshold
             UserDefaults.app.set(threshold, forKey: UserDefaultsKeys.skkservAutoDisableThreshold)
             logger.log("SKKServの接続エラーによる自動無効化の閾値が\(threshold)回に設定されました。")
+        }.store(in: &cancellables)
+
+        $completionConfirmationTimeLimit.dropFirst().removeDuplicates().sink { timeLimit in
+            UserDefaults.app.set(timeLimit, forKey: UserDefaultsKeys.completionConfirmationTimeLimit)
+            Global.completionConfirmationTimeLimit = Double(timeLimit) / 1000
+            logger.log("読み入力から候補選択に切り替わるまでの時間が\(timeLimit)ミリ秒に設定されました。")
         }.store(in: &cancellables)
 
         $directModeApplications.dropFirst().sink { applications in
@@ -950,6 +960,7 @@ final class SettingsViewModel: ObservableObject {
         selectedKanaRule = ""
         inputModeColorSets = Dictionary(uniqueKeysWithValues: InputMode.allCases.map { ($0, .defaultColorSet) })
         skkservAutoDisableThreshold = 3
+        completionConfirmationTimeLimit = 500
     }
 
     // InputModeSettingsViewのPreviewProvider用
