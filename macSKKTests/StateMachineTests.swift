@@ -2419,7 +2419,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleComposingSelectCompletionByKey() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(5).sink { events in
+        stateMachine.inputMethodEvent.collect(7).sink { events in
             // "a" → ▽あ
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
             // "1" → completionSetAt が 0.3 秒以内のため読みとして入力
@@ -2430,6 +2430,9 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("あ")])))
             // "1" → completionSetAt が 0.3 秒以上前のため補完候補 "朝" で確定
             XCTAssertEqual(events[4], .fixedText("朝"))
+            // "2" →候補表示数が1なので読みとして入力
+            XCTAssertEqual(events[5], .markedText(MarkedText([.markerCompose, .plain("あ")])))
+            XCTAssertEqual(events[6], .markedText(MarkedText([.markerCompose, .plain("あ2")])))
             expectation.fulfill()
         }.store(in: &cancellables)
 
@@ -2451,6 +2454,13 @@ final class StateMachineTests: XCTestCase {
         stateMachine.completionSetAt = Date(timeIntervalSinceNow: -(Global.completionConfirmationTimeLimit + 0.1))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "1")))
         XCTAssertEqual(Global.dictionary.refer("あさ"), [Word("朝")])
+
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        stateMachine.completion = candidates
+        stateMachine.completionSetAt = Date(timeIntervalSinceNow: -(Global.completionConfirmationTimeLimit + 0.1))
+        Global.displayCandidateCount = 1
+        // 候補表示数が1なので2を押しても無視される
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "2")))
 
         wait(for: [expectation], timeout: 1.0)
     }

@@ -601,7 +601,7 @@ final class StateMachine {
                 if let displayedAt = completionSetAt,
                    displayedAt.timeIntervalSinceNow <= -Global.completionConfirmationTimeLimit,
                    let first = input.lowercased().first,
-                   let index = Global.selectCandidateKeys.firstIndex(of: first), index < candidateWords.count {
+                   let index = Global.selectCandidateKeys.firstIndex(of: first), index < candidateWords.count, index < Global.displayCandidateCount {
                     let candidate = candidateWords[index]
                     if let original = candidate.original {
                         addWordToUserDict(yomi: original.midashi, okuri: nil, candidate: candidate)
