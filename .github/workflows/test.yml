@@ -6,11 +6,15 @@ on:
     paths-ignore:
       - '*.md'
       - '.github/workflows/update.yml'
+      - '.github/workflows/docs.yml'
+      - 'docs/**'
   pull_request:
     branches: [main]
     paths-ignore:
       - '*.md'
       - '.github/workflows/update.yml'
+      - '.github/workflows/docs.yml'
+      - 'docs/**'
 
 # bashを使うようにしてpipefailを有効にする
 # https://docs.github.com/ja/actions/writing-workflows/workflow-syntax-for-github-actions#defaultsrunshell
