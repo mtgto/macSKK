@@ -10,7 +10,7 @@ hero:
       text: インストール
       link: /guide/install
     - theme: alt
-      text: GitHubで見る
+      text: GitHub
       link: https://github.com/mtgto/macSKK
 
 features:
