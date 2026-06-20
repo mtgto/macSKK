@@ -392,10 +392,21 @@ enum UserDictAddSource {
     /**
      * 現在入力中のprefixに続く変換候補を返す。
      *
+     * 見出しごとにskkservへ問い合わせる (TCP往復) コストが見出し数に比例するため、補完にskkservを
+     * 使うと該当読みが多い接頭辞で表示が遅延する。そこでskkservへ問い合わせるのは先頭 ``skkservReferLimit``
+     * 件の見出しまでとし、それ以降の見出しはローカル辞書 (ユーザー辞書・ファイル辞書) のみ引く。
+     * ローカル辞書の参照は安価なので全見出しを実体化でき、表示順や2ページ目以降の候補は従来どおり保たれる。
+     *
      * asyncにするかも? (skkservとかで便利そう)
      * AsyncStreamにするかも?
+     *
+     * - Parameters:
+     *   - prefix: SKK辞書の見出しの接頭辞
+     *   - skkservDict: SKKServ辞書。nilのときはskkservを引かない
+     *   - findFromAllDicts: ユーザー辞書以外を検索するか
+     *   - skkservReferLimit: skkservへ変換候補を問い合わせる見出しの最大数。先頭からこの数の見出しだけskkservも引く
      */
-    func candidatesForCompletion(prefix: String, skkservDict: SKKServDict?, findFromAllDicts: Bool) -> [Candidate] {
+    func candidatesForCompletion(prefix: String, skkservDict: SKKServDict?, findFromAllDicts: Bool, skkservReferLimit: Int) -> [Candidate] {
         // 1文字のときは全探索するとめちゃくちゃ量が多いので完全一致だけ探す
         if prefix.count == 1 {
             return referDicts(prefix, option: nil, skkservDict: skkservDict, findFromAllDicts: findFromAllDicts)
@@ -403,17 +414,25 @@ enum UserDictAddSource {
                     candidate.withOriginal(Candidate.Original(midashi: prefix, word: candidate.word))
                 }
         }
-        // あとでいろいろ拡張するけどひとまずfindCompletionsの結果を[Candidate]にするだけ
-        // 別スレッドから実行したいのでひとまずskkserv以外を検索する
-        return findCompletionsDicts(prefix: prefix, skkservDict: skkservDict, findFromAllDicts: findFromAllDicts).flatMap { midashi in
+        // FIXME: Candidateの配列じゃなくて、(String, Candidate) のように見出し語と変換候補のタプルの配列を返すほうがよさそう
+        var candidates: [Candidate] = []
+        var skkservReferCount = 0
+        for midashi in findCompletionsDicts(prefix: prefix, skkservDict: skkservDict, findFromAllDicts: findFromAllDicts) {
+            // skkservを引くのは先頭skkservReferLimit件の見出しまで。残りはローカル辞書のみ引く。
+            let skkservDictForMidashi = skkservReferCount < skkservReferLimit ? skkservDict : nil
             // NOTE: 多すぎても役に立たないだろうと思うのでひとまず先頭100件に制限。設定項目にしてもよさそう
-            // FIXME: Candidateの配列じゃなくて、(String, Candidate) のように見出し語と変換候補のタプルの配列を返すほうがよさそう
-            referDicts(midashi, option: nil, skkservDict: skkservDict, findFromAllDicts: findFromAllDicts)
-                .prefix(100)
-                .map { candidate in
-                    candidate.withOriginal(Candidate.Original(midashi: midashi, word: candidate.word))
-                }
+            candidates.append(contentsOf:
+                referDicts(midashi, option: nil, skkservDict: skkservDictForMidashi, findFromAllDicts: findFromAllDicts)
+                    .prefix(100)
+                    .map { candidate in
+                        candidate.withOriginal(Candidate.Original(midashi: midashi, word: candidate.word))
+                    }
+            )
+            if skkservDictForMidashi != nil {
+                skkservReferCount += 1
+            }
         }
+        return candidates
     }
 
     /// ユーザー辞書を永続化する

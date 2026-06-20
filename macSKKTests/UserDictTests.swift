@@ -173,21 +173,92 @@ import Combine
             dateYomis: [],
             dateConversions: [])
         XCTAssertEqual(
-            userDict.candidatesForCompletion(prefix: "にほ", skkservDict: nil, findFromAllDicts: false),
+            userDict.candidatesForCompletion(prefix: "にほ", skkservDict: nil, findFromAllDicts: false, skkservReferLimit: 100),
             [
                 Candidate("日本", annotations: [annotation1], original: .init(midashi: "にほん", word: "日本"))
             ])
         // 全辞書を対象
         XCTAssertEqual(
-            userDict.candidatesForCompletion(prefix: "にほ", skkservDict: nil, findFromAllDicts: true),
+            userDict.candidatesForCompletion(prefix: "にほ", skkservDict: nil, findFromAllDicts: true, skkservReferLimit: 100),
             [
                 Candidate("日本", annotations: [annotation1], original: .init(midashi: "にほん", word: "日本")),
                 Candidate("二本", annotations: [], original: .init(midashi: "にほん", word: "二本")),
                 Candidate("日本語", annotations: [annotation2], original: .init(midashi: "にほんご", word: "日本語")),
             ])
         XCTAssertEqual(
-            userDict.candidatesForCompletion(prefix: "に", skkservDict: nil, findFromAllDicts: true),
+            userDict.candidatesForCompletion(prefix: "に", skkservDict: nil, findFromAllDicts: true, skkservReferLimit: 100),
             [Candidate("似", original: .init(midashi: "に", word: "似"))],
         )
+    }
+
+    /// skkservReferLimitに関わらず、ローカル辞書の候補は全見出しぶん実体化される (2ページ目以降も保たれる) ことを確認する。
+    func testCandidatesForCompletionMaterializesAllLocalCandidates() throws {
+        let privateMode = CurrentValueSubject<Bool, Never>(false)
+        let ignoreUserDictInPrivateMode = CurrentValueSubject<Bool, Never>(false)
+        // 「あい」で始まる見出しを多数用意し、各見出しは1候補 (prefixは2文字以上にする)
+        var entries: [String: [Word]] = [:]
+        for i in 0..<50 {
+            entries[String(format: "あい%03d", i)] = [Word("亜\(i)")]
+        }
+        let dict = MemoryDict(entries: entries, readonly: false, saveToUserDict: false)
+        let userDict = try UserDict(
+            dicts: [dict],
+            userDictEntries: [:],
+            privateMode: privateMode,
+            ignoreUserDictInPrivateMode: ignoreUserDictInPrivateMode,
+            dateYomis: [],
+            dateConversions: [])
+        // skkservを引かない場合、skkservReferLimitが小さくてもローカル候補は打ち切られず全件返る
+        XCTAssertEqual(userDict.candidatesForCompletion(prefix: "あい", skkservDict: nil, findFromAllDicts: true, skkservReferLimit: 9).count, 50)
+        XCTAssertEqual(userDict.candidatesForCompletion(prefix: "あい", skkservDict: nil, findFromAllDicts: true, skkservReferLimit: 0).count, 50)
+    }
+
+    /// skkservへの問い合わせ(refer)は先頭skkservReferLimit件の見出しに限られる一方、
+    /// ローカル辞書の候補は全見出しぶん実体化されることを確認する。
+    /// (補完表示の遅延の主因がskkserv refer回数なので、回数が抑えられることが速度改善の根拠になる)
+    final class CountingSKKServService: SKKServServiceProtocol, @unchecked Sendable {
+        private(set) var referCount = 0
+        init() {}
+        func refer(yomi: String, destination: SKKServDestination, timeout: TimeInterval) throws -> String {
+            referCount += 1
+            return "1/\(yomi)変換/"
+        }
+        func completion(yomi: String, destination: SKKServDestination, timeout: TimeInterval) throws -> String {
+            // 見出しはユーザー辞書側で用意するので、skkserv側の補完見出しは無し (見つからない応答)
+            return "4\(yomi)"
+        }
+        func disconnect() throws {}
+    }
+
+    func testCandidatesForCompletionLimitsSKKServRefer() throws {
+        let destination = SKKServDestination(host: "localhost", port: 1178, encoding: .utf8)
+        // ユーザー辞書に「あい…」見出しを50件用意 (各1候補)。skkserv側の補完見出しは無し。
+        func makeUserDict() throws -> UserDict {
+            var entries: [String: [Word]] = [:]
+            for i in 0..<50 {
+                entries[String(format: "あい%03d", i)] = [Word("亜\(i)")]
+            }
+            let dict = MemoryDict(entries: entries, readonly: false, saveToUserDict: false)
+            return try UserDict(
+                dicts: [dict],
+                userDictEntries: [:],
+                privateMode: CurrentValueSubject<Bool, Never>(false),
+                ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
+                dateYomis: [],
+                dateConversions: [])
+        }
+        // skkservReferLimit=9 -> 先頭9見出しだけskkservを引く。残り41件はローカルのみ。
+        let svc9 = CountingSKKServService()
+        let dict9 = SKKServDict(destination: destination, service: svc9, saveToUserDict: false, autoDisableThreshold: 1000)
+        let got9 = try makeUserDict().candidatesForCompletion(prefix: "あい", skkservDict: dict9, findFromAllDicts: true, skkservReferLimit: 9)
+        XCTAssertEqual(svc9.referCount, 9, "skkserv referは先頭9見出しに限られる")
+        // 先頭9見出し: ローカル1 + skkserv1 = 2候補、残り41見出し: ローカル1候補 => 9*2 + 41 = 59
+        XCTAssertEqual(got9.count, 59, "ローカル候補は全見出しぶん実体化される (2ページ目以降も保たれる)")
+        // skkservReferLimitを十分大きくすると全50見出しでskkservを引く
+        let svcAll = CountingSKKServService()
+        let dictAll = SKKServDict(destination: destination, service: svcAll, saveToUserDict: false, autoDisableThreshold: 1000)
+        let gotAll = try makeUserDict().candidatesForCompletion(prefix: "あい", skkservDict: dictAll, findFromAllDicts: true, skkservReferLimit: 1000)
+        XCTAssertEqual(svcAll.referCount, 50)
+        XCTAssertEqual(gotAll.count, 100, "全50見出しでローカル1+skkserv1 = 100候補")
     }
 }
