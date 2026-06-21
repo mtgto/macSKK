@@ -138,7 +138,7 @@ enum UserDictAddSource {
      *   - skkservDict: SKKServ辞書。nilのときはskkservを引かない
      *   - findFromAllDicts: ユーザー辞書以外を検索するか。trueにするのは補完候補検索時のみ。
      */
-    func referDicts(_ yomi: String, option: DictReferringOption?, skkservDict: SKKServDict?, findFromAllDicts: Bool) -> [Candidate] {
+    func referDicts(_ yomi: String, option: DictReferringOption?, skkservDict: (any SKKServDictProtocol)?, findFromAllDicts: Bool) -> [Candidate] {
         var result: [Candidate] = []
         var candidates = refer(yomi, option: option).map { word in
             let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
@@ -241,7 +241,7 @@ enum UserDictAddSource {
      *   - skkservDict: SKKServ辞書。nilのときはskkservを引かない
      *   - findFromAllDicts: ユーザー辞書以外を検索するか
      */
-    func findCompletionsDicts(prefix: String, skkservDict: SKKServDict?, findFromAllDicts: Bool) -> [String] {
+    func findCompletionsDicts(prefix: String, skkservDict: (any SKKServDictProtocol)?, findFromAllDicts: Bool) -> [String] {
         if prefix.isEmpty {
             return []
         }
@@ -407,7 +407,7 @@ enum UserDictAddSource {
      * NOTE: asyncにするかも? (skkservとかで便利そう)
      * AsyncStreamにするかも?
      */
-    func candidatesForCompletion(prefix: String, skkservDict: SKKServDict?, findFromAllDicts: Bool, skkservCandidateLimit: Int) -> [Candidate] {
+    func candidatesForCompletion(prefix: String, skkservDict: (any SKKServDictProtocol)?, findFromAllDicts: Bool, skkservCandidateLimit: Int) -> [Candidate] {
         // 1文字のときは全探索するとめちゃくちゃ量が多いので完全一致だけ探す
         if prefix.count == 1 {
             return referDicts(prefix, option: nil, skkservDict: skkservDict, findFromAllDicts: findFromAllDicts)
@@ -420,7 +420,7 @@ enum UserDictAddSource {
         var skkservReferCount = 0
         for midashi in findCompletionsDicts(prefix: prefix, skkservDict: skkservDict, findFromAllDicts: findFromAllDicts) {
             if results.count >= 100 { break }
-            let currentSkkservDict: SKKServDict? = skkservReferCount < skkservCandidateLimit ? skkservDict : nil
+            let currentSkkservDict = skkservReferCount < skkservCandidateLimit ? skkservDict : nil
             if currentSkkservDict != nil { skkservReferCount += 1 }
             let candidates = referDicts(midashi, option: nil, skkservDict: currentSkkservDict, findFromAllDicts: findFromAllDicts)
                 .prefix(100 - results.count)
