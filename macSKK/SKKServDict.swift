@@ -9,6 +9,13 @@ protocol SKKServDictProtocol {
     func findCompletions(prefix: String) -> [String]
 }
 
+/// 補完候補検索でのskkserv検索オプション
+struct CompletionSKKServOption {
+    let dict: any SKKServDictProtocol
+    /// skkservへのreferの問い合わせの上限回数
+    let candidateLimit: Int
+}
+
 /**
  * skkservを辞書として使う辞書定義
  *

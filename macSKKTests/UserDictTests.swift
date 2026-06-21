@@ -192,20 +192,20 @@ import Combine
             dateYomis: [],
             dateConversions: [])
         XCTAssertEqual(
-            userDict.candidatesForCompletion(prefix: "にほ", skkservDict: nil, findFromAllDicts: false, skkservCandidateLimit: 9),
+            userDict.candidatesForCompletion(prefix: "にほ", skkservOption: nil, findFromAllDicts: false),
             [
                 Candidate("日本", annotations: [annotation1], original: .init(midashi: "にほん", word: "日本"))
             ])
         // 全辞書を対象
         XCTAssertEqual(
-            userDict.candidatesForCompletion(prefix: "にほ", skkservDict: nil, findFromAllDicts: true, skkservCandidateLimit: 9),
+            userDict.candidatesForCompletion(prefix: "にほ", skkservOption: nil, findFromAllDicts: true),
             [
                 Candidate("日本", annotations: [annotation1], original: .init(midashi: "にほん", word: "日本")),
                 Candidate("二本", annotations: [], original: .init(midashi: "にほん", word: "二本")),
                 Candidate("日本語", annotations: [annotation2], original: .init(midashi: "にほんご", word: "日本語")),
             ])
         XCTAssertEqual(
-            userDict.candidatesForCompletion(prefix: "に", skkservDict: nil, findFromAllDicts: true, skkservCandidateLimit: 9),
+            userDict.candidatesForCompletion(prefix: "に", skkservOption: nil, findFromAllDicts: true),
             [Candidate("似", original: .init(midashi: "に", word: "似"))],
         )
     }
@@ -225,7 +225,7 @@ import Combine
             ignoreUserDictInPrivateMode: ignoreUserDictInPrivateMode,
             dateYomis: [],
             dateConversions: [])
-        let results = userDict.candidatesForCompletion(prefix: "あい", skkservDict: nil, findFromAllDicts: true, skkservCandidateLimit: 9)
+        let results = userDict.candidatesForCompletion(prefix: "あい", skkservOption: nil, findFromAllDicts: true)
         XCTAssertEqual(results.count, 100)
     }
 
@@ -250,7 +250,7 @@ import Combine
             dateYomis: [],
             dateConversions: [])
         let limit = 9
-        _ = userDict.candidatesForCompletion(prefix: "あい", skkservDict: mock, findFromAllDicts: true, skkservCandidateLimit: limit)
+        _ = userDict.candidatesForCompletion(prefix: "あい", skkservOption: CompletionSKKServOption(dict: mock, candidateLimit: limit), findFromAllDicts: true)
         XCTAssertEqual(mock.referCallCount, limit)
     }
 }
