@@ -173,20 +173,20 @@ import Combine
             dateYomis: [],
             dateConversions: [])
         XCTAssertEqual(
-            userDict.candidatesForCompletion(prefix: "にほ", skkservDict: nil, findFromAllDicts: false),
+            userDict.candidatesForCompletion(prefix: "にほ", skkservDict: nil, findFromAllDicts: false, skkservCandidateLimit: 9),
             [
                 Candidate("日本", annotations: [annotation1], original: .init(midashi: "にほん", word: "日本"))
             ])
         // 全辞書を対象
         XCTAssertEqual(
-            userDict.candidatesForCompletion(prefix: "にほ", skkservDict: nil, findFromAllDicts: true),
+            userDict.candidatesForCompletion(prefix: "にほ", skkservDict: nil, findFromAllDicts: true, skkservCandidateLimit: 9),
             [
                 Candidate("日本", annotations: [annotation1], original: .init(midashi: "にほん", word: "日本")),
                 Candidate("二本", annotations: [], original: .init(midashi: "にほん", word: "二本")),
                 Candidate("日本語", annotations: [annotation2], original: .init(midashi: "にほんご", word: "日本語")),
             ])
         XCTAssertEqual(
-            userDict.candidatesForCompletion(prefix: "に", skkservDict: nil, findFromAllDicts: true),
+            userDict.candidatesForCompletion(prefix: "に", skkservDict: nil, findFromAllDicts: true, skkservCandidateLimit: 9),
             [Candidate("似", original: .init(midashi: "に", word: "似"))],
         )
     }
