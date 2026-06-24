@@ -420,7 +420,7 @@ enum UserDictAddSource {
         var skkservReferCount = 0
         for midashi in findCompletionsDicts(prefix: prefix, skkservDict: skkservDict, findFromAllDicts: findFromAllDicts) {
             if results.count >= 100 { break }
-            let currentSkkservDict: (any SKKServDictProtocol)? = skkservOption.map { skkservReferCount < $0.candidateLimit ? $0.dict : nil } ?? nil
+            let currentSkkservDict: (any SKKServDictProtocol)? = skkservOption.map { skkservReferCount < $0.referLimit ? $0.dict : nil } ?? nil
             if currentSkkservDict != nil { skkservReferCount += 1 }
             let candidates = referDicts(midashi, option: nil, skkservDict: currentSkkservDict, findFromAllDicts: findFromAllDicts)
                 .prefix(100 - results.count)

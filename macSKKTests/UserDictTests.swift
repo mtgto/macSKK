@@ -250,7 +250,7 @@ import Combine
             dateYomis: [],
             dateConversions: [])
         let limit = 9
-        _ = userDict.candidatesForCompletion(prefix: "あい", skkservOption: CompletionSKKServOption(dict: mock, candidateLimit: limit), findFromAllDicts: true)
+        _ = userDict.candidatesForCompletion(prefix: "あい", skkservOption: CompletionSKKServOption(dict: mock, referLimit: limit), findFromAllDicts: true)
         XCTAssertEqual(mock.referCallCount, limit)
     }
 }

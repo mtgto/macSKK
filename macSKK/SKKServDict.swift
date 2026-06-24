@@ -13,7 +13,7 @@ protocol SKKServDictProtocol {
 struct CompletionSKKServOption {
     let dict: any SKKServDictProtocol
     /// skkservへのreferの問い合わせの上限回数
-    let candidateLimit: Int
+    let referLimit: Int
 }
 
 /**
