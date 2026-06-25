@@ -138,7 +138,7 @@ enum UserDictAddSource {
      *   - skkservDict: SKKServ辞書。nilのときはskkservを引かない
      *   - findFromAllDicts: ユーザー辞書以外を検索するか。trueにするのは補完候補検索時のみ。
      */
-    func referDicts(_ yomi: String, option: DictReferringOption?, skkservDict: SKKServDict?, findFromAllDicts: Bool) -> [Candidate] {
+    func referDicts(_ yomi: String, option: DictReferringOption?, skkservDict: (any SKKServDictProtocol)?, findFromAllDicts: Bool) -> [Candidate] {
         var result: [Candidate] = []
         var candidates = refer(yomi, option: option).map { word in
             let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
@@ -241,7 +241,7 @@ enum UserDictAddSource {
      *   - skkservDict: SKKServ辞書。nilのときはskkservを引かない
      *   - findFromAllDicts: ユーザー辞書以外を検索するか
      */
-    func findCompletionsDicts(prefix: String, skkservDict: SKKServDict?, findFromAllDicts: Bool) -> [String] {
+    func findCompletionsDicts(prefix: String, skkservDict: (any SKKServDictProtocol)?, findFromAllDicts: Bool) -> [String] {
         if prefix.isEmpty {
             return []
         }
@@ -391,11 +391,23 @@ enum UserDictAddSource {
 
     /**
      * 現在入力中のprefixに続く変換候補を返す。
+     * prefixが1文字しかないときは完全一致だけを返す。
+     * 2文字以上あるときは見つかったものから最大100件まで返す。
      *
-     * asyncにするかも? (skkservとかで便利そう)
+     * skkservへの変換候補問い合わせはファイル辞書に比べて引くのにコストがかかるため、別に上限を設ける。
+     * ``Global.displayCandidateCount`` 回数引いたらそれ以上は引かない。
+     * 将来AsyncStreamにできたら遅延しながら引くのはありかも。
+     *
+     * - Parameters:
+     *   - prefix: SKK辞書の見出しの一部。
+     *   - skkservOption: SKKServを検索対象とする場合に渡す。nilのときはskkservを引かない
+     *   - findFromAllDicts: ユーザー辞書以外を検索対象とするか
+     *
+     * NOTE: asyncにするかも? (skkservとかで便利そう)
      * AsyncStreamにするかも?
      */
-    func candidatesForCompletion(prefix: String, skkservDict: SKKServDict?, findFromAllDicts: Bool) -> [Candidate] {
+    func candidatesForCompletion(prefix: String, skkservOption: CompletionSKKServOption?, findFromAllDicts: Bool) -> [Candidate] {
+        let skkservDict = skkservOption?.dict
         // 1文字のときは全探索するとめちゃくちゃ量が多いので完全一致だけ探す
         if prefix.count == 1 {
             return referDicts(prefix, option: nil, skkservDict: skkservDict, findFromAllDicts: findFromAllDicts)
@@ -403,17 +415,26 @@ enum UserDictAddSource {
                     candidate.withOriginal(Candidate.Original(midashi: prefix, word: candidate.word))
                 }
         }
-        // あとでいろいろ拡張するけどひとまずfindCompletionsの結果を[Candidate]にするだけ
-        // 別スレッドから実行したいのでひとまずskkserv以外を検索する
-        return findCompletionsDicts(prefix: prefix, skkservDict: skkservDict, findFromAllDicts: findFromAllDicts).flatMap { midashi in
-            // NOTE: 多すぎても役に立たないだろうと思うのでひとまず先頭100件に制限。設定項目にしてもよさそう
-            // FIXME: Candidateの配列じゃなくて、(String, Candidate) のように見出し語と変換候補のタプルの配列を返すほうがよさそう
-            referDicts(midashi, option: nil, skkservDict: skkservDict, findFromAllDicts: findFromAllDicts)
-                .prefix(100)
+        // FIXME: Candidateの配列じゃなくて、(String, Candidate) のように見出し語と変換候補のタプルの配列を返すほうがよさそう
+        var results: [Candidate] = []
+        var skkservReferCount = 0
+        for midashi in findCompletionsDicts(prefix: prefix, skkservDict: skkservDict, findFromAllDicts: findFromAllDicts) {
+            if results.count >= 100 { break }
+            let currentSkkservDict: (any SKKServDictProtocol)?
+            if let option = skkservOption, skkservReferCount < option.referLimit {
+                 currentSkkservDict = option.dict
+                 skkservReferCount += 1
+             } else {
+                 currentSkkservDict = nil
+             }
+            let candidates = referDicts(midashi, option: nil, skkservDict: currentSkkservDict, findFromAllDicts: findFromAllDicts)
+                .prefix(100 - results.count)
                 .map { candidate in
                     candidate.withOriginal(Candidate.Original(midashi: midashi, word: candidate.word))
                 }
+            results.append(contentsOf: candidates)
         }
+        return results
     }
 
     /// ユーザー辞書を永続化する

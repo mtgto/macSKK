@@ -7,6 +7,25 @@ import Combine
 @testable import macSKK
 
 @MainActor final class UserDictTests: XCTestCase {
+    class MockSKKServDict: SKKServDictProtocol {
+        let saveToUserDict = false
+        let wordsPerYomi: [String: [Word]]
+        private(set) var referCallCount = 0
+
+        init(wordsPerYomi: [String: [Word]]) {
+            self.wordsPerYomi = wordsPerYomi
+        }
+
+        func refer(_ yomi: String, option: DictReferringOption?) -> [Word] {
+            referCallCount += 1
+            return wordsPerYomi[yomi] ?? []
+        }
+
+        func findCompletions(prefix: String) -> [String] {
+            return wordsPerYomi.keys.filter { $0.hasPrefix(prefix) && $0 != prefix }.sorted()
+        }
+    }
+
     @MainActor func testRefer() throws {
         let dict1 = MemoryDict(entries: ["い": [Word("胃"), Word("伊"), Word("位")]], readonly: true, saveToUserDict: false)
         let dict2 = MemoryDict(entries: ["い": [Word("胃"), Word("意")]], readonly: true, saveToUserDict: true)
@@ -173,21 +192,65 @@ import Combine
             dateYomis: [],
             dateConversions: [])
         XCTAssertEqual(
-            userDict.candidatesForCompletion(prefix: "にほ", skkservDict: nil, findFromAllDicts: false),
+            userDict.candidatesForCompletion(prefix: "にほ", skkservOption: nil, findFromAllDicts: false),
             [
                 Candidate("日本", annotations: [annotation1], original: .init(midashi: "にほん", word: "日本"))
             ])
         // 全辞書を対象
         XCTAssertEqual(
-            userDict.candidatesForCompletion(prefix: "にほ", skkservDict: nil, findFromAllDicts: true),
+            userDict.candidatesForCompletion(prefix: "にほ", skkservOption: nil, findFromAllDicts: true),
             [
                 Candidate("日本", annotations: [annotation1], original: .init(midashi: "にほん", word: "日本")),
                 Candidate("二本", annotations: [], original: .init(midashi: "にほん", word: "二本")),
                 Candidate("日本語", annotations: [annotation2], original: .init(midashi: "にほんご", word: "日本語")),
             ])
         XCTAssertEqual(
-            userDict.candidatesForCompletion(prefix: "に", skkservDict: nil, findFromAllDicts: true),
+            userDict.candidatesForCompletion(prefix: "に", skkservOption: nil, findFromAllDicts: true),
             [Candidate("似", original: .init(midashi: "に", word: "似"))],
         )
+    }
+
+    func testCandidatesForCompletionTotalLimit() throws {
+        let privateMode = CurrentValueSubject<Bool, Never>(false)
+        let ignoreUserDictInPrivateMode = CurrentValueSubject<Bool, Never>(false)
+        // 50見出し語×3候補=150件になるが返値は100件に絞られる
+        let entries = Dictionary(uniqueKeysWithValues: (1...50).map { i in
+            (String(format: "あい%02d", i), [Word("候補A\(i)"), Word("候補B\(i)"), Word("候補C\(i)")])
+        })
+        let dict = MemoryDict(entries: entries, readonly: false)
+        let userDict = try UserDict(
+            dicts: [dict],
+            userDictEntries: [:],
+            privateMode: privateMode,
+            ignoreUserDictInPrivateMode: ignoreUserDictInPrivateMode,
+            dateYomis: [],
+            dateConversions: [])
+        let results = userDict.candidatesForCompletion(prefix: "あい", skkservOption: nil, findFromAllDicts: true)
+        XCTAssertEqual(results.count, 100)
+    }
+
+    func testCandidatesForCompletionSkkservLimit() throws {
+        let privateMode = CurrentValueSubject<Bool, Never>(false)
+        let ignoreUserDictInPrivateMode = CurrentValueSubject<Bool, Never>(false)
+        // skkservへのreferの問い合わせがskkservCandidateLimit回で打ち切られることを確認
+        let yomis = (1...20).map { String(format: "あい%02d", $0) }
+        let dictEntries = Dictionary(uniqueKeysWithValues: yomis.enumerated().map { (i, yomi) in
+            (yomi, [Word("漢字\(i + 1)")])
+        })
+        let skkservEntries = Dictionary(uniqueKeysWithValues: yomis.enumerated().map { (i, yomi) in
+            (yomi, [Word("SKK\(i + 1)")])
+        })
+        let dict = MemoryDict(entries: dictEntries, readonly: false)
+        let mock = MockSKKServDict(wordsPerYomi: skkservEntries)
+        let userDict = try UserDict(
+            dicts: [dict],
+            userDictEntries: [:],
+            privateMode: privateMode,
+            ignoreUserDictInPrivateMode: ignoreUserDictInPrivateMode,
+            dateYomis: [],
+            dateConversions: [])
+        let limit = 9
+        _ = userDict.candidatesForCompletion(prefix: "あい", skkservOption: CompletionSKKServOption(dict: mock, referLimit: limit), findFromAllDicts: true)
+        XCTAssertEqual(mock.referCallCount, limit)
     }
 }

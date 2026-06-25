@@ -198,8 +198,9 @@ class InputController: IMKInputController {
             .receive(on: DispatchQueue.global())
             .compactMap { (yomi, cursorPosition) -> (String, Completion, NSRect)? in
                 let skkservDict = Global.searchCompletionsSkkserv ? Global.skkservDict : nil
+                let skkservOption = skkservDict.map { CompletionSKKServOption(dict: $0, referLimit: Global.displayCandidateCount) }
                 if Global.showCandidateForCompletion {
-                    let candidates = Global.dictionary.candidatesForCompletion(prefix: yomi, skkservDict: skkservDict, findFromAllDicts: Global.findCompletionFromAllDicts)
+                    let candidates = Global.dictionary.candidatesForCompletion(prefix: yomi, skkservOption: skkservOption, findFromAllDicts: Global.findCompletionFromAllDicts)
                     return (yomi, .candidates(candidates), cursorPosition)
                 } else {
                     let completions = Global.dictionary.findCompletionsDicts(prefix: yomi, skkservDict: skkservDict, findFromAllDicts: Global.findCompletionFromAllDicts)

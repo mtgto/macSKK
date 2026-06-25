@@ -3,13 +3,26 @@
 
 import Foundation
 
+protocol SKKServDictProtocol {
+    var saveToUserDict: Bool { get }
+    func refer(_ yomi: String, option: DictReferringOption?) -> [Word]
+    func findCompletions(prefix: String) -> [String]
+}
+
+/// 補完候補検索でのskkserv検索オプション
+struct CompletionSKKServOption {
+    let dict: any SKKServDictProtocol
+    /// skkservへのreferの問い合わせの上限回数
+    let referLimit: Int
+}
+
 /**
  * skkservを辞書として使う辞書定義
  *
  * 複数のskkservを想定してSKKServDict(サーバー数)とSKKServService(1つ)と分けているけど、
  * 当面はサーバー数を1に固定してSKKServDictにXPCとの通信処理をもってきたほうがシンプルかも?
  */
-final class SKKServDict {
+final class SKKServDict: SKKServDictProtocol {
     private let destination: SKKServDestination
     private let service: any SKKServServiceProtocol
     /// 変換履歴をユーザー辞書に保存するかどうか
