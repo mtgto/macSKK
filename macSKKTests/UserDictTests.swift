@@ -16,13 +16,13 @@ import Combine
             self.wordsPerYomi = wordsPerYomi
         }
 
-        func refer(_ yomi: String, option: DictReferringOption?) -> [Word] {
+        func refer(_ yomi: String, option: DictReferringOption?) -> Result<[Word], any Error> {
             referCallCount += 1
-            return wordsPerYomi[yomi] ?? []
+            return .success(wordsPerYomi[yomi] ?? [])
         }
 
-        func findCompletions(prefix: String) -> [String] {
-            return wordsPerYomi.keys.filter { $0.hasPrefix(prefix) && $0 != prefix }.sorted()
+        func findCompletions(prefix: String) -> Result<[String], any Error> {
+            return .success(wordsPerYomi.keys.filter { $0.hasPrefix(prefix) && $0 != prefix }.sorted())
         }
     }
 

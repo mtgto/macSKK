@@ -165,11 +165,16 @@ enum UserDictAddSource {
         }
         // ひとまずskkservを辞書として使う場合はファイル辞書より後に追加する
         if let skkservDict {
-            let skkservCandidates: [Candidate] = skkservDict.refer(yomi, option: option).map { word in
-                let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
-                return Candidate(word.word, annotations: annotations, saveToUserDict: skkservDict.saveToUserDict)
+            switch skkservDict.refer(yomi, option: option) {
+            case .success(let words):
+                Global.skkservConsecutiveErrorCount = 0
+                candidates.append(contentsOf: words.map { word in
+                    let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
+                    return Candidate(word.word, annotations: annotations, saveToUserDict: skkservDict.saveToUserDict)
+                })
+            case .failure:
+                Global.handleSKKServError()
             }
-            candidates.append(contentsOf: skkservCandidates)
         }
         if candidates.isEmpty {
             // yomiが数値を含む場合は "#" に置換して辞書を引く
@@ -198,16 +203,21 @@ enum UserDictAddSource {
                     }
                 }
                 if let skkservDict {
-                    let skkservCandidates: [Candidate] = skkservDict.refer(midashi, option: option).compactMap { word in
-                        guard let numberCandidate = try? NumberCandidate(yomi: word.word) else { return nil }
-                        guard let convertedWord = numberCandidate.toString(yomi: numberYomi) else { return nil }
-                        let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
-                        return Candidate(convertedWord,
-                                         annotations: annotations,
-                                         original: Candidate.Original(midashi: midashi, word: word.word),
-                                         saveToUserDict: skkservDict.saveToUserDict)
+                    switch skkservDict.refer(midashi, option: option) {
+                    case .success(let words):
+                        Global.skkservConsecutiveErrorCount = 0
+                        candidates.append(contentsOf: words.compactMap { word in
+                            guard let numberCandidate = try? NumberCandidate(yomi: word.word) else { return nil }
+                            guard let convertedWord = numberCandidate.toString(yomi: numberYomi) else { return nil }
+                            let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
+                            return Candidate(convertedWord,
+                                             annotations: annotations,
+                                             original: Candidate.Original(midashi: midashi, word: word.word),
+                                             saveToUserDict: skkservDict.saveToUserDict)
+                        })
+                    case .failure:
+                        Global.handleSKKServError()
                     }
-                    candidates.append(contentsOf: skkservCandidates)
                 }
             }
         }
@@ -258,10 +268,16 @@ enum UserDictAddSource {
             }
         }
         if let skkservDict {
-            for yomi in skkservDict.findCompletions(prefix: prefix) {
-                if seen.insert(yomi).inserted {
-                    results.append(yomi)
+            switch skkservDict.findCompletions(prefix: prefix) {
+            case .success(let completions):
+                Global.skkservConsecutiveErrorCount = 0
+                for yomi in completions {
+                    if seen.insert(yomi).inserted {
+                        results.append(yomi)
+                    }
                 }
+            case .failure:
+                Global.handleSKKServError()
             }
         }
         return results

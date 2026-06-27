@@ -3,7 +3,7 @@
 
 import Foundation
 
-protocol SKKServServiceProtocol {
+protocol SKKServServiceProtocol: Sendable {
     func refer(yomi: String, destination: SKKServDestination, timeout: TimeInterval) throws -> String
     func completion(yomi: String, destination: SKKServDestination, timeout: TimeInterval) throws -> String
     func disconnect() throws
@@ -14,8 +14,11 @@ protocol SKKServServiceProtocol {
  *
  * macSKKのプロセスはネットワーク (接続しにいく) 権限をSandboxで絞っており、
  * 実際にskkservにTCP接続するのはSKKServClientターゲットで定義しているXPCです。
+ *
+ * - NOTE: NSXPCConnectionはSendable非準拠だが、serviceはletで差し替え不可であり、
+ *         activate()やremoteObjectProxyはApple内部でスレッドセーフに実装されているとみなして@unchecked Sendableを付与している。
  */
-struct SKKServService: SKKServServiceProtocol {
+struct SKKServService: SKKServServiceProtocol, @unchecked Sendable {
     private let service: NSXPCConnection
 
     init() {
