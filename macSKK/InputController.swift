@@ -212,7 +212,8 @@ class InputController: IMKInputController {
                 guard let self else { return }
                 // 補完候補の検索を別スレッドで実行しているため、その間に読みが変更されたり変換を開始したり確定している可能性がある。
                 // 現在のStateMachineの読みが異なる場合は補完候補検索結果を捨てて何もしない
-                if case .composing(let composing) = self.stateMachine.state.inputMethod {
+                // okuri == nilのチェックはupdateMarkedTextの補完条件と合わせるため (送り仮名入力中は補完しない)
+                if case .composing(let composing) = self.stateMachine.state.inputMethod, composing.okuri == nil {
                     if yomi != composing.yomi(for: .hiragana, kanaRule: Global.kanaRule) {
                         logger.info("補完候補を検索しましたが現在の読みが補完候補検索時と変わっているため補完候補は表示しません")
                         return
