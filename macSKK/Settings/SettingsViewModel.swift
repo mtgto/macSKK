@@ -417,6 +417,7 @@ final class SettingsViewModel: ObservableObject {
         Global.inputModePanel.updateColorSets(inputModeColorSets)
         Global.showMarkedTextMarker = showMarkedTextMarker
         Global.completionConfirmationTimeLimit = Double(completionConfirmationTimeLimit) / 1000
+        Global.skkservAutoDisableThreshold = skkservAutoDisableThreshold
 
         // SKK-JISYO.Lのようなファイルの読み込みが遅いのでバックグラウンドで処理
         Task {
@@ -460,7 +461,8 @@ final class SettingsViewModel: ObservableObject {
             if setting.enabled {
                 let destination = SKKServDestination(host: setting.address, port: setting.port, encoding: setting.encoding)
                 logger.log("skkserv辞書を設定します")
-                Global.skkservDict = SKKServDict(destination: destination, saveToUserDict: setting.saveToUserDict, autoDisableThreshold: self.skkservAutoDisableThreshold)
+                Global.skkservConsecutiveErrorCount = 0
+                Global.skkservDict = SKKServDict(destination: destination, saveToUserDict: setting.saveToUserDict)
             } else {
                 logger.log("skkserv辞書は無効化されています")
                 Global.skkservDict = nil
@@ -470,7 +472,7 @@ final class SettingsViewModel: ObservableObject {
         }.store(in: &cancellables)
 
         $skkservAutoDisableThreshold.dropFirst().removeDuplicates().sink { threshold in
-            Global.skkservDict?.autoDisableThreshold = threshold
+            Global.skkservAutoDisableThreshold = threshold
             UserDefaults.app.set(threshold, forKey: UserDefaultsKeys.skkservAutoDisableThreshold)
             logger.log("SKKServの接続エラーによる自動無効化の閾値が\(threshold)回に設定されました。")
         }.store(in: &cancellables)
