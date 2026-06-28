@@ -43,6 +43,22 @@ public enum SKKServClientError: Error, CaseIterable {
         NWEndpoint.hostPort(host: NWEndpoint.Host(host), port: NWEndpoint.Port(integerLiteral: port))
     }
 
+    /**
+     * 見出し (読み) をこの接続先の `encoding` に従ってエンコードする。
+     *
+     * EUC-JP (`japaneseEUC`) は "ゔ" を表現できないため、このときだけ "う゛" に置換してからエンコードする。
+     * UTF-8など "ゔ" を表現できるエンコーディングではそのまま (ネイティブに) エンコードする。
+     * エンコードできなかった場合はnilを返す。
+     */
+    func encodeYomi(_ yomi: String) -> Data? {
+        if encoding == .japaneseEUC {
+            // SKK-JISYO.Lも "う゛" で登録されているのでEUC-JPでは "う゛" にフォールバックする
+            return yomi.replacing("ゔ", with: "う゛").data(using: .japaneseEUC)
+        } else {
+            return yomi.data(using: encoding)
+        }
+    }
+
     // MARK: NSSecureCoding
     public func encode(with coder: NSCoder) {
         coder.encode(host, forKey: "host")

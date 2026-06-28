@@ -18,7 +18,7 @@ struct SKKServDictView: View {
                     TextField("Address", text: $settingsViewModel.skkservDictSetting.address)
                     TextField("TCP Port", value: $settingsViewModel.skkservDictSetting.port,
                               format: .number.grouping(.never), prompt: Text("1178"))
-                    Picker("Response Encoding", selection: $settingsViewModel.skkservDictSetting.encoding) {
+                    Picker("Encoding", selection: $settingsViewModel.skkservDictSetting.encoding) {
                         ForEach(AllowedEncoding.allCases, id: \.encoding) { allowedEncoding in
                             Text(allowedEncoding.description).tag(allowedEncoding.encoding)
                         }

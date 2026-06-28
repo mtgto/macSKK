@@ -8,7 +8,7 @@ final class SKKServDictSetting: ObservableObject {
     @Published var address: String
     /// 通常は1178になっていることが多い
     @Published var port: UInt16
-    /// 正常応答時のエンコーディング。通常はEUC-JPのことが多い。yaskkserv2などUTF-8を返すことが可能な実装もある。
+    /// skkservとの通信に使うエンコーディング (見出し送信・応答受信の両方)。通常はEUC-JPのことが多い。yaskkserv2など見出し・応答ともUTF-8を扱える実装もある。
     @Published var encoding: String.Encoding
     /// 変換履歴をユーザー辞書に保存するかどうか
     @Published var saveToUserDict: Bool
