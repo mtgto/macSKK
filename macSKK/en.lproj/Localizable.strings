@@ -115,7 +115,8 @@
 "Connection Test" = "Connection Test";
 "Address" = "Address";
 "TCP Port" = "TCP Port No.";
-"Encoding" = "Encoding";
+"Request Encoding" = "Request Encoding";
+"Response Encoding" = "Response Encoding";
 "Save conversion history to User Dictionary" = "Save conversion history to User Dictionary";
 "Search completions" = "Search completions";
 "SKKServAutoDisableThreshold" = "The number of consecutive errors required to disable";

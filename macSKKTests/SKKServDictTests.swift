@@ -19,7 +19,7 @@ final class SKKServDictTests: XCTestCase {
         func disconnect() throws {}
     }
 
-    let destination = SKKServDestination(host: "localhost", port: 1178, encoding: .japaneseEUC)
+    let destination = SKKServDestination(host: "localhost", port: 1178, requestEncoding: .japaneseEUC, responseEncoding: .japaneseEUC)
 
     func testRefer() async throws {
         let service = MockedSKKServService(response: "1/変換/返還/")

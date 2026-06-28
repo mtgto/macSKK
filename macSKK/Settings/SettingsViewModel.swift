@@ -458,7 +458,7 @@ final class SettingsViewModel: ObservableObject {
 
         $skkservDictSetting.sink { setting in
             if setting.enabled {
-                let destination = SKKServDestination(host: setting.address, port: setting.port, encoding: setting.encoding)
+                let destination = SKKServDestination(host: setting.address, port: setting.port, requestEncoding: setting.requestEncoding, responseEncoding: setting.responseEncoding)
                 logger.log("skkserv辞書を設定します")
                 Global.skkservDict = SKKServDict(destination: destination, saveToUserDict: setting.saveToUserDict, autoDisableThreshold: self.skkservAutoDisableThreshold)
             } else {
@@ -925,7 +925,8 @@ final class SettingsViewModel: ObservableObject {
             enabled: true,
             address: "127.0.0.1",
             port: 1178,
-            encoding: .japaneseEUC,
+            requestEncoding: .japaneseEUC,
+            responseEncoding: .japaneseEUC,
             saveToUserDict: true,
             enableCompletion: false)
         selectCandidateKeys = "123456789"

@@ -33,7 +33,7 @@ class SKKServClient: NSObject, SKKServClientProtocol {
                     connection.receive { result in
                         switch result {
                         case .success(let data):
-                            if let data, let version = String(data: data, encoding: destination.encoding) {
+                            if let data, let version = String(data: data, encoding: destination.responseEncoding) {
                                 reply(version, nil)
                             } else {
                                 reply(nil, SKKServClientError.invalidResponse)
@@ -74,17 +74,8 @@ class SKKServClient: NSObject, SKKServClientProtocol {
                     connection.receive { result in
                         switch result {
                         case .success(let data):
-                            if let data {
-                                if destination.encoding == .japaneseEUC, let response = try? data.eucJis2004String() {
-                                    return reply(response, nil)
-                                } else if let response = String(data: data, encoding: destination.encoding) {
-                                    return reply(response, nil)
-                                } else if destination.encoding != .japaneseEUC && data.starts(with: [0x34]) {
-                                    // yaskkserv2のように変換候補があったときはUTF-8で、そうじゃないときはEUC-JPで返すskkserv用
-                                    if let response = String(data: data, encoding: .japaneseEUC) {
-                                        return reply(response, nil)
-                                    }
-                                }
+                            if let data, let response = destination.decodeResponse(data) {
+                                return reply(response, nil)
                             }
                             logger.error("skkservからの応答を文字列として解釈できませんでした")
                             reply(nil, SKKServClientError.invalidResponse)
@@ -130,17 +121,8 @@ class SKKServClient: NSObject, SKKServClientProtocol {
                     connection.receive { result in
                         switch result {
                         case .success(let data):
-                            if let data {
-                                if destination.encoding == .japaneseEUC, let response = try? data.eucJis2004String() {
-                                    return reply(response, nil)
-                                } else if let response = String(data: data, encoding: destination.encoding) {
-                                    return reply(response, nil)
-                                } else if destination.encoding != .japaneseEUC && data.starts(with: [0x34]) {
-                                    // yaskkserv2のように変換候補があったときはUTF-8で、そうじゃないときはEUC-JPで返すskkserv用
-                                    if let response = String(data: data, encoding: .japaneseEUC) {
-                                        return reply(response, nil)
-                                    }
-                                }
+                            if let data, let response = destination.decodeResponse(data) {
+                                return reply(response, nil)
                             }
                             logger.error("skkservからの応答を文字列として解釈できませんでした")
                             reply(nil, SKKServClientError.invalidResponse)
