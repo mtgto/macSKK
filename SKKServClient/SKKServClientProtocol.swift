@@ -58,7 +58,8 @@ public enum SKKServClientError: Error, CaseIterable {
      */
     func encodeYomi(_ yomi: String) -> Data? {
         if requestEncoding == .japaneseEUC {
-            // SKK-JISYO.Lも "う゛" で登録されているのでEUC-JPでは "う゛" にフォールバックする
+            // 一部のEUC-JP辞書やユーザー辞書は "ゔ" を "う゛" で登録しているため、
+            // EUC-JPで送るときは "う゛" にフォールバックしてそれらに当てられるようにする
             return yomi.replacing("ゔ", with: "う゛").data(using: .japaneseEUC)
         } else {
             return yomi.data(using: requestEncoding)
