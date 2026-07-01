@@ -100,6 +100,7 @@
 		CE8DFE092CBEAA2900A24230 /* Character+AdditionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE8DFE082CBEAA1F00A24230 /* Character+AdditionsTests.swift */; };
 		CE97887B2A9B93EB00F9B196 /* DirectModeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE97887A2A9B93EB00F9B196 /* DirectModeView.swift */; };
 		CEA253942E228E2000618E64 /* SKKServDictSettingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA253932E228E2000618E64 /* SKKServDictSettingTests.swift */; };
+		CEAB00012E228E2000618E64 /* SKKServDestinationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEAB00002E228E2000618E64 /* SKKServDestinationTests.swift */; };
 		CEA253962E2290AC00618E64 /* SKKServDictSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA253952E2290AC00618E64 /* SKKServDictSetting.swift */; };
 		CEA253982E23AB7600618E64 /* DictSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA253972E23AB7600618E64 /* DictSetting.swift */; };
 		CEA2539A2E23DA9000618E64 /* DictSettingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA253992E23DA9000618E64 /* DictSettingTests.swift */; };
@@ -300,6 +301,7 @@
 		CE8DFE082CBEAA1F00A24230 /* Character+AdditionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Character+AdditionsTests.swift"; sourceTree = "<group>"; };
 		CE97887A2A9B93EB00F9B196 /* DirectModeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectModeView.swift; sourceTree = "<group>"; };
 		CEA253932E228E2000618E64 /* SKKServDictSettingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServDictSettingTests.swift; sourceTree = "<group>"; };
+		CEAB00002E228E2000618E64 /* SKKServDestinationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServDestinationTests.swift; sourceTree = "<group>"; };
 		CEA253952E2290AC00618E64 /* SKKServDictSetting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServDictSetting.swift; sourceTree = "<group>"; };
 		CEA253972E23AB7600618E64 /* DictSetting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictSetting.swift; sourceTree = "<group>"; };
 		CEA253992E23DA9000618E64 /* DictSettingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictSettingTests.swift; sourceTree = "<group>"; };
@@ -572,6 +574,7 @@
 				CE2573D02F9E557800533A05 /* Data+GzipTests.swift */,
 				CEA253992E23DA9000618E64 /* DictSettingTests.swift */,
 				CEA253932E228E2000618E64 /* SKKServDictSettingTests.swift */,
+				CEAB00002E228E2000618E64 /* SKKServDestinationTests.swift */,
 				CE06CA332AAC199500E80E5E /* UserDict+Utilities.swift */,
 				CE39FA942BEB942B00E293F0 /* Character+KeyCode.swift */,
 				CED7CA572A83BFE9004EF988 /* fixture */,
@@ -999,6 +1002,7 @@
 				CE4CB5CE2AD55DF90046FA34 /* NumberEntryTests.swift in Sources */,
 				CE49A2782C19E07800D53CFE /* KeyBindingSetTests.swift in Sources */,
 				CEA253942E228E2000618E64 /* SKKServDictSettingTests.swift in Sources */,
+				CEAB00012E228E2000618E64 /* SKKServDestinationTests.swift in Sources */,
 				CEADA44D2B025A8A0026E2BD /* EntryTests.swift in Sources */,
 				CEA78FAA295EBCAC00B67E25 /* StateMachineTests.swift in Sources */,
 				CE496C952B440BBD001C623C /* Data+EucJis2004Tests.swift in Sources */,

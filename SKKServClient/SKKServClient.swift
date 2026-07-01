@@ -33,7 +33,7 @@ class SKKServClient: NSObject, SKKServClientProtocol {
                     connection.receive { result in
                         switch result {
                         case .success(let data):
-                            if let data, let version = String(data: data, encoding: .japaneseEUC) {
+                            if let data, let version = String(data: data, encoding: destination.responseEncoding) {
                                 reply(version, nil)
                             } else {
                                 reply(nil, SKKServClientError.invalidResponse)
@@ -59,10 +59,8 @@ class SKKServClient: NSObject, SKKServClientProtocol {
                     logger.error("skkservへの接続ができていません")
                     return reply(nil, SKKServClientError.unexpected)
                 }
-                // "ゔ" は Encoding.japaneseEUC では変換できないので「う゛」にしてから参照する。
-                // EUC-JIS-2004形式なら変換するのでそうしてもいいかも?
-                // ただSKK-JISYO.Lも「う゛」で登録されているので固定でいい気がする
-                guard let encoded = yomi.replacing("ゔ", with: "う゛").data(using: .japaneseEUC) else {
+                // 見出しは接続先のencodingに従ってエンコードする (EUC-JPのときだけ "ゔ"→"う゛" 置換)
+                guard let encoded = destination.encodeYomi(yomi) else {
                     logger.error("見出しをDataに変換できませんでした")
                     return reply(nil, SKKServClientError.unexpected)
                 }
@@ -76,17 +74,8 @@ class SKKServClient: NSObject, SKKServClientProtocol {
                     connection.receive { result in
                         switch result {
                         case .success(let data):
-                            if let data {
-                                if destination.encoding == .japaneseEUC, let response = try? data.eucJis2004String() {
-                                    return reply(response, nil)
-                                } else if let response = String(data: data, encoding: destination.encoding) {
-                                    return reply(response, nil)
-                                } else if destination.encoding != .japaneseEUC && data.starts(with: [0x34]) {
-                                    // yaskkserv2のように変換候補があったときはUTF-8で、そうじゃないときはEUC-JPで返すskkserv用
-                                    if let response = String(data: data, encoding: .japaneseEUC) {
-                                        return reply(response, nil)
-                                    }
-                                }
+                            if let data, let response = destination.decodeResponse(data) {
+                                return reply(response, nil)
                             }
                             logger.error("skkservからの応答を文字列として解釈できませんでした")
                             reply(nil, SKKServClientError.invalidResponse)
@@ -117,10 +106,8 @@ class SKKServClient: NSObject, SKKServClientProtocol {
                     logger.error("skkservへの接続ができていません")
                     return reply(nil, SKKServClientError.unexpected)
                 }
-                // "ゔ" は Encoding.japaneseEUC では変換できないので「う゛」にしてから参照する。
-                // EUC-JIS-2004形式なら変換するのでそうしてもいいかも?
-                // ただSKK-JISYO.Lも「う゛」で登録されているので固定でいい気がする
-                guard let encoded = yomi.replacing("ゔ", with: "う゛").data(using: .japaneseEUC) else {
+                // 見出しは接続先のencodingに従ってエンコードする (EUC-JPのときだけ "ゔ"→"う゛" 置換)
+                guard let encoded = destination.encodeYomi(yomi) else {
                     logger.error("見出しをDataに変換できませんでした")
                     return reply(nil, SKKServClientError.unexpected)
                 }
@@ -134,17 +121,8 @@ class SKKServClient: NSObject, SKKServClientProtocol {
                     connection.receive { result in
                         switch result {
                         case .success(let data):
-                            if let data {
-                                if destination.encoding == .japaneseEUC, let response = try? data.eucJis2004String() {
-                                    return reply(response, nil)
-                                } else if let response = String(data: data, encoding: destination.encoding) {
-                                    return reply(response, nil)
-                                } else if destination.encoding != .japaneseEUC && data.starts(with: [0x34]) {
-                                    // yaskkserv2のように変換候補があったときはUTF-8で、そうじゃないときはEUC-JPで返すskkserv用
-                                    if let response = String(data: data, encoding: .japaneseEUC) {
-                                        return reply(response, nil)
-                                    }
-                                }
+                            if let data, let response = destination.decodeResponse(data) {
+                                return reply(response, nil)
                             }
                             logger.error("skkservからの応答を文字列として解釈できませんでした")
                             reply(nil, SKKServClientError.invalidResponse)

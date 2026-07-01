@@ -18,7 +18,13 @@ struct SKKServDictView: View {
                     TextField("Address", text: $settingsViewModel.skkservDictSetting.address)
                     TextField("TCP Port", value: $settingsViewModel.skkservDictSetting.port,
                               format: .number.grouping(.never), prompt: Text("1178"))
-                    Picker("Response Encoding", selection: $settingsViewModel.skkservDictSetting.encoding) {
+                    Picker("Request Encoding", selection: $settingsViewModel.skkservDictSetting.requestEncoding) {
+                        ForEach(AllowedEncoding.allCases, id: \.encoding) { allowedEncoding in
+                            Text(allowedEncoding.description).tag(allowedEncoding.encoding)
+                        }
+                    }
+                    .pickerStyle(.radioGroup)
+                    Picker("Response Encoding", selection: $settingsViewModel.skkservDictSetting.responseEncoding) {
                         ForEach(AllowedEncoding.allCases, id: \.encoding) { allowedEncoding in
                             Text(allowedEncoding.description).tag(allowedEncoding.encoding)
                         }
@@ -47,7 +53,8 @@ struct SKKServDictView: View {
                             let setting = settingsViewModel.skkservDictSetting
                             let destination = SKKServDestination(host: setting.address,
                                                                  port: setting.port,
-                                                                 encoding: setting.encoding)
+                                                                 requestEncoding: setting.requestEncoding,
+                                                                 responseEncoding: setting.responseEncoding)
                             testing = true
                             let result = Result {
                                 try skkservService.completion(yomi: yomi, destination: destination, timeout: 1.0)
@@ -68,7 +75,8 @@ struct SKKServDictView: View {
                             let setting = settingsViewModel.skkservDictSetting
                             let destination = SKKServDestination(host: setting.address,
                                                                  port: setting.port,
-                                                                 encoding: setting.encoding)
+                                                                 requestEncoding: setting.requestEncoding,
+                                                                 responseEncoding: setting.responseEncoding)
                             testing = true
                             let result = Result {
                                 try skkservService.refer(yomi: yomi, destination: destination, timeout: 1.0)
@@ -102,7 +110,8 @@ struct SKKServDictView: View {
                     let setting = settingsViewModel.skkservDictSetting
                     let destination = SKKServDestination(host: setting.address,
                                                          port: setting.port,
-                                                         encoding: setting.encoding)
+                                                         requestEncoding: setting.requestEncoding,
+                                                         responseEncoding: setting.responseEncoding)
                     testing = true
                     information = String(localized: "SKKServDictTesting")
                     let result = Result {
@@ -173,7 +182,8 @@ struct SKKServDictView: View {
         enabled: true,
         address: "127.0.0.1",
         port: 1178,
-        encoding: .japaneseEUC,
+        requestEncoding: .japaneseEUC,
+        responseEncoding: .japaneseEUC,
         saveToUserDict: true,
         enableCompletion: false)
     return SKKServDictView(settingsViewModel: try! SettingsViewModel(skkservDictSetting: setting),
