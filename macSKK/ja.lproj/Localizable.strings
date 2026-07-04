@@ -115,6 +115,7 @@
 "Connection Test" = "接続テスト";
 "Address" = "アドレス";
 "TCP Port" = "TCPポート番号";
+"Request Encoding" = "見出しエンコーディング";
 "Response Encoding" = "応答エンコーディング";
 "Save conversion history to User Dictionary" = "ユーザー辞書に変換履歴を保存する";
 "Search completions" = "補完候補を検索する";
