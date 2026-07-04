@@ -36,17 +36,14 @@ final class SKKServDestinationTests: XCTestCase {
         XCTAssertEqual(destination.decodeResponse("1/変換/返還/\n".data(using: .japaneseEUC)!), "1/変換/返還/\n")
     }
 
-    // 応答UTF-8設定なのに候補なし応答がEUCエコーで返る混在サーバ:
-    // エラーにせず候補なし ("1/" で始まらない文字列) として扱えること
+    // 応答UTF-8設定なのに候補なし応答がEUCエコーで返る混在サーバ: デコード失敗なのでnilを返す
     func testDecodeResponseUTF8ButEucNotFound() throws {
         let destination = SKKServDestination(host: "localhost", port: 1178, requestEncoding: .japaneseEUC, responseEncoding: .utf8)
         let eucNotFound = "4へんかん".data(using: .japaneseEUC)!  // UTF-8としては不正なバイト列
-        let result = try XCTUnwrap(destination.decodeResponse(eucNotFound))
-        XCTAssertFalse(result.hasPrefix("1/"))  // 上位層で候補なし扱いになる
-        XCTAssertEqual(result.first, "4")
+        XCTAssertNil(destination.decodeResponse(eucNotFound))
     }
 
-    // 候補あり ("1") なのにデコードできないときは候補を失わないようnilを返す
+    // デコードできないときはnilを返す
     func testDecodeResponseUndecodableFound() throws {
         let destination = SKKServDestination(host: "localhost", port: 1178, requestEncoding: .utf8, responseEncoding: .utf8)
         let broken = Data([0x31, 0x2f, 0xa4, 0xd8, 0x2f])  // "1/" + 不正なUTF-8 + "/"

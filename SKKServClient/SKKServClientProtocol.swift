@@ -68,31 +68,15 @@ public enum SKKServClientError: Error, CaseIterable {
 
     /**
      * 応答データを `responseEncoding` に従ってデコードする。
-     *
-     * 応答の先頭バイトは変換候補あり ("1" = 0x31) / なし ("4" = 0x34) のどちらもASCIIなので、
-     * エンコーディングに依らず先頭バイトだけで両者を区別できる。これを利用して:
-     * - 候補あり ("1" 始まり) をデコードできなかったときだけnilを返す (候補を失うので呼び出し側でエラー扱いする)。
-     * - 候補なし (それ以外) はデコードに失敗しても、上位層が中身を捨てるのでlossyにデコードした文字列を返す。
-     *
-     * これにより「見出しはEUCで受け取り、候補はUTF-8・候補なしはEUCで返す」ような混在応答を返すサーバでも、
-     * 候補なし応答で不正なバイト列を理由に接続エラー扱いして辞書が自動無効化されるのを防ぐ。
+     * デコードできなかった場合はnilを返す。
      */
     func decodeResponse(_ data: Data) -> String? {
-        let decoded: String? = if responseEncoding == .japaneseEUC {
+        if responseEncoding == .japaneseEUC {
             // EUC-JISX0213 (JIS X 0213対応) としてlibiconvでデコードする
-            try? data.eucJis2004String()
+            return try? data.eucJis2004String()
         } else {
-            String(data: data, encoding: responseEncoding)
+            return String(data: data, encoding: responseEncoding)
         }
-        if let decoded {
-            return decoded
-        }
-        // 厳密にデコードできなかった場合、候補あり ("1" 始まり) なら候補を失うのでnil (エラー)。
-        // 候補なしならば中身は上位層で捨てられるのでlossyデコード (不正バイトはU+FFFDに置換) で返す。
-        if data.first == 0x31 {
-            return nil
-        }
-        return String(decoding: data, as: UTF8.self)
     }
 
     // MARK: NSSecureCoding
