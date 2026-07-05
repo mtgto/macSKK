@@ -3,7 +3,7 @@
 
 import Foundation
 
-protocol SKKServDictProtocol {
+protocol SKKServDictProtocol: Sendable {
     var saveToUserDict: Bool { get }
     func refer(_ yomi: String, option: DictReferringOption?) -> Result<[Word], any Error>
     func findCompletions(prefix: String) -> Result<[String], any Error>
