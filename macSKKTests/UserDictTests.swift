@@ -25,11 +25,16 @@ final class UserDictTests: XCTestCase {
         super.tearDown()
     }
 
-    class MockSKKServDict: SKKServDictProtocol {
+    /**
+     * `referCallCount` は `@MainActor` に隔離した可変状態としているため、クラス自体は素直にSendableにできる。
+     * `refer(_:option:)` はプロトコル要件でnonisolatedな同期メソッドだが、
+     * 実際の呼び出しは常にMainActor経由であることが保証されているためassumeIsolatedで安全にアクセスする。
+     */
+    final class MockSKKServDict: SKKServDictProtocol, Sendable {
         let saveToUserDict = false
         let wordsPerYomi: [String: [Word]]
         let shouldFail: Bool
-        private(set) var referCallCount = 0
+        @MainActor private(set) var referCallCount = 0
 
         init(wordsPerYomi: [String: [Word]], shouldFail: Bool = false) {
             self.wordsPerYomi = wordsPerYomi
@@ -37,7 +42,7 @@ final class UserDictTests: XCTestCase {
         }
 
         func refer(_ yomi: String, option: DictReferringOption?) -> Result<[Word], any Error> {
-            referCallCount += 1
+            MainActor.assumeIsolated { referCallCount += 1 }
             if shouldFail {
                 return .failure(NSError(domain: "MockSKKServDict", code: 0))
             }
@@ -45,6 +50,9 @@ final class UserDictTests: XCTestCase {
         }
 
         func findCompletions(prefix: String) -> Result<[String], any Error> {
+            if shouldFail {
+                return .failure(NSError(domain: "MockSKKServDict", code: 0))
+            }
             return .success(wordsPerYomi.keys.filter { $0.hasPrefix(prefix) && $0 != prefix }.sorted())
         }
     }
