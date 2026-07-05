@@ -291,4 +291,31 @@ final class UserDictTests: XCTestCase {
         _ = userDict.referDicts("あい")
         XCTAssertNil(Global.skkservDict)
     }
+
+    // candidatesForCompletionの1回の呼び出し中にskkservが自動無効化された場合、
+    // それ以降のskkservへの問い合わせを打ち切ることを確認する
+    @MainActor func testCandidatesForCompletionStopsRequeryingAfterAutoDisabled() throws {
+        let yomis = (1...20).map { String(format: "あい%02d", $0) }
+        let dictEntries = Dictionary(uniqueKeysWithValues: yomis.enumerated().map { (i, yomi) in
+            (yomi, [Word("漢字\(i + 1)")])
+        })
+        let dict = MemoryDict(entries: dictEntries, readonly: false)
+        let mock = MockSKKServDict(wordsPerYomi: [:], shouldFail: true)
+        Global.skkservDict = mock
+        Global.skkservConsecutiveErrorCount = 0
+        // findCompletionsDicts内のmock.findCompletions()呼び出しで1回分エラーカウントが消費されるため、
+        // 残り2回のmock.refer()失敗で無効化されるように3を指定する
+        Global.skkservAutoDisableThreshold = 3
+        let userDict = try UserDict(
+            dicts: [dict],
+            userDictEntries: [:],
+            privateMode: CurrentValueSubject<Bool, Never>(false),
+            ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
+            dateYomis: [],
+            dateConversions: [])
+        _ = userDict.candidatesForCompletion(prefix: "あい", skkservOption: CompletionSKKServOption(dict: mock, referLimit: 9), findFromAllDicts: true)
+        // referLimitの9回まで問い合わせを続けず、無効化された時点で打ち切られる
+        XCTAssertEqual(mock.referCallCount, 2)
+        XCTAssertNil(Global.skkservDict)
+    }
 }

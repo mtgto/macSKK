@@ -164,7 +164,9 @@ enum UserDictAddSource {
             }
         }
         // ひとまずskkservを辞書として使う場合はファイル辞書より後に追加する
-        if let skkservDict {
+        // NOTE: Global.skkservDictは接続エラーが連続するとnilに変わるが、それを呼び出し側でチェックできてない。
+        // Swift Concurrency対応で呼び出し元で修正予定。
+        if let skkservDict, Global.skkservDict != nil {
             switch skkservDict.refer(yomi, option: option) {
             case .success(let words):
                 Global.skkservConsecutiveErrorCount = 0
@@ -202,7 +204,9 @@ enum UserDictAddSource {
                         })
                     }
                 }
-                if let skkservDict {
+                // NOTE: Global.skkservDictは接続エラーが連続するとnilに変わるが、それを呼び出し側でチェックできてない。
+                // Swift Concurrency対応で呼び出し元で修正予定。
+                if let skkservDict, Global.skkservDict != nil {
                     switch skkservDict.refer(midashi, option: option) {
                     case .success(let words):
                         Global.skkservConsecutiveErrorCount = 0
