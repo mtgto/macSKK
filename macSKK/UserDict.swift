@@ -164,12 +164,15 @@ enum UserDictAddSource {
             }
         }
         // ひとまずskkservを辞書として使う場合はファイル辞書より後に追加する
-        if let skkservDict {
-            let skkservCandidates: [Candidate] = skkservDict.refer(yomi, option: option).map { word in
-                let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
-                return Candidate(word.word, annotations: annotations, saveToUserDict: skkservDict.saveToUserDict)
+        // NOTE: Global.skkservDictは接続エラーが連続するとnilに変わるが、それを呼び出し側でチェックできてない。
+        // Swift Concurrency対応で呼び出し元で修正予定。
+        if let skkservDict, Global.skkservDict != nil {
+            handleSKKServResult(skkservDict.refer(yomi, option: option)) { words in
+                candidates.append(contentsOf: words.map { word in
+                    let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
+                    return Candidate(word.word, annotations: annotations, saveToUserDict: skkservDict.saveToUserDict)
+                })
             }
-            candidates.append(contentsOf: skkservCandidates)
         }
         if candidates.isEmpty {
             // yomiが数値を含む場合は "#" に置換して辞書を引く
@@ -197,17 +200,20 @@ enum UserDictAddSource {
                         })
                     }
                 }
-                if let skkservDict {
-                    let skkservCandidates: [Candidate] = skkservDict.refer(midashi, option: option).compactMap { word in
-                        guard let numberCandidate = try? NumberCandidate(yomi: word.word) else { return nil }
-                        guard let convertedWord = numberCandidate.toString(yomi: numberYomi) else { return nil }
-                        let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
-                        return Candidate(convertedWord,
-                                         annotations: annotations,
-                                         original: Candidate.Original(midashi: midashi, word: word.word),
-                                         saveToUserDict: skkservDict.saveToUserDict)
+                // NOTE: Global.skkservDictは接続エラーが連続するとnilに変わるが、それを呼び出し側でチェックできてない。
+                // Swift Concurrency対応で呼び出し元で修正予定。
+                if let skkservDict, Global.skkservDict != nil {
+                    handleSKKServResult(skkservDict.refer(midashi, option: option)) { words in
+                        candidates.append(contentsOf: words.compactMap { word in
+                            guard let numberCandidate = try? NumberCandidate(yomi: word.word) else { return nil }
+                            guard let convertedWord = numberCandidate.toString(yomi: numberYomi) else { return nil }
+                            let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
+                            return Candidate(convertedWord,
+                                             annotations: annotations,
+                                             original: Candidate.Original(midashi: midashi, word: word.word),
+                                             saveToUserDict: skkservDict.saveToUserDict)
+                        })
                     }
-                    candidates.append(contentsOf: skkservCandidates)
                 }
             }
         }
@@ -258,9 +264,11 @@ enum UserDictAddSource {
             }
         }
         if let skkservDict {
-            for yomi in skkservDict.findCompletions(prefix: prefix) {
-                if seen.insert(yomi).inserted {
-                    results.append(yomi)
+            handleSKKServResult(skkservDict.findCompletions(prefix: prefix)) { completions in
+                for yomi in completions {
+                    if seen.insert(yomi).inserted {
+                        results.append(yomi)
+                    }
                 }
             }
         }
@@ -488,6 +496,31 @@ enum UserDictAddSource {
     private func wordToCandidate(_ word: Word, original: Candidate.Original?, saveToUserDict: Bool) -> Candidate {
         let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
         return Candidate(word.word, annotations: annotations, original: original, saveToUserDict: saveToUserDict)
+    }
+
+    /**
+     * skkservへの問い合わせ結果を処理する。成功時はエラーカウントをリセットしてonSuccessに結果を渡す。
+     * 失敗時はエラーカウントを増やし、連続エラー数が閾値に達していればskkservを無効化する。
+     *
+     * - TODO: このメソッドは@MainActor指定されているが、呼び出し元のInputControllerの補完検索を
+     * .receive(on: DispatchQueue.global())以降で同期的に呼んでいるため実際にはメインスレッド以外から
+     * 実行されることがあり、SettingsViewModel (実際にメインスレッドで実行) からのGlobal.skkservDict等への
+     * 書き込みとデータ競合する可能性がある。referDicts/findCompletionsDictsをnonisolated async化し、
+     * このメソッドの呼び出しをMainActor.run経由にすることで解消する予定。
+     */
+    @MainActor private func handleSKKServResult<T>(_ result: Result<T, any Error>, onSuccess: (T) -> Void) {
+        switch result {
+        case .success(let value):
+            Global.skkservConsecutiveErrorCount = 0
+            onSuccess(value)
+        case .failure:
+            Global.skkservConsecutiveErrorCount += 1
+            if Global.skkservConsecutiveErrorCount >= Global.skkservAutoDisableThreshold {
+                logger.log("skkservへの接続エラーが\(Global.skkservConsecutiveErrorCount)回連続したため無効化します")
+                Global.skkservDict = nil
+                NotificationCenter.default.post(name: notificationNameSKKServAutoDisabled, object: nil)
+            }
+        }
     }
 }
 

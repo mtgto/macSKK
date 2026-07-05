@@ -12,7 +12,11 @@ import Combine
     /// 利用可能な辞書の集合
     static var dictionary: UserDict!
     /// skkserv辞書
-    static var skkservDict: SKKServDict? = nil
+    static var skkservDict: (any SKKServDictProtocol)? = nil
+    /// skkservへの接続エラーの連続回数
+    static var skkservConsecutiveErrorCount: Int = 0
+    /// 接続エラーが何回連続したら自動無効化するか
+    static var skkservAutoDisableThreshold: Int = 3
     static let privateMode = CurrentValueSubject<Bool, Never>(false)
     /// プライベートモード時に変換候補にユーザー辞書を無視するかどうか
     static var ignoreUserDictInPrivateMode = CurrentValueSubject<Bool, Never>(false)
