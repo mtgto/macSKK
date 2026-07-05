@@ -1,7 +1,7 @@
 # CHANGELOG
 ## v2.18.0 (2026-07-05)
 
-- skkservの見出し送信エンコーディングを設定可能にし、UTF-8見出しに対応する (#491)
+- skkservの見出し送信エンコーディングを設定可能にし、UTF-8見出しに対応する (#491) by @delphinus
 - GitHub Actions環境をXcode 26.6に変更 (before 26.5) (#492)
 - SKKServDictをSendable化 (#490)
 
