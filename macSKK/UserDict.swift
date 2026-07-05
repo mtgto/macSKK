@@ -510,6 +510,11 @@ enum UserDictAddSource {
         return Candidate(word.word, annotations: annotations, original: original, saveToUserDict: saveToUserDict)
     }
 
+    // TODO: このメソッドは@MainActor指定されているが、呼び出し元のInputControllerの補完検索を
+    // .receive(on: DispatchQueue.global())以降で同期的に呼んでいるため実際にはメインスレッド以外から
+    // 実行されることがあり、SettingsViewModel (実際にメインスレッドで実行) からのGlobal.skkservDict等への
+    // 書き込みとデータ競合する可能性がある。referDicts/findCompletionsDictsをnonisolated async化し、
+    // このメソッドの呼び出しをMainActor.run経由にすることで解消する予定。
     @MainActor private func handleSKKServError() {
         Global.skkservConsecutiveErrorCount += 1
         if Global.skkservConsecutiveErrorCount >= Global.skkservAutoDisableThreshold {
