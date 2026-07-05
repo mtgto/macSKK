@@ -7,22 +7,10 @@ import Combine
 @testable import macSKK
 
 final class UserDictTests: XCTestCase {
-    private var originalSkkservDict: (any SKKServDictProtocol)?
-    private var originalSkkservConsecutiveErrorCount = 0
-    private var originalSkkservAutoDisableThreshold = 0
-
     @MainActor override func setUp() {
-        super.setUp()
-        originalSkkservDict = Global.skkservDict
-        originalSkkservConsecutiveErrorCount = Global.skkservConsecutiveErrorCount
-        originalSkkservAutoDisableThreshold = Global.skkservAutoDisableThreshold
-    }
-
-    @MainActor override func tearDown() {
-        Global.skkservDict = originalSkkservDict
-        Global.skkservConsecutiveErrorCount = originalSkkservConsecutiveErrorCount
-        Global.skkservAutoDisableThreshold = originalSkkservAutoDisableThreshold
-        super.tearDown()
+        Global.skkservDict = nil
+        Global.skkservConsecutiveErrorCount = 0
+        Global.skkservAutoDisableThreshold = 3
     }
 
     /**
