@@ -6,18 +6,41 @@ import Combine
 
 @testable import macSKK
 
-@MainActor final class UserDictTests: XCTestCase {
+final class UserDictTests: XCTestCase {
+    private var originalSkkservDict: (any SKKServDictProtocol)?
+    private var originalSkkservConsecutiveErrorCount = 0
+    private var originalSkkservAutoDisableThreshold = 0
+
+    @MainActor override func setUp() {
+        super.setUp()
+        originalSkkservDict = Global.skkservDict
+        originalSkkservConsecutiveErrorCount = Global.skkservConsecutiveErrorCount
+        originalSkkservAutoDisableThreshold = Global.skkservAutoDisableThreshold
+    }
+
+    @MainActor override func tearDown() {
+        Global.skkservDict = originalSkkservDict
+        Global.skkservConsecutiveErrorCount = originalSkkservConsecutiveErrorCount
+        Global.skkservAutoDisableThreshold = originalSkkservAutoDisableThreshold
+        super.tearDown()
+    }
+
     class MockSKKServDict: SKKServDictProtocol {
         let saveToUserDict = false
         let wordsPerYomi: [String: [Word]]
+        let shouldFail: Bool
         private(set) var referCallCount = 0
 
-        init(wordsPerYomi: [String: [Word]]) {
+        init(wordsPerYomi: [String: [Word]], shouldFail: Bool = false) {
             self.wordsPerYomi = wordsPerYomi
+            self.shouldFail = shouldFail
         }
 
         func refer(_ yomi: String, option: DictReferringOption?) -> Result<[Word], any Error> {
             referCallCount += 1
+            if shouldFail {
+                return .failure(NSError(domain: "MockSKKServDict", code: 0))
+            }
             return .success(wordsPerYomi[yomi] ?? [])
         }
 
@@ -76,7 +99,7 @@ import Combine
         XCTAssertEqual(userDict.referDicts("し", option: .prefix), [])
     }
 
-    func testPrivateMode() throws {
+    @MainActor func testPrivateMode() throws {
         let privateMode = CurrentValueSubject<Bool, Never>(false)
         let userDict = try UserDict(dicts: [],
                                     userDictEntries: ["い": [Word("位")]],
@@ -134,7 +157,7 @@ import Combine
         XCTAssertEqual(candidatesKyou.first?.word, "今日") // ユーザー辞書の方が日付変換より前
     }
 
-    func testFindCompletionsPrivateMode() throws {
+    @MainActor func testFindCompletionsPrivateMode() throws {
         let privateMode = CurrentValueSubject<Bool, Never>(true)
         let ignoreUserDictInPrivateMode = CurrentValueSubject<Bool, Never>(false)
         let dict1 = MemoryDict(entries: ["にほん": [Word("日本")], "にほ": [Word("2歩")]], readonly: false)
@@ -155,7 +178,7 @@ import Combine
         XCTAssertEqual(userDict.findCompletions(prefix: "に"), ["にふ"])
     }
 
-    func testFindCompletionsDateYomi() throws {
+    @MainActor func testFindCompletionsDateYomi() throws {
         let userDict = try UserDict(dicts: [],
                                     userDictEntries: ["tower": [Word("塔")]],
                                     privateMode: CurrentValueSubject<Bool, Never>(false),
@@ -173,7 +196,8 @@ import Combine
         XCTAssertEqual(userDict.findCompletions(prefix: "y"), ["yesterday"])
     }
 
-    func testCandidatesForCompletion() throws {
+    // TODO: UserDict自体から `@MainActor` を外したらここの `@MainActor` を外す
+    @MainActor func testCandidatesForCompletion() throws {
         let privateMode = CurrentValueSubject<Bool, Never>(false)
         let ignoreUserDictInPrivateMode = CurrentValueSubject<Bool, Never>(false)
         let annotation1 = Annotation(dictId: UserDict.userDictFilename, text: "日本の注釈")
@@ -210,7 +234,8 @@ import Combine
         )
     }
 
-    func testCandidatesForCompletionTotalLimit() throws {
+    // TODO: UserDict自体から `@MainActor` を外したらここの `@MainActor` を外す
+    @MainActor func testCandidatesForCompletionTotalLimit() throws {
         let privateMode = CurrentValueSubject<Bool, Never>(false)
         let ignoreUserDictInPrivateMode = CurrentValueSubject<Bool, Never>(false)
         // 50見出し語×3候補=150件になるが返値は100件に絞られる
@@ -229,7 +254,8 @@ import Combine
         XCTAssertEqual(results.count, 100)
     }
 
-    func testCandidatesForCompletionSkkservLimit() throws {
+    // TODO: UserDict自体から `@MainActor` を外したらここの `@MainActor` を外す
+    @MainActor func testCandidatesForCompletionSkkservLimit() throws {
         let privateMode = CurrentValueSubject<Bool, Never>(false)
         let ignoreUserDictInPrivateMode = CurrentValueSubject<Bool, Never>(false)
         // skkservへのreferの問い合わせがskkservCandidateLimit回で打ち切られることを確認
@@ -242,6 +268,7 @@ import Combine
         })
         let dict = MemoryDict(entries: dictEntries, readonly: false)
         let mock = MockSKKServDict(wordsPerYomi: skkservEntries)
+        Global.skkservDict = mock
         let userDict = try UserDict(
             dicts: [dict],
             userDictEntries: [:],
@@ -252,5 +279,20 @@ import Combine
         let limit = 9
         _ = userDict.candidatesForCompletion(prefix: "あい", skkservOption: CompletionSKKServOption(dict: mock, referLimit: limit), findFromAllDicts: true)
         XCTAssertEqual(mock.referCallCount, limit)
+    }
+
+    @MainActor func testHandleSKKServErrorDisablesSkkservDict() throws {
+        let mock = MockSKKServDict(wordsPerYomi: [:], shouldFail: true)
+        Global.skkservDict = mock
+        Global.skkservConsecutiveErrorCount = 0
+        Global.skkservAutoDisableThreshold = 1
+        let userDict = try UserDict(dicts: [],
+                                    userDictEntries: [:],
+                                    privateMode: CurrentValueSubject<Bool, Never>(false),
+                                    ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
+                                    dateYomis: [],
+                                    dateConversions: [])
+        _ = userDict.referDicts("あい")
+        XCTAssertNil(Global.skkservDict)
     }
 }

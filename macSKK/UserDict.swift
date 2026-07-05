@@ -173,7 +173,7 @@ enum UserDictAddSource {
                     return Candidate(word.word, annotations: annotations, saveToUserDict: skkservDict.saveToUserDict)
                 })
             case .failure:
-                Global.handleSKKServError()
+                handleSKKServError()
             }
         }
         if candidates.isEmpty {
@@ -216,7 +216,7 @@ enum UserDictAddSource {
                                              saveToUserDict: skkservDict.saveToUserDict)
                         })
                     case .failure:
-                        Global.handleSKKServError()
+                        handleSKKServError()
                     }
                 }
             }
@@ -277,7 +277,7 @@ enum UserDictAddSource {
                     }
                 }
             case .failure:
-                Global.handleSKKServError()
+                handleSKKServError()
             }
         }
         return results
@@ -504,6 +504,15 @@ enum UserDictAddSource {
     private func wordToCandidate(_ word: Word, original: Candidate.Original?, saveToUserDict: Bool) -> Candidate {
         let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
         return Candidate(word.word, annotations: annotations, original: original, saveToUserDict: saveToUserDict)
+    }
+
+    @MainActor private func handleSKKServError() {
+        Global.skkservConsecutiveErrorCount += 1
+        if Global.skkservConsecutiveErrorCount >= Global.skkservAutoDisableThreshold {
+            logger.log("skkservへの接続エラーが\(Global.skkservConsecutiveErrorCount)回連続したため無効化します")
+            Global.skkservDict = nil
+            NotificationCenter.default.post(name: notificationNameSKKServAutoDisabled, object: nil)
+        }
     }
 }
 

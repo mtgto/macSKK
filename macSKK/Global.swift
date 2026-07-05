@@ -12,7 +12,7 @@ import Combine
     /// 利用可能な辞書の集合
     static var dictionary: UserDict!
     /// skkserv辞書
-    static var skkservDict: SKKServDict? = nil
+    static var skkservDict: (any SKKServDictProtocol)? = nil
     /// skkservへの接続エラーの連続回数
     static var skkservConsecutiveErrorCount: Int = 0
     /// 接続エラーが何回連続したら自動無効化するか
@@ -103,14 +103,5 @@ import Combine
 
     static var candidatesPanel: CandidatesPanel {
         shared.candidatesPanel
-    }
-
-    static func handleSKKServError() {
-        skkservConsecutiveErrorCount += 1
-        if skkservConsecutiveErrorCount >= skkservAutoDisableThreshold {
-            logger.log("skkservへの接続エラーが\(skkservConsecutiveErrorCount)回連続したため無効化します")
-            skkservDict = nil
-            NotificationCenter.default.post(name: notificationNameSKKServAutoDisabled, object: nil)
-        }
     }
 }
