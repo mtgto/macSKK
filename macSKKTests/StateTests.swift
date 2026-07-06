@@ -6,8 +6,10 @@ import XCTest
 @testable import macSKK
 
 final class StateTests: XCTestCase {
-    @MainActor override func setUp() {
-        Global.kanaRule = Romaji.defaultKanaRule
+    override func setUp() async throws {
+        await MainActor.run {
+            Global.kanaRule = Romaji.defaultKanaRule
+        }
     }
 
     func testComposingStateAppendText() throws {

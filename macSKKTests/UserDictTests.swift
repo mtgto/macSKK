@@ -7,10 +7,12 @@ import Combine
 @testable import macSKK
 
 final class UserDictTests: XCTestCase {
-    @MainActor override func setUp() {
-        Global.skkservDict = nil
-        Global.skkservConsecutiveErrorCount = 0
-        Global.skkservAutoDisableThreshold = 3
+    override func setUp() async throws {
+        await MainActor.run {
+            Global.skkservDict = nil
+            Global.skkservConsecutiveErrorCount = 0
+            Global.skkservAutoDisableThreshold = 3
+        }
     }
 
     /**

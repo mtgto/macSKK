@@ -46,13 +46,14 @@ struct SKKServService: SKKServServiceProtocol, @unchecked Sendable {
             throw SKKServClientError.unexpected
         }
         let semaphore = DispatchSemaphore(value: 0)
-        var result: Result<String, any Error> = .failure(SKKServClientError.unexpected)
-        // NOTE: XPCからのコールバックはメインスレッドとは別のスレッドから返ってくる
+        // NOTE: XPCからのコールバックはメインスレッドとは別のスレッドから返ってくるが、
+        // semaphore.wait(_:)で同期を取っているため並行アクセスは発生しない
+        nonisolated(unsafe) var result: Result<String, any Error> = .failure(SKKServClientError.unexpected)
         proxy.serverVersion(destination: destination) { version, error in
             if let version {
                 result = .success(version)
             } else if let error {
-                result = .failure(recastSKKServClientError(error))
+                result = .failure(Self.recastSKKServClientError(error))
             } else {
                 fatalError("SKKServClientから不正な応答が返りました")
             }
@@ -91,13 +92,14 @@ struct SKKServService: SKKServServiceProtocol, @unchecked Sendable {
             throw SKKServClientError.unexpected
         }
         let semaphore = DispatchSemaphore(value: 0)
-        var result: Result<String, any Error> = .failure(SKKServClientError.unexpected)
-        // NOTE: XPCからのコールバックはメインスレッドとは別のスレッドから返ってくる
+        // NOTE: XPCからのコールバックはメインスレッドとは別のスレッドから返ってくるが、
+        // semaphore.wait(_:)で同期を取っているため並行アクセスは発生しない
+        nonisolated(unsafe) var result: Result<String, any Error> = .failure(SKKServClientError.unexpected)
         proxy.refer(destination: destination, yomi: yomi) { line, error in
             if let line {
                 result = .success(line)
             } else if let error {
-                result = .failure(recastSKKServClientError(error))
+                result = .failure(Self.recastSKKServClientError(error))
             } else {
                 fatalError("SKKServClientから不正な応答が返りました")
             }
@@ -124,13 +126,14 @@ struct SKKServService: SKKServServiceProtocol, @unchecked Sendable {
             throw SKKServClientError.unexpected
         }
         let semaphore = DispatchSemaphore(value: 0)
-        var result: Result<String, any Error> = .failure(SKKServClientError.unexpected)
-        // NOTE: XPCからのコールバックはメインスレッドとは別のスレッドから返ってくる
+        // NOTE: XPCからのコールバックはメインスレッドとは別のスレッドから返ってくるが、
+        // semaphore.wait(_:)で同期を取っているため並行アクセスは発生しない
+        nonisolated(unsafe) var result: Result<String, any Error> = .failure(SKKServClientError.unexpected)
         proxy.completion(destination: destination, yomi: yomi) { line, error in
             if let line {
                 result = .success(line)
             } else if let error {
-                result = .failure(recastSKKServClientError(error))
+                result = .failure(Self.recastSKKServClientError(error))
             } else {
                 fatalError("SKKServClientから不正な応答が返りました")
             }
@@ -169,7 +172,7 @@ struct SKKServService: SKKServServiceProtocol, @unchecked Sendable {
      * しかたないのでNSError#domainとNSError#codeからSKKServClientErrorに変換する
      * @see https://zenn.dev/mtgto/articles/swift-macos-odd-problems-using-xpc
      */
-    private func recastSKKServClientError(_ error: any Error) -> any Error {
+    private static func recastSKKServClientError(_ error: any Error) -> any Error {
         // Task.checkCancellationでエラーが発生 == XPCでタイムアウトした
         if error is CancellationError {
             return SKKServClientError.timeout

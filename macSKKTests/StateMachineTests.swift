@@ -9,23 +9,25 @@ import XCTest
 final class StateMachineTests: XCTestCase {
     var cancellables: Set<AnyCancellable> = []
 
-    @MainActor override func setUpWithError() throws {
-        Global.dictionary.setEntries([:])
-        Global.privateMode.send(false)
-        Global.skkservDict = nil
+    override func setUp() async throws {
         cancellables = []
-        // テストごとにローマ字かな変換ルールをデフォルトに戻す
-        // こうしないとテストの中でGlobal.kanaRuleを書き換えるテストと一緒に走らせると違うかな変換ルールのままに実行されてしまう
-        Global.kanaRule = Romaji.defaultKanaRule
-        Global.selectCandidateKeys = "123456789".map { $0 }
-        Global.enterNewLine = false
-        Global.selectingBackspace = SelectingBackspace.default
-        Global.candidateListDirection.send(.vertical)
-        Global.keyBinding = KeyBindingSet.defaultKeyBindingSet
-        Global.ignoreLeadingSpacesWhenRegistering = true
-        Global.backToSelectingFromRegistering = false
-        Global.yomiCompletionByTabInRegistering = false
-        Global.displayCandidateCount = 9
+        await MainActor.run {
+            Global.dictionary.setEntries([:])
+            Global.privateMode.send(false)
+            Global.skkservDict = nil
+            // テストごとにローマ字かな変換ルールをデフォルトに戻す
+            // こうしないとテストの中でGlobal.kanaRuleを書き換えるテストと一緒に走らせると違うかな変換ルールのままに実行されてしまう
+            Global.kanaRule = Romaji.defaultKanaRule
+            Global.selectCandidateKeys = "123456789".map { $0 }
+            Global.enterNewLine = false
+            Global.selectingBackspace = SelectingBackspace.default
+            Global.candidateListDirection.send(.vertical)
+            Global.keyBinding = KeyBindingSet.defaultKeyBindingSet
+            Global.ignoreLeadingSpacesWhenRegistering = true
+            Global.backToSelectingFromRegistering = false
+            Global.yomiCompletionByTabInRegistering = false
+            Global.displayCandidateCount = 9
+        }
     }
 
     @MainActor func testHandleNormalSimple() {
