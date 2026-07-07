@@ -10,11 +10,11 @@ let logger: Logger = Logger(subsystem: "net.mtgto.inputmethod.macSKK", category:
 /**
  * skkservに接続するクライアント。同時に1サーバーへの接続のみ可能
  */
-class SKKServClient: NSObject, SKKServClientProtocol {
+class SKKServClient: NSObject, SKKServClientProtocol, @unchecked Sendable {
     var connection: NWConnection? = nil
     static let queue = DispatchQueue(label: "net.mtgto.inputmethod.macSKK.SKKServClient", qos: .default)
 
-    @objc func serverVersion(destination: SKKServDestination, with reply: @escaping (String?, (any Error)?) -> Void) {
+    @objc func serverVersion(destination: SKKServDestination, with reply: @escaping @Sendable (String?, (any Error)?) -> Void) {
         connect(destination: destination) { result in
             switch result {
             case .success(let connection):
@@ -51,7 +51,7 @@ class SKKServClient: NSObject, SKKServClientProtocol {
         }
     }
 
-    @objc func refer(destination: SKKServDestination, yomi: String, with reply: @escaping (String?, (any Error)?) -> Void) {
+    @objc func refer(destination: SKKServDestination, yomi: String, with reply: @escaping @Sendable (String?, (any Error)?) -> Void) {
         connect(destination: destination) { result in
             switch result {
             case .success(let connection):
@@ -98,7 +98,7 @@ class SKKServClient: NSObject, SKKServClientProtocol {
         }
     }
 
-    @objc func completion(destination: SKKServDestination, yomi: String, with reply: @escaping (String?, (any Error)?) -> Void) {
+    @objc func completion(destination: SKKServDestination, yomi: String, with reply: @escaping @Sendable (String?, (any Error)?) -> Void) {
         connect(destination: destination) { result in
             switch result {
             case .success(let connection):
@@ -149,7 +149,7 @@ class SKKServClient: NSObject, SKKServClientProtocol {
         connection?.forceCancel()
     }
 
-    private func connect(destination: SKKServDestination, callback: @escaping (Result<NWConnection?, any Error>) -> Void) {
+    private func connect(destination: SKKServDestination, callback: @escaping @Sendable (Result<NWConnection?, any Error>) -> Void) {
         // NOTE: connectionの読み取りはXPCスレッドから、書き込みはSelf.queue上のstateUpdateHandlerから行われるため
         // 厳密にはread-write raceが残る。実害としては古い値を見て余分な接続を試みる程度。
         if let connection, case .ready = connection.state, connection.endpoint == destination.endpoint {
@@ -160,7 +160,9 @@ class SKKServClient: NSObject, SKKServClientProtocol {
         connection?.forceCancel()
 
         let connection = NWConnection(to: destination.endpoint, using: .skkserv)
-        var callbackCalled = false
+        // NOTE: stateUpdateHandlerはstart(queue:)で指定したqueue上で直列に呼ばれることが保証されているため、
+        // 実質的には並行アクセスは発生しない
+        nonisolated(unsafe) var callbackCalled = false
         connection.stateUpdateHandler = { state in
             switch state {
             case .ready:
@@ -223,12 +225,12 @@ class SKKServClient: NSObject, SKKServClientProtocol {
 }
 
 extension NWConnection {
-    func send(message: NWProtocolFramer.Message, callback: @escaping (NWError?) -> Void) {
+    func send(message: NWProtocolFramer.Message, callback: @escaping @Sendable (NWError?) -> Void) {
         let context = NWConnection.ContentContext(identifier: "SKKServRequest", metadata: [message])
         send(content: nil, contentContext: context, isComplete: true, completion: .contentProcessed(callback))
     }
 
-    func receive(callback: @escaping (Result<Data?, NWError>) -> Void) {
+    func receive(callback: @escaping @Sendable (Result<Data?, NWError>) -> Void) {
         receiveMessage { content, contentContext, isComplete, error in
             if let error {
                 callback(.failure(error))
