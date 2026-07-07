@@ -72,6 +72,11 @@ struct Candidate: Hashable {
         self.saveToUserDict = saveToUserDict
     }
 
+    init(word: Word, original: Original? = nil, saveToUserDict: Bool) {
+        let annotations = word.annotation.map { [$0] } ?? []
+        self.init(word.word, annotations: annotations, original: original, saveToUserDict: saveToUserDict)
+    }
+
     func hash(into hasher: inout Hasher) {
         hasher.combine(word)
     }

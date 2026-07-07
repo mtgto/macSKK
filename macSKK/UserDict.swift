@@ -110,6 +110,17 @@ enum UserDictAddSource {
         return referDicts(yomi, option: option, skkservDict: Global.skkservDict, findFromAllDicts: true)
     }
 
+    func makeSnapshot() -> Snapshot {
+        Snapshot(
+            userDictSnapshot: (userDict as? FileDict)?.dict ?? (userDict as? MemoryDict),
+            dictSnapshots: dicts.compactMap { ($0 as? FileDict)?.dict ?? ($0 as? MemoryDict) },
+            dateYomis: dateYomis,
+            dateConversions: dateConversions,
+            privateMode: privateMode.value,
+            ignoreUserDictInPrivateMode: ignoreUserDictInPrivateMode.value
+        )
+    }
+
     /**
      * 保持する辞書を順に引き変換候補順に返す。
      *
@@ -130,9 +141,9 @@ enum UserDictAddSource {
      */
     func referDicts(_ yomi: String, option: DictReferringOption?, skkservDict: (any SKKServDictProtocol)?, findFromAllDicts: Bool) -> [Candidate] {
         var result: [Candidate] = []
+        // ユーザー辞書、それ以外の辞書の順に参照する
         var candidates = refer(yomi, option: option).map { word in
-            let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
-            return Candidate(word.word, annotations: annotations)
+            Candidate(word: word, saveToUserDict: true)
         }
         if let dateConversionYomi = dateYomis.first(where: { $0.yomi == yomi }) {
             let date = Date(timeIntervalSinceNow: dateConversionYomi.timeInterval)
@@ -142,14 +153,10 @@ enum UserDictAddSource {
             }
             candidates.append(contentsOf: dateCandidates)
         }
-        // ユーザー辞書、それ以外の辞書の順に参照する
-        candidates.append(contentsOf: refer(yomi, option: option).map { word in
-            return wordToCandidate(word, original: nil, saveToUserDict: true)
-        })
         if findFromAllDicts {
             dicts.forEach { dict in
                 candidates.append(contentsOf: dict.refer(yomi, option: option).map {
-                    wordToCandidate($0, original: nil, saveToUserDict: dict.saveToUserDict)
+                    Candidate(word: $0, saveToUserDict: dict.saveToUserDict)
                 })
             }
         }
@@ -495,11 +502,6 @@ enum UserDictAddSource {
         if recentRegisteredCandidates.count > maxRecentRegisteredCandidateCount {
             recentRegisteredCandidates.removeLast(recentRegisteredCandidates.count - maxRecentRegisteredCandidateCount)
         }
-    }
-
-    private func wordToCandidate(_ word: Word, original: Candidate.Original?, saveToUserDict: Bool) -> Candidate {
-        let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
-        return Candidate(word.word, annotations: annotations, original: original, saveToUserDict: saveToUserDict)
     }
 
     /**
