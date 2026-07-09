@@ -31,10 +31,10 @@ struct UNNotifier {
         sendUserNotification(request: request)
     }
 
-    static func sendNotificationForSKKServAutoDisabled() {
+    static func sendNotificationForSKKServAutoDisabled(consecutiveErrorCount: Int) {
         let content = UNMutableNotificationContent()
         content.title = String(localized: "UNSKKServAutoDisabledTitle", comment: "SKKServの自動無効化")
-        content.body = String(localized: "UNSKKServAutoDisabledBody", comment: "SKKServへの接続エラーが連続して発生したため無効化されました")
+        content.body = String(format: String(localized: "UNSKKServAutoDisabledBody", comment: "SKKServへの接続エラーが連続して発生したため無効化されました"), consecutiveErrorCount)
 
         let request = UNNotificationRequest(identifier: Self.userNotificationSKKServAutoDisabledIdentifier, content: content, trigger: nil)
         sendUserNotification(request: request)

@@ -60,7 +60,7 @@
 "UNUserDictWriteErrorTitle" = "Error";
 "UNUserDictWriteErrorBody" = "Failed to save the user dictionary";
 "UNSKKServAutoDisabledTitle" = "SKKServ Disabled";
-"UNSKKServAutoDisabledBody" = "SKKServ was automatically disabled after 3 consecutive connection errors.";
+"UNSKKServAutoDisabledBody" = "SKKServ was automatically disabled after %d consecutive connection errors.";
 "User Dictionary" = "User Dictionary";
 "Delete" = "Delete";
 "Unregistered" = "Unregistered";

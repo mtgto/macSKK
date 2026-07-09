@@ -60,7 +60,7 @@
 "UNUserDictWriteErrorTitle" = "エラー";
 "UNUserDictWriteErrorBody" = "ユーザー辞書の永続化に失敗しました";
 "UNSKKServAutoDisabledTitle" = "SKKServを無効化しました";
-"UNSKKServAutoDisabledBody" = "skkservへの接続エラーが3回連続したため自動で無効化しました。";
+"UNSKKServAutoDisabledBody" = "skkservへの接続エラーが%d回連続したため自動で無効化しました。";
 "User Dictionary" = "ユーザー辞書";
 "Delete" = "削除";
 "Unregistered" = "未登録です";
