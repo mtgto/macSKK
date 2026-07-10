@@ -44,7 +44,7 @@ enum UserDictAddSource {
     var dateYomis: [DateConversion.Yomi]
     /// 日付変換の変換候補
     var dateConversions: [DateConversion]
-    private let savePublisher = PassthroughSubject<Void, Never>()
+    private var saveTask: Task<Void, Never>?
     private let privateMode: CurrentValueSubject<Bool, Never>
     /// プライベートモード時に変換候補にユーザー辞書を無視するかどうか
     private let ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>
@@ -91,16 +91,6 @@ enum UserDictAddSource {
             Task { await userDict.load() }
         }
 
-        savePublisher
-            // 短期間に複数の保存要求があっても60秒に一回にまとめる
-            .debounce(for: .seconds(60), scheduler: DispatchQueue.global(qos: .background))
-            .sink { [weak self] _ in
-                if let fileDict = self?.userDict as? FileDict {
-                    logger.log("ユーザー辞書を永続化します。現在のエントリ数は \(fileDict.dict.entries.count)")
-                    fileDict.save()
-                }
-            }
-            .store(in: &cancellables)
         self.privateMode.drop(while: { !$0 }).removeDuplicates().sink { privateMode in
             if privateMode {
                 logger.log("プライベートモードが設定されました")
@@ -326,7 +316,7 @@ enum UserDictAddSource {
                 if source == .registering {
                     addRecentRegisteredCandidate(yomi: yomi, word: word)
                 }
-                savePublisher.send(())
+                scheduleSave()
             }
         }
     }
@@ -355,7 +345,7 @@ enum UserDictAddSource {
             if dict.delete(yomi: yomi, word: word) {
                 logger.log("ユーザー辞書からエントリ \(Entry(yomi: yomi, candidates: [word]).serialize(), privacy: .public) を削除しました")
                 recentRegisteredCandidates.removeAll { $0.yomi == yomi && $0.word == word }
-                savePublisher.send(())
+                scheduleSave()
                 return true
             }
         }
@@ -443,6 +433,20 @@ enum UserDictAddSource {
             results.append(contentsOf: candidates)
         }
         return results
+    }
+
+    /// ユーザー辞書の永続化を予約する
+    /// 短期間に複数の保存要求があっても60秒に一回にまとめる
+    @MainActor private func scheduleSave() {
+        saveTask?.cancel()
+        saveTask = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(60))
+            guard !Task.isCancelled, let self else { return }
+            if let fileDict = self.userDict as? FileDict {
+                logger.log("ユーザー辞書を永続化します。現在のエントリ数は \(fileDict.dict.entries.count)")
+                fileDict.save()
+            }
+        }
     }
 
     /// ユーザー辞書を永続化する
