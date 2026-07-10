@@ -578,11 +578,12 @@ final class SettingsViewModel: ObservableObject {
 
         NotificationCenter.default.publisher(for: notificationNameSKKServAutoDisabled)
             .receive(on: RunLoop.main)
-            .sink { [weak self] _ in
+            .sink { [weak self] notification in
                 guard let self else { return }
                 self.skkservDictSetting.enabled = false
                 self.skkservDictSetting = self.skkservDictSetting
-                UNNotifier.sendNotificationForSKKServAutoDisabled()
+                let consecutiveErrorCount = notification.object as? Int ?? Global.skkservAutoDisableThreshold
+                UNNotifier.sendNotificationForSKKServAutoDisabled(consecutiveErrorCount: consecutiveErrorCount)
             }
             .store(in: &cancellables)
 
