@@ -114,7 +114,7 @@ struct MemoryDict: DictProtocol, Sendable {
     var entryCount: Int { return entries.count }
 
     // MARK: DictProtocol
-    @MainActor func refer(_ yomi: String, option: DictReferringOption?) -> [Word] {
+    nonisolated func refer(_ yomi: String, option: DictReferringOption?) -> [Word] {
         if let option {
             switch option {
             case .prefix:
@@ -135,7 +135,7 @@ struct MemoryDict: DictProtocol, Sendable {
         }
     }
 
-    @MainActor func reverseRefer(_ word: String) -> String? {
+    nonisolated func reverseRefer(_ word: String) -> String? {
         // 全探索
         for (yomi, candidates) in entries {
             if candidates.contains(where: { $0.word == word }) {
@@ -232,7 +232,7 @@ struct MemoryDict: DictProtocol, Sendable {
      * - prefixと読みが完全に一致する場合は補完候補とはしない
      * - 数値変換用の読みは補完候補としない
      */
-    func findCompletions(prefix: String) -> [String] {
+    nonisolated func findCompletions(prefix: String) -> [String] {
         if prefix.isEmpty {
             return []
         }

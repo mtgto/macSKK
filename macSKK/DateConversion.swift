@@ -4,7 +4,8 @@ import Foundation
 /**
  * 日付の変換の定義
  */
-struct DateConversion: Identifiable {
+// DateFormatterはApple公式ドキュメントにてiOS 7以降スレッドセーフと明記されているため@unchecked Sendableとする
+struct DateConversion: Identifiable, @unchecked Sendable {
     enum DateConversionCalendar: String, CaseIterable {
         case gregorian = "gregorian"
         case japanese = "japanese"
