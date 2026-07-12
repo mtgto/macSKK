@@ -58,3 +58,9 @@ class CompletionPanel: NSPanel {
         orderFrontRegardless()
     }
 }
+
+extension CompletionPanel: CompletionPanelProtocol {
+    func setCompletion(_ completion: CurrentCompletion) {
+        viewModel.completion = completion
+    }
+}

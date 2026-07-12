@@ -1753,3 +1753,14 @@ final class StateMachine {
         }
     }
 }
+
+extension StateMachine: CompletionStateProtocol {
+    /// 読み入力中(送り仮名なし)ならその読み文字列。それ以外(変換中・送り仮名入力中・未入力)はnil。
+    @MainActor var currentComposingYomi: String? {
+        // okuri == nilのチェックはupdateMarkedTextの補完条件と合わせるため(送り仮名入力中は補完しない)
+        if case .composing(let composing) = state.inputMethod, composing.okuri == nil {
+            return composing.yomi(for: .hiragana, kanaRule: Global.kanaRule)
+        }
+        return nil
+    }
+}

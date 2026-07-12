@@ -21,6 +21,7 @@ class InputController: IMKInputController {
     private let stateMachine = StateMachine()
     private var targetApp: TargetApplication! = nil
     private var cancellables: Set<AnyCancellable> = []
+    private let completionPresenter = CompletionPresenter(panel: Global.completionPanel)
     private static let notFoundRange = NSRange(location: NSNotFound, length: NSNotFound)
     /// 変換候補として選択されている単語を流すストリーム
     private let selectedWord = PassthroughSubject<Word.Word?, Never>()
@@ -173,79 +174,13 @@ class InputController: IMKInputController {
                 self?.showMarkerWhenEmpty = bundleIdentifiers.contains(bundleIdentifier)
             }
         }.store(in: &cancellables)
-        // 読みが更新されたときに補完候補の検索を行う処理
-        stateMachine.yomiEvent
-            .compactMap { [weak self] yomi -> (String, NSRect)? in
-                guard let self else { return nil }
-                if Global.showCompletion {
-                    if case .other(let yomi) = yomi {
-                        // 変換開始時などもyomiが空になるのでそのときは
-                        // すでにCandidatesPanelによる補完候補が表示されていることがあるのでCompletionPanelを閉じる
-                        // YomiEvent.otherじゃないときは補完されたときなのでそのときは何もしない
-                        if yomi.isEmpty {
-                            if Global.showCompletion {
-                                Global.completionPanel.orderOut(nil)
-                                self.stateMachine.completion = nil
-                            }
-                        } else {
-                            let cursorPosition = self.cursorPosition(for: textInput)
-                            return (yomi, cursorPosition)
-                        }
-                    }
-                }
-                return nil
-            }
-            .receive(on: DispatchQueue.global())
-            .compactMap { (yomi, cursorPosition) -> (String, Completion, NSRect)? in
-                let skkservDict = Global.searchCompletionsSkkserv ? Global.skkservDict : nil
-                let skkservOption = skkservDict.map { CompletionSKKServOption(dict: $0, referLimit: Global.displayCandidateCount) }
-                if Global.showCandidateForCompletion {
-                    let candidates = Global.dictionary.candidatesForCompletion(prefix: yomi, skkservOption: skkservOption, findFromAllDicts: Global.findCompletionFromAllDicts)
-                    return (yomi, .candidates(candidates), cursorPosition)
-                } else {
-                    let completions = Global.dictionary.findCompletionsDicts(prefix: yomi, skkservDict: skkservDict, findFromAllDicts: Global.findCompletionFromAllDicts)
-                    return (yomi, .yomi(completions, 0), cursorPosition)
-                }
-            }
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] (yomi, completion, cursorPosition) in
-                guard let self else { return }
-                // 補完候補の検索を別スレッドで実行しているため、その間に読みが変更されたり変換を開始したり確定している可能性がある。
-                // 現在のStateMachineの読みが異なる場合は補完候補検索結果を捨てて何もしない
-                // okuri == nilのチェックはupdateMarkedTextの補完条件と合わせるため (送り仮名入力中は補完しない)
-                if case .composing(let composing) = self.stateMachine.state.inputMethod, composing.okuri == nil {
-                    if yomi != composing.yomi(for: .hiragana, kanaRule: Global.kanaRule) {
-                        logger.info("補完候補を検索しましたが現在の読みが補完候補検索時と変わっているため補完候補は表示しません")
-                        return
-                    }
-                } else {
-                    logger.info("補完候補を検索しましたが現在の変換の状態が読み入力中でないため補完候補は表示しません")
-                    return
-                }
-                self.stateMachine.completion = completion
-                if case .yomi(let yomis, let yomiIndex) = completion {
-                    if yomis.isEmpty {
-                        Global.completionPanel.orderOut(nil)
-                        self.stateMachine.completion = nil
-                    } else {
-                        Global.completionPanel.viewModel.completion = .yomi(yomis[yomiIndex])
-                        if cursorPosition != .zero {
-                            Global.completionPanel.show(at: cursorPosition, windowLevel: windowLevel(for: textInput))
-                        }
-                    }
-                } else if case .candidates(let candidates) = completion {
-                    if candidates.isEmpty {
-                        Global.completionPanel.orderOut(nil)
-                        self.stateMachine.completion = nil
-                    } else {
-                        // 先頭1ページ分だけ変換候補パネルに表示する。
-                        Global.completionPanel.viewModel.completion = .candidates(Array(candidates.prefix(Global.displayCandidateCount)))
-                        if cursorPosition != .zero {
-                            Global.completionPanel.show(at: cursorPosition, windowLevel: windowLevel(for: textInput))
-                        }
-                    }
-                }
-        }.store(in: &cancellables)
+        // 読みが更新されたときに補完候補の検索・表示を行う処理。
+        // 検索(DispatchQueue.global())と補完候補パネルへの反映はCompletionPresenterに委譲している。
+        completionPresenter.subscribe(
+            to: stateMachine.yomiEvent,
+            state: stateMachine,
+            cursorPosition: { [weak self] in self?.cursorPosition(for: textInput) ?? .zero },
+            windowLevel: { [weak self] in self?.windowLevel(for: textInput) ?? .floating })
         // 読みの補完候補が更新されたときの処理
         stateMachine.yomiEvent
             .compactMap {
