@@ -63,6 +63,16 @@ class RomajiTests: XCTestCase {
         XCTAssertEqual(kanaRule.okuriTable["gq"]?.kana, "い")
     }
 
+    /// アプリに同梱している各ローマ字かな変換ルールファイルが読み込めることを確認する。
+    /// 設定ファイルはビルド時に検証されないため、重複キーや壊れた行があっても気づけないため
+    /// パースエラーにならないことを検証。
+    func testLoadBundledKanaRules() throws {
+        for name in ["kana-rule", "kana-rule-azik", "kana-rule-azik-us", "kana-rule-act"] {
+            let url = try XCTUnwrap(Bundle.main.url(forResource: name, withExtension: "conf"), "\(name).conf がバンドルに見つからない")
+            XCTAssertNoThrow(try Romaji(contentsOf: url, initialRomaji: nil), "\(name).conf の読み込みに失敗した")
+        }
+    }
+
     func testOkuri() throws {
         // <okuri> パースの正常系・エラー系
         XCTAssertNoThrow(try Romaji(source: "gq,が<okuri>い", initialRomaji: nil), "<okuri>付きの正常なルール")

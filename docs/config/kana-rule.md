@@ -89,14 +89,24 @@ AZIKなどで「願い(ねがい)」を `NegQ`（4打鍵）で変換開始する
 
 ## AZIK で入力する
 
-[AZIK](https://note.com/actbemu/n/n74f1c04c9a2e) はローマ字入力を拡張した入力方式です。macSKKはAZIK用のルールファイルをテンプレートとして同梱しています。
+[AZIK](https://note.com/actbemu/n/n74f1c04c9a2e) はローマ字入力を拡張した入力方式です。
 
 | ファイル | 対象キーボード |
 |---|---|
 | [kana-rule-azik.conf](https://github.com/mtgto/macSKK/blob/main/macSKK/kana-rule-azik.conf) | JIS配列 |
 | [kana-rule-azik-us.conf](https://github.com/mtgto/macSKK/blob/main/macSKK/kana-rule-azik-us.conf) | US配列 |
 
-使用するには、上記ファイルをダウンロードして設定フォルダに置き、設定画面のドロップダウンで選択してください。さらにカスタマイズしたい場合はファイルを編集してください。
+使用するには、上記ファイルをダウンロードして[設定フォルダ](#ルールファイルの配置)に置き、設定画面のドロップダウンで選択してください。さらにカスタマイズしたい場合はファイルを編集してください。
+
+## ACT で入力する
+
+[ACT](http://www1.vecceed.ne.jp/~bemu/act/act_index.html) はDvorak配列上でAZIKと同様の拡張ローマ字入力を行う入力方式です。
+
+| ファイル | 対象キーボード |
+|---|---|
+| [kana-rule-act.conf](https://github.com/mtgto/macSKK/blob/main/macSKK/kana-rule-act.conf) | Dvorak配列 |
+
+使用するには[「一般」→「キー配列」](./general.md#キーボードレイアウト)からDvorakを選択した上で、上記ファイルをダウンロードして[設定フォルダ](#ルールファイルの配置)に置き、設定画面のドロップダウンで選択してください。さらにカスタマイズしたい場合はファイルを編集してください。
 
 ## トラブルシューティング
 
