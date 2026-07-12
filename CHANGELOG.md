@@ -1,4 +1,12 @@
 # CHANGELOG
+## v2.18.1 (2026-07-12)
+
+- skkserv自動無効化通知に実際の連続エラー回数を表示する (#495) by @delphinus
+- Swift Language Versionを6にする (#489)
+  - メインのビルドターゲット以外でSWIFT_VERSION=6に変更 (#493)
+  - UserDict.saveのタイミングをCombineからTask.sleepベースに変更 (#494)
+- ACT (AZIK on Dvorak) ローマ字入力ルールを追加 (#497)
+
 ## v2.18.0 (2026-07-05)
 
 - skkservの見出し送信エンコーディングを設定可能にし、UTF-8見出しに対応する (#491) by @delphinus
