@@ -67,7 +67,7 @@ class RomajiTests: XCTestCase {
     /// 設定ファイルはビルド時に検証されないため、重複キーや壊れた行があっても気づけないため
     /// パースエラーにならないことを検証。
     func testLoadBundledKanaRules() throws {
-        for name in ["kana-rule", "kana-rule-azik", "kana-rule-azik-us", "kana-rule-act"] {
+        for name in ["kana-rule", "kana-rule-azik", "kana-rule-azik-us", "kana-rule-act", "kana-rule-act09"] {
             let url = try XCTUnwrap(Bundle.main.url(forResource: name, withExtension: "conf"), "\(name).conf がバンドルに見つからない")
             XCTAssertNoThrow(try Romaji(contentsOf: url, initialRomaji: nil), "\(name).conf の読み込みに失敗した")
         }

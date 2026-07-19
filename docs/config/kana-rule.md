@@ -105,6 +105,9 @@ AZIKなどで「願い(ねがい)」を `NegQ`（4打鍵）で変換開始する
 | ファイル | 対象キーボード |
 |---|---|
 | [kana-rule-act.conf](https://github.com/mtgto/macSKK/blob/main/macSKK/kana-rule-act.conf) | Dvorak配列 |
+| [kana-rule-act09.conf](https://github.com/mtgto/macSKK/blob/main/macSKK/kana-rule-act09.conf) | Dvorak配列 (ACT09) |
+
+`kana-rule-act09.conf` はACTの改良版である [ACT09](http://www1.vecceed.ne.jp/~bemu/act/act09_key_pos.html) のキーマップ (1打/2打/3打) を元にしたルールです。ヤ行などのキー配置がACTと異なります。
 
 使用するには[「一般」→「キー配列」](./general.md#キーボードレイアウト)からDvorakを選択した上で、上記ファイルをダウンロードして[設定フォルダ](#ルールファイルの配置)に置き、設定画面のドロップダウンで選択してください。さらにカスタマイズしたい場合はファイルを編集してください。
 
