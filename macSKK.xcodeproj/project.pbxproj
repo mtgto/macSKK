@@ -20,6 +20,7 @@
 		CE06CA2B2AAC171B00E80E5E /* FileDictTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE06CA292AAC171B00E80E5E /* FileDictTests.swift */; };
 		CE06CA2D2AAC172F00E80E5E /* empty.txt in Resources */ = {isa = PBXBuildFile; fileRef = CE06CA2C2AAC172F00E80E5E /* empty.txt */; };
 		CE06CA342AAC199500E80E5E /* UserDict+Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE06CA332AAC199500E80E5E /* UserDict+Utilities.swift */; };
+		CE0AC09000000000000A0902 /* kana-rule-act09.conf in Resources */ = {isa = PBXBuildFile; fileRef = CE0AC09000000000000A0901 /* kana-rule-act09.conf */; };
 		CE0EDA302E10C77E00F96F9A /* DateYomiView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE0EDA2F2E10C77E00F96F9A /* DateYomiView.swift */; };
 		CE118EE52CE0B4DE00A7C300 /* KeyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE118EE42CE0B4DB00A7C300 /* KeyTests.swift */; };
 		CE11C7B52BDD461C00A35F3D /* Global.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE11C7B42BDD461C00A35F3D /* Global.swift */; };
@@ -87,7 +88,6 @@
 		CE6DBACD2A864A3B00F5A227 /* DictionariesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE6DBACC2A864A3B00F5A227 /* DictionariesView.swift */; };
 		CE6DBACF2A8663E600F5A227 /* SKK-JISYO.sample.utf-8 in Resources */ = {isa = PBXBuildFile; fileRef = CE6DBACE2A8663E600F5A227 /* SKK-JISYO.sample.utf-8 */; };
 		CE77E31D30012E8E0076EFE0 /* kana-rule-act.conf in Resources */ = {isa = PBXBuildFile; fileRef = CE77E31C30012E8E0076EFE0 /* kana-rule-act.conf */; };
-		CE0AC09000000000000A0902 /* kana-rule-act09.conf in Resources */ = {isa = PBXBuildFile; fileRef = CE0AC09000000000000A0901 /* kana-rule-act09.conf */; };
 		CE7F9AD92AADEBF9001B1877 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE7F9AD82AADEBF9001B1877 /* AppDelegate.swift */; };
 		CE7F9ADC2AB53E53001B1877 /* CompletionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE7F9ADB2AB53E53001B1877 /* CompletionView.swift */; };
 		CE821DF92F3C557C004814DE /* InputModeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE821DF82F3C557C004814DE /* InputModeViewModel.swift */; };
@@ -224,6 +224,7 @@
 		CE06CA292AAC171B00E80E5E /* FileDictTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileDictTests.swift; sourceTree = "<group>"; };
 		CE06CA2C2AAC172F00E80E5E /* empty.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = empty.txt; sourceTree = "<group>"; };
 		CE06CA332AAC199500E80E5E /* UserDict+Utilities.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UserDict+Utilities.swift"; sourceTree = "<group>"; };
+		CE0AC09000000000000A0901 /* kana-rule-act09.conf */ = {isa = PBXFileReference; lastKnownFileType = text; path = "kana-rule-act09.conf"; sourceTree = "<group>"; };
 		CE0EDA2F2E10C77E00F96F9A /* DateYomiView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateYomiView.swift; sourceTree = "<group>"; };
 		CE118EE42CE0B4DB00A7C300 /* KeyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyTests.swift; sourceTree = "<group>"; };
 		CE11C7B42BDD461C00A35F3D /* Global.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Global.swift; sourceTree = "<group>"; };
@@ -292,7 +293,6 @@
 		CE6DBACC2A864A3B00F5A227 /* DictionariesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionariesView.swift; sourceTree = "<group>"; };
 		CE6DBACE2A8663E600F5A227 /* SKK-JISYO.sample.utf-8 */ = {isa = PBXFileReference; lastKnownFileType = text; path = "SKK-JISYO.sample.utf-8"; sourceTree = "<group>"; };
 		CE77E31C30012E8E0076EFE0 /* kana-rule-act.conf */ = {isa = PBXFileReference; lastKnownFileType = text; path = "kana-rule-act.conf"; sourceTree = "<group>"; };
-		CE0AC09000000000000A0901 /* kana-rule-act09.conf */ = {isa = PBXFileReference; lastKnownFileType = text; path = "kana-rule-act09.conf"; sourceTree = "<group>"; };
 		CE7F9AD82AADEBF9001B1877 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		CE7F9ADB2AB53E53001B1877 /* CompletionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletionView.swift; sourceTree = "<group>"; };
 		CE821DF82F3C557C004814DE /* InputModeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputModeViewModel.swift; sourceTree = "<group>"; };
@@ -1227,7 +1227,7 @@
 				CODE_SIGN_ENTITLEMENTS = macSKK/macSKK.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 105;
+				CURRENT_PROJECT_VERSION = 106;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"macSKK/Preview Content\"";
 				DEVELOPMENT_TEAM = W3A6B7FDC7;
@@ -1241,7 +1241,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 2.18.1;
+				MARKETING_VERSION = 2.18.2;
 				OTHER_SWIFT_FLAGS = "-enable-upcoming-feature ExistentialAny";
 				PRODUCT_BUNDLE_IDENTIFIER = net.mtgto.inputmethod.macSKK;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1262,7 +1262,7 @@
 				CODE_SIGN_ENTITLEMENTS = macSKK/macSKK.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 105;
+				CURRENT_PROJECT_VERSION = 106;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"macSKK/Preview Content\"";
 				DEVELOPMENT_TEAM = W3A6B7FDC7;
@@ -1277,7 +1277,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 2.18.1;
+				MARKETING_VERSION = 2.18.2;
 				OTHER_SWIFT_FLAGS = "-enable-upcoming-feature ExistentialAny";
 				PRODUCT_BUNDLE_IDENTIFIER = net.mtgto.inputmethod.macSKK;
 				PRODUCT_NAME = "$(TARGET_NAME)";
