@@ -153,7 +153,6 @@ enum UserDictAddSource {
      *   - findFromAllDicts: ユーザー辞書以外を検索するか。trueにするのは補完候補検索時のみ。
      */
     func referDicts(_ yomi: String, option: DictReferringOption?, skkservDict: (any SKKServDictProtocol)?, findFromAllDicts: Bool) -> [Candidate] {
-        var result: [Candidate] = []
         // ユーザー辞書、それ以外の辞書の順に参照する
         var candidates = refer(yomi, option: option).map { word in
             Candidate(word: word, saveToUserDict: true)
@@ -174,8 +173,8 @@ enum UserDictAddSource {
             }
         }
         // ひとまずskkservを辞書として使う場合はファイル辞書より後に追加する
-        // NOTE: Global.skkservDictは接続エラーが連続するとnilに変わるが、それを呼び出し側でチェックできてない。
-        // Swift Concurrency対応で呼び出し元で修正予定。
+        // NOTE: Global.skkservDictは接続エラーが連続するとhandleSKKServResultによる自動無効化でnilに変わる。
+        // このメソッドの実行中に無効化された場合に再度問い合わせないようGlobal.skkservDictもチェックする。
         if let skkservDict, Global.skkservDict != nil {
             handleSKKServResult(skkservDict.refer(yomi, option: option)) { words in
                 candidates.append(contentsOf: words.map { word in
@@ -210,8 +209,8 @@ enum UserDictAddSource {
                         })
                     }
                 }
-                // NOTE: Global.skkservDictは接続エラーが連続するとnilに変わるが、それを呼び出し側でチェックできてない。
-                // Swift Concurrency対応で呼び出し元で修正予定。
+                // NOTE: Global.skkservDictは接続エラーが連続するとhandleSKKServResultによる自動無効化でnilに変わる。
+                // このメソッドの実行中に無効化された場合に再度問い合わせないようGlobal.skkservDictもチェックする。
                 if let skkservDict, Global.skkservDict != nil {
                     handleSKKServResult(skkservDict.refer(midashi, option: option)) { words in
                         candidates.append(contentsOf: words.compactMap { word in
@@ -227,63 +226,8 @@ enum UserDictAddSource {
                 }
             }
         }
-        for candidate in candidates {
-            if let index = result.firstIndex(where: { $0.word == candidate.word }) {
-                // 注釈だけマージする
-                do {
-                    result[index] = try result[index].merge(candidate)
-                } catch {
-                    logger.error("異なる変換結果をもつ変換候補同士をマージしようとしました。バグと思われます。")
-                }
-            } else {
-                result.append(candidate)
-            }
-        }
-        return result
-    }
-
-    /**
-     * 保持する辞書を順に引き現在入力中のprefixに続く入力候補を返す。見つからなければ空配列を返す。
-     *
-     * ## skkservについて
-     * skkservを辞書とする場合はすべてのファイル辞書の候補の末尾に付けて返す。
-     * skkserv辞書の変換候補を末尾につけるのは仮の仕様で将来は利用者が選択可能にする可能性がある。
-     *
-     * skkservからの応答が一定時間なかった場合、XPC側がそのTCP接続を破棄する。
-     * 接続はXPC側でプールされているため、次にこのメソッドが呼ばれたときは
-     * 残っている接続を使い回すか、なければ新しく接続する。
-     *
-     * - Parameters:
-     *   - prefix: SKK辞書の見出しの接頭辞。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
-     *   - skkservDict: SKKServ辞書。nilのときはskkservを引かない
-     *   - findFromAllDicts: ユーザー辞書以外を検索するか
-     */
-    func findCompletionsDicts(prefix: String, skkservDict: (any SKKServDictProtocol)?, findFromAllDicts: Bool) -> [String] {
-        if prefix.isEmpty {
-            return []
-        }
-        var results: [String] = findCompletions(prefix: prefix)
-        // 重複排除は順序を保ちつつSetでメンバーシップ判定する (Array.containsだと該当読み数Mに対しO(M^2)になる)
-        var seen = Set(results)
-        if findFromAllDicts {
-            for dict in dicts {
-                for yomi in dict.findCompletions(prefix: prefix) {
-                    if seen.insert(yomi).inserted {
-                        results.append(yomi)
-                    }
-                }
-            }
-        }
-        if let skkservDict {
-            handleSKKServResult(skkservDict.findCompletions(prefix: prefix)) { completions in
-                for yomi in completions {
-                    if seen.insert(yomi).inserted {
-                        results.append(yomi)
-                    }
-                }
-            }
-        }
-        return results
+        // 複数の辞書に同じ変換候補があれば注釈をマージして1つにまとめる
+        return Snapshot.mergeCandidates([], appending: candidates)
     }
 
     /**
@@ -373,89 +317,6 @@ enum UserDictAddSource {
         return false
     }
 
-    /**
-     * 現在入力中のprefixに続く入力候補を返す。見つからなければ空配列を返す。
-     *
-     * 以下のように補完候補を探します。
-     * ※将来この仕様は変更する可能性が大いにあります。
-     *
-     * - prefixが空文字列なら空配列を返す
-     * - ユーザー辞書の送りなしの読みのうち、最近変換したものから選択する。
-     * - prefixと読みが完全に一致する場合は補完候補とはしない
-     * - 数値変換用の読みは補完候補としない
-     */
-    @MainActor func findCompletions(prefix: String) -> [String] {
-        if prefix.isEmpty {
-            return []
-        }
-        var results: [String] = []
-        // 重複排除は順序を保ちつつSetでメンバーシップ判定する (Array.containsだと読み数に対しO(n^2)になる)
-        var seen = Set<String>()
-        if !privateMode.value || !ignoreUserDictInPrivateMode.value {
-            if let userDict {
-                for yomi in userDict.findCompletions(prefix: prefix) {
-                    if seen.insert(yomi).inserted {
-                        results.append(yomi)
-                    }
-                }
-            }
-        }
-        dateYomis.forEach { dateYomi in
-            if dateYomi.yomi.hasPrefix(prefix) && seen.insert(dateYomi.yomi).inserted {
-                results.append(dateYomi.yomi)
-            }
-        }
-        return results
-    }
-
-    /**
-     * 現在入力中のprefixに続く変換候補を返す。
-     * prefixが1文字しかないときは完全一致だけを返す。
-     * 2文字以上あるときは見つかったものから最大100件まで返す。
-     *
-     * skkservへの変換候補問い合わせはファイル辞書に比べて引くのにコストがかかるため、別に上限を設ける。
-     * ``Global.displayCandidateCount`` 回数引いたらそれ以上は引かない。
-     * 将来AsyncStreamにできたら遅延しながら引くのはありかも。
-     *
-     * - Parameters:
-     *   - prefix: SKK辞書の見出しの一部。
-     *   - skkservOption: SKKServを検索対象とする場合に渡す。nilのときはskkservを引かない
-     *   - findFromAllDicts: ユーザー辞書以外を検索対象とするか
-     *
-     * NOTE: asyncにするかも? (skkservとかで便利そう)
-     * AsyncStreamにするかも?
-     */
-    func candidatesForCompletion(prefix: String, skkservOption: CompletionSKKServOption?, findFromAllDicts: Bool) -> [Candidate] {
-        let skkservDict = skkservOption?.dict
-        // 1文字のときは全探索するとめちゃくちゃ量が多いので完全一致だけ探す
-        if prefix.count == 1 {
-            return referDicts(prefix, option: nil, skkservDict: skkservDict, findFromAllDicts: findFromAllDicts)
-                .map { candidate in
-                    candidate.withOriginal(Candidate.Original(midashi: prefix, word: candidate.word))
-                }
-        }
-        // FIXME: Candidateの配列じゃなくて、(String, Candidate) のように見出し語と変換候補のタプルの配列を返すほうがよさそう
-        var results: [Candidate] = []
-        var skkservReferCount = 0
-        for midashi in findCompletionsDicts(prefix: prefix, skkservDict: skkservDict, findFromAllDicts: findFromAllDicts) {
-            if results.count >= 100 { break }
-            let currentSkkservDict: (any SKKServDictProtocol)?
-            if let option = skkservOption, skkservReferCount < option.referLimit {
-                 currentSkkservDict = option.dict
-                 skkservReferCount += 1
-             } else {
-                 currentSkkservDict = nil
-             }
-            let candidates = referDicts(midashi, option: nil, skkservDict: currentSkkservDict, findFromAllDicts: findFromAllDicts)
-                .prefix(100 - results.count)
-                .map { candidate in
-                    candidate.withOriginal(Candidate.Original(midashi: midashi, word: candidate.word))
-                }
-            results.append(contentsOf: candidates)
-        }
-        return results
-    }
-
     /// ユーザー辞書の永続化を予約する
     /// 短期間に複数の保存要求があっても60秒に一回にまとめる
     @MainActor private func scheduleSave() {
@@ -517,14 +378,23 @@ enum UserDictAddSource {
     }
 
     /**
+     * バックグラウンドで実行したskkservへの問い合わせの成否を問い合わせ順に処理する。
+     * 成功時はエラーカウントをリセットし、失敗時はエラーカウントを増やして
+     * 連続エラー数が閾値に達していればskkservを無効化する。
+     *
+     * skkservからの問い合わせ結果自体はバックグラウンドで処理済みのため成否だけを受け取る。
+     */
+    @MainActor func handleSKKServResults(_ results: [Result<Void, any Error>]) {
+        for result in results {
+            // 自動無効化された場合は無効化の通知を重複して送らないように残りの成否は処理しない
+            guard Global.skkservDict != nil else { return }
+            handleSKKServResult(result) { _ in }
+        }
+    }
+
+    /**
      * skkservへの問い合わせ結果を処理する。成功時はエラーカウントをリセットしてonSuccessに結果を渡す。
      * 失敗時はエラーカウントを増やし、連続エラー数が閾値に達していればskkservを無効化する。
-     *
-     * - TODO: このメソッドは@MainActor指定されているが、呼び出し元のInputControllerの補完検索を
-     * .receive(on: DispatchQueue.global())以降で同期的に呼んでいるため実際にはメインスレッド以外から
-     * 実行されることがあり、SettingsViewModel (実際にメインスレッドで実行) からのGlobal.skkservDict等への
-     * 書き込みとデータ競合する可能性がある。referDicts/findCompletionsDictsをnonisolated async化し、
-     * このメソッドの呼び出しをMainActor.run経由にすることで解消する予定。
      */
     @MainActor private func handleSKKServResult<T>(_ result: Result<T, any Error>, onSuccess: (T) -> Void) {
         switch result {

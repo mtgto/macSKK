@@ -12,13 +12,6 @@ protocol SKKServDictProtocol: Sendable {
     func invalidate()
 }
 
-/// 補完候補検索でのskkserv検索オプション
-struct CompletionSKKServOption {
-    let dict: any SKKServDictProtocol
-    /// skkservへのreferの問い合わせの上限回数
-    let referLimit: Int
-}
-
 /**
  * skkservを辞書として使う辞書定義
  *

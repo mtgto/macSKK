@@ -174,27 +174,17 @@ class InputController: IMKInputController {
                 self?.showMarkerWhenEmpty = bundleIdentifiers.contains(bundleIdentifier)
             }
         }.store(in: &cancellables)
-        // 読みが更新されたときに補完候補の検索・表示を行う処理。
-        // 検索(DispatchQueue.global())と補完候補パネルへの反映はCompletionPresenterに委譲している。
-        completionPresenter.subscribe(
-            to: stateMachine.yomiEvent,
-            state: stateMachine,
-            cursorPosition: { [weak self] in self?.cursorPosition(for: textInput) ?? .zero },
-            windowLevel: { [weak self] in self?.windowLevel(for: textInput) ?? .floating })
-        // 読みの補完候補が更新されたときの処理
+        // 読みが更新・補完されたときの処理。
+        // 補完候補の検索(MainActor外で実行する@concurrentな関数)と
+        // 補完候補パネルへの反映はCompletionPresenterに委譲している。
         stateMachine.yomiEvent
-            .compactMap {
-                if case .completed(let nextYomi) = $0 {
-                    return nextYomi
-                }
-                return nil
-            }
-            .sink { nextYomi in
-                if nextYomi.isEmpty {
-                    logger.warning("補完候補を使って補完されましたが空文字列になっており、バグの可能性があります。")
-                } else {
-                    Global.completionPanel.viewModel.completion = .yomi(nextYomi)
-                }
+            .sink { [weak self] event in
+                guard let self else { return }
+                self.completionPresenter.handle(
+                    event,
+                    state: self.stateMachine,
+                    cursorPosition: { [weak self] in self?.cursorPosition(for: textInput) ?? .zero },
+                    windowLevel: { [weak self] in self?.windowLevel(for: textInput) ?? .floating })
             }
             .store(in: &cancellables)
         // Safariでアドレスバーに移動するときなど、処理が固まることがあるので非同期で実行する
