@@ -24,7 +24,7 @@ final class UserDictSnapshotTests: XCTestCase {
             ignoreUserDictInPrivateMode: ignoreUserDictInPrivateMode,
             dateYomis: [],
             dateConversions: [])
-        let snapshot = userDict.makeSnapshot()
+        let snapshot = userDict.snapshot()
         XCTAssertEqual(
             snapshot.candidatesForCompletion(prefix: "にほ", findFromAllDicts: false),
             [
@@ -59,7 +59,7 @@ final class UserDictSnapshotTests: XCTestCase {
             ignoreUserDictInPrivateMode: ignoreUserDictInPrivateMode,
             dateYomis: [],
             dateConversions: [])
-        let results = userDict.makeSnapshot().candidatesForCompletion(prefix: "あい", findFromAllDicts: true)
+        let results = userDict.snapshot().candidatesForCompletion(prefix: "あい", findFromAllDicts: true)
         XCTAssertEqual(results.count, 100)
     }
 }

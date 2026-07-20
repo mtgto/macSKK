@@ -6,17 +6,17 @@ extension UserDict {
     /// バックグラウンドスレッドからの辞書検索用スナップショット。
     /// MemoryDictはstruct+SendableかつCOWのため、値コピーのコストはほぼゼロ。
     struct Snapshot: Sendable {
-        let userDictSnapshot: MemoryDict?
-        let dictSnapshots: [MemoryDict]
+        let userDict: MemoryDict?
+        let dicts: [MemoryDict]
         let dateYomis: [DateConversion.Yomi]
         let dateConversions: [DateConversion]
         let privateMode: Bool
         let ignoreUserDictInPrivateMode: Bool
 
         nonisolated func refer(_ yomi: String, option: DictReferringOption? = nil) -> [Word] {
-            guard let userDictSnapshot else { return [] }
+            guard let userDict else { return [] }
             if privateMode && ignoreUserDictInPrivateMode { return [] }
-            return userDictSnapshot.refer(yomi, option: option)
+            return userDict.refer(yomi, option: option)
         }
 
         nonisolated func referDicts(_ yomi: String, option: DictReferringOption?, findFromAllDicts: Bool) -> [Candidate] {
@@ -34,7 +34,7 @@ extension UserDict {
                 candidates.append(contentsOf: dateCandidates)
             }
             if findFromAllDicts {
-                dictSnapshots.forEach { dict in
+                dicts.forEach { dict in
                     candidates.append(contentsOf: dict.refer(yomi, option: option).map {
                         Candidate(word: $0, saveToUserDict: dict.saveToUserDict)
                     })
@@ -53,7 +53,7 @@ extension UserDict {
                                          saveToUserDict: true)
                     }
                     if findFromAllDicts {
-                        dictSnapshots.forEach { dict in
+                        dicts.forEach { dict in
                             candidates.append(contentsOf: dict.refer(midashi, option: nil).compactMap { word in
                                 guard let numberCandidate = try? NumberCandidate(yomi: word.word) else { return nil }
                                 guard let convertedWord = numberCandidate.toString(yomi: numberYomi) else { return nil }
@@ -86,8 +86,8 @@ extension UserDict {
             var results: [String] = []
             var seen = Set<String>()
             if !privateMode || !ignoreUserDictInPrivateMode {
-                if let userDictSnapshot {
-                    for yomi in userDictSnapshot.findCompletions(prefix: prefix) {
+                if let userDict {
+                    for yomi in userDict.findCompletions(prefix: prefix) {
                         if seen.insert(yomi).inserted { results.append(yomi) }
                     }
                 }
@@ -98,7 +98,7 @@ extension UserDict {
                 }
             }
             if findFromAllDicts {
-                for dict in dictSnapshots {
+                for dict in dicts {
                     for yomi in dict.findCompletions(prefix: prefix) {
                         if seen.insert(yomi).inserted { results.append(yomi) }
                     }

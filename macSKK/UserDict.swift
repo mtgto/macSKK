@@ -110,10 +110,10 @@ enum UserDictAddSource {
         return referDicts(yomi, option: option, skkservDict: Global.skkservDict, findFromAllDicts: true)
     }
 
-    func makeSnapshot() -> Snapshot {
+    func snapshot() -> Snapshot {
         Snapshot(
-            userDictSnapshot: (userDict as? FileDict)?.dict ?? (userDict as? MemoryDict),
-            dictSnapshots: dicts.compactMap { ($0 as? FileDict)?.dict ?? ($0 as? MemoryDict) },
+            userDict: (userDict as? FileDict)?.dict ?? (userDict as? MemoryDict),
+            dicts: dicts.compactMap { ($0 as? FileDict)?.dict ?? ($0 as? MemoryDict) },
             dateYomis: dateYomis,
             dateConversions: dateConversions,
             privateMode: privateMode.value,
