@@ -1245,10 +1245,12 @@ final class StateMachine {
         let candidateWords: [Candidate]
         // FIXME: Abbrevモードでも接頭辞、接尾辞を検索するべきか再検討する。
         // いまは ">"で終わる・始まる場合は、Abbrevモードであっても接頭辞・接尾辞を探しているものとして検索する
-        if yomiText.hasSuffix(">") {
+        // ">" 単体のように ">" を除くと読みが空になる場合は接頭辞・接尾辞変換とはみなさず、
+        // ">" をそのまま見出しとして通常変換する (ddskkと同様)。空見出しでの辞書登録を防ぐ。
+        if yomiText.hasSuffix(">") && yomiText.count > 1 {
             yomiText = String(yomiText.dropLast())
             candidateWords = candidates(for: yomiText, option: .prefix) + candidates(for: yomiText, option: nil)
-        } else if yomiText.hasPrefix(">") {
+        } else if yomiText.hasPrefix(">") && yomiText.count > 1 {
             yomiText = String(yomiText.dropFirst())
             candidateWords = candidates(for: yomiText, option: .suffix) + candidates(for: yomiText, option: nil)
         } else if let okuri = composing.okuri, !okuri.isEmpty {

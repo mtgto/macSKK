@@ -155,6 +155,10 @@ struct MemoryDict: DictProtocol, Sendable {
     ///   - yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
     ///   - word: SKK辞書の変換候補。
     @MainActor mutating func add(yomi: String, word: Word) {
+        // 空の見出しはSKK辞書エントリとして不正 (引くことができず、シリアライズすると
+        // " /候補/" のような壊れた行になり、次回読み込みで失敗する)。呼び出し側で
+        // 防いでいるが、念のためここでも登録を拒否する。
+        guard !yomi.isEmpty else { return }
         if var words = entries[yomi] {
             let removed: Word?
             let index = words.firstIndex { $0.word == word.word && $0.okuri == word.okuri }
