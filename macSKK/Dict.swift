@@ -25,8 +25,21 @@ enum DictLoadStatus {
 
 /// 辞書の読み込み状態の通知オブジェクト
 struct DictLoadEvent {
+    /// この通知を発生させた契機。
+    enum Trigger {
+        /// ファイルからの読み込み (`FileDict.load`)。読み込み失敗通知はこの契機のときだけ出す。
+        case load
+        /// 変換・確定にともなう学習 (`FileDict.add`/`delete`)。
+        ///
+        /// 学習でも読み込み状態 (エントリ数) は更新されるが、失敗行数は読み込み時に一度決まる値なので、
+        /// これを `.load` と区別しないと失敗通知が変換のたびに繰り返し出てしまう。
+        case edit
+    }
+
     let id: FileDict.ID
     let status: DictLoadStatus
+    /// この通知を発生させた契機。
+    let trigger: Trigger
 }
 
 protocol DictProtocol {

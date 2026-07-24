@@ -84,6 +84,48 @@ import Combine
         XCTAssertTrue(dict.hasUnsavedChanges)
     }
 
+    // ファイル読み込みの通知は .load、add/deleteによる学習の通知は .edit になること。
+    // この区別により、失敗行を含む辞書でも読み込み失敗通知が変換 (add/delete) のたびに再送されない。
+    func testLoadPostsLoadTrigger() async throws {
+        let fileURL = Bundle(for: Self.self).url(forResource: "SKK-JISYO.test", withExtension: "json")!
+        let dict = try FileDict(contentsOf: fileURL, type: .json, readonly: true, saveToUserDict: true)
+        var triggers: [DictLoadEvent.Trigger] = []
+        NotificationCenter.default.publisher(for: notificationNameDictLoad).sink { notification in
+            if let loadEvent = notification.object as? DictLoadEvent, loadEvent.id == dict.id {
+                triggers.append(loadEvent.trigger)
+            }
+        }.store(in: &cancellables)
+        await dict.load()
+        // .loading と .loaded が通知され、どちらも .load であること。
+        XCTAssertFalse(triggers.isEmpty)
+        XCTAssertTrue(triggers.allSatisfy { $0 == .load }, "ファイル読み込みの通知はすべて .load であるべき")
+    }
+
+    func testAddPostsEditTrigger() throws {
+        let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: true, saveToUserDict: true)
+        var received: DictLoadEvent?
+        NotificationCenter.default.publisher(for: notificationNameDictLoad).sink { notification in
+            if let loadEvent = notification.object as? DictLoadEvent, loadEvent.id == dict.id {
+                received = loadEvent
+            }
+        }.store(in: &cancellables)
+        dict.add(yomi: "い", word: Word("井"))
+        XCTAssertEqual(received?.trigger, .edit, "addによる通知は .edit であるべき")
+    }
+
+    func testDeletePostsEditTrigger() throws {
+        let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: true, saveToUserDict: true)
+        dict.setEntries(["あr": [Word("有"), Word("在")]], readonly: true)
+        var received: DictLoadEvent?
+        NotificationCenter.default.publisher(for: notificationNameDictLoad).sink { notification in
+            if let loadEvent = notification.object as? DictLoadEvent, loadEvent.id == dict.id {
+                received = loadEvent
+            }
+        }.store(in: &cancellables)
+        XCTAssertTrue(dict.delete(yomi: "あr", word: Word("在")))
+        XCTAssertEqual(received?.trigger, .edit, "deleteによる通知は .edit であるべき")
+    }
+
     func testSerialize() throws {
         let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: false, saveToUserDict: true)
         XCTAssertEqual(dict.serialize(),
