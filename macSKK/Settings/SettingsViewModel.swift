@@ -891,8 +891,6 @@ final class SettingsViewModel: ObservableObject {
                 if let userDict = Global.dictionary.userDict as? FileDict, userDict.id == loadEvent.id {
                     self.userDictLoadingStatus = loadEvent.status
                     // 読み込み失敗通知はファイル読み込み (.load) のときだけ出す。
-                    // add/deleteによる学習 (.edit) でも .loaded は飛んでくるが、失敗行数は読み込み時に
-                    // 一度決まる値なので、区別しないと変換のたびに同じ通知が繰り返し出てしまう。
                     if loadEvent.trigger == .load {
                         if case .fail(let error) = loadEvent.status {
                             UNNotifier.sendNotificationForUserDict(readError: error)
