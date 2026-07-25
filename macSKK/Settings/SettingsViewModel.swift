@@ -890,10 +890,13 @@ final class SettingsViewModel: ObservableObject {
             if let loadEvent = notification.object as? DictLoadEvent, let self {
                 if let userDict = Global.dictionary.userDict as? FileDict, userDict.id == loadEvent.id {
                     self.userDictLoadingStatus = loadEvent.status
-                    if case .fail(let error) = loadEvent.status {
-                        UNNotifier.sendNotificationForUserDict(readError: error)
-                    } else if case .loaded(_, let failureCount) = loadEvent.status, failureCount > 0 {
-                        UNNotifier.sendNotificationForUserDict(failureEntryCount: failureCount)
+                    // 読み込み失敗通知はファイル読み込み (.load) のときだけ出す。
+                    if loadEvent.trigger == .load {
+                        if case .fail(let error) = loadEvent.status {
+                            UNNotifier.sendNotificationForUserDict(readError: error)
+                        } else if case .loaded(_, let failureCount) = loadEvent.status, failureCount > 0 {
+                            UNNotifier.sendNotificationForUserDict(failureEntryCount: failureCount)
+                        }
                     }
                 } else {
                     self.dictLoadingStatuses[loadEvent.id] = loadEvent.status

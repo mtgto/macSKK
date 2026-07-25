@@ -110,7 +110,7 @@ enum FileDictType: Equatable {
         let readonly = self.readonly
 
         NotificationCenter.default.post(name: notificationNameDictLoad,
-                                        object: DictLoadEvent(id: id, status: .loading))
+                                        object: DictLoadEvent(id: id, status: .loading, trigger: .load))
 
         // ファイルI/O + パースはOperationQueue上で実行し、MainActorをブロックしない
         let result: Result<MemoryDict, any Error> = await withCheckedContinuation { continuation in
@@ -157,11 +157,12 @@ enum FileDictType: Equatable {
             logger.log("辞書 \(self.id, privacy: .public) から \(self.dict.entries.count) エントリ読み込みました")
             NotificationCenter.default.post(name: notificationNameDictLoad,
                                             object: DictLoadEvent(id: self.id,
-                                                                  status: .loaded(success: dict.entryCount, failure: dict.failedEntryCount)))
+                                                                  status: .loaded(success: dict.entryCount, failure: dict.failedEntryCount),
+                                                                  trigger: .load))
         case .failure(let error):
             logger.error("辞書 \(self.id, privacy: .public) の読み込みでエラーが発生しました: \(error)")
             NotificationCenter.default.post(name: notificationNameDictLoad,
-                                            object: DictLoadEvent(id: self.id, status: .fail(error)))
+                                            object: DictLoadEvent(id: self.id, status: .fail(error), trigger: .load))
         }
     }
 
@@ -296,7 +297,8 @@ enum FileDictType: Equatable {
         dict.add(yomi: yomi, word: word)
         NotificationCenter.default.post(name: notificationNameDictLoad,
                                         object: DictLoadEvent(id: self.id,
-                                                              status: .loaded(success: dict.entryCount, failure: dict.failedEntryCount)))
+                                                              status: .loaded(success: dict.entryCount, failure: dict.failedEntryCount),
+                                                              trigger: .edit))
         hasUnsavedChanges = true
     }
 
@@ -305,7 +307,8 @@ enum FileDictType: Equatable {
             hasUnsavedChanges = true
             NotificationCenter.default.post(name: notificationNameDictLoad,
                                             object: DictLoadEvent(id: self.id,
-                                                                  status: .loaded(success: dict.entryCount, failure: dict.failedEntryCount)))
+                                                                  status: .loaded(success: dict.entryCount, failure: dict.failedEntryCount),
+                                                                  trigger: .edit))
             return true
         }
         return false
