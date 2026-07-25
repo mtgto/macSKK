@@ -1310,6 +1310,31 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    // ">" 単体を変換したときに空見出しで辞書登録しないこと (エンバグ防止)。
+    // ">" を除くと読みが空になるため接頭辞・接尾辞変換とはみなさず、">" をそのまま
+    // 見出しとして変換する。以前は dropLast で空読みになり " /＞/" が登録されていた。
+    @MainActor func testHandleComposingConvertLoneGreaterThan() {
+        Global.dictionary.setEntries([">": [Word("＞")]])
+
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(5).sink { events in
+            XCTAssertEqual(events[0], .modeChanged(.direct))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain(">")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerSelect, .emphasized("＞")])), "\">\" 単体は接頭辞変換せず \">\" を見出しとして変換する")
+            XCTAssertEqual(events[4], .fixedText("＞"))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "/")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ">", characterIgnoringModifier: ".", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(enterAction))
+        wait(for: [expectation], timeout: 1.0)
+        XCTAssertEqual(Global.dictionary.refer(""), [], "空見出しでは辞書登録しない (エンバグ防止)")
+        XCTAssertEqual(Global.dictionary.refer(">"), [Word("＞")], "\">\" を見出しとして登録する")
+    }
+
     @MainActor func testHandleComposingNumber() {
         let entries = ["だい#": [Word("第#1"), Word("第#0"), Word("第#2"), Word("第#3")], "だい2": [Word("第2")]]
         Global.dictionary.dicts.append(MemoryDict(entries: entries, readonly: true))

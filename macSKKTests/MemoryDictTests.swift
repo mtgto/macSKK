@@ -158,6 +158,16 @@ class MemoryDictTests: XCTestCase {
         XCTAssertEqual(dict.refer("いt", option: nil), [Word("行", okuri: "った"), Word("行")])
     }
 
+    @MainActor func testAddEmptyYomiIsIgnored() throws {
+        // 空の見出しはSKK辞書エントリとして不正なので登録しない (シリアライズすると
+        // " /候補/" のような壊れた行になり次回読み込みで失敗するため)
+        var dict = MemoryDict(entries: [:], readonly: false)
+        dict.add(yomi: "", word: Word("＞"))
+        XCTAssertEqual(dict.entryCount, 0)
+        XCTAssertEqual(dict.refer("", option: nil), [])
+        XCTAssertEqual(dict.okuriNashiYomis, [])
+    }
+
     @MainActor func testDelete() throws {
         var dict = MemoryDict(entries: ["あr": [Word("有"), Word("在")], "え": [Word("絵"), Word("柄")]], readonly: false)
         XCTAssertFalse(dict.entries.isEmpty)
