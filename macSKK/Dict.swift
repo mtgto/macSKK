@@ -92,7 +92,7 @@ protocol DictProtocol {
      * - prefixと読みが完全に一致する場合は補完候補とはしない
      * - 数値変換用の読みは補完候補としない
      */
-    func findCompletions(prefix: String) -> [String]
+    @MainActor func findCompletions(prefix: String) -> [String]
 
     /**
      * この辞書から返した変換候補をユーザー辞書に保存するかどうか
