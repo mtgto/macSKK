@@ -1,0 +1,98 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+import Foundation
+import XCTest
+
+final class AsyncTimeoutTests: XCTestCase {
+    /// キャンセルハンドラ (@Sendableクロージャ) から書き込むためのフラグ。
+    /// XCTestExpectationはSendableではないためこちらを使う。
+    private final class CancelFlag: @unchecked Sendable {
+        private let lock = NSLock()
+        private var value = false
+
+        func markCancelled() {
+            lock.lock()
+            value = true
+            lock.unlock()
+        }
+
+        var isCancelled: Bool {
+            lock.lock()
+            defer { lock.unlock() }
+            return value
+        }
+    }
+
+    func testWithTimeoutReturnsValueWhenOperationFinishesInTime() async throws {
+        let result = try await withTimeout(seconds: 10.0) { "done" }
+        XCTAssertEqual(result, "done")
+    }
+
+    func testWithTimeoutThrowsTimeoutError() async throws {
+        do {
+            _ = try await withTimeout(seconds: 0.01) {
+                try await Task.sleep(for: .seconds(10))
+                return "done"
+            }
+            XCTFail("TimeoutErrorが投げられる")
+        } catch is TimeoutError {
+            // 期待通り
+        }
+    }
+
+    func testWithTimeoutCancelsOperationWhenTimedOut() async throws {
+        let flag = CancelFlag()
+        do {
+            _ = try await withTimeout(seconds: 0.01) {
+                await withTaskCancellationHandler {
+                    try? await Task.sleep(for: .seconds(10))
+                } onCancel: {
+                    flag.markCancelled()
+                }
+                return "done"
+            }
+            XCTFail("TimeoutErrorが投げられる")
+        } catch is TimeoutError {
+            // 期待通り
+        }
+        // TaskGroupはキャンセルハンドラの実行を含めて子タスクの終了を待ってから抜ける
+        XCTAssertTrue(flag.isCancelled, "タイムアウト時はoperationがキャンセルされる")
+    }
+
+    func testWithTimeoutPropagatesCancellation() async throws {
+        let task = Task {
+            try await withTimeout(seconds: 10.0) {
+                try await Task.sleep(for: .seconds(10))
+                return "done"
+            }
+        }
+        task.cancel()
+        do {
+            _ = try await task.value
+            XCTFail("CancellationErrorが投げられる")
+        } catch is CancellationError {
+            // 期待通り。外側のキャンセルはタイムアウトとは区別する
+        }
+    }
+
+    func testContinuationBoxResumeBeforeInstall() async throws {
+        let box = ContinuationBox<String>()
+        box.resume(with: .success("resumed"))
+        let result = try await withCheckedThrowingContinuation { continuation in
+            box.install(continuation)
+        }
+        XCTAssertEqual(result, "resumed")
+    }
+
+    func testContinuationBoxIgnoresSecondResume() async throws {
+        let box = ContinuationBox<String>()
+        // 二重resumeするとwithCheckedThrowingContinuationは実行時エラーになるため、
+        // このテストが通ること自体が二重resumeを防げている証拠になる
+        let result = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<String, any Error>) in
+            box.install(continuation)
+            box.resume(with: .success("first"))
+            box.resume(with: .failure(CancellationError()))
+        }
+        XCTAssertEqual(result, "first")
+    }
+}

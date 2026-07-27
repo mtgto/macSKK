@@ -16,8 +16,13 @@
 		B3C350D6E32E35775AE1FF56 /* DateConversionYomiTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 073E79CEC2123C051D8BB83B /* DateConversionYomiTests.swift */; };
 		CE00C0DE0000000000000001 /* CompletionPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE00C0DE0000000000000002 /* CompletionPresenter.swift */; };
 		CE00C0DE0000000000000003 /* CompletionPresenterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE00C0DE0000000000000004 /* CompletionPresenterTests.swift */; };
-		CE0326A02C5D1DD6000FF691 /* SKK-JISYO.test.json in Resources */ = {isa = PBXBuildFile; fileRef = CE03269F2C5D1DD6000FF691 /* SKK-JISYO.test.json */; };
 		CE00C0DE0000000000000005 /* Data+EucJis2004.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED987402BB953E7001B40F9 /* Data+EucJis2004.swift */; };
+		CE00C0DE000000000000000B /* AsyncTimeout.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE00C0DE000000000000000A /* AsyncTimeout.swift */; };
+		CE00C0DE000000000000000C /* AsyncTimeout.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE00C0DE000000000000000A /* AsyncTimeout.swift */; };
+		CE00C0DE0000000000000007 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE00C0DE0000000000000006 /* Logger.swift */; };
+		CE00C0DE0000000000000008 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE00C0DE0000000000000006 /* Logger.swift */; };
+		CE00C0DE0000000000000009 /* libiconv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = CE496C972B440CCA001C623C /* libiconv.tbd */; };
+		CE0326A02C5D1DD6000FF691 /* SKK-JISYO.test.json in Resources */ = {isa = PBXBuildFile; fileRef = CE03269F2C5D1DD6000FF691 /* SKK-JISYO.test.json */; };
 		CE04E8913017BBD600310428 /* Message+SKKServ.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE1B00612BA4286800C830FD /* Message+SKKServ.swift */; };
 		CE04E8923017BBE200310428 /* SKKServClientProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF3D8752B9EF0C000BD1D3A /* SKKServClientProtocol.swift */; };
 		CE04E8933017BBED00310428 /* SKKServRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE1B00632BA4287C00C830FD /* SKKServRequest.swift */; };
@@ -69,7 +74,6 @@
 		CE496C912B440892001C623C /* URL+Additions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE496C902B440892001C623C /* URL+Additions.swift */; };
 		CE496C932B440B9B001C623C /* euc-jis-2004.txt in Resources */ = {isa = PBXBuildFile; fileRef = CE496C922B440B9B001C623C /* euc-jis-2004.txt */; };
 		CE496C952B440BBD001C623C /* Data+EucJis2004Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE496C942B440BBD001C623C /* Data+EucJis2004Tests.swift */; };
-		CE00C0DE0000000000000009 /* libiconv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = CE496C972B440CCA001C623C /* libiconv.tbd */; };
 		CE496C982B440CDA001C623C /* libiconv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = CE496C972B440CCA001C623C /* libiconv.tbd */; };
 		CE49A2782C19E07800D53CFE /* KeyBindingSetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE49A2772C19E07800D53CFE /* KeyBindingSetTests.swift */; };
 		CE49A27A2C245F6400D53CFE /* KeyBindingSetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE49A2792C245F6400D53CFE /* KeyBindingSetView.swift */; };
@@ -174,8 +178,6 @@
 		CEF0825D296DB58600646366 /* CandidatesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF0825C296DB58600646366 /* CandidatesViewModel.swift */; };
 		CEF16CEA2DBF21B500EF20A3 /* kana-rule-azik.conf in Resources */ = {isa = PBXBuildFile; fileRef = CEF16CE92DBF21B500EF20A3 /* kana-rule-azik.conf */; };
 		CEF3D86C2B9C022900BD1D3A /* WorkaroundApplicationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF3D86B2B9C022900BD1D3A /* WorkaroundApplicationView.swift */; };
-		CE00C0DE0000000000000007 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE00C0DE0000000000000006 /* Logger.swift */; };
-		CE00C0DE0000000000000008 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE00C0DE0000000000000006 /* Logger.swift */; };
 		CEF3D8742B9EF0C000BD1D3A /* SKKServClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF3D8732B9EF0C000BD1D3A /* SKKServClient.swift */; };
 		CEF3D8782B9EF0C000BD1D3A /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF3D8772B9EF0C000BD1D3A /* main.swift */; };
 		CEF3D87D2B9EF0C000BD1D3A /* SKKServClient.xpc in Embed XPC Services */ = {isa = PBXBuildFile; fileRef = CEF3D8712B9EF0C000BD1D3A /* SKKServClient.xpc */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -231,6 +233,8 @@
 		94DB63232D329CBF005250B8 /* VerticalCandidatesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerticalCandidatesView.swift; sourceTree = "<group>"; };
 		CE00C0DE0000000000000002 /* CompletionPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletionPresenter.swift; sourceTree = "<group>"; };
 		CE00C0DE0000000000000004 /* CompletionPresenterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletionPresenterTests.swift; sourceTree = "<group>"; };
+		CE00C0DE000000000000000A /* AsyncTimeout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncTimeout.swift; sourceTree = "<group>"; };
+		CE00C0DE0000000000000006 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		CE03269F2C5D1DD6000FF691 /* SKK-JISYO.test.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "SKK-JISYO.test.json"; sourceTree = "<group>"; };
 		CE04E88A3017BB3000310428 /* SKKServClientTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SKKServClientTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		CE06CA292AAC171B00E80E5E /* FileDictTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileDictTests.swift; sourceTree = "<group>"; };
@@ -388,7 +392,6 @@
 		CEF16CE92DBF21B500EF20A3 /* kana-rule-azik.conf */ = {isa = PBXFileReference; lastKnownFileType = text; path = "kana-rule-azik.conf"; sourceTree = "<group>"; };
 		CEF3D86B2B9C022900BD1D3A /* WorkaroundApplicationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkaroundApplicationView.swift; sourceTree = "<group>"; };
 		CEF3D8712B9EF0C000BD1D3A /* SKKServClient.xpc */ = {isa = PBXFileReference; explicitFileType = "wrapper.xpc-service"; includeInIndex = 0; path = SKKServClient.xpc; sourceTree = BUILT_PRODUCTS_DIR; };
-		CE00C0DE0000000000000006 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		CEF3D8732B9EF0C000BD1D3A /* SKKServClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServClient.swift; sourceTree = "<group>"; };
 		CEF3D8752B9EF0C000BD1D3A /* SKKServClientProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServClientProtocol.swift; sourceTree = "<group>"; };
 		CEF3D8772B9EF0C000BD1D3A /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
@@ -723,6 +726,7 @@
 				CEF3D8752B9EF0C000BD1D3A /* SKKServClientProtocol.swift */,
 				CEF3D8732B9EF0C000BD1D3A /* SKKServClient.swift */,
 				CE00C0DE0000000000000006 /* Logger.swift */,
+				CE00C0DE000000000000000A /* AsyncTimeout.swift */,
 				CEF3D8772B9EF0C000BD1D3A /* main.swift */,
 				CE1B00602BA4285A00C830FD /* Network */,
 				CEF3D8792B9EF0C000BD1D3A /* Info.plist */,
@@ -977,6 +981,7 @@
 			files = (
 				CE00C0DE0000000000000005 /* Data+EucJis2004.swift in Sources */,
 				CE00C0DE0000000000000008 /* Logger.swift in Sources */,
+				CE00C0DE000000000000000C /* AsyncTimeout.swift in Sources */,
 				CE04E8953017BC2300310428 /* NWParameters+SKKServ.swift in Sources */,
 				CE04E8943017BC0F00310428 /* SKKServProtocol.swift in Sources */,
 				CE04E8933017BBED00310428 /* SKKServRequest.swift in Sources */,
@@ -1138,6 +1143,7 @@
 			files = (
 				CEF3D8742B9EF0C000BD1D3A /* SKKServClient.swift in Sources */,
 				CE00C0DE0000000000000007 /* Logger.swift in Sources */,
+				CE00C0DE000000000000000B /* AsyncTimeout.swift in Sources */,
 				CE1B00642BA4287C00C830FD /* SKKServRequest.swift in Sources */,
 				CE1B00622BA4286800C830FD /* Message+SKKServ.swift in Sources */,
 				CEF3D8822B9EF19100BD1D3A /* SKKServClientProtocol.swift in Sources */,
