@@ -33,6 +33,9 @@ struct SKKServService: SKKServServiceProtocol, @unchecked Sendable {
         }
     }
 
+    /// XPCサービス自体が応答不能になった場合に備えて、XPCへ渡す期限に上乗せする猶予。
+    private static let xpcSafetyMargin: TimeInterval = 1.0
+
     /**
      * skkservにバージョンを問い合わせる。
      *
@@ -41,37 +44,7 @@ struct SKKServService: SKKServServiceProtocol, @unchecked Sendable {
      *   - timeout: 書き込み・読み込みを合わせたタイムアウトまでの時間。省略時は1秒。
      */
     func serverVersion(destination: SKKServDestination, timeout: TimeInterval = 1.0) throws -> String {
-        service.activate()
-        guard let proxy = service.remoteObjectProxy as? any SKKServClientProtocol else {
-            throw SKKServClientError.unexpected
-        }
-        let semaphore = DispatchSemaphore(value: 0)
-        // NOTE: XPCからのコールバックはメインスレッドとは別のスレッドから返ってくるが、
-        // semaphore.wait(_:)で同期を取っているため並行アクセスは発生しない
-        nonisolated(unsafe) var result: Result<String, any Error> = .failure(SKKServClientError.unexpected)
-        proxy.serverVersion(destination: destination) { version, error in
-            if let version {
-                result = .success(version)
-            } else if let error {
-                result = .failure(Self.recastSKKServClientError(error))
-            } else {
-                fatalError("SKKServClientから不正な応答が返りました")
-            }
-            semaphore.signal()
-        }
-        switch semaphore.wait(timeout: .now() + timeout) {
-        case .success:
-            switch result {
-            case .success(let line):
-                return line
-            case .failure(let error):
-                throw error
-            }
-        case .timedOut:
-            logger.warning("skkservからの応答がなかったためタイムアウト処理を行います")
-            proxy.disconnect()
-            throw SKKServClientError.timeout
-        }
+        try send(command: .version, yomi: "", destination: destination, timeout: timeout)
     }
 
     /**
@@ -87,40 +60,29 @@ struct SKKServService: SKKServServiceProtocol, @unchecked Sendable {
      *            見つからなかった場合は "4へんかん" のように先頭に4がつく形式
      */
     func refer(yomi: String, destination: SKKServDestination, timeout: TimeInterval) throws -> String {
-        service.activate()
-        guard let proxy = service.remoteObjectProxy as? any SKKServClientProtocol else {
-            throw SKKServClientError.unexpected
-        }
-        let semaphore = DispatchSemaphore(value: 0)
-        // NOTE: XPCからのコールバックはメインスレッドとは別のスレッドから返ってくるが、
-        // semaphore.wait(_:)で同期を取っているため並行アクセスは発生しない
-        nonisolated(unsafe) var result: Result<String, any Error> = .failure(SKKServClientError.unexpected)
-        proxy.refer(destination: destination, yomi: yomi) { line, error in
-            if let line {
-                result = .success(line)
-            } else if let error {
-                result = .failure(Self.recastSKKServClientError(error))
-            } else {
-                fatalError("SKKServClientから不正な応答が返りました")
-            }
-            semaphore.signal()
-        }
-        switch semaphore.wait(timeout: .now() + timeout) {
-        case .success:
-            switch result {
-            case .success(let line):
-                return line
-            case .failure(let error):
-                throw error
-            }
-        case .timedOut:
-            logger.warning("skkservからの応答がなかったためタイムアウト処理を行います")
-            proxy.disconnect()
-            throw SKKServClientError.timeout
-        }
+        try send(command: .refer, yomi: yomi, destination: destination, timeout: timeout)
     }
 
+    /**
+     * SKK辞書の読みを受け取り、skkservの補完結果を返します。
+     *
+     * 制限時間内に応答がなかった場合は SKKServClientError.timeout を返します
+     */
     func completion(yomi: String, destination: SKKServDestination, timeout: TimeInterval) throws -> String {
+        try send(command: .completion, yomi: yomi, destination: destination, timeout: timeout)
+    }
+
+    /**
+     * XPC経由でskkservへ1リクエスト送り、応答を同期的に待つ。
+     *
+     * 期限内にあきらめる判断と、そのTCP接続の後始末はXPC側が行う。
+     * ここでのセマフォの待ち時間はXPCサービス自体が応答不能になった場合の保険であり、
+     * 通常はXPC側が先に SKKServClientError.timeout を返す。
+     */
+    private func send(command: SKKServCommand,
+                      yomi: String,
+                      destination: SKKServDestination,
+                      timeout: TimeInterval) throws -> String {
         service.activate()
         guard let proxy = service.remoteObjectProxy as? any SKKServClientProtocol else {
             throw SKKServClientError.unexpected
@@ -129,7 +91,7 @@ struct SKKServService: SKKServServiceProtocol, @unchecked Sendable {
         // NOTE: XPCからのコールバックはメインスレッドとは別のスレッドから返ってくるが、
         // semaphore.wait(_:)で同期を取っているため並行アクセスは発生しない
         nonisolated(unsafe) var result: Result<String, any Error> = .failure(SKKServClientError.unexpected)
-        proxy.completion(destination: destination, yomi: yomi) { line, error in
+        proxy.send(command: command, yomi: yomi, destination: destination, timeout: timeout) { line, error in
             if let line {
                 result = .success(line)
             } else if let error {
@@ -139,29 +101,31 @@ struct SKKServService: SKKServServiceProtocol, @unchecked Sendable {
             }
             semaphore.signal()
         }
-        switch semaphore.wait(timeout: .now() + timeout) {
+        switch semaphore.wait(timeout: .now() + timeout + Self.xpcSafetyMargin) {
         case .success:
-            switch result {
-            case .success(let line):
-                return line
-            case .failure(let error):
-                throw error
-            }
+            return try result.get()
         case .timedOut:
-            logger.warning("skkservからの応答がなかったためタイムアウト処理を行います")
-            proxy.disconnect()
+            logger.error("skkservを仲介するXPCサービスから応答がありませんでした")
             throw SKKServClientError.timeout
         }
     }
 
     /**
-     * skkservとの通信を切断します。
+     * skkservとの通信を切断し、XPC接続を破棄します。
+     *
+     * 接続先の変更やskkservの無効化時に呼びます。呼んだあとこのインスタンスは使えません。
      */
     func disconnect() throws {
         guard let proxy = service.remoteObjectProxy as? any SKKServClientProtocol else {
             throw SKKServClientError.unexpected
         }
-        proxy.disconnect()
+        let semaphore = DispatchSemaphore(value: 0)
+        proxy.disconnectAll {
+            semaphore.signal()
+        }
+        // 切断が完了する前にinvalidateするとメッセージが届かない可能性があるため待つ
+        _ = semaphore.wait(timeout: .now() + Self.xpcSafetyMargin)
+        service.invalidate()
     }
 
     /**

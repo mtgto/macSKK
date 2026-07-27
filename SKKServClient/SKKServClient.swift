@@ -2,240 +2,38 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import Foundation
-import Network
 
 /**
- * skkservに接続するクライアント。同時に1サーバーへの接続のみ可能
+ * skkservに接続するクライアント。
+ *
+ * XPCの入口としてリクエストを受け、実際の通信は ``SKKServConnectionPool`` に委譲する。
+ * XPC接続1つにつき1インスタンスが作られる (`main.swift` の `shouldAcceptNewConnection`)。
  */
-class SKKServClient: NSObject, SKKServClientProtocol, @unchecked Sendable {
-    var connection: NWConnection? = nil
-    static let queue = DispatchQueue(label: "net.mtgto.inputmethod.macSKK.SKKServClient", qos: .default)
+final class SKKServClient: NSObject, SKKServClientProtocol, Sendable {
+    private let pool = SKKServConnectionPool()
 
-    @objc func serverVersion(destination: SKKServDestination, with reply: @escaping @Sendable (String?, (any Error)?) -> Void) {
-        connect(destination: destination) { result in
-            switch result {
-            case .success(let connection):
-                guard let connection else {
-                    logger.error("skkservへの接続ができていません")
-                    reply(nil, SKKServClientError.unexpected)
-                    return
-                }
-                let message = NWProtocolFramer.Message(request: .version)
-                connection.send(message: message) { error in
-                    if let error {
-                        logger.log("skkservへの書き込みに失敗したため接続をリセットします")
-                        connection.forceCancel()
-                        return reply(nil, error)
-                    }
-                    connection.receive { result in
-                        switch result {
-                        case .success(let data):
-                            if let data, let version = String(data: data, encoding: destination.responseEncoding) {
-                                reply(version, nil)
-                            } else {
-                                reply(nil, SKKServClientError.invalidResponse)
-                            }
-                        case .failure(let error):
-                            logger.log("skkservからの読み込みに失敗したため接続をリセットします")
-                            connection.forceCancel()
-                            reply(nil, error)
-                        }
-                    }
-                }
-            case .failure(let error):
+    @objc func send(command: SKKServCommand,
+                    yomi: String,
+                    destination: SKKServDestination,
+                    timeout: TimeInterval,
+                    with reply: @escaping @Sendable (String?, (any Error)?) -> Void) {
+        Task {
+            do {
+                let response = try await pool.send(command: command,
+                                                   yomi: yomi,
+                                                   destination: destination,
+                                                   timeout: timeout)
+                reply(response, nil)
+            } catch {
                 reply(nil, error)
             }
         }
     }
 
-    @objc func refer(destination: SKKServDestination, yomi: String, with reply: @escaping @Sendable (String?, (any Error)?) -> Void) {
-        connect(destination: destination) { result in
-            switch result {
-            case .success(let connection):
-                guard let connection else {
-                    logger.error("skkservへの接続ができていません")
-                    return reply(nil, SKKServClientError.unexpected)
-                }
-                // 見出しは接続先のencodingに従ってエンコードする (EUC-JPのときだけ "ゔ"→"う゛" 置換)
-                guard let encoded = destination.encodeYomi(yomi) else {
-                    logger.error("見出しをDataに変換できませんでした")
-                    return reply(nil, SKKServClientError.unexpected)
-                }
-                let message = NWProtocolFramer.Message(request: .request(encoded))
-                connection.send(message: message) { error in
-                    if let error {
-                        logger.log("skkservへの書き込みに失敗したため接続をリセットします")
-                        connection.forceCancel()
-                        return reply(nil, self.convertNWError(error))
-                    }
-                    connection.receive { result in
-                        switch result {
-                        case .success(let data):
-                            if let data, let response = destination.decodeResponse(data) {
-                                return reply(response, nil)
-                            }
-                            logger.error("skkservからの応答を文字列として解釈できませんでした")
-                            reply(nil, SKKServClientError.invalidResponse)
-                        case .failure(let error):
-                            logger.log("skkservからの読み込みに失敗したため接続をリセットします")
-                            connection.forceCancel()
-                            reply(nil, self.convertNWError(error))
-                        }
-                    }
-                }
-            case .failure(let error):
-                if let error = error as? NWError {
-                    logger.log("skkservとの通信中にNWErrorエラーが発生しました")
-                    return reply(nil, self.convertNWError(error))
-                } else {
-                    logger.log("skkservとの通信中に不明なエラーが発生しました")
-                }
-                return reply(nil, error)
-            }
-        }
-    }
-
-    @objc func completion(destination: SKKServDestination, yomi: String, with reply: @escaping @Sendable (String?, (any Error)?) -> Void) {
-        connect(destination: destination) { result in
-            switch result {
-            case .success(let connection):
-                guard let connection else {
-                    logger.error("skkservへの接続ができていません")
-                    return reply(nil, SKKServClientError.unexpected)
-                }
-                // 見出しは接続先のencodingに従ってエンコードする (EUC-JPのときだけ "ゔ"→"う゛" 置換)
-                guard let encoded = destination.encodeYomi(yomi) else {
-                    logger.error("見出しをDataに変換できませんでした")
-                    return reply(nil, SKKServClientError.unexpected)
-                }
-                let message = NWProtocolFramer.Message(request: .completion(encoded))
-                connection.send(message: message) { error in
-                    if let error {
-                        logger.log("skkservへの書き込みに失敗したため接続をリセットします")
-                        connection.forceCancel()
-                        return reply(nil, self.convertNWError(error))
-                    }
-                    connection.receive { result in
-                        switch result {
-                        case .success(let data):
-                            if let data, let response = destination.decodeResponse(data) {
-                                return reply(response, nil)
-                            }
-                            logger.error("skkservからの応答を文字列として解釈できませんでした")
-                            reply(nil, SKKServClientError.invalidResponse)
-                        case .failure(let error):
-                            logger.log("skkservからの読み込みに失敗したため接続をリセットします")
-                            connection.forceCancel()
-                            reply(nil, self.convertNWError(error))
-                        }
-                    }
-                }
-            case .failure(let error):
-                if let error = error as? NWError {
-                    logger.log("skkservとの通信中にNWErrorエラーが発生しました")
-                    return reply(nil, self.convertNWError(error))
-                } else {
-                    logger.log("skkservとの通信中に不明なエラーが発生しました")
-                }
-                return reply(nil, error)
-            }
-        }
-    }
-
-    @objc func disconnect() {
-        connection?.forceCancel()
-    }
-
-    private func connect(destination: SKKServDestination, callback: @escaping @Sendable (Result<NWConnection?, any Error>) -> Void) {
-        // NOTE: connectionの読み取りはXPCスレッドから、書き込みはSelf.queue上のstateUpdateHandlerから行われるため
-        // 厳密にはread-write raceが残る。実害としては古い値を見て余分な接続を試みる程度。
-        if let connection, case .ready = connection.state, connection.endpoint == destination.endpoint {
-            callback(.success(connection))
-            return
-        }
-        // readyでない既存接続、または接続先が変わった場合は破棄して新規接続を試みる
-        connection?.forceCancel()
-
-        let connection = NWConnection(to: destination.endpoint, using: .skkserv)
-        // NOTE: stateUpdateHandlerはstart(queue:)で指定したqueue上で直列に呼ばれることが保証されているため、
-        // 実質的には並行アクセスは発生しない
-        nonisolated(unsafe) var callbackCalled = false
-        connection.stateUpdateHandler = { state in
-            switch state {
-            case .ready:
-                logger.log("skkservとの接続に成功しました")
-                callbackCalled = true
-                self.connection = connection
-                callback(.success(connection))
-            case .waiting(let error):
-                // 接続先がbind + listenされてない場合には "POSIXErrorCode(rawValue: 61): Connection refused" が発生する
-                // listenされているがacceptされない場合は "POSIXErrorCode(rawValue: 60): Operation timed out" が発生する
-                // (NWProtocolTCP.OptionsでTCPのconnectionTimeoutが設定されていた場合。設定されてない場合は永久に待つっぽい)
-                callbackCalled = true
-                if case .posix(let code) = error {
-                    if code == POSIXError.ECONNREFUSED {
-                        callback(.failure(SKKServClientError.connectionRefused))
-                        break
-                    } else if code == POSIXError.ETIMEDOUT {
-                        callback(.failure(SKKServClientError.connectionTimeout))
-                        break
-                    }
-                }
-                callback(.failure(error))
-                connection.forceCancel()
-            case .failed(let error):
-                guard !callbackCalled else { return }
-                callbackCalled = true
-                self.connection = nil
-                callback(.failure(error))
-            case .setup:
-                break
-            case .preparing:
-                break
-            case .cancelled:
-                self.connection = nil
-            @unknown default:
-                fatalError("Unknown status")
-            }
-        }
-        connection.start(queue: Self.queue)
-    }
-
-    /**
-     * NWErrorをSKKServClientErrorに変換する
-     */
-    private func convertNWError(_ error: NWError) -> any Error {
-        if case .posix(let code) = error {
-            logger.log("skkservとの通信中にNWErrorエラー POSIX(\(code.rawValue))が発生しました")
-            if code == POSIXError.ENOTCONN {
-                return SKKServClientError.connectionRefused
-            } else if code == POSIXError.ECONNRESET {
-                // 通信が切れた
-                return SKKServClientError.connectionRefused
-            } else if code == POSIXError.ECANCELED {
-                // (タイムアウト処理など) 通信がキャンセルされた
-                return SKKServClientError.timeout
-            }
-        }
-        return error
-    }
-}
-
-extension NWConnection {
-    func send(message: NWProtocolFramer.Message, callback: @escaping @Sendable (NWError?) -> Void) {
-        let context = NWConnection.ContentContext(identifier: "SKKServRequest", metadata: [message])
-        send(content: nil, contentContext: context, isComplete: true, completion: .contentProcessed(callback))
-    }
-
-    func receive(callback: @escaping @Sendable (Result<Data?, NWError>) -> Void) {
-        receiveMessage { content, contentContext, isComplete, error in
-            if let error {
-                callback(.failure(error))
-            } else if let message = contentContext?.protocolMetadata(definition: SKKServProtocol.definition) as? NWProtocolFramer.Message, let response = message.response {
-                callback(.success(response))
-            } else {
-                callback(.success(nil))
-            }
+    @objc func disconnectAll(with reply: @escaping @Sendable () -> Void) {
+        Task {
+            await pool.disconnectAll()
+            reply()
         }
     }
 }

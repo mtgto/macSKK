@@ -117,8 +117,24 @@ public enum SKKServClientError: Error, CaseIterable {
 }
 
 @objc protocol SKKServClientProtocol {
-    func serverVersion(destination: SKKServDestination, with reply: @escaping @Sendable (String?, (any Error)?) -> Void)
-    func refer(destination: SKKServDestination, yomi: String, with reply: @escaping @Sendable (String?, (any Error)?) -> Void)
-    func completion(destination: SKKServDestination, yomi: String, with reply: @escaping @Sendable (String?, (any Error)?) -> Void)
-    func disconnect()
+    /**
+     * skkservへ1リクエスト送り、1レスポンスを受け取って返す。
+     *
+     * timeout秒以内に応答が得られなければ SKKServClientError.timeout を返し、
+     * そのTCP接続は破棄する (遅れて届く応答は捨てられる)。
+     * 呼び出し元が結果を必要としなくなった場合は、応答を無視すればよい。
+     * 別のTCP接続で進行中のリクエストには影響しない。
+     */
+    func send(command: SKKServCommand,
+              yomi: String,
+              destination: SKKServDestination,
+              timeout: TimeInterval,
+              with reply: @escaping @Sendable (String?, (any Error)?) -> Void)
+
+    /**
+     * 保持しているTCP接続をすべて破棄する。接続先の変更やskkservの無効化時に呼ぶ。
+     *
+     * 切断の完了を待ってからXPC接続をinvalidateできるようにreplyを持つ。
+     */
+    func disconnectAll(with reply: @escaping @Sendable () -> Void)
 }
