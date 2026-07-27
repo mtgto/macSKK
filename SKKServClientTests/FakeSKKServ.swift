@@ -14,6 +14,8 @@ actor FakeSKKServ {
     enum Behavior: Sendable {
         /// リクエストを受け取るたびに同じ応答を返す
         case respond(Data)
+        /// 指定秒数待ってから応答を返す (同時実行の検証用)
+        case respondAfter(Data, seconds: TimeInterval)
         /// 応答を返さない (期限切れの検証用)
         case neverRespond
         /// 1回応答してから接続を閉じる (アイドル切断の検証用)
@@ -88,6 +90,12 @@ actor FakeSKKServ {
         case .respond(let data):
             connection.send(content: data, completion: .idempotent)
             receive(on: connection)
+        case .respondAfter(let data, let seconds):
+            Task {
+                try? await Task.sleep(for: .seconds(seconds))
+                connection.send(content: data, completion: .idempotent)
+                self.receive(on: connection)
+            }
         case .neverRespond:
             // 応答は返さず、リクエストだけ受け取り続ける
             receive(on: connection)

@@ -17,6 +17,16 @@ public enum SKKServClientError: Error, CaseIterable {
     case timeout
 }
 
+/// skkservへ送るリクエストの種別。
+@objc enum SKKServCommand: Int {
+    /// サーバーのバージョン問い合わせ (yomiは無視される)
+    case version
+    /// 変換候補の問い合わせ
+    case refer
+    /// 補完候補の問い合わせ
+    case completion
+}
+
 @objc(SKKServDestination) public final class SKKServDestination: NSObject, NSSecureCoding, Sendable {
     public static let supportsSecureCoding: Bool = true
 

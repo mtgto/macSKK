@@ -17,6 +17,8 @@
 		CE00C0DE0000000000000001 /* CompletionPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE00C0DE0000000000000002 /* CompletionPresenter.swift */; };
 		CE00C0DE0000000000000003 /* CompletionPresenterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE00C0DE0000000000000004 /* CompletionPresenterTests.swift */; };
 		CE00C0DE0000000000000005 /* Data+EucJis2004.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED987402BB953E7001B40F9 /* Data+EucJis2004.swift */; };
+		CE00C0DE0000000000000011 /* SKKServConnectionPool.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE00C0DE0000000000000010 /* SKKServConnectionPool.swift */; };
+		CE00C0DE0000000000000012 /* SKKServConnectionPool.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE00C0DE0000000000000010 /* SKKServConnectionPool.swift */; };
 		CE00C0DE000000000000000E /* PooledConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE00C0DE000000000000000D /* PooledConnection.swift */; };
 		CE00C0DE000000000000000F /* PooledConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE00C0DE000000000000000D /* PooledConnection.swift */; };
 		CE00C0DE000000000000000B /* AsyncTimeout.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE00C0DE000000000000000A /* AsyncTimeout.swift */; };
@@ -235,6 +237,7 @@
 		94DB63232D329CBF005250B8 /* VerticalCandidatesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerticalCandidatesView.swift; sourceTree = "<group>"; };
 		CE00C0DE0000000000000002 /* CompletionPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletionPresenter.swift; sourceTree = "<group>"; };
 		CE00C0DE0000000000000004 /* CompletionPresenterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletionPresenterTests.swift; sourceTree = "<group>"; };
+		CE00C0DE0000000000000010 /* SKKServConnectionPool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServConnectionPool.swift; sourceTree = "<group>"; };
 		CE00C0DE000000000000000D /* PooledConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PooledConnection.swift; sourceTree = "<group>"; };
 		CE00C0DE000000000000000A /* AsyncTimeout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncTimeout.swift; sourceTree = "<group>"; };
 		CE00C0DE0000000000000006 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
@@ -731,6 +734,7 @@
 				CE00C0DE0000000000000006 /* Logger.swift */,
 				CE00C0DE000000000000000A /* AsyncTimeout.swift */,
 				CE00C0DE000000000000000D /* PooledConnection.swift */,
+				CE00C0DE0000000000000010 /* SKKServConnectionPool.swift */,
 				CEF3D8772B9EF0C000BD1D3A /* main.swift */,
 				CE1B00602BA4285A00C830FD /* Network */,
 				CEF3D8792B9EF0C000BD1D3A /* Info.plist */,
@@ -987,6 +991,7 @@
 				CE00C0DE0000000000000008 /* Logger.swift in Sources */,
 				CE00C0DE000000000000000C /* AsyncTimeout.swift in Sources */,
 				CE00C0DE000000000000000F /* PooledConnection.swift in Sources */,
+				CE00C0DE0000000000000012 /* SKKServConnectionPool.swift in Sources */,
 				CE04E8953017BC2300310428 /* NWParameters+SKKServ.swift in Sources */,
 				CE04E8943017BC0F00310428 /* SKKServProtocol.swift in Sources */,
 				CE04E8933017BBED00310428 /* SKKServRequest.swift in Sources */,
@@ -1150,6 +1155,7 @@
 				CE00C0DE0000000000000007 /* Logger.swift in Sources */,
 				CE00C0DE000000000000000B /* AsyncTimeout.swift in Sources */,
 				CE00C0DE000000000000000E /* PooledConnection.swift in Sources */,
+				CE00C0DE0000000000000011 /* SKKServConnectionPool.swift in Sources */,
 				CE1B00642BA4287C00C830FD /* SKKServRequest.swift in Sources */,
 				CE1B00622BA4286800C830FD /* Message+SKKServ.swift in Sources */,
 				CEF3D8822B9EF19100BD1D3A /* SKKServClientProtocol.swift in Sources */,
