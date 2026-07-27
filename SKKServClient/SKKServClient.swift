@@ -3,9 +3,6 @@
 
 import Foundation
 import Network
-import os
-
-let logger: Logger = Logger(subsystem: "net.mtgto.inputmethod.macSKK", category: "skkserv")
 
 /**
  * skkservに接続するクライアント。同時に1サーバーへの接続のみ可能
