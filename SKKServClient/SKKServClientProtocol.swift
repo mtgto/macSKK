@@ -88,6 +88,14 @@ public enum SKKServClientError: Error, CaseIterable {
     }
 
     // MARK: NSObject
+    public override func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? SKKServDestination else { return false }
+        return host == other.host
+            && port == other.port
+            && requestEncoding == other.requestEncoding
+            && responseEncoding == other.responseEncoding
+    }
+
     public override var hash: Int {
         var hasher = Hasher()
         hasher.combine(host)
