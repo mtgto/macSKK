@@ -523,6 +523,7 @@ enum UserDictAddSource {
             Global.skkservConsecutiveErrorCount += 1
             if Global.skkservConsecutiveErrorCount >= Global.skkservAutoDisableThreshold {
                 logger.log("skkservへの接続エラーが\(Global.skkservConsecutiveErrorCount)回連続したため無効化します")
+                Global.skkservDict?.disconnect()
                 Global.skkservDict = nil
                 NotificationCenter.default.post(name: notificationNameSKKServAutoDisabled, object: Global.skkservConsecutiveErrorCount)
             }

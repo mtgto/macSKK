@@ -7,6 +7,8 @@ protocol SKKServDictProtocol: Sendable {
     var saveToUserDict: Bool { get }
     func refer(_ yomi: String, option: DictReferringOption?) -> Result<[Word], any Error>
     func findCompletions(prefix: String) -> Result<[String], any Error>
+    /// skkservとの通信を切断する。接続先の変更やskkservの無効化時に呼ぶ。
+    func disconnect()
 }
 
 /// 補完候補検索でのskkserv検索オプション

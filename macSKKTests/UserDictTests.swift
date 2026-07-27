@@ -45,6 +45,8 @@ final class UserDictTests: XCTestCase {
             }
             return .success(wordsPerYomi.keys.filter { $0.hasPrefix(prefix) && $0 != prefix }.sorted())
         }
+
+        func disconnect() {}
     }
 
     @MainActor func testRefer() throws {

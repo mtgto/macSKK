@@ -67,6 +67,8 @@ struct SKKServDictView: View {
                             case .failure(let error):
                                 showError(error)
                             }
+                            // 使い捨てのサービスなのでTCP接続とXPC接続を残さず後始末する
+                            try? skkservService.disconnect()
                             testing = false
                         } label: {
                             Text("Find Completions")
@@ -88,6 +90,8 @@ struct SKKServDictView: View {
                             case .failure(let error):
                                 showError(error)
                             }
+                            // 使い捨てのサービスなのでTCP接続とXPC接続を残さず後始末する
+                            try? skkservService.disconnect()
                             testing = false
                         } label: {
                             Text("Find Candidates")
@@ -123,6 +127,8 @@ struct SKKServDictView: View {
                     case .failure(let error):
                         showError(error)
                     }
+                    // 使い捨てのサービスなのでTCP接続とXPC接続を残さず後始末する
+                    try? skkservService.disconnect()
                     testing = false
                 } label: {
                     Text("Connection Test")
