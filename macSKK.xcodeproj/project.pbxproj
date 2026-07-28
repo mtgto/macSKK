@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 70;
+	objectVersion = 56;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -17,21 +17,27 @@
 		CE00C0DE0000000000000001 /* CompletionPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE00C0DE0000000000000002 /* CompletionPresenter.swift */; };
 		CE00C0DE0000000000000003 /* CompletionPresenterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE00C0DE0000000000000004 /* CompletionPresenterTests.swift */; };
 		CE00C0DE0000000000000005 /* Data+EucJis2004.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED987402BB953E7001B40F9 /* Data+EucJis2004.swift */; };
-		CE00C0DE0000000000000011 /* SKKServConnectionPool.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE00C0DE0000000000000010 /* SKKServConnectionPool.swift */; };
-		CE00C0DE0000000000000012 /* SKKServConnectionPool.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE00C0DE0000000000000010 /* SKKServConnectionPool.swift */; };
-		CE00C0DE000000000000000E /* PooledConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE00C0DE000000000000000D /* PooledConnection.swift */; };
-		CE00C0DE000000000000000F /* PooledConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE00C0DE000000000000000D /* PooledConnection.swift */; };
-		CE00C0DE000000000000000B /* AsyncTimeout.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE00C0DE000000000000000A /* AsyncTimeout.swift */; };
-		CE00C0DE000000000000000C /* AsyncTimeout.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE00C0DE000000000000000A /* AsyncTimeout.swift */; };
 		CE00C0DE0000000000000007 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE00C0DE0000000000000006 /* Logger.swift */; };
 		CE00C0DE0000000000000008 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE00C0DE0000000000000006 /* Logger.swift */; };
 		CE00C0DE0000000000000009 /* libiconv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = CE496C972B440CCA001C623C /* libiconv.tbd */; };
+		CE00C0DE000000000000000B /* AsyncTimeout.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE00C0DE000000000000000A /* AsyncTimeout.swift */; };
+		CE00C0DE000000000000000C /* AsyncTimeout.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE00C0DE000000000000000A /* AsyncTimeout.swift */; };
+		CE00C0DE000000000000000E /* PooledConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE00C0DE000000000000000D /* PooledConnection.swift */; };
+		CE00C0DE000000000000000F /* PooledConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE00C0DE000000000000000D /* PooledConnection.swift */; };
+		CE00C0DE0000000000000011 /* SKKServConnectionPool.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE00C0DE0000000000000010 /* SKKServConnectionPool.swift */; };
+		CE00C0DE0000000000000012 /* SKKServConnectionPool.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE00C0DE0000000000000010 /* SKKServConnectionPool.swift */; };
 		CE0326A02C5D1DD6000FF691 /* SKK-JISYO.test.json in Resources */ = {isa = PBXBuildFile; fileRef = CE03269F2C5D1DD6000FF691 /* SKK-JISYO.test.json */; };
 		CE04E8913017BBD600310428 /* Message+SKKServ.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE1B00612BA4286800C830FD /* Message+SKKServ.swift */; };
 		CE04E8923017BBE200310428 /* SKKServClientProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF3D8752B9EF0C000BD1D3A /* SKKServClientProtocol.swift */; };
 		CE04E8933017BBED00310428 /* SKKServRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE1B00632BA4287C00C830FD /* SKKServRequest.swift */; };
 		CE04E8943017BC0F00310428 /* SKKServProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE1B00652BA4288F00C830FD /* SKKServProtocol.swift */; };
 		CE04E8953017BC2300310428 /* NWParameters+SKKServ.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE1B00672BA428AE00C830FD /* NWParameters+SKKServ.swift */; };
+		CE04E8BF3018C7B000310428 /* AsyncTimeoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE04E8B83018C7B000310428 /* AsyncTimeoutTests.swift */; };
+		CE04E8C03018C7B000310428 /* FakeSKKServ.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE04E8B93018C7B000310428 /* FakeSKKServ.swift */; };
+		CE04E8C13018C7B000310428 /* FakeSKKServTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE04E8BA3018C7B000310428 /* FakeSKKServTests.swift */; };
+		CE04E8C23018C7B000310428 /* LoopbackSpikeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE04E8BB3018C7B000310428 /* LoopbackSpikeTests.swift */; };
+		CE04E8C33018C7B000310428 /* PooledConnectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE04E8BC3018C7B000310428 /* PooledConnectionTests.swift */; };
+		CE04E8C43018C7B000310428 /* SKKServConnectionPoolTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE04E8BD3018C7B000310428 /* SKKServConnectionPoolTests.swift */; };
 		CE06CA2B2AAC171B00E80E5E /* FileDictTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE06CA292AAC171B00E80E5E /* FileDictTests.swift */; };
 		CE06CA2D2AAC172F00E80E5E /* empty.txt in Resources */ = {isa = PBXBuildFile; fileRef = CE06CA2C2AAC172F00E80E5E /* empty.txt */; };
 		CE06CA342AAC199500E80E5E /* UserDict+Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE06CA332AAC199500E80E5E /* UserDict+Utilities.swift */; };
@@ -237,12 +243,18 @@
 		94DB63232D329CBF005250B8 /* VerticalCandidatesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerticalCandidatesView.swift; sourceTree = "<group>"; };
 		CE00C0DE0000000000000002 /* CompletionPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletionPresenter.swift; sourceTree = "<group>"; };
 		CE00C0DE0000000000000004 /* CompletionPresenterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletionPresenterTests.swift; sourceTree = "<group>"; };
-		CE00C0DE0000000000000010 /* SKKServConnectionPool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServConnectionPool.swift; sourceTree = "<group>"; };
-		CE00C0DE000000000000000D /* PooledConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PooledConnection.swift; sourceTree = "<group>"; };
-		CE00C0DE000000000000000A /* AsyncTimeout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncTimeout.swift; sourceTree = "<group>"; };
 		CE00C0DE0000000000000006 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
+		CE00C0DE000000000000000A /* AsyncTimeout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncTimeout.swift; sourceTree = "<group>"; };
+		CE00C0DE000000000000000D /* PooledConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PooledConnection.swift; sourceTree = "<group>"; };
+		CE00C0DE0000000000000010 /* SKKServConnectionPool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServConnectionPool.swift; sourceTree = "<group>"; };
 		CE03269F2C5D1DD6000FF691 /* SKK-JISYO.test.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "SKK-JISYO.test.json"; sourceTree = "<group>"; };
 		CE04E88A3017BB3000310428 /* SKKServClientTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SKKServClientTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		CE04E8B83018C7B000310428 /* AsyncTimeoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncTimeoutTests.swift; sourceTree = "<group>"; };
+		CE04E8B93018C7B000310428 /* FakeSKKServ.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FakeSKKServ.swift; sourceTree = "<group>"; };
+		CE04E8BA3018C7B000310428 /* FakeSKKServTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FakeSKKServTests.swift; sourceTree = "<group>"; };
+		CE04E8BB3018C7B000310428 /* LoopbackSpikeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoopbackSpikeTests.swift; sourceTree = "<group>"; };
+		CE04E8BC3018C7B000310428 /* PooledConnectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PooledConnectionTests.swift; sourceTree = "<group>"; };
+		CE04E8BD3018C7B000310428 /* SKKServConnectionPoolTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServConnectionPoolTests.swift; sourceTree = "<group>"; };
 		CE06CA292AAC171B00E80E5E /* FileDictTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileDictTests.swift; sourceTree = "<group>"; };
 		CE06CA2C2AAC172F00E80E5E /* empty.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = empty.txt; sourceTree = "<group>"; };
 		CE06CA332AAC199500E80E5E /* UserDict+Utilities.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UserDict+Utilities.swift"; sourceTree = "<group>"; };
@@ -407,10 +419,6 @@
 		F65BF39CED3AABCF59AA6C58 /* DateConversionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateConversionTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		CE04E88B3017BB3000310428 /* SKKServClientTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = SKKServClientTests; sourceTree = "<group>"; };
-/* End PBXFileSystemSynchronizedRootGroup section */
-
 /* Begin PBXFrameworksBuildPhase section */
 		CE04E8873017BB3000310428 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
@@ -463,6 +471,19 @@
 			path = KeyBinding;
 			sourceTree = "<group>";
 		};
+		CE04E8BE3018C7B000310428 /* SKKServClientTests */ = {
+			isa = PBXGroup;
+			children = (
+				CE04E8B83018C7B000310428 /* AsyncTimeoutTests.swift */,
+				CE04E8B93018C7B000310428 /* FakeSKKServ.swift */,
+				CE04E8BA3018C7B000310428 /* FakeSKKServTests.swift */,
+				CE04E8BB3018C7B000310428 /* LoopbackSpikeTests.swift */,
+				CE04E8BC3018C7B000310428 /* PooledConnectionTests.swift */,
+				CE04E8BD3018C7B000310428 /* SKKServConnectionPoolTests.swift */,
+			);
+			path = SKKServClientTests;
+			sourceTree = "<group>";
+		};
 		CE1B00602BA4285A00C830FD /* Network */ = {
 			isa = PBXGroup;
 			children = (
@@ -489,7 +510,7 @@
 				CED7CA2A2A8394F7004EF988 /* FetchUpdateService */,
 				CEF3D8722B9EF0C000BD1D3A /* SKKServClient */,
 				CE5ECF462957034D00E7BE7D /* macSKKTests */,
-				CE04E88B3017BB3000310428 /* SKKServClientTests */,
+				CE04E8BE3018C7B000310428 /* SKKServClientTests */,
 				CE5ECF332957034B00E7BE7D /* Products */,
 				CE496C962B440CCA001C623C /* Frameworks */,
 			);
@@ -758,9 +779,6 @@
 			);
 			dependencies = (
 			);
-			fileSystemSynchronizedGroups = (
-				CE04E88B3017BB3000310428 /* SKKServClientTests */,
-			);
 			name = SKKServClientTests;
 			packageProductDependencies = (
 			);
@@ -987,6 +1005,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CE04E8BF3018C7B000310428 /* AsyncTimeoutTests.swift in Sources */,
+				CE04E8C03018C7B000310428 /* FakeSKKServ.swift in Sources */,
+				CE04E8C13018C7B000310428 /* FakeSKKServTests.swift in Sources */,
+				CE04E8C23018C7B000310428 /* LoopbackSpikeTests.swift in Sources */,
+				CE04E8C33018C7B000310428 /* PooledConnectionTests.swift in Sources */,
+				CE04E8C43018C7B000310428 /* SKKServConnectionPoolTests.swift in Sources */,
 				CE00C0DE0000000000000005 /* Data+EucJis2004.swift in Sources */,
 				CE00C0DE0000000000000008 /* Logger.swift in Sources */,
 				CE00C0DE000000000000000C /* AsyncTimeout.swift in Sources */,
