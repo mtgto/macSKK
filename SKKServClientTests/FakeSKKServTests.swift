@@ -11,24 +11,24 @@ final class FakeSKKServTests: XCTestCase {
         let connection = NWConnection(to: .hostPort(host: "127.0.0.1", port: port), using: .tcp)
         defer { connection.forceCancel() }
         connection.start(queue: .global())
-        let box = ContinuationBox<Data>()
+        let continuation = SingleResumeContinuation<Data>()
         connection.send(content: request, completion: .contentProcessed({ error in
             if let error {
-                box.resume(with: .failure(error))
+                continuation.resume(with: .failure(error))
             }
         }))
         connection.receive(minimumIncompleteLength: 1, maximumLength: 65536) { content, _, _, error in
             if let error {
-                box.resume(with: .failure(error))
+                continuation.resume(with: .failure(error))
             } else {
-                box.resume(with: .success(content ?? Data()))
+                continuation.resume(with: .success(content ?? Data()))
             }
         }
         return try await withTimeout(seconds: timeout) {
             try await withTaskCancellationHandler {
-                try await withCheckedThrowingContinuation { box.install($0) }
+                try await withCheckedThrowingContinuation { continuation.install($0) }
             } onCancel: {
-                box.resume(with: .failure(CancellationError()))
+                continuation.resume(with: .failure(CancellationError()))
             }
         }
     }

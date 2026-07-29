@@ -35,7 +35,7 @@ func withTimeout<T: Sendable>(seconds: TimeInterval,
  * 二重resume (実行時エラーになる) を起こさないようにロックで保護する。
  * ``install(_:)`` より先に ``resume(with:)`` が呼ばれた場合は結果を保持しておき、install時に渡す。
  */
-final class ContinuationBox<T: Sendable>: @unchecked Sendable {
+final class SingleResumeContinuation<T: Sendable>: @unchecked Sendable {
     private let lock = NSLock()
     private var continuation: CheckedContinuation<T, any Error>?
     /// installより先にresumeされた場合の結果

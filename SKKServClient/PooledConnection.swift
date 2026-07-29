@@ -38,69 +38,69 @@ final class PooledConnection: @unchecked Sendable {
 
     /// 接続が確立するまで待つ。
     func connect() async throws {
-        let box = ContinuationBox<Void>()
+        let continuation = SingleResumeContinuation<Void>()
         connection.stateUpdateHandler = { state in
             switch state {
             case .ready:
-                box.resume(with: .success(()))
+                continuation.resume(with: .success(()))
             case .waiting(let error):
                 // 接続先がbind + listenされていない場合は ECONNREFUSED、
                 // listenされているがacceptされない場合は ETIMEDOUT が発生する
-                box.resume(with: .failure(Self.convert(error)))
+                continuation.resume(with: .failure(Self.convert(error)))
             case .failed(let error):
-                box.resume(with: .failure(Self.convert(error)))
+                continuation.resume(with: .failure(Self.convert(error)))
             case .cancelled:
-                box.resume(with: .failure(SKKServClientError.connectionRefused))
+                continuation.resume(with: .failure(SKKServClientError.connectionRefused))
             default:
                 break
             }
         }
         connection.start(queue: Self.queue)
         try await withTaskCancellationHandler {
-            try await withCheckedThrowingContinuation { box.install($0) }
+            try await withCheckedThrowingContinuation { continuation.install($0) }
         } onCancel: {
-            box.resume(with: .failure(CancellationError()))
+            continuation.resume(with: .failure(CancellationError()))
         }
     }
 
     /// リクエストを1つ送信する。
     func send(request: SKKServRequest) async throws {
-        let box = ContinuationBox<Void>()
+        let continuation = SingleResumeContinuation<Void>()
         let context = NWConnection.ContentContext(identifier: "SKKServRequest",
                                                   metadata: [NWProtocolFramer.Message(request: request)])
         connection.send(content: nil, contentContext: context, isComplete: true,
                         completion: .contentProcessed({ error in
             if let error {
-                box.resume(with: .failure(Self.convert(error)))
+                continuation.resume(with: .failure(Self.convert(error)))
             } else {
-                box.resume(with: .success(()))
+                continuation.resume(with: .success(()))
             }
         }))
         try await withTaskCancellationHandler {
-            try await withCheckedThrowingContinuation { box.install($0) }
+            try await withCheckedThrowingContinuation { continuation.install($0) }
         } onCancel: {
-            box.resume(with: .failure(CancellationError()))
+            continuation.resume(with: .failure(CancellationError()))
         }
     }
 
     /// レスポンスを1つ受信する。終端記号は取り除かれている。
     func receive() async throws -> Data {
-        let box = ContinuationBox<Data>()
+        let continuation = SingleResumeContinuation<Data>()
         connection.receiveMessage { _, contentContext, _, error in
             if let error {
-                box.resume(with: .failure(Self.convert(error)))
+                continuation.resume(with: .failure(Self.convert(error)))
             } else if let message = contentContext?.protocolMetadata(definition: SKKServProtocol.definition) as? NWProtocolFramer.Message,
                       let response = message.response {
-                box.resume(with: .success(response))
+                continuation.resume(with: .success(response))
             } else {
                 // メッセージが得られないのはサーバーが接続を閉じた場合
-                box.resume(with: .failure(SKKServClientError.connectionRefused))
+                continuation.resume(with: .failure(SKKServClientError.connectionRefused))
             }
         }
         return try await withTaskCancellationHandler {
-            try await withCheckedThrowingContinuation { box.install($0) }
+            try await withCheckedThrowingContinuation { continuation.install($0) }
         } onCancel: {
-            box.resume(with: .failure(CancellationError()))
+            continuation.resume(with: .failure(CancellationError()))
         }
     }
 

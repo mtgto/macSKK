@@ -42,13 +42,13 @@ actor FakeSKKServ {
         self.behavior = behavior
         let listener = try NWListener(using: .tcp, on: .any)
         self.listener = listener
-        let box = ContinuationBox<NWEndpoint.Port>()
+        let continuation = SingleResumeContinuation<NWEndpoint.Port>()
         listener.stateUpdateHandler = { state in
             switch state {
             case .ready:
-                box.resume(with: .success(listener.port ?? 0))
+                continuation.resume(with: .success(listener.port ?? 0))
             case .failed(let error):
-                box.resume(with: .failure(error))
+                continuation.resume(with: .failure(error))
             default:
                 break
             }
@@ -64,7 +64,7 @@ actor FakeSKKServ {
             Task { await self.accept(connection) }
         }
         listener.start(queue: Self.queue)
-        port = try await withCheckedThrowingContinuation { box.install($0) }
+        port = try await withCheckedThrowingContinuation { continuation.install($0) }
     }
 
     private func accept(_ connection: NWConnection) {
