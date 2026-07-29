@@ -38,6 +38,9 @@ final class PooledConnection: @unchecked Sendable {
 
     /// 接続が確立するまで待つ。
     func connect() async throws {
+        // NOTE: 接続確立だけのコストを知りたいときは設定画面の「接続テスト」が使える。
+        // serverVersionはskkserv側が辞書を引かないため、検索にかかる時間が混ざらない。
+        let start = DispatchTime.now()
         let continuation = SingleResumeContinuation<Void>()
         connection.stateUpdateHandler = { state in
             switch state {
@@ -61,6 +64,7 @@ final class PooledConnection: @unchecked Sendable {
         } onCancel: {
             continuation.resume(with: .failure(CancellationError()))
         }
+        logger.debug("skkservへのTCP接続の確立に \(elapsedMilliseconds(since: start), format: .fixed(precision: 1), privacy: .public)ms かかりました")
     }
 
     /// リクエストを1つ送信する。

@@ -144,6 +144,7 @@ struct SKKServService: SKKServServiceProtocol, @unchecked Sendable {
         guard let proxy = remoteObject as? any SKKServClientProtocol else {
             throw SKKServClientError.unexpected
         }
+        let start = DispatchTime.now()
         proxy.send(command: command, yomi: yomi, destination: destination, timeout: timeout) { line, error in
             if let line {
                 waiter.complete(with: .success(line))
@@ -153,11 +154,20 @@ struct SKKServService: SKKServServiceProtocol, @unchecked Sendable {
                 fatalError("SKKServClientから不正な応答が返りました")
             }
         }
-        guard let result = waiter.wait(timeout: .now() + timeout + Self.xpcSafetyMargin) else {
+        let result = waiter.wait(timeout: .now() + timeout + Self.xpcSafetyMargin)
+        // XPC側が出力する所要時間との差が、XPCサービスの起動やIPCの往復にかかった時間になる。
+        // xpcSafetyMarginがその差を吸収できているかの確認に使う。
+        logger.debug("XPCの往復に \(Self.elapsedMilliseconds(since: start), format: .fixed(precision: 1), privacy: .public)ms かかりました")
+        guard let result else {
             logger.error("skkservを仲介するXPCサービスから応答がありませんでした")
             throw SKKServClientError.timeout
         }
         return try result.get()
+    }
+
+    /// startからの経過ミリ秒。ログ出力用。
+    private static func elapsedMilliseconds(since start: DispatchTime) -> Double {
+        Double(DispatchTime.now().uptimeNanoseconds - start.uptimeNanoseconds) / 1_000_000
     }
 
     /**

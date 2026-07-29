@@ -42,10 +42,13 @@ actor SKKServConnectionPool {
               yomi: String,
               destination: SKKServDestination,
               timeout: TimeInterval) async throws -> String {
+        let start = DispatchTime.now()
         do {
-            return try await withTimeout(seconds: timeout) {
+            let response = try await withTimeout(seconds: timeout) {
                 try await self.perform(command: command, yomi: yomi, destination: destination, allowRetry: true)
             }
+            logger.debug("skkservへの問い合わせに \(elapsedMilliseconds(since: start), format: .fixed(precision: 1), privacy: .public)ms かかりました (プールの接続数: \(self.connectionCount, privacy: .public))")
+            return response
         } catch is TimeoutError {
             logger.log("skkservから応答が一定時間返らなかったため接続を破棄しました")
             throw SKKServClientError.timeout
@@ -128,6 +131,7 @@ actor SKKServConnectionPool {
                 continue
             }
             if connectionCount < Self.maxConnections {
+                logger.debug("skkservへ新しいTCP接続を張ります (プールの接続数: \(self.connectionCount, privacy: .public))")
                 borrowedCount += 1
                 let connection = PooledConnection(destination: destination)
                 do {
@@ -140,6 +144,8 @@ actor SKKServConnectionPool {
                 }
                 return (connection, false)
             }
+            // 上限に達している。ここが頻繁に出るならmaxConnectionsを見直す
+            logger.debug("プールに空きがないため待機します (プールの接続数: \(self.connectionCount, privacy: .public))")
             await waitForFreeSlot()
         }
     }
