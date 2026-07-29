@@ -10,6 +10,44 @@ protocol SKKServServiceProtocol: Sendable {
 }
 
 /**
+ * XPCの応答またはエラーハンドラから結果を受け取り、呼び出し元のスレッドへ渡す。
+ *
+ * NSXPCConnectionは「エラーハンドラの呼び出しか応答のどちらか一方が高々1回だけ発生する」ことを
+ * 保証しているため、本来は排他を気にする必要がない。それでもロックで守っているのは、
+ * 別スレッドから書き込まれる結果を `nonisolated(unsafe)` を使わずに受け渡すためと、
+ * 保証が破られた場合でもセマフォの整合性が壊れないようにするため。
+ *
+ * @see https://developer.apple.com/documentation/foundation/nsxpcproxycreating/remoteobjectproxywitherrorhandler(_:)
+ */
+private final class SingleResultWaiter: @unchecked Sendable {
+    private let lock = NSLock()
+    private let semaphore = DispatchSemaphore(value: 0)
+    private var result: Result<String, any Error>?
+
+    /// 結果を確定する。2回目以降の呼び出しは無視する。
+    func complete(with result: Result<String, any Error>) {
+        lock.lock()
+        guard self.result == nil else {
+            lock.unlock()
+            return
+        }
+        self.result = result
+        lock.unlock()
+        semaphore.signal()
+    }
+
+    /// 結果が確定するまで待つ。期限までに確定しなければnilを返す。
+    func wait(timeout: DispatchTime) -> Result<String, any Error>? {
+        guard semaphore.wait(timeout: timeout) == .success else {
+            return nil
+        }
+        lock.lock()
+        defer { lock.unlock() }
+        return result
+    }
+}
+
+/**
  * skkservサーバーとの通信を取り扱うサービス。
  *
  * macSKKのプロセスはネットワーク (接続しにいく) 権限をSandboxで絞っており、
@@ -33,8 +71,20 @@ struct SKKServService: SKKServServiceProtocol, @unchecked Sendable {
         }
     }
 
-    /// XPCサービス自体が応答不能になった場合に備えて、XPCへ渡す期限に上乗せする猶予。
-    private static let xpcSafetyMargin: TimeInterval = 1.0
+    /**
+     * XPCへ渡す期限に上乗せする猶予。
+     *
+     * 本体側の待ち時間には、XPC側がタイマーを開始する前の時間 (XPCサービスプロセスの起動、
+     * IPCの往復とスケジューリング待ち) が含まれる。期限をXPC側と同じにすると、
+     * 通信は正常なのに本体側が先に諦めてしまい、skkservの連続エラーとして数えられてしまう。
+     *
+     * XPC接続の中断・無効化は ``remoteObjectProxyWithErrorHandler`` のエラーハンドラが
+     * 即座に検知するため、この猶予を使い切るのはXPCサービスが生きたまま応答しない場合だけになる。
+     *
+     * 0.3秒としたのは、XPCサービスプロセスを落としてからのコールドスタートを試したところ、
+     * 1回目のリクエストが通常より120ms程度余計にかかったため。
+     */
+    private static let xpcSafetyMargin: TimeInterval = 0.3
 
     /**
      * skkservにバージョンを問い合わせる。
@@ -76,7 +126,7 @@ struct SKKServService: SKKServServiceProtocol, @unchecked Sendable {
      * XPC経由でskkservへ1リクエスト送り、応答を同期的に待つ。
      *
      * 期限内にあきらめる判断と、そのTCP接続の後始末はXPC側が行う。
-     * ここでのセマフォの待ち時間はXPCサービス自体が応答不能になった場合の保険であり、
+     * ここでの待ち時間はXPCサービス自体が応答不能になった場合の保険であり、
      * 通常はXPC側が先に SKKServClientError.timeout を返す。
      */
     private func send(command: SKKServCommand,
@@ -84,30 +134,30 @@ struct SKKServService: SKKServServiceProtocol, @unchecked Sendable {
                       destination: SKKServDestination,
                       timeout: TimeInterval) throws -> String {
         service.activate()
-        guard let proxy = service.remoteObjectProxy as? any SKKServClientProtocol else {
+        let waiter = SingleResultWaiter()
+        // XPC接続が中断・無効化された場合は応答のクロージャが呼ばれないため、
+        // エラーハンドラ付きのプロキシを使って猶予を待たずに失敗を検知する
+        let remoteObject = service.remoteObjectProxyWithErrorHandler { error in
+            logger.error("SKKServClientとのXPC呼び出しが失敗しました: \(error, privacy: .public)")
+            waiter.complete(with: .failure(Self.recastSKKServClientError(error)))
+        }
+        guard let proxy = remoteObject as? any SKKServClientProtocol else {
             throw SKKServClientError.unexpected
         }
-        let semaphore = DispatchSemaphore(value: 0)
-        // NOTE: XPCからのコールバックはメインスレッドとは別のスレッドから返ってくるが、
-        // semaphore.wait(_:)で同期を取っているため並行アクセスは発生しない
-        nonisolated(unsafe) var result: Result<String, any Error> = .failure(SKKServClientError.unexpected)
         proxy.send(command: command, yomi: yomi, destination: destination, timeout: timeout) { line, error in
             if let line {
-                result = .success(line)
+                waiter.complete(with: .success(line))
             } else if let error {
-                result = .failure(Self.recastSKKServClientError(error))
+                waiter.complete(with: .failure(Self.recastSKKServClientError(error)))
             } else {
                 fatalError("SKKServClientから不正な応答が返りました")
             }
-            semaphore.signal()
         }
-        switch semaphore.wait(timeout: .now() + timeout + Self.xpcSafetyMargin) {
-        case .success:
-            return try result.get()
-        case .timedOut:
+        guard let result = waiter.wait(timeout: .now() + timeout + Self.xpcSafetyMargin) else {
             logger.error("skkservを仲介するXPCサービスから応答がありませんでした")
             throw SKKServClientError.timeout
         }
+        return try result.get()
     }
 
     /**
@@ -116,10 +166,18 @@ struct SKKServService: SKKServServiceProtocol, @unchecked Sendable {
      * 接続先の変更やskkservの無効化時に呼びます。呼んだあとこのインスタンスは使えません。
      */
     func disconnect() throws {
-        guard let proxy = service.remoteObjectProxy as? any SKKServClientProtocol else {
+        // 一度もリクエストを送っていない場合はXPC接続が未アクティブで、
+        // そのままメッセージを送ると実行時エラーになるためここでもactivateする
+        service.activate()
+        let semaphore = DispatchSemaphore(value: 0)
+        let remoteObject = service.remoteObjectProxyWithErrorHandler { error in
+            // すでに接続が切れている場合は切断済みとみなして待つのをやめる
+            logger.warning("SKKServClientとのXPC切断呼び出しが失敗しました: \(error, privacy: .public)")
+            semaphore.signal()
+        }
+        guard let proxy = remoteObject as? any SKKServClientProtocol else {
             throw SKKServClientError.unexpected
         }
-        let semaphore = DispatchSemaphore(value: 0)
         proxy.disconnectAll {
             semaphore.signal()
         }
