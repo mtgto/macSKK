@@ -457,7 +457,7 @@ final class SettingsViewModel: ObservableObject {
             }
         }
 
-        $skkservDictSetting.sink { setting in
+        $skkservDictSetting.removeDuplicates().sink { setting in
             if setting.enabled {
                 let destination = SKKServDestination(host: setting.address, port: setting.port, requestEncoding: setting.requestEncoding, responseEncoding: setting.responseEncoding)
                 logger.log("skkserv辞書を設定します")
@@ -581,7 +581,6 @@ final class SettingsViewModel: ObservableObject {
             .sink { [weak self] notification in
                 guard let self else { return }
                 self.skkservDictSetting.enabled = false
-                self.skkservDictSetting = self.skkservDictSetting
                 let consecutiveErrorCount = notification.object as? Int ?? Global.skkservAutoDisableThreshold
                 UNNotifier.sendNotificationForSKKServAutoDisabled(consecutiveErrorCount: consecutiveErrorCount)
             }
@@ -592,7 +591,6 @@ final class SettingsViewModel: ObservableObject {
             .sink { [weak self] _ in
                 guard let self else { return }
                 self.skkservDictSetting.enabled.toggle()
-                self.skkservDictSetting = self.skkservDictSetting
             }
             .store(in: &cancellables)
 

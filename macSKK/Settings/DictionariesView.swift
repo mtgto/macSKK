@@ -95,7 +95,10 @@ struct DictionariesView: View {
                 )
             }
             .sheet(isPresented: $isShowingSkkservSheet) {
-                SKKServDictView(settingsViewModel: settingsViewModel, isShowSheet: $isShowingSkkservSheet)
+                SKKServDictView(settingsViewModel: settingsViewModel,
+                                isShowSheet: $isShowingSkkservSheet,
+                                setting: settingsViewModel.skkservDictSetting,
+                                autoDisableThreshold: settingsViewModel.skkservAutoDisableThreshold)
             }
             Text("SettingsNoteDictionaries")
                 .font(.subheadline)
