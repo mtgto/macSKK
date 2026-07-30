@@ -27,10 +27,9 @@ actor FakeSKKServ {
     private let behavior: Behavior
     private let listener: NWListener
     private var connections: [NWConnection] = []
-    private var _acceptedConnectionCount = 0
 
     /// 受理した接続の数。接続が使い回されているかの検証に使う。
-    var acceptedConnectionCount: Int { _acceptedConnectionCount }
+    private(set) var acceptedConnectionCount = 0
 
     /// 実際にlistenしているポート。
     ///
@@ -64,11 +63,11 @@ actor FakeSKKServ {
             Task { await self.accept(connection) }
         }
         listener.start(queue: Self.queue)
-        port = try await withCheckedThrowingContinuation { continuation.install($0) }
+        port = try await continuation.value()
     }
 
     private func accept(_ connection: NWConnection) {
-        _acceptedConnectionCount += 1
+        acceptedConnectionCount += 1
         connections.append(connection)
         connection.start(queue: Self.queue)
         receive(on: connection)

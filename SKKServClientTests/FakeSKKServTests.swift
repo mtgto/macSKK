@@ -25,11 +25,7 @@ final class FakeSKKServTests: XCTestCase {
             }
         }
         return try await withTimeout(seconds: timeout) {
-            try await withTaskCancellationHandler {
-                try await withCheckedThrowingContinuation { continuation.install($0) }
-            } onCancel: {
-                continuation.resume(with: .failure(CancellationError()))
-            }
+            try await continuation.value()
         }
     }
 

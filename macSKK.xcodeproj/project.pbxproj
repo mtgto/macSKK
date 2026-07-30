@@ -35,7 +35,6 @@
 		CE04E8BF3018C7B000310428 /* AsyncTimeoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE04E8B83018C7B000310428 /* AsyncTimeoutTests.swift */; };
 		CE04E8C03018C7B000310428 /* FakeSKKServ.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE04E8B93018C7B000310428 /* FakeSKKServ.swift */; };
 		CE04E8C13018C7B000310428 /* FakeSKKServTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE04E8BA3018C7B000310428 /* FakeSKKServTests.swift */; };
-		CE04E8C23018C7B000310428 /* LoopbackSpikeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE04E8BB3018C7B000310428 /* LoopbackSpikeTests.swift */; };
 		CE04E8C33018C7B000310428 /* PooledConnectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE04E8BC3018C7B000310428 /* PooledConnectionTests.swift */; };
 		CE04E8C43018C7B000310428 /* SKKServConnectionPoolTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE04E8BD3018C7B000310428 /* SKKServConnectionPoolTests.swift */; };
 		CE06CA2B2AAC171B00E80E5E /* FileDictTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE06CA292AAC171B00E80E5E /* FileDictTests.swift */; };
@@ -252,7 +251,6 @@
 		CE04E8B83018C7B000310428 /* AsyncTimeoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncTimeoutTests.swift; sourceTree = "<group>"; };
 		CE04E8B93018C7B000310428 /* FakeSKKServ.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FakeSKKServ.swift; sourceTree = "<group>"; };
 		CE04E8BA3018C7B000310428 /* FakeSKKServTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FakeSKKServTests.swift; sourceTree = "<group>"; };
-		CE04E8BB3018C7B000310428 /* LoopbackSpikeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoopbackSpikeTests.swift; sourceTree = "<group>"; };
 		CE04E8BC3018C7B000310428 /* PooledConnectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PooledConnectionTests.swift; sourceTree = "<group>"; };
 		CE04E8BD3018C7B000310428 /* SKKServConnectionPoolTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServConnectionPoolTests.swift; sourceTree = "<group>"; };
 		CE06CA292AAC171B00E80E5E /* FileDictTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileDictTests.swift; sourceTree = "<group>"; };
@@ -477,7 +475,6 @@
 				CE04E8B83018C7B000310428 /* AsyncTimeoutTests.swift */,
 				CE04E8B93018C7B000310428 /* FakeSKKServ.swift */,
 				CE04E8BA3018C7B000310428 /* FakeSKKServTests.swift */,
-				CE04E8BB3018C7B000310428 /* LoopbackSpikeTests.swift */,
 				CE04E8BC3018C7B000310428 /* PooledConnectionTests.swift */,
 				CE04E8BD3018C7B000310428 /* SKKServConnectionPoolTests.swift */,
 			);
@@ -1008,7 +1005,6 @@
 				CE04E8BF3018C7B000310428 /* AsyncTimeoutTests.swift in Sources */,
 				CE04E8C03018C7B000310428 /* FakeSKKServ.swift in Sources */,
 				CE04E8C13018C7B000310428 /* FakeSKKServTests.swift in Sources */,
-				CE04E8C23018C7B000310428 /* LoopbackSpikeTests.swift in Sources */,
 				CE04E8C33018C7B000310428 /* PooledConnectionTests.swift in Sources */,
 				CE04E8C43018C7B000310428 /* SKKServConnectionPoolTests.swift in Sources */,
 				CE00C0DE0000000000000005 /* Data+EucJis2004.swift in Sources */,

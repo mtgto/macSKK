@@ -42,10 +42,14 @@ actor SKKServConnectionPool {
               yomi: String,
               destination: SKKServDestination,
               timeout: TimeInterval) async throws -> String {
+        guard let request = Self.makeRequest(command: command, yomi: yomi, destination: destination) else {
+            logger.error("見出しをDataに変換できませんでした")
+            throw SKKServClientError.unexpected
+        }
         let start = DispatchTime.now()
         do {
             let response = try await withTimeout(seconds: timeout) {
-                try await self.perform(command: command, yomi: yomi, destination: destination, allowRetry: true)
+                try await self.perform(request: request, destination: destination, allowRetry: true)
             }
             logger.debug("skkservへの問い合わせに \(elapsedMilliseconds(since: start), format: .fixed(precision: 1), privacy: .public)ms かかりました (プールの接続数: \(self.connectionCount, privacy: .public))")
             return response
@@ -64,14 +68,9 @@ actor SKKServConnectionPool {
         destination = nil
     }
 
-    private func perform(command: SKKServCommand,
-                         yomi: String,
+    private func perform(request: SKKServRequest,
                          destination: SKKServDestination,
                          allowRetry: Bool) async throws -> String {
-        guard let request = Self.makeRequest(command: command, yomi: yomi, destination: destination) else {
-            logger.error("見出しをDataに変換できませんでした")
-            throw SKKServClientError.unexpected
-        }
         let (connection, reused) = try await borrow(destination: destination)
         // NOTE: 送受信の失敗とデコードの失敗でcatchを分ける。
         // 1つのdo/catchにまとめると、デコード失敗時にdiscardしてからthrowした結果を
@@ -86,7 +85,7 @@ actor SKKServConnectionPool {
             // ユーザーから見れば正常なので、新しい接続で1回だけやり直す。
             if reused && allowRetry && !(error is CancellationError) && !Task.isCancelled {
                 logger.log("使い回した接続で失敗したため新しい接続でやり直します")
-                return try await perform(command: command, yomi: yomi, destination: destination, allowRetry: false)
+                return try await perform(request: request, destination: destination, allowRetry: false)
             }
             throw error
         }
@@ -137,9 +136,7 @@ actor SKKServConnectionPool {
                 do {
                     try await connection.connect()
                 } catch {
-                    borrowedCount -= 1
-                    connection.close()
-                    wakeOneWaiter()
+                    discard(connection)
                     throw error
                 }
                 return (connection, false)

@@ -104,10 +104,6 @@ final class SKKServDict: SKKServDictProtocol, Sendable {
     }
 
     func disconnect() {
-        do {
-            try service.disconnect()
-        } catch {
-            logger.error("skkservとの通信切断でエラーが発生しました: \(error, privacy: .public)")
-        }
+        service.disconnect()
     }
 }

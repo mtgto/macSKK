@@ -1,28 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import Foundation
+import os
 import XCTest
 
 final class AsyncTimeoutTests: XCTestCase {
-    /// キャンセルハンドラ (@Sendableクロージャ) から書き込むためのフラグ。
-    /// XCTestExpectationはSendableではないためこちらを使う。
-    private final class CancelFlag: @unchecked Sendable {
-        private let lock = NSLock()
-        private var value = false
-
-        func markCancelled() {
-            lock.lock()
-            value = true
-            lock.unlock()
-        }
-
-        var isCancelled: Bool {
-            lock.lock()
-            defer { lock.unlock() }
-            return value
-        }
-    }
-
     func testWithTimeoutReturnsValueWhenOperationFinishesInTime() async throws {
         let result = try await withTimeout(seconds: 10.0) { "done" }
         XCTAssertEqual(result, "done")
@@ -41,13 +23,15 @@ final class AsyncTimeoutTests: XCTestCase {
     }
 
     func testWithTimeoutCancelsOperationWhenTimedOut() async throws {
-        let flag = CancelFlag()
+        // キャンセルハンドラ (@Sendableクロージャ) から書き込むためロックで保護する。
+        // 本来はMutex (SE-0433) を使いたいがmacOS 15以降のためデプロイメントターゲット13.3では使えない。
+        let cancelled = OSAllocatedUnfairLock(initialState: false)
         do {
             _ = try await withTimeout(seconds: 0.01) {
                 await withTaskCancellationHandler {
                     try? await Task.sleep(for: .seconds(10))
                 } onCancel: {
-                    flag.markCancelled()
+                    cancelled.withLock { $0 = true }
                 }
                 return "done"
             }
@@ -56,7 +40,7 @@ final class AsyncTimeoutTests: XCTestCase {
             // 期待通り
         }
         // TaskGroupはキャンセルハンドラの実行を含めて子タスクの終了を待ってから抜ける
-        XCTAssertTrue(flag.isCancelled, "タイムアウト時はoperationがキャンセルされる")
+        XCTAssertTrue(cancelled.withLock { $0 }, "タイムアウト時はoperationがキャンセルされる")
     }
 
     func testWithTimeoutPropagatesCancellation() async throws {

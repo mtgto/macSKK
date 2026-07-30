@@ -29,12 +29,7 @@ final class PooledConnection: @unchecked Sendable {
     }
 
     /// 接続が再利用できる状態かどうか。
-    var isReady: Bool {
-        if case .ready = connection.state {
-            return true
-        }
-        return false
-    }
+    var isReady: Bool { connection.state == .ready }
 
     /// 接続が確立するまで待つ。
     func connect() async throws {
@@ -59,11 +54,9 @@ final class PooledConnection: @unchecked Sendable {
             }
         }
         connection.start(queue: Self.queue)
-        try await withTaskCancellationHandler {
-            try await withCheckedThrowingContinuation { continuation.install($0) }
-        } onCancel: {
-            continuation.resume(with: .failure(CancellationError()))
-        }
+        try await continuation.value()
+        // 確立後は状態変化を見ていないため、continuationを接続の寿命いっぱい抱えないよう解放する
+        connection.stateUpdateHandler = nil
         logger.debug("skkservへのTCP接続の確立に \(elapsedMilliseconds(since: start), format: .fixed(precision: 1), privacy: .public)ms かかりました")
     }
 
@@ -80,11 +73,7 @@ final class PooledConnection: @unchecked Sendable {
                 continuation.resume(with: .success(()))
             }
         }))
-        try await withTaskCancellationHandler {
-            try await withCheckedThrowingContinuation { continuation.install($0) }
-        } onCancel: {
-            continuation.resume(with: .failure(CancellationError()))
-        }
+        try await continuation.value()
     }
 
     /// レスポンスを1つ受信する。終端記号は取り除かれている。
@@ -101,11 +90,7 @@ final class PooledConnection: @unchecked Sendable {
                 continuation.resume(with: .failure(SKKServClientError.connectionRefused))
             }
         }
-        return try await withTaskCancellationHandler {
-            try await withCheckedThrowingContinuation { continuation.install($0) }
-        } onCancel: {
-            continuation.resume(with: .failure(CancellationError()))
-        }
+        return try await continuation.value()
     }
 
     /// 接続を破棄する。以降このインスタンスは使えない。

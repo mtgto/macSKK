@@ -55,6 +55,20 @@ final class SingleResumeContinuation<T: Sendable>: @unchecked Sendable {
         }
     }
 
+    /**
+     * 結果が確定するまで待つ。待っている間にキャンセルされた場合はCancellationErrorを投げる。
+     *
+     * - NOTE: キャンセル時にresumeしないと ``withTimeout(seconds:operation:)`` が
+     *         TaskGroupの子タスクの終了を待ってハングする。その配線をここに閉じ込めている。
+     */
+    func value() async throws -> T {
+        try await withTaskCancellationHandler {
+            try await withCheckedThrowingContinuation { self.install($0) }
+        } onCancel: {
+            self.resume(with: .failure(CancellationError()))
+        }
+    }
+
     /// 結果を渡してcontinuationをresumeする。2回目以降の呼び出しは無視する。
     func resume(with result: Result<T, any Error>) {
         lock.lock()

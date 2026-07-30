@@ -6,7 +6,7 @@ import Foundation
 protocol SKKServServiceProtocol: Sendable {
     func refer(yomi: String, destination: SKKServDestination, timeout: TimeInterval) throws -> String
     func completion(yomi: String, destination: SKKServDestination, timeout: TimeInterval) throws -> String
-    func disconnect() throws
+    func disconnect()
 }
 
 /**
@@ -174,8 +174,19 @@ struct SKKServService: SKKServServiceProtocol, @unchecked Sendable {
      * skkservとの通信を切断し、XPC接続を破棄します。
      *
      * 接続先の変更やskkservの無効化時に呼びます。呼んだあとこのインスタンスは使えません。
+     *
+     * 切断はXPCの往復を伴うため別スレッドで行います。呼び出し元は変換中のキー入力パス
+     * (連続エラーによる自動無効化) や設定画面のメインスレッドであり、
+     * 結果を誰も必要としないためブロックする理由がありません。
      */
-    func disconnect() throws {
+    func disconnect() {
+        // selfは@unchecked Sendableなのでそのままキャプチャできる
+        DispatchQueue.global(qos: .utility).async {
+            self.disconnectAndInvalidate()
+        }
+    }
+
+    private func disconnectAndInvalidate() {
         // 一度もリクエストを送っていない場合はXPC接続が未アクティブで、
         // そのままメッセージを送ると実行時エラーになるためここでもactivateする
         service.activate()
@@ -186,7 +197,9 @@ struct SKKServService: SKKServServiceProtocol, @unchecked Sendable {
             semaphore.signal()
         }
         guard let proxy = remoteObject as? any SKKServClientProtocol else {
-            throw SKKServClientError.unexpected
+            logger.error("SKKServClientのプロキシを取得できなかったためXPC接続の破棄のみ行います")
+            service.invalidate()
+            return
         }
         proxy.disconnectAll {
             semaphore.signal()
