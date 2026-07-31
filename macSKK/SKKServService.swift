@@ -180,7 +180,10 @@ struct SKKServService: SKKServServiceProtocol, @unchecked Sendable {
      * 結果を誰も必要としないためブロックする理由がありません。
      */
     func disconnect() {
-        // selfは@unchecked Sendableなのでそのままキャプチャできる
+        // NOTE: disconnectAndInvalidate()はセマフォで応答を待つブロッキング処理のため、
+        // Task.detachedではなくDispatchQueueへ逃がす。Swift Concurrencyの
+        // 協調スレッドプールはコア数分しかなく、そこでブロックすると他のasync処理を止めてしまう。
+        // selfは@unchecked Sendableなのでそのままキャプチャできる。
         DispatchQueue.global(qos: .utility).async {
             self.disconnectAndInvalidate()
         }
