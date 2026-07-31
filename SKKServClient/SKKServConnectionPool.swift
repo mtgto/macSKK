@@ -49,7 +49,15 @@ actor SKKServConnectionPool {
         let start = DispatchTime.now()
         do {
             let response = try await withTimeout(seconds: timeout) {
-                try await self.perform(request: request, destination: destination, allowRetry: true)
+                try await self.withConnection(destination: destination) { connection in
+                    try await connection.send(request: request)
+                    let data = try await connection.receive()
+                    guard let response = destination.decodeResponse(data) else {
+                        logger.error("skkservからの応答を文字列として解釈できませんでした")
+                        throw SKKServClientError.invalidResponse
+                    }
+                    return response
+                }
             }
             logger.debug("skkservへの問い合わせに \(elapsedMilliseconds(since: start), format: .fixed(precision: 1), privacy: .public)ms かかりました (プールの接続数: \(self.connectionCount, privacy: .public))")
             return response
@@ -68,34 +76,35 @@ actor SKKServConnectionPool {
         destination = nil
     }
 
-    private func perform(request: SKKServRequest,
-                         destination: SKKServDestination,
-                         allowRetry: Bool) async throws -> String {
-        let (connection, reused) = try await borrow(destination: destination)
-        // NOTE: 送受信の失敗とデコードの失敗でcatchを分ける。
-        // 1つのdo/catchにまとめると、デコード失敗時にdiscardしてからthrowした結果を
-        // 同じcatchが拾って二重にdiscardしてしまう。
-        let data: Data
-        do {
-            try await connection.send(request: request)
-            data = try await connection.receive()
-        } catch {
-            discard(connection)
-            // アイドル中にサーバーが接続を閉じていた場合、使い回した接続は応答を得る前に失敗する。
-            // ユーザーから見れば正常なので、新しい接続で1回だけやり直す。
-            if reused && allowRetry && !(error is CancellationError) && !Task.isCancelled {
+    /**
+     * 接続を1本借りてbodyを実行し、終了時に必ずプールへ返すか破棄する。
+     *
+     * bodyが正常終了したら接続をプールへ返し、エラーを投げたら破棄する。
+     * 使い回した接続がアイドル中にサーバーに閉じられていた場合はbodyが失敗するが、
+     * ユーザーから見れば正常なので新しい接続で1回だけやり直す。
+     * このためbodyは2回実行されうる (skkservへの問い合わせは冪等なので問題ない)。
+     */
+    private func withConnection<T>(destination: SKKServDestination,
+                                   body: (PooledConnection) async throws -> T) async throws -> T {
+        var isRetry = false
+        while true {
+            let (connection, reused) = try await borrow(destination: destination)
+            do {
+                let value = try await body(connection)
+                giveBack(connection)
+                return value
+            } catch {
+                discard(connection)
+                // 応答をデコードできなかった場合は接続をやり直しても同じ結果になるためリトライしない
+                guard reused, !isRetry, !Task.isCancelled,
+                      !(error is CancellationError),
+                      (error as? SKKServClientError) != .invalidResponse else {
+                    throw error
+                }
                 logger.log("使い回した接続で失敗したため新しい接続でやり直します")
-                return try await perform(request: request, destination: destination, allowRetry: false)
+                isRetry = true
             }
-            throw error
         }
-        guard let response = destination.decodeResponse(data) else {
-            logger.error("skkservからの応答を文字列として解釈できませんでした")
-            discard(connection)
-            throw SKKServClientError.invalidResponse
-        }
-        giveBack(connection)
-        return response
     }
 
     private static func makeRequest(command: SKKServCommand,
