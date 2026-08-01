@@ -7,6 +7,8 @@ import Network
 struct SKKServDictView: View {
     @StateObject var settingsViewModel: SettingsViewModel
     @Binding var isShowSheet: Bool
+    @State var setting: SKKServDictSetting
+    @State var autoDisableThreshold: Int
     @State var information: String = ""
     @State var testing: Bool = false
     @State var yomi: String = ""
@@ -15,31 +17,31 @@ struct SKKServDictView: View {
         VStack {
             Form {
                 Section {
-                    TextField("Address", text: $settingsViewModel.skkservDictSetting.address)
-                    TextField("TCP Port", value: $settingsViewModel.skkservDictSetting.port,
+                    TextField("Address", text: $setting.address)
+                    TextField("TCP Port", value: $setting.port,
                               format: .number.grouping(.never), prompt: Text("1178"))
-                    Picker("Request Encoding", selection: $settingsViewModel.skkservDictSetting.requestEncoding) {
+                    Picker("Request Encoding", selection: $setting.requestEncoding) {
                         ForEach(AllowedEncoding.allCases, id: \.encoding) { allowedEncoding in
                             Text(allowedEncoding.description).tag(allowedEncoding.encoding)
                         }
                     }
                     .pickerStyle(.radioGroup)
-                    Picker("Response Encoding", selection: $settingsViewModel.skkservDictSetting.responseEncoding) {
+                    Picker("Response Encoding", selection: $setting.responseEncoding) {
                         ForEach(AllowedEncoding.allCases, id: \.encoding) { allowedEncoding in
                             Text(allowedEncoding.description).tag(allowedEncoding.encoding)
                         }
                     }
                     .pickerStyle(.radioGroup)
-                    Toggle(isOn: $settingsViewModel.skkservDictSetting.saveToUserDict) {
+                    Toggle(isOn: $setting.saveToUserDict) {
                         Text("Save conversion history to User Dictionary")
                     }
                     .toggleStyle(.switch)
-                    Toggle(isOn: $settingsViewModel.skkservDictSetting.enableCompletion) {
+                    Toggle(isOn: $setting.enableCompletion) {
                         Text("Search completions")
                     }
                     .toggleStyle(.switch)
                     TextField("SKKServAutoDisableThreshold",
-                              value: $settingsViewModel.skkservAutoDisableThreshold,
+                              value: $autoDisableThreshold,
                               format: .number)
                 } header: {
                     Text("SKKServDictTitle")
@@ -50,7 +52,6 @@ struct SKKServDictView: View {
                         Spacer()
                         Button {
                             let skkservService = SKKServService()
-                            let setting = settingsViewModel.skkservDictSetting
                             let destination = SKKServDestination(host: setting.address,
                                                                  port: setting.port,
                                                                  requestEncoding: setting.requestEncoding,
@@ -72,7 +73,6 @@ struct SKKServDictView: View {
                         }.disabled(yomi.isEmpty || testing)
                         Button {
                             let skkservService = SKKServService()
-                            let setting = settingsViewModel.skkservDictSetting
                             let destination = SKKServDestination(host: setting.address,
                                                                  port: setting.port,
                                                                  requestEncoding: setting.requestEncoding,
@@ -107,7 +107,6 @@ struct SKKServDictView: View {
             HStack {
                 Button {
                     let skkservService = SKKServService()
-                    let setting = settingsViewModel.skkservDictSetting
                     let destination = SKKServDestination(host: setting.address,
                                                          port: setting.port,
                                                          requestEncoding: setting.requestEncoding,
@@ -138,6 +137,11 @@ struct SKKServDictView: View {
                 }
                 .keyboardShortcut(.cancelAction)
                 Button {
+                    var newSetting = setting
+                    // enabledはこの画面では編集しない
+                    newSetting.enabled = settingsViewModel.skkservDictSetting.enabled
+                    settingsViewModel.skkservDictSetting = newSetting
+                    settingsViewModel.skkservAutoDisableThreshold = autoDisableThreshold
                     isShowSheet = false
                 } label: {
                     Text("Done")
@@ -149,6 +153,10 @@ struct SKKServDictView: View {
             Spacer()
         }
         .frame(width: 480, height: 450)
+        .onAppear {
+            setting = settingsViewModel.skkservDictSetting
+            autoDisableThreshold = settingsViewModel.skkservAutoDisableThreshold
+        }
     }
 
     private func showError(_ error: any Error) {
@@ -187,5 +195,8 @@ struct SKKServDictView: View {
         saveToUserDict: true,
         enableCompletion: false)
     return SKKServDictView(settingsViewModel: try! SettingsViewModel(skkservDictSetting: setting),
-                    isShowSheet: .constant(true), information: "skkservが応答していません")
+                    isShowSheet: .constant(true),
+                    setting: setting,
+                    autoDisableThreshold: 3,
+                    information: "skkservが応答していません")
 }
