@@ -33,20 +33,19 @@ func withTimeout<T: Sendable>(seconds: TimeInterval,
  *
  * コールバックベースのAPIをasyncに変換する際、応答とタイムアウト・キャンセルが同時に起きても
  * 二重resume (実行時エラーになる) を起こさないようにロックで保護する。
- * ``install(_:)`` より先に ``resume(with:)`` が呼ばれた場合は結果を保持しておき、install時に渡す。
+ * ``install(_:)`` より先に ``complete(with:)`` が呼ばれた場合は結果を保持しておき、install時に渡す。
  *
  * - NOTE: 同じ「最初の1つの結果だけを採用する」役割の同期版が、macSKKターゲットの
  *         `SingleResultWaiter` にある。あちらはセマフォでスレッドをブロックして待つ。
- *         ターゲットも待ち方も異なるため別の型にしている。
  */
 final class SingleResultContinuation<T: Sendable>: @unchecked Sendable {
     private let lock = NSLock()
     private var continuation: CheckedContinuation<T, any Error>?
-    /// installより先にresumeされた場合の結果
+    /// installより先にcompleteされた場合の結果
     private var pendingResult: Result<T, any Error>?
     private var isFinished = false
 
-    /// continuationを登録する。すでにresumeされていた場合はその結果で即座にresumeする。
+    /// continuationを登録する。すでに結果が確定していた場合はその結果で即座にresumeする。
     func install(_ continuation: CheckedContinuation<T, any Error>) {
         lock.lock()
         if let pendingResult {
@@ -59,22 +58,8 @@ final class SingleResultContinuation<T: Sendable>: @unchecked Sendable {
         }
     }
 
-    /**
-     * 結果が確定するまで待つ。待っている間にキャンセルされた場合はCancellationErrorを投げる。
-     *
-     * - NOTE: キャンセル時にresumeしないと ``withTimeout(seconds:operation:)`` が
-     *         TaskGroupの子タスクの終了を待ってハングする。その配線をここに閉じ込めている。
-     */
-    func value() async throws -> T {
-        try await withTaskCancellationHandler {
-            try await withCheckedThrowingContinuation { self.install($0) }
-        } onCancel: {
-            self.resume(with: .failure(CancellationError()))
-        }
-    }
-
-    /// 結果を渡してcontinuationをresumeする。2回目以降の呼び出しは無視する。
-    func resume(with result: Result<T, any Error>) {
+    /// 結果を確定させる。continuationが登録済みならその場でresumeする。2回目以降の呼び出しは無視する。
+    func complete(with result: Result<T, any Error>) {
         lock.lock()
         guard !isFinished else {
             lock.unlock()
@@ -88,6 +73,20 @@ final class SingleResultContinuation<T: Sendable>: @unchecked Sendable {
         } else {
             pendingResult = result
             lock.unlock()
+        }
+    }
+
+    /**
+     * 結果が確定するまで待つ。待っている間にキャンセルされた場合はCancellationErrorを投げる。
+     *
+     * - NOTE: キャンセル時に結果を確定させないと ``withTimeout(seconds:operation:)`` が
+     *         TaskGroupの子タスクの終了を待ってハングする。その配線をここに閉じ込めている。
+     */
+    func value() async throws -> T {
+        try await withTaskCancellationHandler {
+            try await withCheckedThrowingContinuation { self.install($0) }
+        } onCancel: {
+            self.complete(with: .failure(CancellationError()))
         }
     }
 }

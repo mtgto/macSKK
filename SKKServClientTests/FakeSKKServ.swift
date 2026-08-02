@@ -45,9 +45,9 @@ actor FakeSKKServ {
         listener.stateUpdateHandler = { state in
             switch state {
             case .ready:
-                continuation.resume(with: .success(listener.port ?? 0))
+                continuation.complete(with: .success(listener.port ?? 0))
             case .failed(let error):
-                continuation.resume(with: .failure(error))
+                continuation.complete(with: .failure(error))
             default:
                 break
             }

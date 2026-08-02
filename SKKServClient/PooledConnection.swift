@@ -40,15 +40,15 @@ final class PooledConnection: @unchecked Sendable {
         connection.stateUpdateHandler = { state in
             switch state {
             case .ready:
-                continuation.resume(with: .success(()))
+                continuation.complete(with: .success(()))
             case .waiting(let error):
                 // 接続先がbind + listenされていない場合は ECONNREFUSED、
                 // listenされているがacceptされない場合は ETIMEDOUT が発生する
-                continuation.resume(with: .failure(Self.convert(error)))
+                continuation.complete(with: .failure(Self.convert(error)))
             case .failed(let error):
-                continuation.resume(with: .failure(Self.convert(error)))
+                continuation.complete(with: .failure(Self.convert(error)))
             case .cancelled:
-                continuation.resume(with: .failure(SKKServClientError.connectionRefused))
+                continuation.complete(with: .failure(SKKServClientError.connectionRefused))
             default:
                 break
             }
@@ -68,9 +68,9 @@ final class PooledConnection: @unchecked Sendable {
         connection.send(content: nil, contentContext: context, isComplete: true,
                         completion: .contentProcessed({ error in
             if let error {
-                continuation.resume(with: .failure(Self.convert(error)))
+                continuation.complete(with: .failure(Self.convert(error)))
             } else {
-                continuation.resume(with: .success(()))
+                continuation.complete(with: .success(()))
             }
         }))
         try await continuation.value()
@@ -81,13 +81,13 @@ final class PooledConnection: @unchecked Sendable {
         let continuation = SingleResultContinuation<Data>()
         connection.receiveMessage { _, contentContext, _, error in
             if let error {
-                continuation.resume(with: .failure(Self.convert(error)))
+                continuation.complete(with: .failure(Self.convert(error)))
             } else if let message = contentContext?.protocolMetadata(definition: SKKServProtocol.definition) as? NWProtocolFramer.Message,
                       let response = message.response {
-                continuation.resume(with: .success(response))
+                continuation.complete(with: .success(response))
             } else {
                 // メッセージが得られないのはサーバーが接続を閉じた場合
-                continuation.resume(with: .failure(SKKServClientError.connectionRefused))
+                continuation.complete(with: .failure(SKKServClientError.connectionRefused))
             }
         }
         return try await continuation.value()

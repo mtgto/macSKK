@@ -14,14 +14,14 @@ final class FakeSKKServTests: XCTestCase {
         let continuation = SingleResultContinuation<Data>()
         connection.send(content: request, completion: .contentProcessed({ error in
             if let error {
-                continuation.resume(with: .failure(error))
+                continuation.complete(with: .failure(error))
             }
         }))
         connection.receive(minimumIncompleteLength: 1, maximumLength: 65536) { content, _, _, error in
             if let error {
-                continuation.resume(with: .failure(error))
+                continuation.complete(with: .failure(error))
             } else {
-                continuation.resume(with: .success(content ?? Data()))
+                continuation.complete(with: .success(content ?? Data()))
             }
         }
         return try await withTimeout(seconds: timeout) {

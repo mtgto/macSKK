@@ -19,7 +19,6 @@ protocol SKKServServiceProtocol: Sendable {
  *
  * - NOTE: 同じ「最初の1つの結果だけを採用する」役割の非同期版が、SKKServClientターゲットの
  *         `SingleResultContinuation` にある。あちらはCheckedContinuationでタスクを中断して待つ。
- *         ターゲットも待ち方も異なるため別の型にしている。
  *
  * @see https://developer.apple.com/documentation/foundation/nsxpcproxycreating/remoteobjectproxywitherrorhandler(_:)
  */
