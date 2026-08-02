@@ -36,7 +36,7 @@ final class PooledConnection: @unchecked Sendable {
         // NOTE: 接続確立だけのコストを知りたいときは設定画面の「接続テスト」が使える。
         // serverVersionはskkserv側が辞書を引かないため、検索にかかる時間が混ざらない。
         let start = DispatchTime.now()
-        let continuation = SingleResumeContinuation<Void>()
+        let continuation = SingleResultContinuation<Void>()
         connection.stateUpdateHandler = { state in
             switch state {
             case .ready:
@@ -62,7 +62,7 @@ final class PooledConnection: @unchecked Sendable {
 
     /// リクエストを1つ送信する。
     func send(request: SKKServRequest) async throws {
-        let continuation = SingleResumeContinuation<Void>()
+        let continuation = SingleResultContinuation<Void>()
         let context = NWConnection.ContentContext(identifier: "SKKServRequest",
                                                   metadata: [NWProtocolFramer.Message(request: request)])
         connection.send(content: nil, contentContext: context, isComplete: true,
@@ -78,7 +78,7 @@ final class PooledConnection: @unchecked Sendable {
 
     /// レスポンスを1つ受信する。終端記号は取り除かれている。
     func receive() async throws -> Data {
-        let continuation = SingleResumeContinuation<Data>()
+        let continuation = SingleResultContinuation<Data>()
         connection.receiveMessage { _, contentContext, _, error in
             if let error {
                 continuation.resume(with: .failure(Self.convert(error)))

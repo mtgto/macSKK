@@ -41,7 +41,7 @@ actor FakeSKKServ {
         self.behavior = behavior
         let listener = try NWListener(using: .tcp, on: .any)
         self.listener = listener
-        let continuation = SingleResumeContinuation<NWEndpoint.Port>()
+        let continuation = SingleResultContinuation<NWEndpoint.Port>()
         listener.stateUpdateHandler = { state in
             switch state {
             case .ready:

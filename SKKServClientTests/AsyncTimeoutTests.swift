@@ -59,8 +59,8 @@ final class AsyncTimeoutTests: XCTestCase {
         }
     }
 
-    func testSingleResumeContinuationResumeBeforeInstall() async throws {
-        let continuation = SingleResumeContinuation<String>()
+    func testSingleResultContinuationResumeBeforeInstall() async throws {
+        let continuation = SingleResultContinuation<String>()
         continuation.resume(with: .success("resumed"))
         let result = try await withCheckedThrowingContinuation { checked in
             continuation.install(checked)
@@ -68,8 +68,8 @@ final class AsyncTimeoutTests: XCTestCase {
         XCTAssertEqual(result, "resumed")
     }
 
-    func testSingleResumeContinuationIgnoresSecondResume() async throws {
-        let continuation = SingleResumeContinuation<String>()
+    func testSingleResultContinuationIgnoresSecondResume() async throws {
+        let continuation = SingleResultContinuation<String>()
         // 二重resumeするとwithCheckedThrowingContinuationは実行時エラーになるため、
         // このテストが通ること自体が二重resumeを防げている証拠になる
         let result = try await withCheckedThrowingContinuation { (checked: CheckedContinuation<String, any Error>) in

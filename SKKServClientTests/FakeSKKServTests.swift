@@ -11,7 +11,7 @@ final class FakeSKKServTests: XCTestCase {
         let connection = NWConnection(to: .hostPort(host: "127.0.0.1", port: port), using: .tcp)
         defer { connection.forceCancel() }
         connection.start(queue: .global())
-        let continuation = SingleResumeContinuation<Data>()
+        let continuation = SingleResultContinuation<Data>()
         connection.send(content: request, completion: .contentProcessed({ error in
             if let error {
                 continuation.resume(with: .failure(error))

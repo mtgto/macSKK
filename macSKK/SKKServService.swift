@@ -10,12 +10,16 @@ protocol SKKServServiceProtocol: Sendable {
 }
 
 /**
- * XPCの応答またはエラーハンドラから結果を受け取り、呼び出し元のスレッドへ渡す。
+ * 最初に届いた結果だけを採用し、XPCの応答またはエラーハンドラから呼び出し元のスレッドへ渡す。
  *
  * NSXPCConnectionは「エラーハンドラの呼び出しか応答のどちらか一方が高々1回だけ発生する」ことを
  * 保証しているため、本来は排他を気にする必要がない。それでもロックで守っているのは、
  * 別スレッドから書き込まれる結果を `nonisolated(unsafe)` を使わずに受け渡すためと、
  * 保証が破られた場合でもセマフォの整合性が壊れないようにするため。
+ *
+ * - NOTE: 同じ「最初の1つの結果だけを採用する」役割の非同期版が、SKKServClientターゲットの
+ *         `SingleResultContinuation` にある。あちらはCheckedContinuationでタスクを中断して待つ。
+ *         ターゲットも待ち方も異なるため別の型にしている。
  *
  * @see https://developer.apple.com/documentation/foundation/nsxpcproxycreating/remoteobjectproxywitherrorhandler(_:)
  */

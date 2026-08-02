@@ -29,13 +29,17 @@ func withTimeout<T: Sendable>(seconds: TimeInterval,
 }
 
 /**
- * CheckedContinuationを高々一度だけresumeするためのラッパー。
+ * 最初に届いた結果だけを採用してCheckedContinuationを高々一度だけresumeするラッパー。
  *
  * コールバックベースのAPIをasyncに変換する際、応答とタイムアウト・キャンセルが同時に起きても
  * 二重resume (実行時エラーになる) を起こさないようにロックで保護する。
  * ``install(_:)`` より先に ``resume(with:)`` が呼ばれた場合は結果を保持しておき、install時に渡す。
+ *
+ * - NOTE: 同じ「最初の1つの結果だけを採用する」役割の同期版が、macSKKターゲットの
+ *         `SingleResultWaiter` にある。あちらはセマフォでスレッドをブロックして待つ。
+ *         ターゲットも待ち方も異なるため別の型にしている。
  */
-final class SingleResumeContinuation<T: Sendable>: @unchecked Sendable {
+final class SingleResultContinuation<T: Sendable>: @unchecked Sendable {
     private let lock = NSLock()
     private var continuation: CheckedContinuation<T, any Error>?
     /// installより先にresumeされた場合の結果
