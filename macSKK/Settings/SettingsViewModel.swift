@@ -459,7 +459,7 @@ final class SettingsViewModel: ObservableObject {
 
         $skkservDictSetting.removeDuplicates().sink { setting in
             // 古い接続先へのTCP接続とXPC接続を残さないよう、差し替える前に切断する
-            Global.skkservDict?.disconnect()
+            Global.skkservDict?.invalidate()
             if setting.enabled {
                 let destination = SKKServDestination(host: setting.address, port: setting.port, requestEncoding: setting.requestEncoding, responseEncoding: setting.responseEncoding)
                 logger.log("skkserv辞書を設定します")

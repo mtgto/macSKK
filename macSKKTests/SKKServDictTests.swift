@@ -16,7 +16,7 @@ final class SKKServDictTests: XCTestCase {
             return response
         }
 
-        func disconnect() {}
+        func invalidate() {}
     }
 
     let destination = SKKServDestination(host: "localhost", port: 1178, requestEncoding: .japaneseEUC, responseEncoding: .japaneseEUC)

@@ -6,7 +6,7 @@ import Foundation
 protocol SKKServServiceProtocol: Sendable {
     func refer(yomi: String, destination: SKKServDestination, timeout: TimeInterval) throws -> String
     func completion(yomi: String, destination: SKKServDestination, timeout: TimeInterval) throws -> String
-    func disconnect()
+    func invalidate()
 }
 
 /**
@@ -174,25 +174,26 @@ struct SKKServService: SKKServServiceProtocol, @unchecked Sendable {
     }
 
     /**
-     * skkservとの通信を切断し、XPC接続を破棄します。
+     * このサービスを破棄します。skkservとのTCP接続をすべて閉じ、XPC接続を無効化します。
      *
      * 接続先の変更やskkservの無効化時に呼びます。呼んだあとこのインスタンスは使えません。
+     * 個々のTCP接続を指名して切ることはできません (XPC側の責務)。
      *
-     * 切断はXPCの往復を伴うため別スレッドで行います。呼び出し元は変換中のキー入力パス
+     * 後始末はXPCの往復を伴うため別スレッドで行います。呼び出し元は変換中のキー入力パス
      * (連続エラーによる自動無効化) や設定画面のメインスレッドであり、
      * 結果を誰も必要としないためブロックする理由がありません。
      */
-    func disconnect() {
-        // NOTE: disconnectAndInvalidate()はセマフォで応答を待つブロッキング処理のため、
+    func invalidate() {
+        // NOTE: invalidateSynchronously()はセマフォで応答を待つブロッキング処理のため、
         // Task.detachedではなくDispatchQueueへ逃がす。Swift Concurrencyの
         // 協調スレッドプールはコア数分しかなく、そこでブロックすると他のasync処理を止めてしまう。
         // selfは@unchecked Sendableなのでそのままキャプチャできる。
         DispatchQueue.global(qos: .utility).async {
-            self.disconnectAndInvalidate()
+            self.invalidateSynchronously()
         }
     }
 
-    private func disconnectAndInvalidate() {
+    private func invalidateSynchronously() {
         // 一度もリクエストを送っていない場合はXPC接続が未アクティブで、
         // そのままメッセージを送ると実行時エラーになるためここでもactivateする
         service.activate()

@@ -7,8 +7,9 @@ protocol SKKServDictProtocol: Sendable {
     var saveToUserDict: Bool { get }
     func refer(_ yomi: String, option: DictReferringOption?) -> Result<[Word], any Error>
     func findCompletions(prefix: String) -> Result<[String], any Error>
-    /// skkservとの通信を切断する。接続先の変更やskkservの無効化時に呼ぶ。
-    func disconnect()
+    /// この辞書を破棄する前の後始末。skkservとのTCP接続とXPC接続をすべて閉じる。
+    /// 接続先の変更やskkservの無効化時に呼ぶ。呼んだあとこのインスタンスは使えない。
+    func invalidate()
 }
 
 /// 補完候補検索でのskkserv検索オプション
@@ -103,7 +104,7 @@ final class SKKServDict: SKKServDictProtocol, Sendable {
         }
     }
 
-    func disconnect() {
-        service.disconnect()
+    func invalidate() {
+        service.invalidate()
     }
 }

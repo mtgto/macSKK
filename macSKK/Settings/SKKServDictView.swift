@@ -139,7 +139,7 @@ struct SKKServDictView: View {
             showError(error)
         }
         // 使い捨てのサービスなのでTCP接続とXPC接続を残さず後始末する
-        service.disconnect()
+        service.invalidate()
         testing = false
     }
 
