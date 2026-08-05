@@ -130,8 +130,9 @@ enum UserDictAddSource {
      * skkservを辞書とする場合はすべてのファイル辞書の変換候補の末尾に付けて返す。
      * skkserv辞書の変換候補を末尾につけるのは仮の仕様で将来は利用者が選択可能にする可能性がある。
      *
-     * skkservからの応答が一定時間なかった場合はTCP接続を切断する。
-     * 実装を簡単にするためskkserv辞書が有効なまま再度このメソッドが呼ばれたら再接続から試みる。
+     * skkservからの応答が一定時間なかった場合、XPC側がそのTCP接続を破棄する。
+     * 接続はXPC側でプールされているため、次にこのメソッドが呼ばれたときは
+     * 残っている接続を使い回すか、なければ新しく接続する。
      *
      * - Parameters:
      *   - yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
@@ -236,8 +237,9 @@ enum UserDictAddSource {
      * skkservを辞書とする場合はすべてのファイル辞書の候補の末尾に付けて返す。
      * skkserv辞書の変換候補を末尾につけるのは仮の仕様で将来は利用者が選択可能にする可能性がある。
      *
-     * skkservからの応答が一定時間なかった場合はTCP接続を切断する。
-     * 実装を簡単にするためskkserv辞書が有効なまま再度このメソッドが呼ばれたら再接続から試みる。
+     * skkservからの応答が一定時間なかった場合、XPC側がそのTCP接続を破棄する。
+     * 接続はXPC側でプールされているため、次にこのメソッドが呼ばれたときは
+     * 残っている接続を使い回すか、なければ新しく接続する。
      *
      * - Parameters:
      *   - prefix: SKK辞書の見出しの接頭辞。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
@@ -523,6 +525,7 @@ enum UserDictAddSource {
             Global.skkservConsecutiveErrorCount += 1
             if Global.skkservConsecutiveErrorCount >= Global.skkservAutoDisableThreshold {
                 logger.log("skkservへの接続エラーが\(Global.skkservConsecutiveErrorCount)回連続したため無効化します")
+                Global.skkservDict?.invalidate()
                 Global.skkservDict = nil
                 NotificationCenter.default.post(name: notificationNameSKKServAutoDisabled, object: Global.skkservConsecutiveErrorCount)
             }

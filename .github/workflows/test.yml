@@ -34,3 +34,4 @@ jobs:
     - name: test
       run: |
         xcodebuild -target macSKKTests -scheme macSKK DEVELOPMENT_TEAM= test | xcbeautify
+        xcodebuild -target SKKServClientTests -scheme SKKServClient DEVELOPMENT_TEAM= test | xcbeautify

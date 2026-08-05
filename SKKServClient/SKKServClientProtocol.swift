@@ -17,6 +17,16 @@ public enum SKKServClientError: Error, CaseIterable {
     case timeout
 }
 
+/// skkservへ送るリクエストの種別。
+@objc enum SKKServCommand: Int {
+    /// サーバーのバージョン問い合わせ (yomiは無視される)
+    case version
+    /// 変換候補の問い合わせ
+    case refer
+    /// 補完候補の問い合わせ
+    case completion
+}
+
 @objc(SKKServDestination) public final class SKKServDestination: NSObject, NSSecureCoding, Sendable {
     public static let supportsSecureCoding: Bool = true
 
@@ -88,6 +98,14 @@ public enum SKKServClientError: Error, CaseIterable {
     }
 
     // MARK: NSObject
+    public override func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? SKKServDestination else { return false }
+        return host == other.host
+            && port == other.port
+            && requestEncoding == other.requestEncoding
+            && responseEncoding == other.responseEncoding
+    }
+
     public override var hash: Int {
         var hasher = Hasher()
         hasher.combine(host)
@@ -99,8 +117,24 @@ public enum SKKServClientError: Error, CaseIterable {
 }
 
 @objc protocol SKKServClientProtocol {
-    func serverVersion(destination: SKKServDestination, with reply: @escaping @Sendable (String?, (any Error)?) -> Void)
-    func refer(destination: SKKServDestination, yomi: String, with reply: @escaping @Sendable (String?, (any Error)?) -> Void)
-    func completion(destination: SKKServDestination, yomi: String, with reply: @escaping @Sendable (String?, (any Error)?) -> Void)
-    func disconnect()
+    /**
+     * skkservへ1リクエスト送り、1レスポンスを受け取って返す。
+     *
+     * timeout秒以内に応答が得られなければ SKKServClientError.timeout を返し、
+     * そのTCP接続は破棄する (遅れて届く応答は捨てられる)。
+     * 呼び出し元が結果を必要としなくなった場合は、応答を無視すればよい。
+     * 別のTCP接続で進行中のリクエストには影響しない。
+     */
+    func send(command: SKKServCommand,
+              yomi: String,
+              destination: SKKServDestination,
+              timeout: TimeInterval,
+              with reply: @escaping @Sendable (String?, (any Error)?) -> Void)
+
+    /**
+     * 保持しているTCP接続をすべて破棄する。接続先の変更やskkservの無効化時に呼ぶ。
+     *
+     * 切断の完了を待ってからXPC接続をinvalidateできるようにreplyを持つ。
+     */
+    func disconnectAll(with reply: @escaping @Sendable () -> Void)
 }

@@ -51,44 +51,16 @@ struct SKKServDictView: View {
                     HStack {
                         Spacer()
                         Button {
-                            let skkservService = SKKServService()
-                            let destination = SKKServDestination(host: setting.address,
-                                                                 port: setting.port,
-                                                                 requestEncoding: setting.requestEncoding,
-                                                                 responseEncoding: setting.responseEncoding)
-                            testing = true
-                            let result = Result {
-                                try skkservService.completion(yomi: yomi, destination: destination, timeout: 1.0)
+                            runTest { service, destination in
+                                try service.completion(yomi: yomi, destination: destination, timeout: 1.0)
                             }
-                            switch result {
-                            case .success(let response):
-                                logger.log("skkservの応答: \(response, privacy: .public)")
-                                information = response
-                            case .failure(let error):
-                                showError(error)
-                            }
-                            testing = false
                         } label: {
                             Text("Find Completions")
                         }.disabled(yomi.isEmpty || testing)
                         Button {
-                            let skkservService = SKKServService()
-                            let destination = SKKServDestination(host: setting.address,
-                                                                 port: setting.port,
-                                                                 requestEncoding: setting.requestEncoding,
-                                                                 responseEncoding: setting.responseEncoding)
-                            testing = true
-                            let result = Result {
-                                try skkservService.refer(yomi: yomi, destination: destination, timeout: 1.0)
+                            runTest { service, destination in
+                                try service.refer(yomi: yomi, destination: destination, timeout: 1.0)
                             }
-                            switch result {
-                            case .success(let response):
-                                logger.log("skkservの応答: \(response, privacy: .public)")
-                                information = response
-                            case .failure(let error):
-                                showError(error)
-                            }
-                            testing = false
                         } label: {
                             Text("Find Candidates")
                         }.disabled(yomi.isEmpty || testing)
@@ -106,24 +78,10 @@ struct SKKServDictView: View {
             Divider()
             HStack {
                 Button {
-                    let skkservService = SKKServService()
-                    let destination = SKKServDestination(host: setting.address,
-                                                         port: setting.port,
-                                                         requestEncoding: setting.requestEncoding,
-                                                         responseEncoding: setting.responseEncoding)
-                    testing = true
                     information = String(localized: "SKKServDictTesting")
-                    let result = Result {
-                        try skkservService.serverVersion(destination: destination)
+                    runTest(onSuccess: { _ in String(localized: "SKKServClientConnected") }) { service, destination in
+                        try service.serverVersion(destination: destination)
                     }
-                    switch result {
-                    case .success(let version):
-                        logger.log("skkservのバージョン: \(version, privacy: .public)")
-                        information = String(localized: "SKKServClientConnected")
-                    case .failure(let error):
-                        showError(error)
-                    }
-                    testing = false
                 } label: {
                     Text("Connection Test")
                         .padding([.leading, .trailing])
@@ -157,6 +115,32 @@ struct SKKServDictView: View {
             setting = settingsViewModel.skkservDictSetting
             autoDisableThreshold = settingsViewModel.skkservAutoDisableThreshold
         }
+    }
+
+    /**
+     * 使い捨ての ``SKKServService`` でテスト用の問い合わせを1回行い、結果を `information` へ反映する。
+     *
+     * サービスの生成と後始末、`testing` フラグの上げ下げをここにまとめる。
+     * `onSuccess` は応答から表示文字列を作るクロージャ。既定では応答をそのまま表示する。
+     */
+    private func runTest(onSuccess: (String) -> String = { $0 },
+                         _ body: (SKKServService, SKKServDestination) throws -> String) {
+        let service = SKKServService()
+        let destination = SKKServDestination(host: setting.address,
+                                             port: setting.port,
+                                             requestEncoding: setting.requestEncoding,
+                                             responseEncoding: setting.responseEncoding)
+        testing = true
+        do {
+            let response = try body(service, destination)
+            logger.log("skkservの応答: \(response, privacy: .public)")
+            information = onSuccess(response)
+        } catch {
+            showError(error)
+        }
+        // 使い捨てのサービスなのでTCP接続とXPC接続を残さず後始末する
+        service.invalidate()
+        testing = false
     }
 
     private func showError(_ error: any Error) {
