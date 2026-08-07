@@ -308,36 +308,27 @@ enum UserDictAddSource {
     }
 
     /**
-     * バックグラウンドで実行したskkservへの問い合わせの成否を問い合わせ順に処理する。
+     * skkservへの問い合わせの成否を問い合わせ順に処理する。
      * 成功時はエラーカウントをリセットし、失敗時はエラーカウントを増やして
      * 連続エラー数が閾値に達していればskkservを無効化する。
      *
-     * skkservからの問い合わせ結果自体はバックグラウンドで処理済みのため成否だけを受け取る。
+     * skkservからの問い合わせ結果自体は ``UserDict/Snapshot`` で処理済みのため成否だけを受け取る。
      */
     @MainActor func handleSKKServResults(_ results: [Result<Void, any Error>]) {
         for result in results {
             // 自動無効化された場合は無効化の通知を重複して送らないように残りの成否は処理しない
             guard Global.skkservDict != nil else { return }
-            handleSKKServResult(result) { _ in }
-        }
-    }
-
-    /**
-     * skkservへの問い合わせ結果を処理する。成功時はエラーカウントをリセットしてonSuccessに結果を渡す。
-     * 失敗時はエラーカウントを増やし、連続エラー数が閾値に達していればskkservを無効化する。
-     */
-    @MainActor private func handleSKKServResult<T>(_ result: Result<T, any Error>, onSuccess: (T) -> Void) {
-        switch result {
-        case .success(let value):
-            Global.skkservConsecutiveErrorCount = 0
-            onSuccess(value)
-        case .failure:
-            Global.skkservConsecutiveErrorCount += 1
-            if Global.skkservConsecutiveErrorCount >= Global.skkservAutoDisableThreshold {
-                logger.log("skkservへの接続エラーが\(Global.skkservConsecutiveErrorCount)回連続したため無効化します")
-                Global.skkservDict?.invalidate()
-                Global.skkservDict = nil
-                NotificationCenter.default.post(name: notificationNameSKKServAutoDisabled, object: Global.skkservConsecutiveErrorCount)
+            switch result {
+            case .success:
+                Global.skkservConsecutiveErrorCount = 0
+            case .failure:
+                Global.skkservConsecutiveErrorCount += 1
+                if Global.skkservConsecutiveErrorCount >= Global.skkservAutoDisableThreshold {
+                    logger.log("skkservへの接続エラーが\(Global.skkservConsecutiveErrorCount)回連続したため無効化します")
+                    Global.skkservDict?.invalidate()
+                    Global.skkservDict = nil
+                    NotificationCenter.default.post(name: notificationNameSKKServAutoDisabled, object: Global.skkservConsecutiveErrorCount)
+                }
             }
         }
     }
