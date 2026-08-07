@@ -173,8 +173,24 @@ final class UserDictSnapshotTests: XCTestCase {
                         Candidate("胃"),
                         Candidate("意", saveToUserDict: false)],
                        "skkservの候補はローカル辞書の候補より後に付く")
+        XCTAssertEqual(mock.referCallCount, 1, "ローカル候補があるので数値変換のフォールバックはせず1回で終わる")
         XCTAssertEqual(found.skkservResults.count, 1)
         XCTAssertTrue(found.skkservResults.allSatisfy { if case .success = $0 { true } else { false } })
+    }
+
+    @MainActor func testSnapshotReferDictsSKKServSuppressesNumberFallback() throws {
+        let mock = MockSKKServDict(wordsPerYomi: ["だい100かい": [Word("第100回")]])
+        let userDict = try UserDict(dicts: [],
+                                    userDictEntries: [:],
+                                    privateMode: CurrentValueSubject<Bool, Never>(false),
+                                    ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
+                                    dateYomis: [],
+                                    dateConversions: [])
+        // ローカル辞書は空だがskkservが通常の見出しで候補を返すので数値変換のフォールバックは走らない
+        let found = userDict.snapshot().referDicts("だい100かい", option: nil, findFromAllDicts: true, skkservDict: mock)
+        XCTAssertEqual(found.candidates, [Candidate("第100回", saveToUserDict: false)])
+        XCTAssertEqual(mock.referCallCount, 1, "skkservから見つかったので数値変換の見出しでは問い合わせない")
+        XCTAssertEqual(found.skkservResults.count, 1)
     }
 
     @MainActor func testSnapshotReferDictsSKKServNumberYomi() throws {

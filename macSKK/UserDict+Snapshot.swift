@@ -103,10 +103,10 @@ extension UserDict {
         }
 
         /// skkservから返された変換候補を組み立てる。
-        nonisolated private static func candidates(from words: [Word], skkservDict: any SKKServDictProtocol) -> [Candidate] {
+        nonisolated private static func skkservCandidates(from words: [Word], saveToUserDict: Bool) -> [Candidate] {
             words.map { word in
                 let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
-                return Candidate(word.word, annotations: annotations, saveToUserDict: skkservDict.saveToUserDict)
+                return Candidate(word.word, annotations: annotations, saveToUserDict: saveToUserDict)
             }
         }
 
@@ -133,7 +133,8 @@ extension UserDict {
             switch skkservDict.refer(yomi, option: option) {
             case .success(let words):
                 skkservResults.append(.success(()))
-                candidates.append(contentsOf: Self.candidates(from: words, skkservDict: skkservDict))
+                candidates.append(contentsOf: Self.skkservCandidates(from: words,
+                                                                     saveToUserDict: skkservDict.saveToUserDict))
             case .failure(let error):
                 skkservResults.append(.failure(error))
                 skkservFailed = true

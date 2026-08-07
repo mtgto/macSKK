@@ -122,8 +122,10 @@ enum UserDictAddSource {
      * 保持する辞書を順に引き変換候補順に返す。
      *
      * 複数の辞書に同じ変換がある場合、注釈を結合して返す。
-     * 検索処理そのものは ``UserDict/Snapshot/referDicts(_:option:findFromAllDicts:skkservDict:)`` に委譲し、
-     * このメソッドではskkservへの問い合わせの成否をMainActor上のエラーカウントに反映する。
+     * 検索処理そのものは ``UserDict/Snapshot`` に委譲する。
+     * skkservを辞書として使わない通常の状態では ``UserDict/Snapshot/referDicts(_:option:findFromAllDicts:)`` を、
+     * skkservを辞書として使う場合は ``UserDict/Snapshot/referDicts(_:option:findFromAllDicts:skkservDict:)`` を呼び、
+     * 後者ではskkservへの問い合わせの成否をMainActor上のエラーカウントに反映する。
      *
      * ## skkservについて
      * skkservを辞書とする場合はすべてのファイル辞書の変換候補の末尾に付けて返す。
