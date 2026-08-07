@@ -19,7 +19,9 @@ extension UserDict {
             return userDict.refer(yomi, option: option)
         }
 
-        nonisolated func referDicts(_ yomi: String, option: DictReferringOption?, findFromAllDicts: Bool) -> [Candidate] {
+        /// ローカル辞書 (ユーザー辞書・日付変換・ファイル辞書) から変換候補を検索する。
+        /// 数値変換のフォールバックと注釈のマージは行わない。
+        nonisolated private func localCandidates(_ yomi: String, option: DictReferringOption?, findFromAllDicts: Bool) -> [Candidate] {
             // ユーザー辞書、それ以外の辞書の順に参照する
             var candidates = refer(yomi, option: option).map { word in
                 Candidate(word: word, saveToUserDict: true)
@@ -39,32 +41,62 @@ extension UserDict {
                     })
                 }
             }
-            if candidates.isEmpty {
-                if let numberYomi = NumberYomi(yomi) {
-                    let midashi = numberYomi.toMidashiString()
-                    candidates = refer(midashi, option: nil).compactMap { word in
-                        guard let numberCandidate = try? NumberCandidate(yomi: word.word) else { return nil }
-                        guard let convertedWord = numberCandidate.toString(yomi: numberYomi) else { return nil }
-                        let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
-                        return Candidate(convertedWord,
-                                         annotations: annotations,
-                                         original: Candidate.Original(midashi: midashi, word: word.word),
-                                         saveToUserDict: true)
-                    }
-                    if findFromAllDicts {
-                        dicts.forEach { dict in
-                            candidates.append(contentsOf: dict.refer(midashi, option: nil).compactMap { word in
-                                guard let numberCandidate = try? NumberCandidate(yomi: word.word) else { return nil }
-                                guard let convertedWord = numberCandidate.toString(yomi: numberYomi) else { return nil }
-                                let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
-                                return Candidate(convertedWord,
-                                                 annotations: annotations,
-                                                 original: Candidate.Original(midashi: midashi, word: word.word),
-                                                 saveToUserDict: dict.saveToUserDict)
-                            })
-                        }
-                    }
+            return candidates
+        }
+
+        /// 数値変換のフォールバックの結果。
+        /// skkservへの問い合わせ結果を同じ見出しで数値変換するために numberYomi と midashi も保持する。
+        private struct NumberFallback {
+            let numberYomi: NumberYomi
+            /// 数値を "#" に置換した見出し
+            let midashi: String
+            /// ローカル辞書から見つかった変換候補
+            let candidates: [Candidate]
+        }
+
+        /// yomiが数値を含む場合に、数値を "#" に置換した見出しでローカル辞書を引く。
+        /// yomiが数値を含まない場合はnilを返す。
+        /// optionは通常の検索と同じものを渡す (接頭辞・接尾辞から検索する場合は数値変換の見出しも同じ扱いで引く)。
+        nonisolated private func numberFallback(_ yomi: String, option: DictReferringOption?, findFromAllDicts: Bool) -> NumberFallback? {
+            guard let numberYomi = NumberYomi(yomi) else { return nil }
+            let midashi = numberYomi.toMidashiString()
+            var candidates = Self.numberCandidates(from: refer(midashi, option: option),
+                                                   numberYomi: numberYomi,
+                                                   midashi: midashi,
+                                                   saveToUserDict: true)
+            if findFromAllDicts {
+                dicts.forEach { dict in
+                    candidates.append(contentsOf: Self.numberCandidates(from: dict.refer(midashi, option: option),
+                                                                        numberYomi: numberYomi,
+                                                                        midashi: midashi,
+                                                                        saveToUserDict: dict.saveToUserDict))
                 }
+            }
+            return NumberFallback(numberYomi: numberYomi, midashi: midashi, candidates: candidates)
+        }
+
+        /// 数値変換の変換候補を組み立てる。数値変換できない候補は除外する。
+        nonisolated private static func numberCandidates(from words: [Word],
+                                                         numberYomi: NumberYomi,
+                                                         midashi: String,
+                                                         saveToUserDict: Bool) -> [Candidate] {
+            words.compactMap { word in
+                guard let numberCandidate = try? NumberCandidate(yomi: word.word) else { return nil }
+                guard let convertedWord = numberCandidate.toString(yomi: numberYomi) else { return nil }
+                let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
+                return Candidate(convertedWord,
+                                 annotations: annotations,
+                                 original: Candidate.Original(midashi: midashi, word: word.word),
+                                 saveToUserDict: saveToUserDict)
+            }
+        }
+
+        /// ローカル辞書のみを引き変換候補順に返す。
+        /// 複数の辞書に同じ変換がある場合、注釈を結合して返す。
+        nonisolated func referDicts(_ yomi: String, option: DictReferringOption?, findFromAllDicts: Bool) -> [Candidate] {
+            var candidates = localCandidates(yomi, option: option, findFromAllDicts: findFromAllDicts)
+            if candidates.isEmpty, let fallback = numberFallback(yomi, option: option, findFromAllDicts: findFromAllDicts) {
+                candidates = fallback.candidates
             }
             // 複数の辞書に同じ変換候補があれば注釈をマージして1つにまとめる
             return Self.mergeCandidates([], appending: candidates)

@@ -107,6 +107,57 @@ final class UserDictSnapshotTests: XCTestCase {
         XCTAssertEqual(snapshot.findCompletionsDicts(prefix: "y", findFromAllDicts: false), ["yesterday"])
     }
 
+    @MainActor func testSnapshotReferDicts() throws {
+        let dict1 = MemoryDict(entries: ["い": [Word("胃"), Word("伊"), Word("位")]], readonly: true, saveToUserDict: false)
+        let dict2 = MemoryDict(entries: ["い": [Word("胃"), Word("意")]], readonly: true, saveToUserDict: true)
+        let userDict = try UserDict(dicts: [dict1, dict2],
+                                    userDictEntries: ["い": [Word("井"), Word("伊")]],
+                                    privateMode: CurrentValueSubject<Bool, Never>(false),
+                                    ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
+                                    dateYomis: [],
+                                    dateConversions: [])
+        let snapshot = userDict.snapshot()
+        XCTAssertEqual(snapshot.referDicts("い", option: nil, findFromAllDicts: true).map { $0.word },
+                       ["井", "伊", "胃", "位", "意"])
+        XCTAssertEqual(snapshot.referDicts("い", option: nil, findFromAllDicts: true).map { $0.saveToUserDict },
+                       [true, true, true, false, true])
+        XCTAssertEqual(snapshot.referDicts("い", option: nil, findFromAllDicts: false).map { $0.word },
+                       ["井", "伊"], "findFromAllDictsがfalseならユーザー辞書だけを引く")
+    }
+
+    @MainActor func testSnapshotReferDictsNumberYomi() throws {
+        let dict = MemoryDict(entries: ["だい#かい": [Word("第#0回")]], readonly: true)
+        let userDict = try UserDict(dicts: [dict],
+                                    userDictEntries: ["だい#かい": [Word("代#0回")]],
+                                    privateMode: CurrentValueSubject<Bool, Never>(false),
+                                    ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
+                                    dateYomis: [],
+                                    dateConversions: [])
+        let snapshot = userDict.snapshot()
+        // 通常の見出しで見つからないときだけ数値を "#" に置換した見出しで引き直す
+        XCTAssertEqual(snapshot.referDicts("だい100かい", option: nil, findFromAllDicts: true),
+                       [Candidate("代100回", original: .init(midashi: "だい#かい", word: "代#0回")),
+                        Candidate("第100回", original: .init(midashi: "だい#かい", word: "第#0回"))])
+        // 数値を含まない読みではフォールバックしない
+        XCTAssertEqual(snapshot.referDicts("だいかい", option: nil, findFromAllDicts: true), [])
+    }
+
+    @MainActor func testSnapshotReferDictsNumberYomiWithOption() throws {
+        // 数値変換のフォールバックでも接頭辞・接尾辞の指定は通常の検索と同じように扱う
+        let dict = MemoryDict(entries: ["だい#>": [Word("第#0")], "だい#": [Word("台#0")]], readonly: true)
+        let userDict = try UserDict(dicts: [dict],
+                                    userDictEntries: ["だい#>": [Word("代#0")]],
+                                    privateMode: CurrentValueSubject<Bool, Never>(false),
+                                    ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
+                                    dateYomis: [],
+                                    dateConversions: [])
+        let snapshot = userDict.snapshot()
+        XCTAssertEqual(snapshot.referDicts("だい100", option: .prefix, findFromAllDicts: true),
+                       [Candidate("代100", original: .init(midashi: "だい#", word: "代#0")),
+                        Candidate("第100", original: .init(midashi: "だい#", word: "第#0"))],
+                       "接頭辞の見出し (だい#>) だけを引き、通常の見出し (だい#) は引かない")
+    }
+
     @MainActor func testSnapshotSkkservCandidatesForCompletion() throws {
         let dict = MemoryDict(entries: ["にほん": [Word("日本")], "にほんご": [Word("日本語")]], readonly: false)
         let mock = MockSKKServDict(wordsPerYomi: ["にほん": [Word("二本")]])
