@@ -111,7 +111,27 @@ struct MemoryDict: DictProtocol, Sendable {
         self.saveToUserDict = saveToUserDict
     }
 
+    init(readonly: Bool, entries: [String: [Word]], failedEntryCount: Int, okuriNashiYomis: [String], okuriAriYomis: [String], saveToUserDict: Bool) {
+        self.readonly = readonly
+        self.entries = entries
+        self.failedEntryCount = failedEntryCount
+        self.okuriNashiYomis = okuriNashiYomis
+        self.okuriAriYomis = okuriAriYomis
+        self.saveToUserDict = saveToUserDict
+    }
+
     var entryCount: Int { return entries.count }
+
+    nonisolated func with(saveToUserDict: Bool) -> MemoryDict {
+        MemoryDict(
+            readonly: readonly,
+            entries: entries,
+            failedEntryCount: failedEntryCount,
+            okuriNashiYomis: okuriNashiYomis,
+            okuriAriYomis: okuriAriYomis,
+            saveToUserDict: saveToUserDict
+        )
+    }
 
     // MARK: DictProtocol
     nonisolated func refer(_ yomi: String, option: DictReferringOption?) -> [Word] {
