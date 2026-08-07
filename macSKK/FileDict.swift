@@ -46,7 +46,7 @@ enum FileDictType: Equatable {
      */
     private let readonly: Bool
     /// この辞書から返した変換候補をユーザー辞書に保存するかどうか
-    let saveToUserDict: Bool
+    var saveToUserDict: Bool { dict.saveToUserDict }
 
     /// シリアライズ時に先頭に付ける
     static let headers = [";; -*- mode: fundamental; coding: utf-8 -*-"]
@@ -82,24 +82,26 @@ enum FileDictType: Equatable {
         self.type = type
         self.dict = MemoryDict(entries: [:], readonly: readonly, saveToUserDict: saveToUserDict)
         self.readonly = readonly
-        self.saveToUserDict = saveToUserDict
         self.fileModificationDate = try fileURL.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate
         super.init()
         NSFileCoordinator.addFilePresenter(self)
     }
 
-    private init(id: String, fileURL: URL, type: FileDictType, dict: MemoryDict, readonly: Bool, saveToUserDict: Bool, hasUnsavedChanges: Bool) {
+    private init(id: String, fileURL: URL, type: FileDictType, dict: MemoryDict, readonly: Bool, hasUnsavedChanges: Bool) {
         self.id = id
         self.fileURL = fileURL
         self.type = type
         self.dict = dict
         self.readonly = readonly
-        self.saveToUserDict = saveToUserDict
         self.hasUnsavedChanges = hasUnsavedChanges
     }
 
     func with(saveToUserDict: Bool) -> FileDict {
-        FileDict(id: id, fileURL: fileURL, type: type, dict: dict, readonly: readonly, saveToUserDict: saveToUserDict,
+        FileDict(id: id,
+                 fileURL: fileURL,
+                 type: type,
+                 dict: dict.with(saveToUserDict: saveToUserDict),
+                 readonly: readonly,
                  hasUnsavedChanges: hasUnsavedChanges)
     }
 
@@ -108,6 +110,7 @@ enum FileDictType: Equatable {
         let fileURL = self.fileURL
         let type = self.type
         let readonly = self.readonly
+        let saveToUserDict = self.saveToUserDict
 
         NotificationCenter.default.post(name: notificationNameDictLoad,
                                         object: DictLoadEvent(id: id, status: .loading, trigger: .load))
@@ -133,14 +136,14 @@ enum FileDictType: Equatable {
                         }
                         let okuriAriEntries = jisyo.okuriAri.mapValues { $0.map { Word($0) } }
                         let okuriNashiEntries = jisyo.okuriNasi.mapValues { $0.map { Word($0) } }
-                        continuation.resume(returning: .success(MemoryDict(okuriAriEntries: okuriAriEntries, okuriNashiEntries: okuriNashiEntries, readonly: readonly)))
+                        continuation.resume(returning: .success(MemoryDict(okuriAriEntries: okuriAriEntries, okuriNashiEntries: okuriNashiEntries, readonly: readonly, saveToUserDict: saveToUserDict)))
                     } else if case .traditional(let encoding) = type {
                         let source = try Self.loadString(try self.loadData(url), encoding: encoding)
                         if source.isEmpty {
                             // 辞書ファイルを書き込み中に読み込んでしまった?
                             logger.warning("辞書 \(id) を読み込んだところ0バイトだったため更新を無視します")
                         }
-                        continuation.resume(returning: .success(MemoryDict(dictId: id, source: source, readonly: readonly)))
+                        continuation.resume(returning: .success(MemoryDict(dictId: id, source: source, readonly: readonly, saveToUserDict: saveToUserDict)))
                     } else {
                         continuation.resume(returning: .failure(FileDictError.decode))
                     }
@@ -320,7 +323,7 @@ enum FileDictType: Equatable {
 
     // ユニットテスト用
     func setEntries(_ entries: [String: [Word]], readonly: Bool) {
-        self.dict = MemoryDict(entries: entries, readonly: readonly)
+        self.dict = MemoryDict(entries: entries, readonly: readonly, saveToUserDict: saveToUserDict)
     }
 }
 
