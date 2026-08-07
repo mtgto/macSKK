@@ -105,6 +105,33 @@ import XCTest
         await fulfillment(of: [loadingExpectation, loadedExpectation], timeout: 1.0, enforceOrder: true)
     }
 
+    func testLoadSaveToUserDict() async throws {
+        let fileURL = Bundle(for: Self.self).url(forResource: "SKK-JISYO.test", withExtension: "utf8")!
+        // saveToUserDict = false
+        let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: true, saveToUserDict: false)
+        XCTAssertFalse(dict.saveToUserDict)
+        XCTAssertFalse(dict.dict.saveToUserDict)
+        let dictId = dict.id
+        let loadingExpectation = expectation(forNotification: notificationNameDictLoad, object: nil) { notification in
+            guard let loadEvent = notification.object as? DictLoadEvent, loadEvent.id == dictId,
+                  case .loading = loadEvent.status else { return false }
+            XCTAssertEqual(loadEvent.trigger, .load, "ファイル読み込みの通知はすべて .load であるべき")
+            return true
+        }
+        let loadedExpectation = expectation(forNotification: notificationNameDictLoad, object: nil) { notification in
+            guard let loadEvent = notification.object as? DictLoadEvent, loadEvent.id == dictId,
+                  case .loaded(let loadCount, let failureCount) = loadEvent.status else { return false }
+            XCTAssertEqual(loadCount, 1)
+            XCTAssertEqual(failureCount, 0)
+            XCTAssertEqual(loadEvent.trigger, .load, "ファイル読み込みの通知はすべて .load であるべき")
+            return true
+        }
+        await dict.load()
+        await fulfillment(of: [loadingExpectation, loadedExpectation], timeout: 1.0, enforceOrder: true)
+        XCTAssertFalse(dict.saveToUserDict)
+        XCTAssertFalse(dict.dict.saveToUserDict)
+    }
+
     func testAdd() throws {
         let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: true, saveToUserDict: true)
         let dictId = dict.id
