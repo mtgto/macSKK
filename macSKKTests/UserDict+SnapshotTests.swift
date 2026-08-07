@@ -158,6 +158,59 @@ final class UserDictSnapshotTests: XCTestCase {
                        "接頭辞の見出し (だい#>) だけを引き、通常の見出し (だい#) は引かない")
     }
 
+    @MainActor func testSnapshotReferDictsSKKServ() throws {
+        let dict = MemoryDict(entries: ["い": [Word("胃")]], readonly: true)
+        let mock = MockSKKServDict(wordsPerYomi: ["い": [Word("意")]])
+        let userDict = try UserDict(dicts: [dict],
+                                    userDictEntries: ["い": [Word("井")]],
+                                    privateMode: CurrentValueSubject<Bool, Never>(false),
+                                    ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
+                                    dateYomis: [],
+                                    dateConversions: [])
+        let found = userDict.snapshot().referDicts("い", option: nil, findFromAllDicts: true, skkservDict: mock)
+        XCTAssertEqual(found.candidates,
+                       [Candidate("井"),
+                        Candidate("胃"),
+                        Candidate("意", saveToUserDict: false)],
+                       "skkservの候補はローカル辞書の候補より後に付く")
+        XCTAssertEqual(found.skkservResults.count, 1)
+        XCTAssertTrue(found.skkservResults.allSatisfy { if case .success = $0 { true } else { false } })
+    }
+
+    @MainActor func testSnapshotReferDictsSKKServNumberYomi() throws {
+        let mock = MockSKKServDict(wordsPerYomi: ["だい#かい": [Word("第#0回")]])
+        let userDict = try UserDict(dicts: [],
+                                    userDictEntries: [:],
+                                    privateMode: CurrentValueSubject<Bool, Never>(false),
+                                    ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
+                                    dateYomis: [],
+                                    dateConversions: [])
+        let found = userDict.snapshot().referDicts("だい100かい", option: nil, findFromAllDicts: true, skkservDict: mock)
+        XCTAssertEqual(found.candidates,
+                       [Candidate("第100回",
+                                  original: .init(midashi: "だい#かい", word: "第#0回"),
+                                  saveToUserDict: false)],
+                       "数値変換のフォールバックでもskkservを引く")
+        XCTAssertEqual(mock.referCallCount, 2, "通常の見出しと数値変換の見出しの2回問い合わせる")
+        XCTAssertEqual(found.skkservResults.count, 2)
+    }
+
+    @MainActor func testSnapshotReferDictsSKKServStopsAfterFailure() throws {
+        let mock = MockSKKServDict(wordsPerYomi: [:], shouldFail: true)
+        let userDict = try UserDict(dicts: [],
+                                    userDictEntries: [:],
+                                    privateMode: CurrentValueSubject<Bool, Never>(false),
+                                    ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
+                                    dateYomis: [],
+                                    dateConversions: [])
+        // 数値を含む読みなので通常なら数値変換のフォールバックでも問い合わせるが、1回目が失敗したので打ち切られる
+        let found = userDict.snapshot().referDicts("だい100かい", option: nil, findFromAllDicts: true, skkservDict: mock)
+        XCTAssertEqual(mock.referCallCount, 1)
+        XCTAssertEqual(found.candidates, [])
+        XCTAssertEqual(found.skkservResults.count, 1)
+        XCTAssertTrue(found.skkservResults.allSatisfy { if case .failure = $0 { true } else { false } })
+    }
+
     @MainActor func testSnapshotSkkservCandidatesForCompletion() throws {
         let dict = MemoryDict(entries: ["にほん": [Word("日本")], "にほんご": [Word("日本語")]], readonly: false)
         let mock = MockSKKServDict(wordsPerYomi: ["にほん": [Word("二本")]])

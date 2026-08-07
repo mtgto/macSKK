@@ -102,6 +102,63 @@ extension UserDict {
             return Self.mergeCandidates([], appending: candidates)
         }
 
+        /// skkservから返された変換候補を組み立てる。
+        nonisolated private static func candidates(from words: [Word], skkservDict: any SKKServDictProtocol) -> [Candidate] {
+            words.map { word in
+                let annotations: [Annotation] = if let annotation = word.annotation { [annotation] } else { [] }
+                return Candidate(word.word, annotations: annotations, saveToUserDict: skkservDict.saveToUserDict)
+            }
+        }
+
+        /**
+         * ローカル辞書に加えてskkservからも変換候補を検索する。
+         *
+         * skkservの変換候補はローカル辞書の変換候補の後に追加する。
+         * ローカル辞書とskkservのどちらからも見つからなかった場合のみ数値変換のフォールバックを行う。
+         * skkservへの問い合わせが失敗した場合は接続レベルのエラーの可能性が高いため、
+         * 数値変換のフォールバックでの問い合わせは行わない。
+         *
+         * - Returns: 変換候補と、skkservへの問い合わせごとの成否。
+         *   成否はエラーカウント処理のためMainActor上で ``UserDict/handleSKKServResults(_:)`` に渡すこと。
+         */
+        nonisolated func referDicts(_ yomi: String,
+                                    option: DictReferringOption?,
+                                    findFromAllDicts: Bool,
+                                    skkservDict: any SKKServDictProtocol)
+            -> (candidates: [Candidate], skkservResults: [Result<Void, any Error>]) {
+            var candidates = localCandidates(yomi, option: option, findFromAllDicts: findFromAllDicts)
+            var skkservResults: [Result<Void, any Error>] = []
+            var skkservFailed = false
+            // ひとまずskkservを辞書として使う場合はファイル辞書より後に追加する
+            switch skkservDict.refer(yomi, option: option) {
+            case .success(let words):
+                skkservResults.append(.success(()))
+                candidates.append(contentsOf: Self.candidates(from: words, skkservDict: skkservDict))
+            case .failure(let error):
+                skkservResults.append(.failure(error))
+                skkservFailed = true
+            }
+            if candidates.isEmpty, let fallback = numberFallback(yomi, option: option, findFromAllDicts: findFromAllDicts) {
+                candidates = fallback.candidates
+                // 1回目の問い合わせが失敗したときは接続レベルのエラーの可能性が高いため問い合わせない
+                if !skkservFailed {
+                    // 現状のSKKServDictはoptionを見ずに見出しをそのまま送るが、通常の問い合わせと揃えて渡しておく
+                    switch skkservDict.refer(fallback.midashi, option: option) {
+                    case .success(let words):
+                        skkservResults.append(.success(()))
+                        candidates.append(contentsOf: Self.numberCandidates(from: words,
+                                                                           numberYomi: fallback.numberYomi,
+                                                                           midashi: fallback.midashi,
+                                                                           saveToUserDict: skkservDict.saveToUserDict))
+                    case .failure(let error):
+                        skkservResults.append(.failure(error))
+                    }
+                }
+            }
+            // 複数の辞書に同じ変換候補があれば注釈をマージして1つにまとめる
+            return (Self.mergeCandidates([], appending: candidates), skkservResults)
+        }
+
         nonisolated func findCompletionsDicts(prefix: String, findFromAllDicts: Bool) -> [String] {
             if prefix.isEmpty { return [] }
             var results: [String] = []
