@@ -1,4 +1,10 @@
 # CHANGELOG
+## v2.18.4 (2026-08-09)
+
+- SKKServDictViewのCancelで編集内容を破棄する (#505)
+- SKKServClientに接続プールを導入 (#506)
+- MemoryDictのsaveToUserDict設定がファイルの読み込み後に失われるのを修正 (#507)
+
 ## v2.18.3 (2026-07-26)
 
 - ユーザー辞書の読み込み失敗通知が変換のたびに繰り返し出る問題を修正する (#501) by @delphinus
