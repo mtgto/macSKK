@@ -17,7 +17,6 @@ class FetchUpdateService: NSObject, FetchUpdateServiceProtocol {
         var request = URLRequest(url: URL(string: "https://api.github.com/repos/mtgto/macSKK/releases/latest")!)
         request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
         request.setValue("2022-11-28", forHTTPHeaderField: "X-GitHub-Api-Version")
-        URLSession.shared.dataTask(with: request)
         do {
             let (data, response) = try await URLSession.shared.data(for: request)
             guard let response = response as? HTTPURLResponse else {
