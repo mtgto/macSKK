@@ -62,9 +62,15 @@ enum UserDictAddSource {
         self.ignoreUserDictInPrivateMode = ignoreUserDictInPrivateMode
         self.dateYomis = dateYomis
         self.dateConversions = dateConversions
-        dictionariesDirectoryURL = try FileManager.default.url(
-            for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false
-        ).appending(path: "Dictionaries")
+        if isTest() {
+            dictionariesDirectoryURL = FileManager.default.temporaryDirectory
+                .appending(path: "macSKKTests-\(ProcessInfo.processInfo.processIdentifier)")
+                .appending(path: "Dictionaries")
+        } else {
+            dictionariesDirectoryURL = try FileManager.default.url(
+                for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false
+            ).appending(path: "Dictionaries")
+        }
         presentedItemURL = dictionariesDirectoryURL
         if !FileManager.default.fileExists(atPath: dictionariesDirectoryURL.path) {
             logger.log("辞書フォルダがないため作成します")
@@ -592,7 +598,7 @@ extension UserDict: NSFilePresenter {
     // NOTE: 本来ディレクトリ内のファイルが削除したときに呼ばれるはずだが、なぜか呼び出されない。
     // macOSのバグかもしれない?
     // @see https://stackoverflow.com/questions/50439658/swift-cocoa-how-to-watch-folder-for-changes#comment120683334_50443763
-    nonisolated func accommodatePresentedSubitemDeletion(at url: URL) async throws {
+    @concurrent nonisolated func accommodatePresentedSubitemDeletion(at url: URL) async throws {
         logger.log("ファイル \(url.lastPathComponent, privacy: .public) が辞書フォルダから削除されます")
     }
 
