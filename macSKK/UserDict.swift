@@ -64,8 +64,14 @@ enum UserDictAddSource {
         self.dateConversions = dateConversions
         if isTest() {
             dictionariesDirectoryURL = FileManager.default.temporaryDirectory
-                .appending(path: "macSKKTests-\(ProcessInfo.processInfo.processIdentifier)")
+                .appending(path: "macSKKTests")
                 .appending(path: "Dictionaries")
+            // 複数のテストプロセスが並列に起動して同じディレクトリを使うため、先に空のファイルを用意しておく
+            try FileManager.default.createDirectory(at: dictionariesDirectoryURL, withIntermediateDirectories: true)
+            let testUserDictFileURL = dictionariesDirectoryURL.appending(path: Self.userDictFilename)
+            if !FileManager.default.fileExists(atPath: testUserDictFileURL.path()) {
+                try Data().write(to: testUserDictFileURL)
+            }
         } else {
             dictionariesDirectoryURL = try FileManager.default.url(
                 for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false
@@ -457,10 +463,7 @@ enum UserDictAddSource {
         saveTask = Task { [weak self] in
             try? await Task.sleep(for: .seconds(60))
             guard !Task.isCancelled, let self else { return }
-            if let fileDict = self.userDict as? FileDict {
-                logger.log("ユーザー辞書を永続化します。現在のエントリ数は \(fileDict.dict.entries.count)")
-                fileDict.save()
-            }
+            self.save()
         }
     }
 
@@ -474,6 +477,7 @@ enum UserDictAddSource {
         }
         if let userDict {
             if let dict = userDict as? FileDict {
+                logger.log("ユーザー辞書を永続化します。現在のエントリ数は \(dict.dict.entries.count)")
                 dict.save()
             } else {
                 // ユニットテストなど特殊な場合のみ
