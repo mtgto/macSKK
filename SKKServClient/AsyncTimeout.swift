@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import Foundation
+import os
 
 /// ``withTimeout(seconds:operation:)`` で制限時間内に処理が完了しなかったことを表すエラー。
 struct TimeoutError: Error, Equatable {}
@@ -37,43 +38,46 @@ func withTimeout<T: Sendable>(seconds: TimeInterval,
  *
  * - NOTE: 同じ「最初の1つの結果だけを採用する」役割の同期版が、macSKKターゲットの
  *         `SingleResultWaiter` にある。あちらはセマフォでスレッドをブロックして待つ。
+ * - NOTE: 本来はMutex (SE-0433) を使いたいがmacOS 15以降のためデプロイメントターゲット13.3では使えない。
  */
-final class SingleResultContinuation<T: Sendable>: @unchecked Sendable {
-    private let lock = NSLock()
-    private var continuation: CheckedContinuation<T, any Error>?
-    /// installより先にcompleteされた場合の結果
-    private var pendingResult: Result<T, any Error>?
-    private var isFinished = false
+final class SingleResultContinuation<T: Sendable>: Sendable {
+    private struct State {
+        var continuation: CheckedContinuation<T, any Error>?
+        /// installより先にcompleteされた場合の結果
+        var pendingResult: Result<T, any Error>?
+        var isFinished = false
+    }
+
+    private let state = OSAllocatedUnfairLock(initialState: State())
 
     /// continuationを登録する。すでに結果が確定していた場合はその結果で即座にresumeする。
     func install(_ continuation: CheckedContinuation<T, any Error>) {
-        lock.lock()
+        let pendingResult = state.withLock { state -> Result<T, any Error>? in
+            guard let pendingResult = state.pendingResult else {
+                state.continuation = continuation
+                return nil
+            }
+            state.pendingResult = nil
+            return pendingResult
+        }
         if let pendingResult {
-            self.pendingResult = nil
-            lock.unlock()
             continuation.resume(with: pendingResult)
-        } else {
-            self.continuation = continuation
-            lock.unlock()
         }
     }
 
     /// 結果を確定させる。continuationが登録済みならその場でresumeする。2回目以降の呼び出しは無視する。
     func complete(with result: Result<T, any Error>) {
-        lock.lock()
-        guard !isFinished else {
-            lock.unlock()
-            return
+        let continuation = state.withLock { state -> CheckedContinuation<T, any Error>? in
+            guard !state.isFinished else { return nil }
+            state.isFinished = true
+            guard let continuation = state.continuation else {
+                state.pendingResult = result
+                return nil
+            }
+            state.continuation = nil
+            return continuation
         }
-        isFinished = true
-        if let continuation {
-            self.continuation = nil
-            lock.unlock()
-            continuation.resume(with: result)
-        } else {
-            pendingResult = result
-            lock.unlock()
-        }
+        continuation?.resume(with: result)
     }
 
     /**

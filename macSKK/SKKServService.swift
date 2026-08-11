@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import Foundation
+import os
 
 protocol SKKServServiceProtocol: Sendable {
     func refer(yomi: String, destination: SKKServDestination, timeout: TimeInterval) throws -> String
@@ -19,24 +20,24 @@ protocol SKKServServiceProtocol: Sendable {
  *
  * - NOTE: 同じ「最初の1つの結果だけを採用する」役割の非同期版が、SKKServClientターゲットの
  *         `SingleResultContinuation` にある。あちらはCheckedContinuationでタスクを中断して待つ。
+ * - NOTE: 本来はMutex (SE-0433) を使いたいがmacOS 15以降のためデプロイメントターゲット13.3では使えない。
  *
  * @see https://developer.apple.com/documentation/foundation/nsxpcproxycreating/remoteobjectproxywitherrorhandler(_:)
  */
-private final class SingleResultWaiter: @unchecked Sendable {
-    private let lock = NSLock()
+private final class SingleResultWaiter: Sendable {
     private let semaphore = DispatchSemaphore(value: 0)
-    private var result: Result<String, any Error>?
+    private let storedResult = OSAllocatedUnfairLock<Result<String, any Error>?>(initialState: nil)
 
     /// 結果を確定する。2回目以降の呼び出しは無視する。
     func complete(with result: Result<String, any Error>) {
-        lock.lock()
-        guard self.result == nil else {
-            lock.unlock()
-            return
+        let completed = storedResult.withLock { storedResult -> Bool in
+            guard storedResult == nil else { return false }
+            storedResult = result
+            return true
         }
-        self.result = result
-        lock.unlock()
-        semaphore.signal()
+        if completed {
+            semaphore.signal()
+        }
     }
 
     /// 結果が確定するまで待つ。期限までに確定しなければnilを返す。
@@ -44,9 +45,7 @@ private final class SingleResultWaiter: @unchecked Sendable {
         guard semaphore.wait(timeout: timeout) == .success else {
             return nil
         }
-        lock.lock()
-        defer { lock.unlock() }
-        return result
+        return storedResult.withLock { $0 }
     }
 }
 
