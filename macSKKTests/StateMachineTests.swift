@@ -593,18 +593,22 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleRegisteringToggleDirect() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(5).sink { events in
+        stateMachine.inputMethodEvent.collect(7).sink { events in
             XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
             XCTAssertEqual(events[1], .modeChanged(.hiragana))
             XCTAssertEqual(events[2], .markedText(MarkedText([.plain("[登録：あ]")])))
             XCTAssertEqual(events[3], .modeChanged(.direct))
             XCTAssertEqual(events[4], .markedText(MarkedText([.plain("[登録：あ]")])), "単語登録中はmarkedTextを再送信する")
+            XCTAssertEqual(events[5], .modeChanged(.hiragana))
+            XCTAssertEqual(events[6], .markedText(MarkedText([.plain("[登録：あ]")])), "直接入力からひらがなに戻すときもmarkedTextを再送信する")
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
         XCTAssertTrue(stateMachine.handle(toggleDirectAction))
         XCTAssertEqual(stateMachine.state.inputMode, .direct)
+        XCTAssertTrue(stateMachine.handle(toggleDirectAction))
+        XCTAssertEqual(stateMachine.state.inputMode, .hiragana)
         wait(for: [expectation], timeout: 1.0)
     }
 
@@ -1194,7 +1198,7 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("す")])))
             XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("す*")])))
             XCTAssertEqual(events[4], .markedText(MarkedText([.markerCompose, .plain("す*s")])))
-            XCTAssertEqual(events[5], .fixedText("す"), "送り仮名があっても確定してモードを切り替える")
+            XCTAssertEqual(events[5], .fixedText("す"), "送り仮名入力中でも確定してモードを切り替える")
             XCTAssertEqual(events[6], .modeChanged(.direct))
             expectation.fulfill()
         }.store(in: &cancellables)
@@ -1212,19 +1216,44 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleComposingToggleDirectAbbrev() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(5).sink { events in
+        stateMachine.inputMethodEvent.collect(6).sink { events in
             XCTAssertEqual(events[0], .modeChanged(.direct))
             XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose])))
             XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("a")])))
             XCTAssertEqual(events[3], .fixedText("a"))
-            XCTAssertEqual(events[4], .modeChanged(.hiragana), "Abbrev中は確定してひらがなに戻る")
+            XCTAssertEqual(events[4], .modeChanged(.hiragana), "Abbrev中は元のモードに戻してからトグルする")
+            XCTAssertEqual(events[5], .modeChanged(.direct), "元のモードに戻した上でトグルするので直接入力になる")
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "/")))
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
         XCTAssertTrue(stateMachine.handle(toggleDirectAction))
         XCTAssertEqual(stateMachine.state.inputMethod, .normal)
-        XCTAssertEqual(stateMachine.state.inputMode, .hiragana)
+        XCTAssertEqual(stateMachine.state.inputMode, .direct, "Abbrev中は元のモードに戻してからトグルするので直接入力になる")
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    @MainActor func testHandleSelectingToggleDirectAbbrev() {
+        Global.dictionary.setEntries(["a": [Word("あ")]])
+
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(7).sink { events in
+            XCTAssertEqual(events[0], .modeChanged(.direct))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("a")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerSelect, .emphasized("あ")])))
+            XCTAssertEqual(events[4], .fixedText("あ"), "選択中の変換候補で確定する")
+            XCTAssertEqual(events[5], .modeChanged(.hiragana), "Abbrevに入る前のモードに戻す")
+            XCTAssertEqual(events[6], .modeChanged(.direct), "元のモードに戻した上でトグルするので直接入力になる")
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "/")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(toggleDirectAction))
+        XCTAssertEqual(stateMachine.state.inputMethod, .normal)
+        XCTAssertEqual(stateMachine.state.inputMode, .direct, "composing経由のAbbrevトグルと同じ結果になる")
         wait(for: [expectation], timeout: 1.0)
     }
 
