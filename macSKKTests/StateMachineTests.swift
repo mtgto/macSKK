@@ -3451,6 +3451,28 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    @MainActor func testHandleSelectingToggleDirect() {
+        Global.dictionary.setEntries(["と": [Word("戸")]])
+
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(5).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("t")])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("と")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerSelect, .emphasized("戸")])))
+            XCTAssertEqual(events[3], .fixedText("戸"), "選択中の変換候補で確定する")
+            XCTAssertEqual(events[4], .modeChanged(.direct))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(toggleDirectAction))
+        XCTAssertEqual(stateMachine.state.inputMethod, .normal)
+        XCTAssertEqual(stateMachine.state.inputMode, .direct)
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     @MainActor func testHandleSelectingEnterOkuriari() {
         Global.dictionary.setEntries(["とr": [Word("取")]])
 
