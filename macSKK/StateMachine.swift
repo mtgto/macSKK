@@ -453,7 +453,7 @@ final class StateMachine {
                 return true
             }
             break
-        case .space, .shiftSpace, .unregister, .toggleAndFixKana, .affix, nil:
+        case .space, .shiftSpace, .unregister, .toggleAndFixKana, .affix, .toggleDirect, nil:
             break
         }
 
@@ -1025,7 +1025,7 @@ final class StateMachine {
                 let newComposing = composing.trim(kanaRule: Global.kanaRule).appendText(Romaji.Moji(firstRomaji: "", kana: ">"))
                 return handleComposingStartConvert(action, composing: newComposing, specialState: specialState)
             }
-        case .up, .down, .registerPaste, .eisu, .kana, .toggleKana, .reconvert:
+        case .up, .down, .registerPaste, .eisu, .kana, .toggleKana, .reconvert, .toggleDirect:
             return true
         case .abbrev, .directAbbrev, .unregister, .backwardCandidate, .none:
             break
@@ -1473,7 +1473,7 @@ final class StateMachine {
             return handle(action)
         case .registerPaste, .delete, .eisu, .kana, .reconvert:
             return true
-        case .toggleKana, .toggleAndFixKana, .direct, .zenkaku, .abbrev, .directAbbrev, .japanese:
+        case .toggleKana, .toggleAndFixKana, .direct, .toggleDirect, .zenkaku, .abbrev, .directAbbrev, .japanese:
             break
         case nil:
             break

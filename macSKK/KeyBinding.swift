@@ -22,6 +22,10 @@ struct KeyBinding: Identifiable, Hashable {
         case hankakuKana
         /// 半角英数入力に切り替える。デフォルトはlキー
         case direct
+        /// ひらがな入力と半角英数入力をトグルで切り替える。デフォルトはCtrl-\キー。
+        /// 日本語系のモード (ひらがな・カタカナ・半角カナ・全角英数) からは半角英数へ、
+        /// 半角英数からは常にひらがなへ切り替える。
+        case toggleDirect
         /// 全角英数入力に切り替える。デフォルトはShift-lキー
         case zenkaku
         /// Abbrevに入るためのキー。デフォルトは/キー
@@ -281,6 +285,8 @@ struct KeyBinding: Identifiable, Hashable {
                 return KeyBinding(action, [Input(key: .character("q"), modifierFlags: .control)])
             case .direct:
                 return KeyBinding(action, [Input(key: .character("l"), modifierFlags: [])])
+            case .toggleDirect:
+                return KeyBinding(action, [Input(key: .character("\\"), modifierFlags: .control)])
             case .zenkaku:
                 return KeyBinding(action, [Input(key: .character("l"), modifierFlags: .shift)])
             case .abbrev:
