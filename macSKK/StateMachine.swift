@@ -751,6 +751,13 @@ final class StateMachine {
                 // 送り仮名があるときはなにもしない
                 return true
             }
+        case .toggleDirect:
+            // 送り仮名の有無にかかわらず、未確定文字列を現在のモードで確定してからnormalと同じ処理をする。
+            // .directと違って送り仮名があるときもモードを切り替える。
+            // 修飾キー付きのキーを押してモードが切り替わらずアプリ側にキーが渡るのはトグルキーとして不自然なため。
+            state.inputMethod = .normal
+            addFixedText(composing.string(for: state.inputMode, kanaRule: Global.kanaRule))
+            return handleNormal(action, specialState: specialState)
         case .direct, .zenkaku:
             // 入力済みを確定してからlを打ったのと同じ処理をする
             if okuri == nil {
@@ -1056,7 +1063,7 @@ final class StateMachine {
                 let newComposing = composing.trim(kanaRule: Global.kanaRule).appendText(Romaji.Moji(firstRomaji: "", kana: ">"))
                 return handleComposingStartConvert(action, composing: newComposing, specialState: specialState)
             }
-        case .up, .down, .registerPaste, .eisu, .kana, .toggleKana, .reconvert, .toggleDirect:
+        case .up, .down, .registerPaste, .eisu, .kana, .toggleKana, .reconvert:
             return true
         case .abbrev, .directAbbrev, .unregister, .backwardCandidate, .none:
             break

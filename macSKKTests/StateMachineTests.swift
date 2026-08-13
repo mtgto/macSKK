@@ -1167,6 +1167,67 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    @MainActor func testHandleComposingToggleDirect() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(4).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("あ")])))
+            XCTAssertEqual(events[2], .fixedText("あ"), "未確定文字列は現在のモードで確定する")
+            XCTAssertEqual(events[3], .modeChanged(.direct))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ";")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
+        XCTAssertTrue(stateMachine.handle(toggleDirectAction))
+        XCTAssertEqual(stateMachine.state.inputMethod, .normal)
+        XCTAssertEqual(stateMachine.state.inputMode, .direct)
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    @MainActor func testHandleComposingToggleDirectOkuriari() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(7).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose])))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose, .plain("s")])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("す")])))
+            XCTAssertEqual(events[3], .markedText(MarkedText([.markerCompose, .plain("す*")])))
+            XCTAssertEqual(events[4], .markedText(MarkedText([.markerCompose, .plain("す*s")])))
+            XCTAssertEqual(events[5], .fixedText("す"), "送り仮名があっても確定してモードを切り替える")
+            XCTAssertEqual(events[6], .modeChanged(.direct))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ";")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "s")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ";")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "s")))
+        XCTAssertTrue(stateMachine.handle(toggleDirectAction))
+        XCTAssertEqual(stateMachine.state.inputMethod, .normal)
+        XCTAssertEqual(stateMachine.state.inputMode, .direct)
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    @MainActor func testHandleComposingToggleDirectAbbrev() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(5).sink { events in
+            XCTAssertEqual(events[0], .modeChanged(.direct))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.markerCompose])))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.markerCompose, .plain("a")])))
+            XCTAssertEqual(events[3], .fixedText("a"))
+            XCTAssertEqual(events[4], .modeChanged(.hiragana), "Abbrev中は確定してひらがなに戻る")
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "/")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
+        XCTAssertTrue(stateMachine.handle(toggleDirectAction))
+        XCTAssertEqual(stateMachine.state.inputMethod, .normal)
+        XCTAssertEqual(stateMachine.state.inputMode, .hiragana)
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     @MainActor func testHandleComposingEnterNewLine() {
         Global.enterNewLine = true
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
