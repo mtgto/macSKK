@@ -541,6 +541,63 @@ final class StateMachineTests: XCTestCase {
                                                  event: generateNSEvent(character: "z", characterIgnoringModifiers: "z"))))
     }
 
+    @MainActor func testHandleNormalToggleDirect() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(8).sink { events in
+            XCTAssertEqual(events[0], .modeChanged(.direct))
+            XCTAssertEqual(events[1], .modeChanged(.hiragana))
+            XCTAssertEqual(events[2], .modeChanged(.katakana))
+            XCTAssertEqual(events[3], .modeChanged(.direct), "カタカナからも直接入力に切り替わる")
+            XCTAssertEqual(events[4], .modeChanged(.hiragana), "直接入力からは常にひらがなに戻る")
+            XCTAssertEqual(events[5], .modeChanged(.hankaku))
+            XCTAssertEqual(events[6], .modeChanged(.direct), "半角カナからも直接入力に切り替わる")
+            XCTAssertEqual(events[7], .modeChanged(.hiragana), "直前が半角カナでもひらがなに戻る")
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(toggleDirectAction))
+        XCTAssertTrue(stateMachine.handle(toggleDirectAction))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
+        XCTAssertTrue(stateMachine.handle(toggleDirectAction))
+        XCTAssertTrue(stateMachine.handle(toggleDirectAction))
+        XCTAssertTrue(stateMachine.handle(hankakuKanaAction))
+        XCTAssertTrue(stateMachine.handle(toggleDirectAction))
+        XCTAssertTrue(stateMachine.handle(toggleDirectAction))
+        XCTAssertEqual(stateMachine.state.inputMode, .hiragana)
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    @MainActor func testHandleNormalToggleDirectFromEisu() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .eisu))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(2).sink { events in
+            XCTAssertEqual(events[0], .modeChanged(.direct), "全角英数からも直接入力に切り替わる")
+            XCTAssertEqual(events[1], .modeChanged(.hiragana))
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(toggleDirectAction))
+        XCTAssertTrue(stateMachine.handle(toggleDirectAction))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    @MainActor func testHandleRegisteringToggleDirect() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(5).sink { events in
+            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
+            XCTAssertEqual(events[1], .modeChanged(.hiragana))
+            XCTAssertEqual(events[2], .markedText(MarkedText([.plain("[登録：あ]")])))
+            XCTAssertEqual(events[3], .modeChanged(.direct))
+            XCTAssertEqual(events[4], .markedText(MarkedText([.plain("[登録：あ]")])), "単語登録中はmarkedTextを再送信する")
+            expectation.fulfill()
+        }.store(in: &cancellables)
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(toggleDirectAction))
+        XCTAssertEqual(stateMachine.state.inputMode, .direct)
+        wait(for: [expectation], timeout: 1.0)
+    }
+
     @MainActor func testHandleNormalCtrlJ() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .direct))
         let expectation = XCTestExpectation()
@@ -4151,6 +4208,20 @@ final class StateMachineTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    @MainActor func testHandleSelectingUnregisterToggleDirect() {
+        Global.dictionary.setEntries(["と": [Word("戸")]])
+
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "o")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "x", withShift: true)))
+        // 登録解除確認への遷移時にinputModeは.directに固定される (yes/noを入力するため)
+        XCTAssertEqual(stateMachine.state.inputMode, .direct)
+        XCTAssertTrue(stateMachine.handle(toggleDirectAction))
+        XCTAssertEqual(stateMachine.state.inputMode, .direct, "登録解除確認中はモードを変更しない")
+    }
+
     @MainActor func testHandleSelectingRememberCursor() {
         Global.dictionary.setEntries(["え": [Word("絵")], "えr": [Word("得")]])
 
@@ -4369,6 +4440,10 @@ final class StateMachineTests: XCTestCase {
     // Ctrl-jを押した
     var hiraganaAction: Action {
         Action(keyBind: .hiragana, event: generateNSEvent(character: "j", characterIgnoringModifiers: "j", modifierFlags: .control))
+    }
+    // Ctrl-\を押した
+    var toggleDirectAction: Action {
+        Action(keyBind: .toggleDirect, event: generateNSEvent(character: "\\", characterIgnoringModifiers: "\\", modifierFlags: .control))
     }
     // Ctrl-qを押した
     var hankakuKanaAction: Action {

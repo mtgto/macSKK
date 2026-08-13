@@ -187,6 +187,37 @@ final class StateMachine {
             case .eisu, .direct:
                 break
             }
+        case .toggleDirect:
+            // 登録解除確認中はyes/noを入力する場面なのでモードを変更しない
+            if case .unregister = specialState {
+                return true
+            }
+            switch state.inputMode {
+            case .hiragana, .katakana, .hankaku, .eisu:
+                state.inputMode = .direct
+                inputMethodEventSubject.send(.modeChanged(.direct))
+                if specialState != nil {
+                    inputMethodEventSubject.send(.markedText(state.displayText()))
+                } else if enableMarkedTextWorkaround {
+                    // 確定文字を未確定文字列として入力するワークアラウンド
+                    state.inputMethod = .composing(
+                        ComposingState(isShift: false, text: [], romaji: "", fixedWorkaroundText: FixedWorkaroundText(text: "", displayText: "[英数]")))
+                    updateMarkedText()
+                }
+            case .direct:
+                // 切り替え前のモードは記憶せず常にひらがなに戻す (Windowsのかなキーと同じ挙動)
+                state.inputMode = .hiragana
+                inputMethodEventSubject.send(.modeChanged(.hiragana))
+                if specialState != nil {
+                    inputMethodEventSubject.send(.markedText(state.displayText()))
+                } else if enableMarkedTextWorkaround {
+                    // 確定文字を未確定文字列として入力するワークアラウンド
+                    state.inputMethod = .composing(
+                        ComposingState(isShift: false, text: [], romaji: "", fixedWorkaroundText: FixedWorkaroundText(text: "", displayText: "[かな]")))
+                    updateMarkedText()
+                }
+            }
+            return true
         case .zenkaku:
             switch state.inputMode {
             case .hiragana, .katakana, .hankaku:
@@ -453,7 +484,7 @@ final class StateMachine {
                 return true
             }
             break
-        case .space, .shiftSpace, .unregister, .toggleAndFixKana, .affix, .toggleDirect, nil:
+        case .space, .shiftSpace, .unregister, .toggleAndFixKana, .affix, nil:
             break
         }
 
