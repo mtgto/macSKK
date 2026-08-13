@@ -121,7 +121,7 @@ final class StateMachineTests: XCTestCase {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         stateMachine.enableMarkedTextWorkaround = true
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(13).sink { events in
+        stateMachine.inputMethodEvent.collect(18).sink { events in
             XCTAssertEqual(events[0], .modeChanged(.katakana))
             XCTAssertEqual(events[1], .markedText(MarkedText([.plain("[カナ]")])))
             XCTAssertEqual(events[2], .markedText(MarkedText([])))
@@ -135,6 +135,14 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[10], .markedText(MarkedText([.plain("[かな]")])))
             XCTAssertEqual(events[11], .markedText(MarkedText([])))
             XCTAssertEqual(events[12], .modeChanged(.hiragana))
+            // ここからtoggleDirectAction 2回分。1回目はワークアラウンドでcomposingに入るため、
+            // 2回目は直前のワークアラウンドの未確定文字列をクリアしてからhandleNormalに再ディスパッチされる
+            // (handleComposingのfixedWorkaroundText処理と同じ経路)。
+            XCTAssertEqual(events[13], .modeChanged(.direct), "toggleDirectでもワークアラウンドが有効")
+            XCTAssertEqual(events[14], .markedText(MarkedText([.plain("[英数]")])))
+            XCTAssertEqual(events[15], .markedText(MarkedText([])))
+            XCTAssertEqual(events[16], .modeChanged(.hiragana), "toggleDirectでもワークアラウンドが有効")
+            XCTAssertEqual(events[17], .markedText(MarkedText([.plain("[かな]")])))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
@@ -144,6 +152,8 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(hiraganaAction))
         XCTAssertFalse(stateMachine.handle(cancelAction))
         XCTAssertTrue(stateMachine.handle(kanaKeyAction))
+        XCTAssertTrue(stateMachine.handle(toggleDirectAction))
+        XCTAssertTrue(stateMachine.handle(toggleDirectAction))
         wait(for: [expectation], timeout: 1.0)
     }
 
