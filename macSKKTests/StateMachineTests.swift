@@ -118,6 +118,15 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleNormalChangeModeEnableMarkedTextWorkaround() {
+        // toggleDirectにはデフォルトのキー割り当てがないのでCtrl-\を割り当てておく。
+        // ワークアラウンドで未確定文字列に入った状態から次のキーを押すと、handleComposingが
+        // Global.keyBindingからキーバインドを引き直して再ディスパッチするため、
+        // 割り当てておかないと2回目の入力が解決できない。
+        Global.keyBinding = KeyBindingSet(id: "toggleDirectAssigned", values: KeyBinding.defaultKeyBindingSettings.map { keyBinding in
+            keyBinding.action == .toggleDirect
+                ? KeyBinding(.toggleDirect, [KeyBinding.Input(key: .character("\\"), modifierFlags: .control)])
+                : keyBinding
+        })
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         stateMachine.enableMarkedTextWorkaround = true
         let expectation = XCTestExpectation()
@@ -4563,7 +4572,8 @@ final class StateMachineTests: XCTestCase {
     var hiraganaAction: Action {
         Action(keyBind: .hiragana, event: generateNSEvent(character: "j", characterIgnoringModifiers: "j", modifierFlags: .control))
     }
-    // Ctrl-\を押した
+    // 直接入力の切り替えキーを押した。
+    // toggleDirectにはデフォルトのキー割り当てがないので、ここでは例としてCtrl-\を割り当てた場合としている
     var toggleDirectAction: Action {
         Action(keyBind: .toggleDirect, event: generateNSEvent(character: "\\", characterIgnoringModifiers: "\\", modifierFlags: .control))
     }
