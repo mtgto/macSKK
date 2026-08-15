@@ -5,8 +5,9 @@ import Combine
 import Foundation
 import InputMethodKit
 
-// AppleのAPIドキュメントにはメインスレッドであるとは書かれてないけど、まあ大丈夫じゃないかな、と雑にMainActorを設定している。
-// 問題があるようだったらDispatchQueue.main.(a)syncを使うように修正すること。
+// AppleのAPIドキュメントにはIMKのコールバックがメインスレッドで呼ばれるとは明記されていないため、
+// nonisolatedなコールバックからはmainSyncを経由してMainActorで処理を実行する。
+// メインスレッドで呼ばれた場合はそのまま実行し、そうでない場合は警告ログを出してメインスレッドに同期実行する。
 @MainActor
 @objc(InputController)
 class InputController: IMKInputController {
@@ -21,7 +22,9 @@ class InputController: IMKInputController {
     private let stateMachine = StateMachine()
     private var targetApp: TargetApplication! = nil
     private var cancellables: Set<AnyCancellable> = []
-    private let completionPresenter = CompletionPresenter(panel: Global.completionPanel)
+    // Global.completionPanelが@MainActorなためnonisolatedなinitのプロパティ初期化式では生成できない。
+    // setUp(inputClient:)で初期化する。
+    private var completionPresenter: CompletionPresenter!
     private static let notFoundRange = NSRange(location: NSNotFound, length: NSNotFound)
     /// 変換候補として選択されている単語を流すストリーム
     private let selectedWord = PassthroughSubject<Word.Word?, Never>()
@@ -38,9 +41,36 @@ class InputController: IMKInputController {
     /// 空のときには▽▼を表示するワークアラウンドを適用するかどうか
     private var showMarkerWhenEmpty: Bool = false
 
-    @MainActor override init!(server: IMKServer!, delegate: Any!, client inputClient: Any!) {
-        super.init(server: server, delegate: delegate, client: inputClient)
+    /// nonisolatedなIMKコールバックから@MainActorな処理を同期実行するためのヘルパー。
+    /// IMKのコールバックは経験上メインスレッドで呼ばれるが、APIドキュメントには明記されていないため、
+    /// メインスレッド以外から呼ばれた場合は警告ログを出した上でメインスレッドに同期実行する。
+    ///
+    /// self(非Sendable)の受け渡しもここで行うため、workは@MainActor隔離された状態のselfを引数で受け取る。
+    /// 呼び出し側でnonisolated(unsafe)を書く必要があるのはIMK由来の引数などself以外の値だけ。
+    @discardableResult
+    private nonisolated func mainSync<T: Sendable>(function: String = #function, _ work: @MainActor (InputController) -> T) -> T {
+        // InputControllerはIMKInputControllerを継承しSendableでないため、selfを退避してクロージャへ渡す。
+        nonisolated(unsafe) let this = self
+        if Thread.isMainThread {
+            return MainActor.assumeIsolated { work(this) }
+        } else {
+            logger.warning("\(function, privacy: .public) がメインスレッド以外から呼び出されました。メインスレッドで同期実行します。")
+            return DispatchQueue.main.sync {
+                MainActor.assumeIsolated { work(this) }
+            }
+        }
+    }
 
+    // IMKInputControllerのイニシャライザはnonisolatedなので、オーバーライドもnonisolatedにする必要がある。
+    nonisolated override init!(server: IMKServer!, delegate: Any!, client inputClient: Any!) {
+        super.init(server: server, delegate: delegate, client: inputClient)
+        nonisolated(unsafe) let inputClient = inputClient
+        mainSync {
+            $0.setUp(inputClient: inputClient)
+        }
+    }
+
+    private func setUp(inputClient: Any!) {
         guard let textInput = inputClient as? any IMKTextInput else {
             return
         }
@@ -177,6 +207,7 @@ class InputController: IMKInputController {
         // 読みが更新・補完されたときの処理。
         // 補完候補の検索(MainActor外で実行する@concurrentな関数)と
         // 補完候補パネルへの反映はCompletionPresenterに委譲している。
+        completionPresenter = CompletionPresenter(panel: Global.completionPanel)
         stateMachine.yomiEvent
             .sink { [weak self] event in
                 guard let self else { return }
@@ -210,11 +241,21 @@ class InputController: IMKInputController {
             }.store(in: &cancellables)
     }
 
-    @MainActor override func handle(_ event: NSEvent!, client sender: Any!) -> Bool {
-        // 文字ビューアで入力した場合など、eventがnilの場合がありえる
-        if event == nil {
-            return false
+    nonisolated override func handle(_ event: NSEvent!, client sender: Any!) -> Bool {
+        // event・sender(非Sendable)は同期的に使うだけなので退避して渡す。
+        nonisolated(unsafe) let event = event
+        nonisolated(unsafe) let sender = sender
+        return mainSync { this in
+            // 文字ビューアで入力した場合など、eventがnilの場合がありえる
+            guard let event else {
+                return false
+            }
+            return this.handle(event: event, textInput: sender as? any IMKTextInput)
         }
+    }
+
+    /// キーイベントを処理して、入力を横取りしたかどうかを返す。
+    private func handle(event: NSEvent, textInput: (any IMKTextInput)?) -> Bool {
         let keyBind = Global.keyBinding.action(event: event, inputMode: stateMachine.state.inputMode, inputMethod: stateMachine.state.inputMethod)
         if directMode {
             if let keyBind, keyBind == .kana || keyBind == .eisu {
@@ -223,8 +264,6 @@ class InputController: IMKInputController {
             }
             return false
         }
-        // 左下座標基準でwidth=1, height=(通常だとフォントサイズ)のNSRect
-        let textInput = sender as? any IMKTextInput
         if keyBind == nil && event.charactersIgnoringModifiers == nil {
             return stateMachine.handleUnhandledEvent(event)
         }
@@ -232,7 +271,17 @@ class InputController: IMKInputController {
         return stateMachine.handle(Action(keyBind: keyBind, event: event, textInput: textInput))
     }
 
-    @MainActor override func menu() -> NSMenu! {
+    // NSMenuはSendableでないためmainSyncの戻り値として直接返せない。
+    // メインスレッドで生成したメニューをnonisolated(unsafe)なローカルに受け渡して返す。
+    nonisolated override func menu() -> NSMenu! {
+        nonisolated(unsafe) var result: NSMenu?
+        mainSync {
+            result = $0.buildMenu()
+        }
+        return result
+    }
+
+    private func buildMenu() -> NSMenu {
         let preferenceMenu = NSMenu()
         preferenceMenu.addItem(
             withTitle: String(localized: "MenuItemPreference", comment: "Preferences…"),
@@ -296,24 +345,37 @@ class InputController: IMKInputController {
     }
 
     // MARK: - IMKStateSetting
-    @MainActor override func activateServer(_ sender: Any!) {
+    nonisolated override func activateServer(_ sender: Any!) {
         super.activateServer(sender)
     }
 
-    @MainActor override func deactivateServer(_ sender: Any!) {
+    nonisolated override func deactivateServer(_ sender: Any!) {
         // 他の入力に切り替わるときには入力候補や補完候補は消す + 現在表示中の候補を確定させる
-        Global.candidatesPanel.orderOut(sender)
-        Global.completionPanel.orderOut(sender)
+        nonisolated(unsafe) let sender = sender
+        mainSync { _ in
+            Global.candidatesPanel.orderOut(sender)
+            Global.completionPanel.orderOut(sender)
+        }
         super.deactivateServer(sender)
     }
 
     /// クライアントが入力中状態を即座に確定してほしいときに呼ばれる
-    @MainActor override func commitComposition(_ sender: Any!) {
+    nonisolated override func commitComposition(_ sender: Any!) {
         // 現在未確定の入力を強制的に確定させて状態を入力前の状態にする
-        stateMachine.commitComposition()
+        mainSync {
+            $0.stateMachine.commitComposition()
+        }
     }
 
-    @MainActor override func setValue(_ value: Any!, forTag tag: Int, client sender: Any!) {
+    nonisolated override func setValue(_ value: Any!, forTag tag: Int, client sender: Any!) {
+        nonisolated(unsafe) let value = value
+        nonisolated(unsafe) let sender = sender
+        mainSync {
+            $0.handleSetValue(value, client: sender)
+        }
+    }
+
+    private func handleSetValue(_ value: Any!, client sender: Any!) {
         guard let value = value as? String else { return }
         guard let inputMode = InputMode(rawValue: value) else { return }
         logger.debug("入力モードが変更されました \(inputMode.rawValue)")
@@ -425,6 +487,7 @@ class InputController: IMKInputController {
 
     /// 現在のカーソル位置。正常に取得できない場合はNSRect.zeroになっている。
     private func cursorPosition(for textInput: any IMKTextInput) -> NSRect {
+        // 左下座標基準でwidth=1, height=(通常だとフォントサイズ)のNSRect
         // TODO: 単語登録中など、現在のカーソル位置が0ではないときはそれに合わせて座標を取得したい
         // forCharacterIndexを0以外で取得しようとすると取得できないことがあるためひとまず断念
         var cursorPosition: NSRect = .zero
