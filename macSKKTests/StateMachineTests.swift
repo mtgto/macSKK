@@ -118,19 +118,10 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleNormalChangeModeEnableMarkedTextWorkaround() {
-        // toggleDirectにはデフォルトのキー割り当てがないのでCtrl-\を割り当てておく。
-        // ワークアラウンドで未確定文字列に入った状態から次のキーを押すと、handleComposingが
-        // Global.keyBindingからキーバインドを引き直して再ディスパッチするため、
-        // 割り当てておかないと2回目の入力が解決できない。
-        Global.keyBinding = KeyBindingSet(id: "toggleDirectAssigned", values: KeyBinding.defaultKeyBindingSettings.map { keyBinding in
-            keyBinding.action == .toggleDirect
-                ? KeyBinding(.toggleDirect, [KeyBinding.Input(key: .character("\\"), modifierFlags: .control)])
-                : keyBinding
-        })
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         stateMachine.enableMarkedTextWorkaround = true
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(18).sink { events in
+        stateMachine.inputMethodEvent.collect(13).sink { events in
             XCTAssertEqual(events[0], .modeChanged(.katakana))
             XCTAssertEqual(events[1], .markedText(MarkedText([.plain("[カナ]")])))
             XCTAssertEqual(events[2], .markedText(MarkedText([])))
@@ -144,14 +135,6 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[10], .markedText(MarkedText([.plain("[かな]")])))
             XCTAssertEqual(events[11], .markedText(MarkedText([])))
             XCTAssertEqual(events[12], .modeChanged(.hiragana))
-            // ここからtoggleDirectAction 2回分。1回目はワークアラウンドでcomposingに入るため、
-            // 2回目は直前のワークアラウンドの未確定文字列をクリアしてからhandleNormalに再ディスパッチされる
-            // (handleComposingのfixedWorkaroundText処理と同じ経路)。
-            XCTAssertEqual(events[13], .modeChanged(.direct), "toggleDirectでもワークアラウンドが有効")
-            XCTAssertEqual(events[14], .markedText(MarkedText([.plain("[英数]")])))
-            XCTAssertEqual(events[15], .markedText(MarkedText([])))
-            XCTAssertEqual(events[16], .modeChanged(.hiragana), "toggleDirectでもワークアラウンドが有効")
-            XCTAssertEqual(events[17], .markedText(MarkedText([.plain("[かな]")])))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
@@ -161,6 +144,25 @@ final class StateMachineTests: XCTestCase {
         XCTAssertTrue(stateMachine.handle(hiraganaAction))
         XCTAssertFalse(stateMachine.handle(cancelAction))
         XCTAssertTrue(stateMachine.handle(kanaKeyAction))
+        wait(for: [expectation], timeout: 1.0)
+    }
+
+    @MainActor func testHandleNormalToggleDirectEnableMarkedTextWorkaround() {
+        // toggleDirectにはデフォルトのキー割り当てがないのでCtrl-\を割り当てておく。
+        Global.keyBinding = KeyBindingSet.defaultKeyBindingSet.update(
+            for: .toggleDirect, inputs: [KeyBinding.Input(key: .character("\\"), modifierFlags: .control)])
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        stateMachine.enableMarkedTextWorkaround = true
+        let expectation = XCTestExpectation()
+        stateMachine.inputMethodEvent.collect(5).sink { events in
+            XCTAssertEqual(events[0], .modeChanged(.direct))
+            XCTAssertEqual(events[1], .markedText(MarkedText([.plain("[英数]")])))
+            // 2回目は直前のワークアラウンドの未確定文字列をクリアしてhandleNormalに遷移する
+            XCTAssertEqual(events[2], .markedText(MarkedText([])))
+            XCTAssertEqual(events[3], .modeChanged(.hiragana))
+            XCTAssertEqual(events[4], .markedText(MarkedText([.plain("[かな]")])))
+            expectation.fulfill()
+        }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(toggleDirectAction))
         XCTAssertTrue(stateMachine.handle(toggleDirectAction))
         wait(for: [expectation], timeout: 1.0)
