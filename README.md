@@ -68,6 +68,7 @@ macOS 14以降ではApp Sandboxの制限が強くなりました。すでにリ�
 ### バージョンアップ
 
 `X.Y.Z` 形式のバージョン (MARKETING_VERSION) とビルド番号 (CURRENT_PROJECT_VERSION) の更新が必要です。
+Xcodeで編集するときは、プロジェクトナビゲータでプロジェクトを選択してBuild Settingsから変更してください。
 
 #### ビルド番号
 
