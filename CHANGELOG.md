@@ -1,4 +1,13 @@
 # CHANGELOG
+## v2.19.0 (2026-08-16)
+
+- Swift Language Versionを6にする (#489)
+  - Approachable Concurrencyを有効化 (#508)
+  - NSLockをOSAllocatedUnfairLockに置き換えて `@unchecked Sendable` をなくす (#509)
+  - バックグラウンドスレッドで補完候補の検索を安全に行う (#504)
+  - macSKKターゲットのSWIFT_VERSIONを6にする (#510)
+- バージョン設定をプロジェクトレベルのBuild Settingsに集約する (#512)
+
 ## v2.18.4 (2026-08-09)
 
 - SKKServDictViewのCancelで編集内容を破棄する (#505)
