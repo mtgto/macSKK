@@ -150,6 +150,7 @@
 "KeyBindingActionToggleandfixkana" = "Toggle And Fix Kana";
 "KeyBindingActionHankakukana" = "Hankaku Kana";
 "KeyBindingActionDirect" = "Direct Input";
+"KeyBindingActionToggledirect" = "Toggle Direct Input";
 "KeyBindingActionZenkaku" = "Zenkaku Eisu Mode";
 "KeyBindingActionAbbrev" = "Abbrev Mode";
 "KeyBindingActionDirectabbrev" = "Abbrev Mode from Direct";

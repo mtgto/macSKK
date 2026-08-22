@@ -150,6 +150,7 @@
 "KeyBindingActionToggleandfixkana" = "入力中のかなカナ切り替え";
 "KeyBindingActionHankakukana" = "半角カナモード";
 "KeyBindingActionDirect" = "直接入力";
+"KeyBindingActionToggledirect" = "直接入力の切り替え";
 "KeyBindingActionZenkaku" = "全角英数モード";
 "KeyBindingActionAbbrev" = "Abbrevモード";
 "KeyBindingActionDirectabbrev" = "直接入力時Abbrevモード";

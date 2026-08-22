@@ -187,6 +187,37 @@ final class StateMachine {
             case .eisu, .direct:
                 break
             }
+        case .toggleDirect:
+            // 登録解除確認中はyes/noを入力する場面なのでモードを変更しない
+            if case .unregister = specialState {
+                return true
+            }
+            switch state.inputMode {
+            case .hiragana, .katakana, .hankaku, .eisu:
+                state.inputMode = .direct
+                inputMethodEventSubject.send(.modeChanged(.direct))
+                if specialState != nil {
+                    inputMethodEventSubject.send(.markedText(state.displayText()))
+                } else if enableMarkedTextWorkaround {
+                    // 確定文字を未確定文字列として入力するワークアラウンド
+                    state.inputMethod = .composing(
+                        ComposingState(isShift: false, text: [], romaji: "", fixedWorkaroundText: FixedWorkaroundText(text: "", displayText: "[英数]")))
+                    updateMarkedText()
+                }
+            case .direct:
+                // 切り替え前のモードは記憶せず常にひらがなに戻す (Windowsのかなキーと同じ挙動)
+                state.inputMode = .hiragana
+                inputMethodEventSubject.send(.modeChanged(.hiragana))
+                if specialState != nil {
+                    inputMethodEventSubject.send(.markedText(state.displayText()))
+                } else if enableMarkedTextWorkaround {
+                    // 確定文字を未確定文字列として入力するワークアラウンド
+                    state.inputMethod = .composing(
+                        ComposingState(isShift: false, text: [], romaji: "", fixedWorkaroundText: FixedWorkaroundText(text: "", displayText: "[かな]")))
+                    updateMarkedText()
+                }
+            }
+            return true
         case .zenkaku:
             switch state.inputMode {
             case .hiragana, .katakana, .hankaku:
@@ -720,6 +751,17 @@ final class StateMachine {
                 // 送り仮名があるときはなにもしない
                 return true
             }
+        case .toggleDirect:
+            // 送り仮名の有無にかかわらず、未確定文字列を現在のモードで確定してからnormalと同じ処理をする。
+            // .directと違って送り仮名があるときもモードを切り替える。
+            // 修飾キー付きのキーを押してモードが切り替わらずアプリ側にキーが渡るのはトグルキーとして不自然なため。
+            // composing.string(for:)はinputMode == .eisuを想定していないため、composingでinputMode == .eisuになることはない前提。
+            // Abbrev中 (inputMode == .directでcomposing) はprevModeに戻してからトグルを評価するので、
+            // 候補選択中に押した場合 (handleSelectingのfixCurrentSelect) と同じ結果になる。
+            state.inputMethod = .normal
+            addFixedText(composing.string(for: state.inputMode, kanaRule: Global.kanaRule))
+            updateModeIfPrevModeExists()
+            return handleNormal(action, specialState: specialState)
         case .direct, .zenkaku:
             // 入力済みを確定してからlを打ったのと同じ処理をする
             if okuri == nil {
@@ -1473,7 +1515,7 @@ final class StateMachine {
             return handle(action)
         case .registerPaste, .delete, .eisu, .kana, .reconvert:
             return true
-        case .toggleKana, .toggleAndFixKana, .direct, .zenkaku, .abbrev, .directAbbrev, .japanese:
+        case .toggleKana, .toggleAndFixKana, .direct, .toggleDirect, .zenkaku, .abbrev, .directAbbrev, .japanese:
             break
         case nil:
             break
