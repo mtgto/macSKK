@@ -201,3 +201,10 @@
 "InputModeKatakana" = "カタカナ";
 "InputModeHankaku" = "半角カナ";
 "InputModeEisu" = "全角英数";
+
+"Sync settings with iCloud" = "設定をiCloudで同期する";
+"SyncSettingsWithiCloudDescription" = "同じApple Accountでサインインした他のMacのmacSKKと設定を同期します。辞書とその設定、キー配列、skkservの接続設定、ローマ字かな変換ルールの選択は同期しません。";
+"SyncSettingsWithiCloudUnavailable" = "このビルドのmacSKKはiCloudでの設定同期に対応していません。";
+"SyncSettingsWithiCloudConfirmation" = "iCloudにすでにmacSKKの設定が保存されています。どちらの設定を使いますか?";
+"Overwrite iCloud settings with settings of this Mac" = "このMacの設定でiCloudを上書きする";
+"Apply iCloud settings to this Mac" = "iCloudの設定をこのMacに反映する";

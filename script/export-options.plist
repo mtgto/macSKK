@@ -7,6 +7,15 @@
 	<key>method</key>
 	<string>developer-id</string>
 	<key>signingStyle</key>
-	<string>automatic</string>
+	<string>manual</string>
+	<key>signingCertificate</key>
+	<string>Developer ID Application</string>
+	<key>teamID</key>
+	<string>W3A6B7FDC7</string>
+	<key>provisioningProfiles</key>
+	<dict>
+		<key>net.mtgto.inputmethod.macSKK</key>
+		<string>macSKK Developer ID</string>
+	</dict>
 </dict>
 </plist>

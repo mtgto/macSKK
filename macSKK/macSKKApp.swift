@@ -122,6 +122,8 @@ struct macSKKApp: App {
             setupReleaseFetcher()
             setupDirectMode()
             setupSettingsNotification()
+            // 取り込んだ設定がGlobalの各要素を更新するため、他の初期化が終わったあとに開始する
+            settingsViewModel.startSyncSettingsWithiCloudIfEnabled()
         }
     }
 
@@ -273,6 +275,7 @@ struct macSKKApp: App {
             UserDefaultsKeys.skkservAutoDisableThreshold: 3,
             UserDefaultsKeys.displayCandidateCount: 9,
             UserDefaultsKeys.completionConfirmationTimeLimit: 500,
+            UserDefaultsKeys.syncSettingsWithiCloud: false,
         ])
     }
 

@@ -8,6 +8,11 @@
 # 設定項目
 #APPLE_ID := hogerappa@gmail.com
 APPLE_TEAM_ID := W3A6B7FDC7
+# iCloudでの設定同期 (NSUbiquitousKeyValueStore) に必要なentitlementを使うため、
+# App IDにiCloud capabilityを有効にしたDeveloper IDのプロビジョニングプロファイルが必要。
+# Developer Portalで作成してインストールし、そのプロファイル名を指定すること。
+# script/export-options.plist の provisioningProfiles にも同じ名前を書くこと。
+PROVISIONING_PROFILE := macSKK Developer ID
 CREDENTIALS_PROFILE := macSKK
 VERSION := $(shell xcodebuild -project macSKK.xcodeproj -target macSKK -showBuildSettings -json | jq -r '.[0].buildSettings.MARKETING_VERSION')
 
@@ -32,7 +37,7 @@ PRODUCT_SIGN_ID := "Developer ID Installer"
 .PHONY: all
 
 $(XCARCHIVE):
-	xcodebuild -project macSKK.xcodeproj -scheme macSKK -configuration Release CODE_SIGN_IDENTITY="Developer ID Application" DEVELOPMENT_TEAM=$(APPLE_TEAM_ID) OTHER_CODE_SIGN_FLAGS="--timestamp --options=runtime" CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO CODE_SIGN_STYLE=Manual -archivePath $(XCARCHIVE) archive
+	xcodebuild -project macSKK.xcodeproj -scheme macSKK -configuration Release CODE_SIGN_IDENTITY="Developer ID Application" DEVELOPMENT_TEAM=$(APPLE_TEAM_ID) OTHER_CODE_SIGN_FLAGS="--timestamp --options=runtime" CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO CODE_SIGN_STYLE=Manual PROVISIONING_PROFILE_SPECIFIER="$(PROVISIONING_PROFILE)" -archivePath $(XCARCHIVE) archive
 
 $(APP): $(XCARCHIVE)
 	xcodebuild -exportArchive -archivePath $(XCARCHIVE) -exportOptionsPlist script/export-options.plist -exportPath $(WORKDIR)/export

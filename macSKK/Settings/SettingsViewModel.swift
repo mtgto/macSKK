@@ -263,12 +263,16 @@ final class SettingsViewModel: ObservableObject {
     @Published var skkservAutoDisableThreshold: Int
     /// 読み入力から候補選択に切り替わるまでの時間 (ミリ秒)。最小100、最大1000、100単位
     @Published var completionConfirmationTimeLimit: Int
+    /// 設定をiCloudで他のMacと同期するかどうか
+    @Published var syncSettingsWithiCloud: Bool
+    /// 設定のiCloud同期。entitlementがないビルドやテスト実行時はnil
+    private(set) var settingsSync: SettingsSync? = nil
 
     // 辞書ディレクトリ
     let dictionariesDirectoryUrl: URL
     private var cancellables = Set<AnyCancellable>()
 
-    init(dictionariesDirectoryUrl: URL) throws {
+    init(dictionariesDirectoryUrl: URL, keyValueStore: (any KeyValueStore)? = SettingsSync.defaultStore) throws {
         self.dictionariesDirectoryUrl = dictionariesDirectoryUrl
         if let bundleIdentifiers = UserDefaults.app.array(forKey: "directModeBundleIdentifiers") as? [String] {
             directModeApplications = bundleIdentifiers.map { DirectModeApplication(bundleIdentifier: $0) }
@@ -303,35 +307,14 @@ final class SettingsViewModel: ObservableObject {
             overridesAnnotationBackgroundColor = false
         }
         findCompletionFromAllDicts = UserDefaults.app.bool(forKey: UserDefaultsKeys.findCompletionFromAllDicts)
-        workaroundApplications = UserDefaults.app.array(forKey: UserDefaultsKeys.workarounds)?.compactMap { workaround in
-            if let workaround = workaround as? Dictionary<String, Any>, let bundleIdentifier = workaround["bundleIdentifier"] as? String,
-                let insertBlankString = workaround["insertBlankString"] as? Bool {
-                // treatFirstCharacterAsMarkedTextはv2.1+ で追加された
-                let treatFirstCharacterAsMarkedText = workaround["treatFirstCharacterAsMarkedText"] as? Bool ?? false
-                // showMarkerWhenEmptyはv2.15+ で追加された
-                let showMarkerWhenEmpty = workaround["showMarkerWhenEmpty"] as? Bool ?? false
-                return WorkaroundApplication(bundleIdentifier: bundleIdentifier,
-                                             insertBlankString: insertBlankString,
-                                             treatFirstCharacterAsMarkedText: treatFirstCharacterAsMarkedText,
-                                             showMarkerWhenEmpty: showMarkerWhenEmpty)
-            } else {
-                return nil
-            }
-        } ?? []
+        workaroundApplications = Self.loadWorkaroundApplications()
         guard let skkservDictSettingDict = UserDefaults.app.dictionary(forKey: UserDefaultsKeys.skkservClient),
         let skkservDictSetting = SKKServDictSetting(skkservDictSettingDict) else {
             fatalError("skkservClientの設定がありません")
         }
         self.skkservDictSetting = skkservDictSetting
 
-        let customizedKeyBindingSets = UserDefaults.app.array(forKey: UserDefaultsKeys.keyBindingSets)?.compactMap {
-            if let dict = $0 as? [String: Any] {
-                KeyBindingSet(dict: dict)
-            } else {
-                nil
-            }
-        }
-        let keyBindingSets = [KeyBindingSet.defaultKeyBindingSet] + (customizedKeyBindingSets ?? [])
+        let keyBindingSets = Self.loadKeyBindingSets()
         let selectedKeyBindingSetId = UserDefaults.app.string(forKey: UserDefaultsKeys.selectedKeyBindingSetId) ?? KeyBindingSet.defaultId
         self.keyBindingSets = keyBindingSets
         self.selectedKeyBindingSet = keyBindingSets.first(where: { $0.id == selectedKeyBindingSetId }) ?? KeyBindingSet.defaultKeyBindingSet
@@ -357,34 +340,13 @@ final class SettingsViewModel: ObservableObject {
         showInputIconModal = UserDefaults.app.bool(forKey: UserDefaultsKeys.showInputModePanel)
         showMarkedTextMarker = UserDefaults.app.bool(forKey: UserDefaultsKeys.showsMarkedTextMarker)
         candidateListDirection = CandidateListDirection(rawValue: UserDefaults.app.integer(forKey: UserDefaultsKeys.candidateListDirection)) ?? .vertical
-        if let dateConversionDict = UserDefaults.app.dictionary(forKey: UserDefaultsKeys.dateConversions),
-           let dateConversionsRaw = dateConversionDict["conversions"] as? [[String: Any]],
-           let dateYomisRaw = dateConversionDict["yomis"] as? [[String: Any]] {
-            dateYomis = dateYomisRaw.compactMap({ DateConversion.Yomi(dict: $0) })
-            dateConversions = dateConversionsRaw.compactMap({ DateConversion(dict: $0) })
-        } else {
-            dateYomis = []
-            dateConversions = []
-        }
+        (dateYomis, dateConversions) = Self.loadDateConversions()
         selectedKanaRule = UserDefaults.app.string(forKey: UserDefaultsKeys.kanaRule) ?? ""
         skkservAutoDisableThreshold = UserDefaults.app.integer(forKey: UserDefaultsKeys.skkservAutoDisableThreshold)
         completionConfirmationTimeLimit = UserDefaults.app.integer(forKey: UserDefaultsKeys.completionConfirmationTimeLimit)
+        syncSettingsWithiCloud = UserDefaults.app.bool(forKey: UserDefaultsKeys.syncSettingsWithiCloud)
 
-        var inputModeColorSets: [InputMode: InputModeColorSet] = [:]
-        if let dict = UserDefaults.app.dictionary(forKey: UserDefaultsKeys.inputModePanel) {
-            for mode in InputMode.allCases {
-                if let modeDict = dict[mode.rawValue] as? [String: Any],
-                   let setting = InputModeColorSet(modeDict) {
-                    inputModeColorSets[mode] = setting
-                } else {
-                    inputModeColorSets[mode] = .defaultColorSet
-                }
-            }
-        } else {
-            for mode in InputMode.allCases {
-                inputModeColorSets[mode] = .defaultColorSet
-            }
-        }
+        let inputModeColorSets = Self.loadInputModeColorSets()
         self.inputModeColorSets = inputModeColorSets
 
         // 利用可能なフォント名をバックグラウンドスレッドで取得
@@ -886,6 +848,17 @@ final class SettingsViewModel: ObservableObject {
             Global.inputModePanel.updateColorSets(settings)
         }.store(in: &cancellables)
 
+        $syncSettingsWithiCloud.dropFirst().removeDuplicates().sink { [weak self] syncSettingsWithiCloud in
+            logger.log("設定のiCloud同期を\(syncSettingsWithiCloud ? "有効" : "無効", privacy: .public)にしました")
+            UserDefaults.app.set(syncSettingsWithiCloud, forKey: UserDefaultsKeys.syncSettingsWithiCloud)
+            if syncSettingsWithiCloud {
+                // enableSyncSettingsWithiCloud(initialSync:)から有効化された場合はすでに開始済みなので何も起きない
+                self?.settingsSync?.start(initialSync: .pushLocal)
+            } else {
+                self?.settingsSync?.stop()
+            }
+        }.store(in: &cancellables)
+
         NotificationCenter.default.publisher(for: notificationNameDictLoad).receive(on: RunLoop.main).sink { [weak self] notification in
             if let loadEvent = notification.object as? DictLoadEvent, let self {
                 if let userDict = Global.dictionary.userDict as? FileDict, userDict.id == loadEvent.id {
@@ -904,6 +877,205 @@ final class SettingsViewModel: ObservableObject {
             }
         }
         .store(in: &cancellables)
+
+        // 同期の開始はGlobal.dictionaryなどの初期化が終わったあとに
+        // startSyncSettingsWithiCloudIfEnabled()を呼んで行う
+        settingsSync = keyValueStore.map { SettingsSync(store: $0, settingsViewModel: self) }
+    }
+
+    /// iCloud側にすでに同期された設定があるかどうか
+    var hasRemoteSyncedSettings: Bool {
+        settingsSync?.hasRemoteSettings ?? false
+    }
+
+    /// 設定のiCloud同期が有効なら開始する。
+    /// 取り込んだ設定がGlobalの各要素を更新するため、Global.dictionaryなどの初期化が終わってから呼ぶこと。
+    func startSyncSettingsWithiCloudIfEnabled() {
+        guard syncSettingsWithiCloud else {
+            return
+        }
+        settingsSync?.start(initialSync: .pullRemote)
+    }
+
+    /// 設定のiCloud同期を有効にする
+    /// - Parameter initialSync: 有効にした時点でこのMacとiCloudのどちらの設定を優先するか
+    func enableSyncSettingsWithiCloud(initialSync: SettingsSync.InitialSync) {
+        settingsSync?.start(initialSync: initialSync)
+        syncSettingsWithiCloud = true
+    }
+
+    /**
+     * iCloudから取り込んだ設定をUserDefaultsから読み直して反映する。
+     *
+     * 値の保存とGlobalへの反映は各プロパティのsinkが行うため、ここではプロパティの更新だけを行う。
+     * ``SettingsSync/syncedKeys`` のキーはすべて扱うこと。
+     *
+     * - Returns: 反映方法が実装されているキーならtrue
+     */
+    @discardableResult
+    func applySyncedValue(key: String) -> Bool {
+        switch key {
+        case UserDefaultsKeys.showAnnotation:
+            showAnnotation = UserDefaults.app.bool(forKey: key)
+        case UserDefaultsKeys.inlineCandidateCount:
+            inlineCandidateCount = UserDefaults.app.integer(forKey: key)
+        case UserDefaultsKeys.displayCandidateCount:
+            displayCandidateCount = UserDefaults.app.integer(forKey: key)
+        case UserDefaultsKeys.candidatesFontFamily:
+            candidatesFontFamily = UserDefaults.app.string(forKey: key) ?? ""
+        case UserDefaultsKeys.candidatesFontSize:
+            candidatesFontSize = UserDefaults.app.integer(forKey: key)
+        case UserDefaultsKeys.overridesCandidatesBackgroundColor:
+            overridesCandidatesBackgroundColor = UserDefaults.app.bool(forKey: key)
+        case UserDefaultsKeys.candidatesBackgroundColor:
+            if let serialized = UserDefaults.app.string(forKey: key), let color = ColorEncoding.decode(serialized) {
+                candidatesBackgroundColor = color
+            }
+        case UserDefaultsKeys.annotationFontFamily:
+            annotationFontFamily = UserDefaults.app.string(forKey: key) ?? ""
+        case UserDefaultsKeys.annotationFontSize:
+            annotationFontSize = UserDefaults.app.integer(forKey: key)
+        case UserDefaultsKeys.overridesAnnotationBackgroundColor:
+            overridesAnnotationBackgroundColor = UserDefaults.app.bool(forKey: key)
+        case UserDefaultsKeys.annotationBackgroundColor:
+            if let serialized = UserDefaults.app.string(forKey: key), let color = ColorEncoding.decode(serialized) {
+                annotationBackgroundColor = color
+            }
+        case UserDefaultsKeys.selectCandidateKeys:
+            if let selectCandidateKeys = UserDefaults.app.string(forKey: key) {
+                self.selectCandidateKeys = selectCandidateKeys
+            }
+        case UserDefaultsKeys.enterNewLine:
+            enterNewLine = UserDefaults.app.bool(forKey: key)
+        case UserDefaultsKeys.showCompletion:
+            showCompletion = UserDefaults.app.bool(forKey: key)
+        case UserDefaultsKeys.showCandidateForCompletion:
+            showCandidateForCompletion = UserDefaults.app.bool(forKey: key)
+        case UserDefaultsKeys.fixedCompletionByPeriod:
+            fixedCompletionByPeriod = UserDefaults.app.bool(forKey: key)
+        case UserDefaultsKeys.findCompletionFromAllDicts:
+            findCompletionFromAllDicts = UserDefaults.app.bool(forKey: key)
+        case UserDefaultsKeys.registerKatakana:
+            registerKatakana = UserDefaults.app.bool(forKey: key)
+        case UserDefaultsKeys.ignoreLeadingSpacesWhenRegistering:
+            ignoreLeadingSpacesWhenRegistering = UserDefaults.app.bool(forKey: key)
+        case UserDefaultsKeys.backToSelectingFromRegistering:
+            backToSelectingFromRegistering = UserDefaults.app.bool(forKey: key)
+        case UserDefaultsKeys.yomiCompletionByTabInRegistering:
+            yomiCompletionByTabInRegistering = UserDefaults.app.bool(forKey: key)
+        case UserDefaultsKeys.selectingBackspace:
+            if let selectingBackspace = SelectingBackspace(rawValue: UserDefaults.app.integer(forKey: key)) {
+                self.selectingBackspace = selectingBackspace
+            }
+        case UserDefaultsKeys.punctuation:
+            let rawValue = UserDefaults.app.integer(forKey: key)
+            if let comma = Punctuation.Comma(rawValue: rawValue), let period = Punctuation.Period(rawValue: rawValue) {
+                self.comma = comma
+                self.period = period
+            }
+        case UserDefaultsKeys.candidateListDirection:
+            if let candidateListDirection = CandidateListDirection(rawValue: UserDefaults.app.integer(forKey: key)) {
+                self.candidateListDirection = candidateListDirection
+            }
+        case UserDefaultsKeys.showsMarkedTextMarker:
+            showMarkedTextMarker = UserDefaults.app.bool(forKey: key)
+        case UserDefaultsKeys.showInputModePanel:
+            showInputIconModal = UserDefaults.app.bool(forKey: key)
+        case UserDefaultsKeys.inputModePanel:
+            inputModeColorSets = Self.loadInputModeColorSets()
+        case UserDefaultsKeys.keyBindingSets:
+            keyBindingSets = Self.loadKeyBindingSets()
+            // 選択中のキーバインドが更新された場合に備えて選択し直す
+            if let selectedKeyBindingSet = keyBindingSets.first(where: { $0.id == self.selectedKeyBindingSet.id }) {
+                self.selectedKeyBindingSet = selectedKeyBindingSet
+            }
+        case UserDefaultsKeys.selectedKeyBindingSetId:
+            let selectedKeyBindingSetId = UserDefaults.app.string(forKey: key) ?? KeyBindingSet.defaultId
+            if let selectedKeyBindingSet = keyBindingSets.first(where: { $0.id == selectedKeyBindingSetId }) {
+                self.selectedKeyBindingSet = selectedKeyBindingSet
+            } else {
+                logger.log("iCloudから取り込んだキーバインド \(selectedKeyBindingSetId, privacy: .public) が見つかりません")
+            }
+        case UserDefaultsKeys.dateConversions:
+            (dateYomis, dateConversions) = Self.loadDateConversions()
+        case UserDefaultsKeys.workarounds:
+            workaroundApplications = Self.loadWorkaroundApplications()
+        case UserDefaultsKeys.directModeBundleIdentifiers:
+            if let bundleIdentifiers = UserDefaults.app.array(forKey: key) as? [String] {
+                directModeApplications = bundleIdentifiers.map { DirectModeApplication(bundleIdentifier: $0) }
+            }
+        case UserDefaultsKeys.systemDict:
+            if let systemDictId = UserDefaults.app.string(forKey: key), let systemDict = SystemDict.Kind(rawValue: systemDictId) {
+                self.systemDict = systemDict
+            }
+        case UserDefaultsKeys.ignoreUserDictInPrivateMode:
+            ignoreUserDictInPrivateMode = UserDefaults.app.bool(forKey: key)
+        case UserDefaultsKeys.completionConfirmationTimeLimit:
+            completionConfirmationTimeLimit = UserDefaults.app.integer(forKey: key)
+        case UserDefaultsKeys.skkservAutoDisableThreshold:
+            skkservAutoDisableThreshold = UserDefaults.app.integer(forKey: key)
+        default:
+            logger.error("iCloudから取り込んだ設定 \(key, privacy: .public) の反映方法が実装されていません")
+            return false
+        }
+        return true
+    }
+
+    /// UserDefaultsからワークアラウンドの設定を読み込む
+    private static func loadWorkaroundApplications() -> [WorkaroundApplication] {
+        UserDefaults.app.array(forKey: UserDefaultsKeys.workarounds)?.compactMap { workaround in
+            if let workaround = workaround as? Dictionary<String, Any>, let bundleIdentifier = workaround["bundleIdentifier"] as? String,
+                let insertBlankString = workaround["insertBlankString"] as? Bool {
+                // treatFirstCharacterAsMarkedTextはv2.1+ で追加された
+                let treatFirstCharacterAsMarkedText = workaround["treatFirstCharacterAsMarkedText"] as? Bool ?? false
+                // showMarkerWhenEmptyはv2.15+ で追加された
+                let showMarkerWhenEmpty = workaround["showMarkerWhenEmpty"] as? Bool ?? false
+                return WorkaroundApplication(bundleIdentifier: bundleIdentifier,
+                                             insertBlankString: insertBlankString,
+                                             treatFirstCharacterAsMarkedText: treatFirstCharacterAsMarkedText,
+                                             showMarkerWhenEmpty: showMarkerWhenEmpty)
+            } else {
+                return nil
+            }
+        } ?? []
+    }
+
+    /// UserDefaultsからキーバインドの設定を読み込む。デフォルトのキーバインドを先頭に含む。
+    private static func loadKeyBindingSets() -> [KeyBindingSet] {
+        let customizedKeyBindingSets = UserDefaults.app.array(forKey: UserDefaultsKeys.keyBindingSets)?.compactMap {
+            if let dict = $0 as? [String: Any] {
+                KeyBindingSet(dict: dict)
+            } else {
+                nil
+            }
+        }
+        return [KeyBindingSet.defaultKeyBindingSet] + (customizedKeyBindingSets ?? [])
+    }
+
+    /// UserDefaultsから日時変換の設定を読み込む
+    private static func loadDateConversions() -> (yomis: [DateConversion.Yomi], conversions: [DateConversion]) {
+        if let dateConversionDict = UserDefaults.app.dictionary(forKey: UserDefaultsKeys.dateConversions),
+           let dateConversionsRaw = dateConversionDict["conversions"] as? [[String: Any]],
+           let dateYomisRaw = dateConversionDict["yomis"] as? [[String: Any]] {
+            return (dateYomisRaw.compactMap({ DateConversion.Yomi(dict: $0) }),
+                    dateConversionsRaw.compactMap({ DateConversion(dict: $0) }))
+        } else {
+            return ([], [])
+        }
+    }
+
+    /// UserDefaultsから入力モードのモーダルの色設定を読み込む
+    private static func loadInputModeColorSets() -> [InputMode: InputModeColorSet] {
+        var inputModeColorSets: [InputMode: InputModeColorSet] = [:]
+        let dict = UserDefaults.app.dictionary(forKey: UserDefaultsKeys.inputModePanel)
+        for mode in InputMode.allCases {
+            if let modeDict = dict?[mode.rawValue] as? [String: Any], let setting = InputModeColorSet(modeDict) {
+                inputModeColorSets[mode] = setting
+            } else {
+                inputModeColorSets[mode] = .defaultColorSet
+            }
+        }
+        return inputModeColorSets
     }
 
     // PreviewProvider用
@@ -968,6 +1140,7 @@ final class SettingsViewModel: ObservableObject {
         inputModeColorSets = Dictionary(uniqueKeysWithValues: InputMode.allCases.map { ($0, .defaultColorSet) })
         skkservAutoDisableThreshold = 3
         completionConfirmationTimeLimit = 500
+        syncSettingsWithiCloud = false
     }
 
     // InputModeSettingsViewのPreviewProvider用

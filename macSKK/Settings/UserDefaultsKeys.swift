@@ -84,4 +84,7 @@ struct UserDefaultsKeys {
     static let displayCandidateCount = "displayCandidateCount"
     // 読み入力から候補選択に切り替わるまでの時間 (ミリ秒)。最小100、最大1000、100単位
     static let completionConfirmationTimeLimit = "completionConfirmationTimeLimit"
+    // 設定をiCloud (NSUbiquitousKeyValueStore) で他のMacと同期するかどうか。
+    // この設定自体は同期しない。
+    static let syncSettingsWithiCloud = "syncSettingsWithiCloud"
 }
