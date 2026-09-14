@@ -196,6 +196,34 @@ final class SettingsSyncTests: XCTestCase {
 
     // MARK: - 同期するカテゴリ
 
+    /// 標準ではどのカテゴリも同期しないこと。
+    /// ユーザーが意図しない設定がiCloudに保存されると同期を切っても消せないため。
+    func testNoCategoryIsSyncedByDefault() {
+        let preserved = preserveUserDefaults()
+        defer { restoreUserDefaults(preserved) }
+
+        UserDefaults.app.removeObject(forKey: UserDefaultsKeys.syncedSettingsCategories)
+        let store = FakeKeyValueStore()
+        let settingsViewModel = try! SettingsViewModel(
+            dictionariesDirectoryUrl: FileManager.default.temporaryDirectory.appending(path: "Dictionaries"),
+            keyValueStore: store)
+        addTeardownBlock { @MainActor in
+            settingsViewModel.syncSettingsWithiCloud = false
+        }
+
+        XCTAssertTrue(settingsViewModel.syncedSettingsCategories.isEmpty)
+
+        // 同期を有効にしただけではiCloudに何も保存されない
+        settingsViewModel.enableSyncSettingsWithiCloud(initialSync: .pushLocal)
+        for key in SettingsSync.allSyncedKeys {
+            XCTAssertNil(store.object(forKey: key), "設定 \(key) が同期されています")
+        }
+
+        settingsViewModel.showAnnotation.toggle()
+        pumpRunLoop()
+        XCTAssertNil(store.object(forKey: UserDefaultsKeys.showAnnotation))
+    }
+
     /// カテゴリに分けたキーが以前の同期対象と過不足なく一致し、重複もないこと。
     /// 設定キーを追加したときにどのカテゴリにも入れ忘れるのを防ぐ。
     func testCategoriesCoverAllSyncedKeysWithoutDuplicates() {
@@ -217,8 +245,7 @@ final class SettingsSyncTests: XCTestCase {
 
         UserDefaults.app.set(13, forKey: UserDefaultsKeys.candidatesFontSize)
         let store = FakeKeyValueStore()
-        let settingsViewModel = makeSettingsViewModel(store: store)
-        settingsViewModel.syncedSettingsCategories = [.general]
+        let settingsViewModel = makeSettingsViewModel(store: store, categories: [.general])
         settingsViewModel.enableSyncSettingsWithiCloud(initialSync: .pushLocal)
 
         // candidatesFontSizeはcandidateWindowカテゴリなので同期対象外
@@ -238,8 +265,7 @@ final class SettingsSyncTests: XCTestCase {
 
         UserDefaults.app.set(13, forKey: UserDefaultsKeys.candidatesFontSize)
         let store = FakeKeyValueStore()
-        let settingsViewModel = makeSettingsViewModel(store: store)
-        settingsViewModel.syncedSettingsCategories = [.general]
+        let settingsViewModel = makeSettingsViewModel(store: store, categories: [.general])
         settingsViewModel.enableSyncSettingsWithiCloud(initialSync: .pushLocal)
 
         store.set(21, forKey: UserDefaultsKeys.candidatesFontSize)
@@ -256,8 +282,7 @@ final class SettingsSyncTests: XCTestCase {
 
         UserDefaults.app.set(13, forKey: UserDefaultsKeys.candidatesFontSize)
         let store = FakeKeyValueStore(values: [UserDefaultsKeys.candidatesFontSize: 21])
-        let settingsViewModel = makeSettingsViewModel(store: store)
-        settingsViewModel.syncedSettingsCategories = [.general]
+        let settingsViewModel = makeSettingsViewModel(store: store, categories: [.general])
         settingsViewModel.enableSyncSettingsWithiCloud(initialSync: .pushLocal)
         XCTAssertEqual(settingsViewModel.candidatesFontSize, 13)
 
@@ -274,8 +299,7 @@ final class SettingsSyncTests: XCTestCase {
 
         UserDefaults.app.set(13, forKey: UserDefaultsKeys.candidatesFontSize)
         let store = FakeKeyValueStore()
-        let settingsViewModel = makeSettingsViewModel(store: store)
-        settingsViewModel.syncedSettingsCategories = [.general]
+        let settingsViewModel = makeSettingsViewModel(store: store, categories: [.general])
         settingsViewModel.enableSyncSettingsWithiCloud(initialSync: .pushLocal)
 
         settingsViewModel.syncedSettingsCategories.insert(.candidateWindow)
@@ -320,11 +344,17 @@ final class SettingsSyncTests: XCTestCase {
 
     // MARK: -
 
-    private func makeSettingsViewModel(store: FakeKeyValueStore) -> SettingsViewModel {
+    /// 同期対象のカテゴリを指定してSettingsViewModelを作る。
+    /// 標準ではどのカテゴリも同期しないので、テストでは明示的に指定する。
+    private func makeSettingsViewModel(
+        store: FakeKeyValueStore,
+        categories: Set<SettingsSync.Category> = Set(SettingsSync.Category.allCases)
+    ) -> SettingsViewModel {
         // 辞書ディレクトリは使わないので存在しなくてよい
         let settingsViewModel = try! SettingsViewModel(
             dictionariesDirectoryUrl: FileManager.default.temporaryDirectory.appending(path: "Dictionaries"),
             keyValueStore: store)
+        settingsViewModel.syncedSettingsCategories = categories
         addTeardownBlock { @MainActor in
             settingsViewModel.syncSettingsWithiCloud = false
         }

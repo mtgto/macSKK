@@ -276,8 +276,10 @@ struct macSKKApp: App {
             UserDefaultsKeys.displayCandidateCount: 9,
             UserDefaultsKeys.completionConfirmationTimeLimit: 500,
             UserDefaultsKeys.syncSettingsWithiCloud: false,
-            // 標準ではすべてのカテゴリを同期する
-            UserDefaultsKeys.syncedSettingsCategories: SettingsSync.Category.allCases.map { $0.rawValue },
+            // 意図しない設定がiCloudに送られないよう、標準ではどのカテゴリも同期しない。
+            // 一度iCloudに保存した設定は同期を外しても消えないので、
+            // ユーザーが設定画面で選んだものだけを同期する。
+            UserDefaultsKeys.syncedSettingsCategories: [String](),
         ])
     }
 

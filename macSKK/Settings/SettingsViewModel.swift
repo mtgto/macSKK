@@ -1033,11 +1033,10 @@ final class SettingsViewModel: ObservableObject {
     }
 
     /// UserDefaultsからiCloudで同期する設定のカテゴリを読み込む。
-    /// 設定自体がない場合はすべてのカテゴリを同期する。
-    /// 空配列はユーザーがどのカテゴリも選んでいない状態なのでそのまま空で返す。
+    /// ユーザーが選んだものだけを同期したいので、設定がない場合はどのカテゴリも同期しない。
     private static func loadSyncedSettingsCategories() -> Set<SettingsSync.Category> {
         guard let rawValues = UserDefaults.app.array(forKey: UserDefaultsKeys.syncedSettingsCategories) as? [String] else {
-            return Set(SettingsSync.Category.allCases)
+            return []
         }
         return Set(rawValues.compactMap { SettingsSync.Category(rawValue: $0) })
     }

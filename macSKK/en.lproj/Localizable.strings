@@ -211,7 +211,7 @@
 
 "SettingsNameCloudSync" = "iCloud";
 "SyncedSettingsCategories" = "Settings to sync";
-"SyncedSettingsCategoriesDescription" = "You can choose which settings to sync on each Mac. Turning a setting off only stops sending and receiving it; the value stays in iCloud, so other Macs keep syncing it. Turning a setting on takes the value from iCloud if there is one.";
+"SyncedSettingsCategoriesDescription" = "Only the settings you choose are stored in iCloud. You can choose which settings to sync on each Mac. Turning a setting on takes the value from iCloud if there is one. Note that a setting already stored in iCloud is not removed when you turn it off; syncing just stops so that other Macs can keep using it.";
 "SettingsSyncCategoryGeneral" = "General";
 "SettingsSyncCategoryCandidateWindow" = "Candidate Window";
 "SettingsSyncCategoryCompletion" = "Completion";

@@ -211,7 +211,7 @@
 
 "SettingsNameCloudSync" = "iCloud";
 "SyncedSettingsCategories" = "同期する設定";
-"SyncedSettingsCategoriesDescription" = "どの設定を同期するかはMacごとに選べます。同期を外した設定はiCloudから消さずに送受信を止めるだけなので、他のMacの同期には影響しません。同期を追加した設定はiCloudに値があればそれを取り込みます。";
+"SyncedSettingsCategoriesDescription" = "選んだ設定だけをiCloudに保存します。どの設定を同期するかはMacごとに選べます。同期を追加した設定はiCloudに値があればそれを取り込みます。一度iCloudに保存した設定は同期を外しても消えないことに注意してください。他のMacが引き続き同期できるよう、送受信を止めるだけにしています。";
 "SettingsSyncCategoryGeneral" = "一般";
 "SettingsSyncCategoryCandidateWindow" = "変換候補ウィンドウ";
 "SettingsSyncCategoryCompletion" = "補完";
