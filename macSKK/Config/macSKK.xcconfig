@@ -11,16 +11,20 @@
 
 MACSKK_ENTITLEMENTS = macSKK/macSKK.entitlements
 MACSKK_PROVISIONING_PROFILE =
+
 CODE_SIGN_STYLE = Automatic
 DEVELOPMENT_TEAM = W3A6B7FDC7
 
-// 後から読み込むことで Local.xcconfig が上の設定を上書きできる
-#include? "Local.xcconfig"
-
 // entitlementとプロビジョニングプロファイルはこのxcconfigを使うmacSKKターゲットにだけ
-// 適用したいので、MACSKK_で始まる変数を経由して設定する。
+// 適用したいので、MACSKK_で始まる変数を経由して設定している。
 // xcodebuildのコマンドライン引数で直接 CODE_SIGN_ENTITLEMENTS などを渡すと
 // SKKServClientやFetchUpdateServiceにも適用されてしまい、Bundle Identifierが
 // 一致しないためにビルドが失敗する。リリースビルドではMakefileがMACSKK_の変数を渡す。
 CODE_SIGN_ENTITLEMENTS = $(MACSKK_ENTITLEMENTS)
 PROVISIONING_PROFILE_SPECIFIER = $(MACSKK_PROVISIONING_PROFILE)
+
+// Local.xcconfigは最後に読み込む。
+// これによりMACSKK_の変数でもCODE_SIGN_ENTITLEMENTSのような設定名の直接指定でも
+// 上書きできる。コマンドライン引数はxcconfigより優先されるので、
+// Local.xcconfigがあってもMakefileからのリリースビルドには影響しない。
+#include? "Local.xcconfig"
