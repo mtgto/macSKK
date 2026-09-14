@@ -15,7 +15,7 @@
 	<key>provisioningProfiles</key>
 	<dict>
 		<key>net.mtgto.inputmethod.macSKK</key>
-		<string>macSKK Developer ID</string>
+		<string>macSKKRelease</string>
 	</dict>
 </dict>
 </plist>
