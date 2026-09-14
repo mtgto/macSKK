@@ -276,6 +276,8 @@ struct macSKKApp: App {
             UserDefaultsKeys.displayCandidateCount: 9,
             UserDefaultsKeys.completionConfirmationTimeLimit: 500,
             UserDefaultsKeys.syncSettingsWithiCloud: false,
+            // 標準ではすべてのカテゴリを同期する
+            UserDefaultsKeys.syncedSettingsCategories: SettingsSync.Category.allCases.map { $0.rawValue },
         ])
     }
 

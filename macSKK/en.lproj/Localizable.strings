@@ -208,3 +208,15 @@
 "SyncSettingsWithiCloudConfirmation" = "macSKK settings are already saved in iCloud. Which settings do you want to use?";
 "Overwrite iCloud settings with settings of this Mac" = "Overwrite iCloud settings with settings of this Mac";
 "Apply iCloud settings to this Mac" = "Apply iCloud settings to this Mac";
+
+"SettingsNameCloudSync" = "iCloud";
+"SyncedSettingsCategories" = "Settings to sync";
+"SyncedSettingsCategoriesDescription" = "You can choose which settings to sync on each Mac. Turning a setting off only stops sending and receiving it; the value stays in iCloud, so other Macs keep syncing it. Turning a setting on takes the value from iCloud if there is one.";
+"SettingsSyncCategoryGeneral" = "General";
+"SettingsSyncCategoryCandidateWindow" = "Candidate Window";
+"SettingsSyncCategoryCompletion" = "Completion";
+"SettingsSyncCategoryKeyBinding" = "Key Binding";
+"SettingsSyncCategoryDateConversion" = "Date Conversion";
+"SettingsSyncCategoryDirectMode" = "Direct Input";
+"SettingsSyncCategoryWorkaround" = "Application Compatibility";
+"SettingsSyncCategorySKKServ" = "SKK Dictionary Server";

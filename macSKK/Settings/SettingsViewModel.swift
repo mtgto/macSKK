@@ -265,6 +265,8 @@ final class SettingsViewModel: ObservableObject {
     @Published var completionConfirmationTimeLimit: Int
     /// 設定をiCloudで他のMacと同期するかどうか
     @Published var syncSettingsWithiCloud: Bool
+    /// iCloudで同期する設定のカテゴリ。この選択自体は同期しない。
+    @Published var syncedSettingsCategories: Set<SettingsSync.Category>
     /// 設定のiCloud同期。entitlementがないビルドやテスト実行時はnil
     private(set) var settingsSync: SettingsSync? = nil
 
@@ -345,6 +347,7 @@ final class SettingsViewModel: ObservableObject {
         skkservAutoDisableThreshold = UserDefaults.app.integer(forKey: UserDefaultsKeys.skkservAutoDisableThreshold)
         completionConfirmationTimeLimit = UserDefaults.app.integer(forKey: UserDefaultsKeys.completionConfirmationTimeLimit)
         syncSettingsWithiCloud = UserDefaults.app.bool(forKey: UserDefaultsKeys.syncSettingsWithiCloud)
+        syncedSettingsCategories = Self.loadSyncedSettingsCategories()
 
         let inputModeColorSets = Self.loadInputModeColorSets()
         self.inputModeColorSets = inputModeColorSets
@@ -859,6 +862,12 @@ final class SettingsViewModel: ObservableObject {
             }
         }.store(in: &cancellables)
 
+        $syncedSettingsCategories.dropFirst().removeDuplicates().sink { [weak self] categories in
+            UserDefaults.app.set(categories.map { $0.rawValue }.sorted(), forKey: UserDefaultsKeys.syncedSettingsCategories)
+            logger.log("iCloudで同期する設定のカテゴリを\(categories.count)件に変更しました")
+            self?.settingsSync?.setCategories(categories)
+        }.store(in: &cancellables)
+
         NotificationCenter.default.publisher(for: notificationNameDictLoad).receive(on: RunLoop.main).sink { [weak self] notification in
             if let loadEvent = notification.object as? DictLoadEvent, let self {
                 if let userDict = Global.dictionary.userDict as? FileDict, userDict.id == loadEvent.id {
@@ -880,7 +889,9 @@ final class SettingsViewModel: ObservableObject {
 
         // 同期の開始はGlobal.dictionaryなどの初期化が終わったあとに
         // startSyncSettingsWithiCloudIfEnabled()を呼んで行う
-        settingsSync = keyValueStore.map { SettingsSync(store: $0, settingsViewModel: self) }
+        settingsSync = keyValueStore.map {
+            SettingsSync(store: $0, settingsViewModel: self, categories: syncedSettingsCategories)
+        }
     }
 
     /// iCloud側にすでに同期された設定があるかどうか
@@ -1021,6 +1032,16 @@ final class SettingsViewModel: ObservableObject {
         return true
     }
 
+    /// UserDefaultsからiCloudで同期する設定のカテゴリを読み込む。
+    /// 設定自体がない場合はすべてのカテゴリを同期する。
+    /// 空配列はユーザーがどのカテゴリも選んでいない状態なのでそのまま空で返す。
+    private static func loadSyncedSettingsCategories() -> Set<SettingsSync.Category> {
+        guard let rawValues = UserDefaults.app.array(forKey: UserDefaultsKeys.syncedSettingsCategories) as? [String] else {
+            return Set(SettingsSync.Category.allCases)
+        }
+        return Set(rawValues.compactMap { SettingsSync.Category(rawValue: $0) })
+    }
+
     /// UserDefaultsからワークアラウンドの設定を読み込む
     private static func loadWorkaroundApplications() -> [WorkaroundApplication] {
         UserDefaults.app.array(forKey: UserDefaultsKeys.workarounds)?.compactMap { workaround in
@@ -1141,6 +1162,7 @@ final class SettingsViewModel: ObservableObject {
         skkservAutoDisableThreshold = 3
         completionConfirmationTimeLimit = 500
         syncSettingsWithiCloud = false
+        syncedSettingsCategories = Set(SettingsSync.Category.allCases)
     }
 
     // InputModeSettingsViewのPreviewProvider用

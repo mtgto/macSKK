@@ -208,3 +208,15 @@
 "SyncSettingsWithiCloudConfirmation" = "iCloudにすでにmacSKKの設定が保存されています。どちらの設定を使いますか?";
 "Overwrite iCloud settings with settings of this Mac" = "このMacの設定でiCloudを上書きする";
 "Apply iCloud settings to this Mac" = "iCloudの設定をこのMacに反映する";
+
+"SettingsNameCloudSync" = "iCloud";
+"SyncedSettingsCategories" = "同期する設定";
+"SyncedSettingsCategoriesDescription" = "どの設定を同期するかはMacごとに選べます。同期を外した設定はiCloudから消さずに送受信を止めるだけなので、他のMacの同期には影響しません。同期を追加した設定はiCloudに値があればそれを取り込みます。";
+"SettingsSyncCategoryGeneral" = "一般";
+"SettingsSyncCategoryCandidateWindow" = "変換候補ウィンドウ";
+"SettingsSyncCategoryCompletion" = "補完";
+"SettingsSyncCategoryKeyBinding" = "キーバインド";
+"SettingsSyncCategoryDateConversion" = "日付変換";
+"SettingsSyncCategoryDirectMode" = "直接入力";
+"SettingsSyncCategoryWorkaround" = "アプリ互換性";
+"SettingsSyncCategorySKKServ" = "SKK辞書サーバー";

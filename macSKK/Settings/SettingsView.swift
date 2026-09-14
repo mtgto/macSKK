@@ -14,6 +14,7 @@ struct SettingsView: View {
         case keyBinding = "SettingsNameKeyBinding"
         case kanaRule = "SettingsNameKanaRule"
         case softwareUpdate = "SettingsNameSoftwareUpdate"
+        case cloudSync = "SettingsNameCloudSync"
         case directMode = "SettingsNameDirectMode"
         case workaround = "SettingsNameWorkaround"
         case log = "SettingsNameLog"
@@ -50,6 +51,8 @@ struct SettingsView: View {
                         Label(section.localizedStringKey, systemImage: "quote.bubble.fill")
                     case .softwareUpdate:
                         Label(section.localizedStringKey, systemImage: "gear.badge")
+                    case .cloudSync:
+                        Label(section.localizedStringKey, systemImage: "icloud")
                     case .directMode:
                         Label(section.localizedStringKey, systemImage: "hand.raised.app")
                     case .workaround:
@@ -94,6 +97,9 @@ struct SettingsView: View {
                     .navigationTitle(selectedSection.localizedStringKey)
             case .softwareUpdate:
                 SoftwareUpdateView(settingsViewModel: settingsViewModel)
+                    .navigationTitle(selectedSection.localizedStringKey)
+            case .cloudSync:
+                CloudSyncView(settingsViewModel: settingsViewModel)
                     .navigationTitle(selectedSection.localizedStringKey)
             case .directMode:
                 DirectModeView(settingsViewModel: settingsViewModel)

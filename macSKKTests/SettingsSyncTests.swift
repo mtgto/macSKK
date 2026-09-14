@@ -40,10 +40,11 @@ final class FakeKeyValueStore: KeyValueStore {
 final class SettingsSyncTests: XCTestCase {
     /// 同期対象外のキーもテストで書き換えるので合わせて退避する
     private static let preservedKeys: [String] =
-        SettingsSync.syncedKeys + [
+        SettingsSync.allSyncedKeys + [
             UserDefaultsKeys.dictionaries,
             UserDefaultsKeys.kanaRule,
             UserDefaultsKeys.syncSettingsWithiCloud,
+            UserDefaultsKeys.syncedSettingsCategories,
         ]
 
     func testStartWithPushLocal() {
@@ -188,9 +189,133 @@ final class SettingsSyncTests: XCTestCase {
         defer { restoreUserDefaults(preserved) }
 
         let settingsViewModel = makeSettingsViewModel(store: FakeKeyValueStore())
-        for key in SettingsSync.syncedKeys {
+        for key in SettingsSync.allSyncedKeys {
             XCTAssertTrue(settingsViewModel.applySyncedValue(key: key), "設定 \(key) の反映方法が実装されていません")
         }
+    }
+
+    // MARK: - 同期するカテゴリ
+
+    /// カテゴリに分けたキーが以前の同期対象と過不足なく一致し、重複もないこと。
+    /// 設定キーを追加したときにどのカテゴリにも入れ忘れるのを防ぐ。
+    func testCategoriesCoverAllSyncedKeysWithoutDuplicates() {
+        let keys = SettingsSync.Category.allCases.flatMap { $0.keys }
+        XCTAssertEqual(keys.count, Set(keys).count, "複数のカテゴリに含まれているキーがあります")
+        XCTAssertEqual(Set(keys), Set(SettingsSync.allSyncedKeys))
+        // 意図的に同期していないキーが紛れこんでいないこと
+        for key in [UserDefaultsKeys.dictionaries, UserDefaultsKeys.kanaRule, UserDefaultsKeys.skkservClient,
+                    UserDefaultsKeys.selectedInputSource, UserDefaultsKeys.privateMode,
+                    UserDefaultsKeys.syncSettingsWithiCloud, UserDefaultsKeys.syncedSettingsCategories] {
+            XCTAssertFalse(keys.contains(key), "同期しないはずの設定 \(key) がカテゴリに含まれています")
+        }
+    }
+
+    /// 無効にしたカテゴリのキーはiCloudに送られないこと
+    func testDisabledCategoryIsNotSentToStore() {
+        let preserved = preserveUserDefaults()
+        defer { restoreUserDefaults(preserved) }
+
+        UserDefaults.app.set(13, forKey: UserDefaultsKeys.candidatesFontSize)
+        let store = FakeKeyValueStore()
+        let settingsViewModel = makeSettingsViewModel(store: store)
+        settingsViewModel.syncedSettingsCategories = [.general]
+        settingsViewModel.enableSyncSettingsWithiCloud(initialSync: .pushLocal)
+
+        // candidatesFontSizeはcandidateWindowカテゴリなので同期対象外
+        XCTAssertNil(store.object(forKey: UserDefaultsKeys.candidatesFontSize))
+        // generalカテゴリのキーは同期される
+        XCTAssertNotNil(store.object(forKey: UserDefaultsKeys.showAnnotation))
+
+        settingsViewModel.candidatesFontSize = 21
+        pumpRunLoop()
+        XCTAssertNil(store.object(forKey: UserDefaultsKeys.candidatesFontSize))
+    }
+
+    /// 無効にしたカテゴリの設定はiCloudから取り込まないこと
+    func testDisabledCategoryIsNotAppliedFromStore() {
+        let preserved = preserveUserDefaults()
+        defer { restoreUserDefaults(preserved) }
+
+        UserDefaults.app.set(13, forKey: UserDefaultsKeys.candidatesFontSize)
+        let store = FakeKeyValueStore()
+        let settingsViewModel = makeSettingsViewModel(store: store)
+        settingsViewModel.syncedSettingsCategories = [.general]
+        settingsViewModel.enableSyncSettingsWithiCloud(initialSync: .pushLocal)
+
+        store.set(21, forKey: UserDefaultsKeys.candidatesFontSize)
+        postDidChangeExternallyNotification(changedKeys: [UserDefaultsKeys.candidatesFontSize])
+        pumpRunLoop()
+
+        XCTAssertEqual(settingsViewModel.candidatesFontSize, 13)
+    }
+
+    /// カテゴリを有効にするとiCloudにある値を取り込むこと
+    func testEnablingCategoryPullsRemoteValue() {
+        let preserved = preserveUserDefaults()
+        defer { restoreUserDefaults(preserved) }
+
+        UserDefaults.app.set(13, forKey: UserDefaultsKeys.candidatesFontSize)
+        let store = FakeKeyValueStore(values: [UserDefaultsKeys.candidatesFontSize: 21])
+        let settingsViewModel = makeSettingsViewModel(store: store)
+        settingsViewModel.syncedSettingsCategories = [.general]
+        settingsViewModel.enableSyncSettingsWithiCloud(initialSync: .pushLocal)
+        XCTAssertEqual(settingsViewModel.candidatesFontSize, 13)
+
+        settingsViewModel.syncedSettingsCategories.insert(.candidateWindow)
+
+        XCTAssertEqual(settingsViewModel.candidatesFontSize, 21)
+        XCTAssertEqual(UserDefaults.app.integer(forKey: UserDefaultsKeys.candidatesFontSize), 21)
+    }
+
+    /// iCloudに値がないカテゴリを有効にするとこのMacの値を送ること
+    func testEnablingCategoryPushesLocalValueWhenRemoteIsEmpty() {
+        let preserved = preserveUserDefaults()
+        defer { restoreUserDefaults(preserved) }
+
+        UserDefaults.app.set(13, forKey: UserDefaultsKeys.candidatesFontSize)
+        let store = FakeKeyValueStore()
+        let settingsViewModel = makeSettingsViewModel(store: store)
+        settingsViewModel.syncedSettingsCategories = [.general]
+        settingsViewModel.enableSyncSettingsWithiCloud(initialSync: .pushLocal)
+
+        settingsViewModel.syncedSettingsCategories.insert(.candidateWindow)
+
+        XCTAssertEqual(store.object(forKey: UserDefaultsKeys.candidatesFontSize) as? Int, 13)
+        XCTAssertEqual(settingsViewModel.candidatesFontSize, 13)
+    }
+
+    /// カテゴリを無効にしてもiCloudの値は消さないこと
+    func testDisablingCategoryKeepsRemoteValue() {
+        let preserved = preserveUserDefaults()
+        defer { restoreUserDefaults(preserved) }
+
+        UserDefaults.app.set(13, forKey: UserDefaultsKeys.candidatesFontSize)
+        let store = FakeKeyValueStore()
+        let settingsViewModel = makeSettingsViewModel(store: store)
+        settingsViewModel.enableSyncSettingsWithiCloud(initialSync: .pushLocal)
+        XCTAssertEqual(store.object(forKey: UserDefaultsKeys.candidatesFontSize) as? Int, 13)
+
+        settingsViewModel.syncedSettingsCategories.remove(.candidateWindow)
+
+        XCTAssertEqual(store.object(forKey: UserDefaultsKeys.candidatesFontSize) as? Int, 13)
+    }
+
+    /// 選択したカテゴリはUserDefaultsに保存され、同期対象にはならないこと
+    func testSyncedCategoriesArePersistedAndNotSynced() {
+        let preserved = preserveUserDefaults()
+        defer { restoreUserDefaults(preserved) }
+
+        let store = FakeKeyValueStore()
+        let settingsViewModel = makeSettingsViewModel(store: store)
+        settingsViewModel.enableSyncSettingsWithiCloud(initialSync: .pushLocal)
+
+        settingsViewModel.syncedSettingsCategories = [.general, .keyBinding]
+        pumpRunLoop()
+
+        XCTAssertEqual(
+            UserDefaults.app.array(forKey: UserDefaultsKeys.syncedSettingsCategories) as? [String],
+            ["general", "keyBinding"])
+        XCTAssertNil(store.object(forKey: UserDefaultsKeys.syncedSettingsCategories))
     }
 
     // MARK: -

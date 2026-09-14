@@ -87,4 +87,7 @@ struct UserDefaultsKeys {
     // 設定をiCloud (NSUbiquitousKeyValueStore) で他のMacと同期するかどうか。
     // この設定自体は同期しない。
     static let syncSettingsWithiCloud = "syncSettingsWithiCloud"
+    // iCloudで同期する設定のカテゴリ (SettingsSync.Category) のrawValueの配列。
+    // Macごとに選べるようこの設定自体は同期しない。
+    static let syncedSettingsCategories = "syncedSettingsCategories"
 }

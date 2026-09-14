@@ -77,6 +77,7 @@
 		CE3E44AD2B5391DB00105798 /* SettingsWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE3E44AC2B5391DB00105798 /* SettingsWatcher.swift */; };
 		CE40D9A12A6D0C2F00D44799 /* SystemDictView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE40D9A02A6D0C2F00D44799 /* SystemDictView.swift */; };
 		CE40D9A32A6D0C3900D44799 /* SystemDict.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE40D9A22A6D0C3900D44799 /* SystemDict.swift */; };
+		CE420CSV2F00000100000002 /* CloudSyncView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE420CSV2F00000100000001 /* CloudSyncView.swift */; };
 		CE420SYNC2F00000100000002 /* SettingsSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE420SYNC2F00000100000001 /* SettingsSync.swift */; };
 		CE420SYNC2F00000100000004 /* SettingsSyncTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE420SYNC2F00000100000003 /* SettingsSyncTests.swift */; };
 		CE485A882A8FA195008271EF /* Release+UNNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE485A872A8FA195008271EF /* Release+UNNotification.swift */; };
@@ -293,6 +294,10 @@
 		CE3E44AC2B5391DB00105798 /* SettingsWatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWatcher.swift; sourceTree = "<group>"; };
 		CE40D9A02A6D0C2F00D44799 /* SystemDictView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemDictView.swift; sourceTree = "<group>"; };
 		CE40D9A22A6D0C3900D44799 /* SystemDict.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemDict.swift; sourceTree = "<group>"; };
+		CE420CFG2F00000100000001 /* macSKK.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = macSKK.xcconfig; sourceTree = "<group>"; };
+		CE420CFG2F00000100000002 /* macSKK-iCloud.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "macSKK-iCloud.entitlements"; sourceTree = "<group>"; };
+		CE420CFG2F00000100000003 /* Local.xcconfig.sample */ = {isa = PBXFileReference; lastKnownFileType = text; path = Local.xcconfig.sample; sourceTree = "<group>"; };
+		CE420CSV2F00000100000001 /* CloudSyncView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudSyncView.swift; sourceTree = "<group>"; };
 		CE420SYNC2F00000100000001 /* SettingsSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsSync.swift; sourceTree = "<group>"; };
 		CE420SYNC2F00000100000003 /* SettingsSyncTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsSyncTests.swift; sourceTree = "<group>"; };
 		CE485A872A8FA195008271EF /* Release+UNNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Release+UNNotification.swift"; sourceTree = "<group>"; };
@@ -315,9 +320,6 @@
 		CE5ECF392957034D00E7BE7D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		CE5ECF3C2957034D00E7BE7D /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		CE5ECF3E2957034D00E7BE7D /* macSKK.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = macSKK.entitlements; sourceTree = "<group>"; };
-		CE420CFG2F00000100000001 /* macSKK.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = macSKK.xcconfig; sourceTree = "<group>"; };
-		CE420CFG2F00000100000002 /* macSKK-iCloud.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "macSKK-iCloud.entitlements"; sourceTree = "<group>"; };
-		CE420CFG2F00000100000003 /* Local.xcconfig.sample */ = {isa = PBXFileReference; lastKnownFileType = text; path = Local.xcconfig.sample; sourceTree = "<group>"; };
 		CE5ECF432957034D00E7BE7D /* macSKKTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = macSKKTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		CE5ECF612957061A00E7BE7D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CE5ECF632957077D00E7BE7D /* InfoPlist.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = InfoPlist.strings; sourceTree = "<group>"; };
@@ -499,6 +501,15 @@
 			path = Network;
 			sourceTree = "<group>";
 		};
+		CE420CFG2F00000100000004 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				CE420CFG2F00000100000001 /* macSKK.xcconfig */,
+				CE420CFG2F00000100000003 /* Local.xcconfig.sample */,
+			);
+			path = Config;
+			sourceTree = "<group>";
+		};
 		CE496C962B440CCA001C623C /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -534,15 +545,6 @@
 				CE04E88A3017BB3000310428 /* SKKServClientTests.xctest */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		CE420CFG2F00000100000004 /* Config */ = {
-			isa = PBXGroup;
-			children = (
-				CE420CFG2F00000100000001 /* macSKK.xcconfig */,
-				CE420CFG2F00000100000003 /* Local.xcconfig.sample */,
-			);
-			path = Config;
 			sourceTree = "<group>";
 		};
 		CE5ECF342957034B00E7BE7D /* macSKK */ = {
@@ -720,6 +722,7 @@
 				CE8871312E574CC900E20BFB /* CompletionSettingsView.swift */,
 				CEA602A92F02C6FD00E605F2 /* CandidateWindowSettingsView.swift */,
 				CEE3717429653112000DB2C3 /* SoftwareUpdateView.swift */,
+				CE420CSV2F00000100000001 /* CloudSyncView.swift */,
 				CE97887A2A9B93EB00F9B196 /* DirectModeView.swift */,
 				CED098502B95F32600F2E844 /* WorkaroundView.swift */,
 				CEF3D86B2B9C022900BD1D3A /* WorkaroundApplicationView.swift */,
@@ -1060,6 +1063,7 @@
 				CED7F51F2AB5F4A7007FC6BD /* Character+Additions.swift in Sources */,
 				CE2157662B2EA985006E4C41 /* UserDefaultsKeys.swift in Sources */,
 				CE420SYNC2F00000100000002 /* SettingsSync.swift in Sources */,
+				CE420CSV2F00000100000002 /* CloudSyncView.swift in Sources */,
 				CE84A3B929570C37009394C4 /* InputController.swift in Sources */,
 				CE00C0DE0000000000000001 /* CompletionPresenter.swift in Sources */,
 				CE6599DC2ADBF2630052F8C0 /* SettingsWindow.swift in Sources */,

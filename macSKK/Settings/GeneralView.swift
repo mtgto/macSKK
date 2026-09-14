@@ -6,22 +6,6 @@ import SwiftUI
 struct GeneralView: View {
     @StateObject var settingsViewModel: SettingsViewModel
     @State private var isShowingInputModeSettings = false
-    @State private var isShowingInitialSyncDialog = false
-
-    /// 設定のiCloud同期のトグル。
-    /// iCloud側にすでに設定がある状態で有効化するときは、どちらの設定を優先するか確認する。
-    private var syncSettingsWithiCloud: Binding<Bool> {
-        Binding(
-            get: { settingsViewModel.syncSettingsWithiCloud },
-            set: { syncSettingsWithiCloud in
-                if syncSettingsWithiCloud && settingsViewModel.hasRemoteSyncedSettings {
-                    isShowingInitialSyncDialog = true
-                } else {
-                    settingsViewModel.syncSettingsWithiCloud = syncSettingsWithiCloud
-                }
-            }
-        )
-    }
 
     var body: some View {
         VStack {
@@ -108,34 +92,6 @@ struct GeneralView: View {
                     Toggle(isOn: $settingsViewModel.ignoreUserDictInPrivateMode, label: {
                         Text("Ignore User Dict in Private Mode")
                     })
-                }
-                Section {
-                    Toggle(isOn: syncSettingsWithiCloud, label: {
-                        Text("Sync settings with iCloud")
-                    })
-                    .disabled(!SettingsSync.isAvailable)
-                    .confirmationDialog("Sync settings with iCloud", isPresented: $isShowingInitialSyncDialog) {
-                        Button("Overwrite iCloud settings with settings of this Mac") {
-                            settingsViewModel.enableSyncSettingsWithiCloud(initialSync: .pushLocal)
-                        }
-                        Button("Apply iCloud settings to this Mac") {
-                            settingsViewModel.enableSyncSettingsWithiCloud(initialSync: .pullRemote)
-                        }
-                        Button("Cancel", role: .cancel) {}
-                    } message: {
-                        Text("SyncSettingsWithiCloudConfirmation")
-                    }
-                } footer: {
-                    // 三項演算子だとLocalizedStringKeyとして解釈されないので分岐する
-                    if SettingsSync.isAvailable {
-                        Text("SyncSettingsWithiCloudDescription")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    } else {
-                        Text("SyncSettingsWithiCloudUnavailable")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
                 }
             }
             .formStyle(.grouped)
