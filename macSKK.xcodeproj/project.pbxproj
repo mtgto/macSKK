@@ -61,7 +61,6 @@
 		CE1B006D2BA54DE400C830FD /* SKKServClientProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF3D8752B9EF0C000BD1D3A /* SKKServClientProtocol.swift */; };
 		CE1E7BAB2E406B6700C2E410 /* URL+AdditionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE1E7BAA2E406B6700C2E410 /* URL+AdditionsTests.swift */; };
 		CE2157662B2EA985006E4C41 /* UserDefaultsKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE2157652B2EA985006E4C41 /* UserDefaultsKeys.swift */; };
-		CE420SYNC2F00000100000002 /* SettingsSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE420SYNC2F00000100000001 /* SettingsSync.swift */; };
 		CE2573CF2F9E547C00533A05 /* Data+Gzip.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE2573CE2F9E547C00533A05 /* Data+Gzip.swift */; };
 		CE2573D12F9E557800533A05 /* Data+GzipTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE2573D02F9E557800533A05 /* Data+GzipTests.swift */; };
 		CE2573D32F9E562000533A05 /* SKK-JISYO.test.utf8.gz in Resources */ = {isa = PBXBuildFile; fileRef = CE2573D22F9E562000533A05 /* SKK-JISYO.test.utf8.gz */; };
@@ -78,6 +77,8 @@
 		CE3E44AD2B5391DB00105798 /* SettingsWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE3E44AC2B5391DB00105798 /* SettingsWatcher.swift */; };
 		CE40D9A12A6D0C2F00D44799 /* SystemDictView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE40D9A02A6D0C2F00D44799 /* SystemDictView.swift */; };
 		CE40D9A32A6D0C3900D44799 /* SystemDict.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE40D9A22A6D0C3900D44799 /* SystemDict.swift */; };
+		CE420SYNC2F00000100000002 /* SettingsSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE420SYNC2F00000100000001 /* SettingsSync.swift */; };
+		CE420SYNC2F00000100000004 /* SettingsSyncTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE420SYNC2F00000100000003 /* SettingsSyncTests.swift */; };
 		CE485A882A8FA195008271EF /* Release+UNNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE485A872A8FA195008271EF /* Release+UNNotification.swift */; };
 		CE485A8A2A8FA5C6008271EF /* UserNotificationDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE485A892A8FA5C6008271EF /* UserNotificationDelegate.swift */; };
 		CE496C8C2B43968A001C623C /* LogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE496C8B2B43968A001C623C /* LogView.swift */; };
@@ -128,7 +129,6 @@
 		CEA253962E2290AC00618E64 /* SKKServDictSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA253952E2290AC00618E64 /* SKKServDictSetting.swift */; };
 		CEA253982E23AB7600618E64 /* DictSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA253972E23AB7600618E64 /* DictSetting.swift */; };
 		CEA2539A2E23DA9000618E64 /* DictSettingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA253992E23DA9000618E64 /* DictSettingTests.swift */; };
-		CE420SYNC2F00000100000004 /* SettingsSyncTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE420SYNC2F00000100000003 /* SettingsSyncTests.swift */; };
 		CEA253E62E2E852000618E64 /* UserDefaults+App.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA253E52E2E852000618E64 /* UserDefaults+App.swift */; };
 		CEA602AA2F02C6FD00E605F2 /* CandidateWindowSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA602A92F02C6FD00E605F2 /* CandidateWindowSettingsView.swift */; };
 		CEA602AC2F02CFB000E605F2 /* OptionalBackgroundModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA602AB2F02CFB000E605F2 /* OptionalBackgroundModifier.swift */; };
@@ -278,7 +278,6 @@
 		CE1B006B2BA54D9800C830FD /* SKKServService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServService.swift; sourceTree = "<group>"; };
 		CE1E7BAA2E406B6700C2E410 /* URL+AdditionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URL+AdditionsTests.swift"; sourceTree = "<group>"; };
 		CE2157652B2EA985006E4C41 /* UserDefaultsKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsKeys.swift; sourceTree = "<group>"; };
-		CE420SYNC2F00000100000001 /* SettingsSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsSync.swift; sourceTree = "<group>"; };
 		CE2573CE2F9E547C00533A05 /* Data+Gzip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Gzip.swift"; sourceTree = "<group>"; };
 		CE2573D02F9E557800533A05 /* Data+GzipTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+GzipTests.swift"; sourceTree = "<group>"; };
 		CE2573D22F9E562000533A05 /* SKK-JISYO.test.utf8.gz */ = {isa = PBXFileReference; lastKnownFileType = archive.gzip; path = "SKK-JISYO.test.utf8.gz"; sourceTree = "<group>"; };
@@ -294,6 +293,8 @@
 		CE3E44AC2B5391DB00105798 /* SettingsWatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWatcher.swift; sourceTree = "<group>"; };
 		CE40D9A02A6D0C2F00D44799 /* SystemDictView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemDictView.swift; sourceTree = "<group>"; };
 		CE40D9A22A6D0C3900D44799 /* SystemDict.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemDict.swift; sourceTree = "<group>"; };
+		CE420SYNC2F00000100000001 /* SettingsSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsSync.swift; sourceTree = "<group>"; };
+		CE420SYNC2F00000100000003 /* SettingsSyncTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsSyncTests.swift; sourceTree = "<group>"; };
 		CE485A872A8FA195008271EF /* Release+UNNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Release+UNNotification.swift"; sourceTree = "<group>"; };
 		CE485A892A8FA5C6008271EF /* UserNotificationDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserNotificationDelegate.swift; sourceTree = "<group>"; };
 		CE496C8B2B43968A001C623C /* LogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogView.swift; sourceTree = "<group>"; };
@@ -314,6 +315,9 @@
 		CE5ECF392957034D00E7BE7D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		CE5ECF3C2957034D00E7BE7D /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		CE5ECF3E2957034D00E7BE7D /* macSKK.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = macSKK.entitlements; sourceTree = "<group>"; };
+		CE420CFG2F00000100000001 /* macSKK.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = macSKK.xcconfig; sourceTree = "<group>"; };
+		CE420CFG2F00000100000002 /* macSKK-iCloud.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "macSKK-iCloud.entitlements"; sourceTree = "<group>"; };
+		CE420CFG2F00000100000003 /* Local.xcconfig.sample */ = {isa = PBXFileReference; lastKnownFileType = text; path = Local.xcconfig.sample; sourceTree = "<group>"; };
 		CE5ECF432957034D00E7BE7D /* macSKKTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = macSKKTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		CE5ECF612957061A00E7BE7D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CE5ECF632957077D00E7BE7D /* InfoPlist.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = InfoPlist.strings; sourceTree = "<group>"; };
@@ -347,7 +351,6 @@
 		CEA253952E2290AC00618E64 /* SKKServDictSetting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServDictSetting.swift; sourceTree = "<group>"; };
 		CEA253972E23AB7600618E64 /* DictSetting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictSetting.swift; sourceTree = "<group>"; };
 		CEA253992E23DA9000618E64 /* DictSettingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictSettingTests.swift; sourceTree = "<group>"; };
-		CE420SYNC2F00000100000003 /* SettingsSyncTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsSyncTests.swift; sourceTree = "<group>"; };
 		CEA253E52E2E852000618E64 /* UserDefaults+App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UserDefaults+App.swift"; sourceTree = "<group>"; };
 		CEA602A92F02C6FD00E605F2 /* CandidateWindowSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CandidateWindowSettingsView.swift; sourceTree = "<group>"; };
 		CEA602AB2F02CFB000E605F2 /* OptionalBackgroundModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OptionalBackgroundModifier.swift; sourceTree = "<group>"; };
@@ -533,6 +536,15 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		CE420CFG2F00000100000004 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				CE420CFG2F00000100000001 /* macSKK.xcconfig */,
+				CE420CFG2F00000100000003 /* Local.xcconfig.sample */,
+			);
+			path = Config;
+			sourceTree = "<group>";
+		};
 		CE5ECF342957034B00E7BE7D /* macSKK */ = {
 			isa = PBXGroup;
 			children = (
@@ -595,6 +607,8 @@
 				CE1A01472C5931D40034FA7D /* eisu.tiff */,
 				CE5ECF612957061A00E7BE7D /* Info.plist */,
 				CE5ECF3E2957034D00E7BE7D /* macSKK.entitlements */,
+				CE420CFG2F00000100000002 /* macSKK-iCloud.entitlements */,
+				CE420CFG2F00000100000004 /* Config */,
 				CE5ECF632957077D00E7BE7D /* InfoPlist.strings */,
 				CE6DBAC62A85BF3E00F5A227 /* Localizable.strings */,
 				CEB0888B2A7F342000EFD1E3 /* Credits.rtf */,
@@ -1389,16 +1403,14 @@
 		};
 		CE5ECF582957034D00E7BE7D /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = CE420CFG2F00000100000001 /* macSKK.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = macSKK/macSKK.entitlements;
-				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"macSKK/Preview Content\"";
-				DEVELOPMENT_TEAM = W3A6B7FDC7;
 				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1421,16 +1433,14 @@
 		};
 		CE5ECF592957034D00E7BE7D /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = CE420CFG2F00000100000001 /* macSKK.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = macSKK/macSKK.entitlements;
-				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"macSKK/Preview Content\"";
-				DEVELOPMENT_TEAM = W3A6B7FDC7;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;

@@ -1,0 +1,17 @@
+// macSKKの署名まわりのビルド設定。
+//
+// 標準ではiCloudでの設定同期 (NSUbiquitousKeyValueStore) のentitlementを含みません。
+// このentitlementはApp IDにiCloud capabilityを有効にしたプロビジョニングプロファイルが
+// 必要になるため、含めてしまうとDeveloper Programに参加していない環境でビルドできなくなります。
+// entitlementのないビルドではiCloud同期の設定が無効になるだけで、それ以外は同じように動きます。
+//
+// iCloud同期を有効にしたビルドを作る場合は、このディレクトリに Local.xcconfig を作成して
+// 設定を上書きしてください。Local.xcconfig.sample が雛形です。
+// 詳細は .github/CONTRIBUTING.md を参照してください。
+
+CODE_SIGN_ENTITLEMENTS = macSKK/macSKK.entitlements
+CODE_SIGN_STYLE = Automatic
+DEVELOPMENT_TEAM = W3A6B7FDC7
+
+// 後から読み込むことで Local.xcconfig が上の設定を上書きできる
+#include? "Local.xcconfig"
