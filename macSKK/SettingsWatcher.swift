@@ -65,8 +65,12 @@ extension SettingsWatcher: NSFilePresenter {
         if filename.hasPrefix("kana-rule") && filename.hasSuffix(".conf") {
             logger.log("ローマ字かな変換ルールファイル \(filename, privacy: .public)が作成されたため読み込みます")
             Task { @MainActor in
-                let kanaRule = try Romaji(contentsOf: url, initialRomaji: Global.defaultKanaRule)
-                NotificationCenter.default.post(name: notificationNameKanaRuleDidAppear, object: kanaRule)
+                do {
+                    let kanaRule = try Romaji(contentsOf: url, initialRomaji: Global.defaultKanaRule)
+                    NotificationCenter.default.post(name: notificationNameKanaRuleDidAppear, object: kanaRule)
+                } catch {
+                    logger.warning("ローマ字かな変換ルール \(filename, privacy: .public) の読み込みに失敗しました: \(String(describing: error), privacy: .public)")
+                }
             }
         } else {
             return
@@ -79,8 +83,12 @@ extension SettingsWatcher: NSFilePresenter {
         if filename.hasPrefix("kana-rule") && filename.hasSuffix(".conf") {
             logger.log("ローマ字かな変換ルールファイル \(filename, privacy: .public)が修正されたため読み込みます")
             Task { @MainActor in
-                let kanaRule = try Romaji(contentsOf: url, initialRomaji: Global.defaultKanaRule)
-                NotificationCenter.default.post(name: notificationNameKanaRuleDidChange, object: kanaRule)
+                do {
+                    let kanaRule = try Romaji(contentsOf: url, initialRomaji: Global.defaultKanaRule)
+                    NotificationCenter.default.post(name: notificationNameKanaRuleDidChange, object: kanaRule)
+                } catch {
+                    logger.warning("ローマ字かな変換ルール \(filename, privacy: .public) の読み込みに失敗しました: \(String(describing: error), privacy: .public)")
+                }
             }
         }
     }

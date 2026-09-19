@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
+import Foundation
 
 struct SKKServDictSetting: Equatable {
     /// SKKServが有効かどうか
