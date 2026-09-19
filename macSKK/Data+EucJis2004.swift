@@ -52,7 +52,7 @@ extension Data {
                     logger.warning("EUC-JIS-2004から処理できない文字が \(ret) 文字ありました")
                 }
             }
-            guard let str = String(validatingUTF8: buffer) else {
+            guard let str = String(utf8String: buffer) else {
                 throw EucJis2004Error.convert
             }
             return str

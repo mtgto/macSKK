@@ -43,6 +43,7 @@ struct ListFooterControls: ViewModifier {
 }
 
 extension List {
+    @MainActor
     func listFooterControls(addAction: @escaping () -> Void, removeAction: @escaping () -> Void) -> some View {
         self
             .modifier(ListFooterControls(addAction: addAction, removeAction: removeAction))
