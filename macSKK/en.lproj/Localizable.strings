@@ -205,7 +205,9 @@
 "Sync settings with iCloud" = "Sync settings with iCloud";
 "SyncSettingsWithiCloudDescription" = "Sync settings with macSKK on other Macs signed in with the same Apple Account. Dictionaries and their settings, keyboard layout, skkserv settings and the selected romaji-kana rule are not synced.";
 "SyncSettingsWithiCloudUnavailable" = "This build of macSKK does not support syncing settings with iCloud.";
-"SyncSettingsWithiCloudConfirmation" = "macSKK settings are already saved in iCloud. Which settings do you want to use?";
+"SyncSettingsWithiCloudConflictMessage" = "These settings differ between iCloud and this Mac:\n\n%@\n\nWhich settings do you want to use?";
+"SyncCategoryConflictMessage" = "%lld settings in this group differ between iCloud and this Mac. Which settings do you want to use?";
+"SyncConflictCategoryCount" = "%1$@ (%2$lld)";
 "Overwrite iCloud settings with settings of this Mac" = "Overwrite iCloud settings with settings of this Mac";
 "Apply iCloud settings to this Mac" = "Apply iCloud settings to this Mac";
 

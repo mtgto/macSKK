@@ -894,9 +894,10 @@ final class SettingsViewModel: ObservableObject {
         }
     }
 
-    /// iCloud側にすでに同期された設定があるかどうか
-    var hasRemoteSyncedSettings: Bool {
-        settingsSync?.hasRemoteSettings ?? false
+    /// iCloudとこのMacで値が異なる設定のキーをカテゴリごとに返す。
+    /// 空なら衝突がないのでどちらの設定を使うかをユーザーに聞く必要はない。
+    func syncConflicts(categories: Set<SettingsSync.Category>) -> [SettingsSync.Category: [String]] {
+        settingsSync?.conflicts(categories: categories) ?? [:]
     }
 
     /// 設定のiCloud同期が有効なら開始する。
@@ -913,6 +914,19 @@ final class SettingsViewModel: ObservableObject {
     func enableSyncSettingsWithiCloud(initialSync: SettingsSync.InitialSync) {
         settingsSync?.start(initialSync: initialSync)
         syncSettingsWithiCloud = true
+    }
+
+    /// 同期する設定のカテゴリを有効にする
+    /// - Parameters:
+    ///   - category: 有効にするカテゴリ
+    ///   - resolution: iCloudとこのMacで値が異なるときにどちらを優先するか
+    func enableSyncedSettingsCategory(_ category: SettingsSync.Category, resolution: SettingsSync.InitialSync) {
+        var categories = syncedSettingsCategories
+        categories.insert(category)
+        settingsSync?.setCategories(categories, resolution: resolution)
+        // syncedSettingsCategoriesのsinkもsetCategoriesを呼ぶが、
+        // すでに反映済みなので何も起きない
+        syncedSettingsCategories = categories
     }
 
     /**

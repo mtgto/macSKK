@@ -205,7 +205,9 @@
 "Sync settings with iCloud" = "設定をiCloudで同期する";
 "SyncSettingsWithiCloudDescription" = "同じApple Accountでサインインした他のMacのmacSKKと設定を同期します。辞書とその設定、キー配列、skkservの接続設定、ローマ字かな変換ルールの選択は同期しません。";
 "SyncSettingsWithiCloudUnavailable" = "このビルドのmacSKKはiCloudでの設定同期に対応していません。";
-"SyncSettingsWithiCloudConfirmation" = "iCloudにすでにmacSKKの設定が保存されています。どちらの設定を使いますか?";
+"SyncSettingsWithiCloudConflictMessage" = "iCloudとこのMacで次の設定が異なります。\n\n%@\n\nどちらの設定を使いますか?";
+"SyncCategoryConflictMessage" = "この分類の設定のうち%lld件がiCloudとこのMacで異なります。どちらの設定を使いますか?";
+"SyncConflictCategoryCount" = "%1$@ (%2$lld件)";
 "Overwrite iCloud settings with settings of this Mac" = "このMacの設定でiCloudを上書きする";
 "Apply iCloud settings to this Mac" = "iCloudの設定をこのMacに反映する";
 

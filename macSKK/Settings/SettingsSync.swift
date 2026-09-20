@@ -170,9 +170,26 @@ final class SettingsSync {
         Category.allCases.filter { categories.contains($0) }.flatMap { $0.keys }
     }
 
-    /// iCloud側に同期済みの設定があるかどうか
-    var hasRemoteSettings: Bool {
-        syncedKeys.contains { store.object(forKey: $0) != nil }
+    /**
+     * iCloudとこのMacで値が異なる設定のキーをカテゴリごとに返す。
+     *
+     * iCloudに値がない設定と、値が同じ設定は衝突していないものとして扱う。
+     * 衝突がなければどちらの設定を使っても結果が同じなので、ユーザーに選ばせる必要はない。
+     */
+    func conflicts(categories: Set<Category>) -> [Category: [String]] {
+        var conflicts: [Category: [String]] = [:]
+        for category in Category.allCases where categories.contains(category) {
+            let keys = category.keys.filter { key in
+                guard let remoteValue = store.object(forKey: key) as? NSObject else {
+                    return false
+                }
+                return remoteValue != UserDefaults.app.object(forKey: key) as? NSObject
+            }
+            if !keys.isEmpty {
+                conflicts[category] = keys
+            }
+        }
+        return conflicts
     }
 
     /// 同期を開始する。すでに開始済みなら何もしない。
@@ -219,10 +236,11 @@ final class SettingsSync {
      * 無効にしたカテゴリの設定はiCloudから消さずに送受信を止めるだけにしている。
      * これにより他のMacはそのカテゴリの同期を続けられるし、あとで有効に戻すこともできる。
      *
-     * 有効にしたカテゴリはiCloudに値があればそれを取り込み、なければこのMacの値を送る。
-     * 他のMacの設定を勝手に上書きしないためにiCloud側を優先している。
+     * 有効にしたカテゴリは resolution に従って解決する。
+     * `.pullRemote` ならiCloudに値があればそれを取り込み、なければこのMacの値を送る。
+     * `.pushLocal` ならこのMacの値でiCloudを上書きする。
      */
-    func setCategories(_ newCategories: Set<Category>) {
+    func setCategories(_ newCategories: Set<Category>, resolution: InitialSync = .pullRemote) {
         let added = newCategories.subtracting(categories)
         let removed = categories.subtracting(newCategories)
         categories = newCategories
@@ -239,7 +257,7 @@ final class SettingsSync {
         let addedKeys = Category.allCases.filter { added.contains($0) }.flatMap { $0.keys }
         var remoteKeys: [String] = []
         for key in addedKeys {
-            if store.object(forKey: key) != nil {
+            if resolution == .pullRemote, store.object(forKey: key) != nil {
                 remoteKeys.append(key)
             } else {
                 let value = UserDefaults.app.object(forKey: key) as? NSObject

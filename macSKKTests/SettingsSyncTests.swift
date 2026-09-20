@@ -342,6 +342,96 @@ final class SettingsSyncTests: XCTestCase {
         XCTAssertNil(store.object(forKey: UserDefaultsKeys.syncedSettingsCategories))
     }
 
+    // MARK: - 衝突の解決
+
+    /// iCloudとこのMacで値が異なる設定だけを衝突として返すこと
+    func testConflictsOnlyReportsDifferingKeys() {
+        let preserved = preserveUserDefaults()
+        defer { restoreUserDefaults(preserved) }
+
+        UserDefaults.app.set(13, forKey: UserDefaultsKeys.candidatesFontSize)
+        UserDefaults.app.set(true, forKey: UserDefaultsKeys.showAnnotation)
+        let store = FakeKeyValueStore(values: [
+            // 値が異なるので衝突
+            UserDefaultsKeys.candidatesFontSize: 21,
+            // 値が同じなので衝突しない
+            UserDefaultsKeys.showAnnotation: true,
+            // このMacで変更していなくてもregister(defaults:)の既定値と異なるので衝突。
+            // 取り込むとこのMacの挙動が変わるため確認が必要。
+            UserDefaultsKeys.workarounds: [["bundleIdentifier": "com.example.Foo", "insertBlankString": true]],
+        ])
+        let settingsViewModel = makeSettingsViewModel(store: store)
+
+        let conflicts = settingsViewModel.syncConflicts(categories: Set(SettingsSync.Category.allCases))
+
+        XCTAssertEqual(Set(conflicts.keys), [.candidateWindow, .workaround])
+        XCTAssertEqual(conflicts[.candidateWindow], [UserDefaultsKeys.candidatesFontSize])
+        XCTAssertEqual(conflicts[.workaround], [UserDefaultsKeys.workarounds])
+        // iCloudに値がない設定は衝突しない
+        XCTAssertNil(conflicts[.general])
+    }
+
+    /// 指定したカテゴリの衝突だけを返すこと
+    func testConflictsAreLimitedToGivenCategories() {
+        let preserved = preserveUserDefaults()
+        defer { restoreUserDefaults(preserved) }
+
+        UserDefaults.app.set(13, forKey: UserDefaultsKeys.candidatesFontSize)
+        let store = FakeKeyValueStore(values: [UserDefaultsKeys.candidatesFontSize: 21])
+        let settingsViewModel = makeSettingsViewModel(store: store)
+
+        XCTAssertTrue(settingsViewModel.syncConflicts(categories: [.general]).isEmpty)
+        XCTAssertFalse(settingsViewModel.syncConflicts(categories: [.candidateWindow]).isEmpty)
+    }
+
+    /// カテゴリの有効化でこのMacの設定を選ぶとiCloudを上書きすること
+    func testEnablingCategoryWithPushLocalOverwritesRemote() {
+        let preserved = preserveUserDefaults()
+        defer { restoreUserDefaults(preserved) }
+
+        UserDefaults.app.set(13, forKey: UserDefaultsKeys.candidatesFontSize)
+        let store = FakeKeyValueStore(values: [UserDefaultsKeys.candidatesFontSize: 21])
+        let settingsViewModel = makeSettingsViewModel(store: store, categories: [.general])
+        settingsViewModel.enableSyncSettingsWithiCloud(initialSync: .pushLocal)
+
+        settingsViewModel.enableSyncedSettingsCategory(.candidateWindow, resolution: .pushLocal)
+
+        XCTAssertEqual(settingsViewModel.candidatesFontSize, 13)
+        XCTAssertEqual(store.object(forKey: UserDefaultsKeys.candidatesFontSize) as? Int, 13)
+        XCTAssertTrue(settingsViewModel.syncedSettingsCategories.contains(.candidateWindow))
+    }
+
+    /// カテゴリの有効化でiCloudの設定を選ぶと取り込むこと
+    func testEnablingCategoryWithPullRemoteAppliesRemote() {
+        let preserved = preserveUserDefaults()
+        defer { restoreUserDefaults(preserved) }
+
+        UserDefaults.app.set(13, forKey: UserDefaultsKeys.candidatesFontSize)
+        let store = FakeKeyValueStore(values: [UserDefaultsKeys.candidatesFontSize: 21])
+        let settingsViewModel = makeSettingsViewModel(store: store, categories: [.general])
+        settingsViewModel.enableSyncSettingsWithiCloud(initialSync: .pushLocal)
+
+        settingsViewModel.enableSyncedSettingsCategory(.candidateWindow, resolution: .pullRemote)
+
+        XCTAssertEqual(settingsViewModel.candidatesFontSize, 21)
+        XCTAssertEqual(UserDefaults.app.integer(forKey: UserDefaultsKeys.candidatesFontSize), 21)
+    }
+    /// 衝突を伝えるメッセージがフォーマット指定子と噛み合っていること
+    func testConflictMessageFormatting() {
+        let message = CloudSyncView.conflictMessage([
+            .general: [UserDefaultsKeys.showAnnotation, UserDefaultsKeys.punctuation],
+            .keyBinding: [UserDefaultsKeys.keyBindingSets],
+        ])
+        XCTAssertTrue(message.contains(SettingsSync.Category.general.localizedName), message)
+        XCTAssertTrue(message.contains(SettingsSync.Category.keyBinding.localizedName), message)
+        XCTAssertTrue(message.contains("2"), message)
+        XCTAssertFalse(message.contains("%"), message)
+
+        let categoryMessage = CloudSyncView.categoryConflictMessage(count: 3)
+        XCTAssertTrue(categoryMessage.contains("3"), categoryMessage)
+        XCTAssertFalse(categoryMessage.contains("%"), categoryMessage)
+    }
+
     // MARK: -
 
     /// 同期対象のカテゴリを指定してSettingsViewModelを作る。
