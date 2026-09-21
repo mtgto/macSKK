@@ -6,6 +6,7 @@ import Security
 
 /// iCloudのKey-Value Store。ユニットテストで差し替えられるようにプロトコルにしている。
 protocol KeyValueStore: AnyObject {
+    var dictionaryRepresentation: [String: Any] { get }
     func object(forKey key: String) -> Any?
     func set(_ value: Any?, forKey key: String)
     func removeObject(forKey key: String)
@@ -228,6 +229,42 @@ final class SettingsSync {
         cancellables.removeAll()
         snapshot = [:]
         logger.log("設定のiCloud同期を停止しました")
+    }
+
+    /**
+     * iCloudに保存した設定をすべて削除する。
+     *
+     * 同期を続けたままだと、次にこのMacで設定を変更したときや次回起動時の同期で
+     * 同じ値が再びiCloudに送られてしまうため、削除の前に同期を停止する。
+     * アプリが把握しているキーだけでなくiCloudにあるキーをすべて消すので、
+     * 古いバージョンが書いた設定が残っていても消える。
+     *
+     * iCloudから消えるため、同じApple Accountの他のMacからも見えなくなる。
+     */
+    func removeAllRemoteSettings() {
+        stop()
+        let keys = store.dictionaryRepresentation.keys
+        for key in keys {
+            store.removeObject(forKey: key)
+        }
+        store.synchronize()
+        logger.log("iCloudに保存していた設定を\(keys.count)件削除しました")
+    }
+
+    /// iCloudに保存されている値をJSON文字列で返す
+    func remoteValuesJSON() -> String {
+        let values = store.dictionaryRepresentation
+        guard !values.isEmpty else {
+            // prettyPrintedは空の辞書を "{\n\n}" にするので明示的に返す
+            return "{}"
+        }
+        guard JSONSerialization.isValidJSONObject(values),
+              let data = try? JSONSerialization.data(withJSONObject: values, options: [.prettyPrinted, .sortedKeys]),
+              let json = String(data: data, encoding: .utf8) else {
+            // JSONにできない値が含まれているときはSwiftの表現で出す
+            return String(describing: values)
+        }
+        return json
     }
 
     /**

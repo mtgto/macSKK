@@ -916,6 +916,23 @@ final class SettingsViewModel: ObservableObject {
         syncSettingsWithiCloud = true
     }
 
+    /**
+     * iCloudに保存した設定をすべて削除する。
+     *
+     * 削除したあとに同期が再開すると同じ値が送り直されてしまうので、
+     * 同期を無効にし、選択していたカテゴリもすべて外す。
+     */
+    func removeAllSyncedSettingsFromiCloud() {
+        settingsSync?.removeAllRemoteSettings()
+        syncSettingsWithiCloud = false
+        syncedSettingsCategories = []
+    }
+
+    /// iCloudに保存されている値をJSON文字列で返す。デバッグ用。
+    func remoteSyncedValuesJSON() -> String {
+        settingsSync?.remoteValuesJSON() ?? "{}"
+    }
+
     /// 同期する設定のカテゴリを有効にする
     /// - Parameters:
     ///   - category: 有効にするカテゴリ

@@ -33,6 +33,11 @@ struct CloudSyncView: View {
     @StateObject var settingsViewModel: SettingsViewModel
     @State private var isShowingInitialSyncDialog = false
     @State private var isShowingCategoryConflictDialog = false
+    @State private var isShowingRemoveAllDialog = false
+    #if DEBUG
+    /// デバッグ用に表示するiCloudの値
+    @State private var remoteValuesJSON: String = ""
+    #endif
     /// 衝突の解決を待っているカテゴリ
     @State private var conflictingCategory: SettingsSync.Category? = nil
     /// ダイアログに表示する衝突の内容
@@ -138,6 +143,29 @@ struct CloudSyncView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
+                Section {
+                    Button("Remove all settings from iCloud", role: .destructive) {
+                        isShowingRemoveAllDialog = true
+                    }
+                    .disabled(!SettingsSync.isAvailable)
+                } footer: {
+                    Text("RemoveAllSettingsFromiCloudDescription")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                #if DEBUG
+                Section {
+                    Button("現在のiCloudの値を表示") {
+                        remoteValuesJSON = settingsViewModel.remoteSyncedValuesJSON()
+                    }
+                    // 読み取り専用にしつつ選択とコピーはできるようにする
+                    TextEditor(text: .constant(remoteValuesJSON))
+                        .font(.system(.caption, design: .monospaced))
+                        .frame(minHeight: 200)
+                } header: {
+                    Text("デバッグ")
+                }
+                #endif
             }
             .formStyle(.grouped)
         }
@@ -166,6 +194,14 @@ struct CloudSyncView: View {
             Button("Cancel", role: .cancel) {}
         } message: {
             Text(conflictMessage)
+        }
+        .confirmationDialog("Remove all settings from iCloud", isPresented: $isShowingRemoveAllDialog) {
+            Button("Delete", role: .destructive) {
+                settingsViewModel.removeAllSyncedSettingsFromiCloud()
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("RemoveAllSettingsFromiCloudConfirmation")
         }
     }
 }

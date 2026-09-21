@@ -222,3 +222,7 @@
 "SettingsSyncCategoryDirectMode" = "直接入力";
 "SettingsSyncCategoryWorkaround" = "アプリ互換性";
 "SettingsSyncCategorySKKServ" = "SKK辞書サーバー";
+
+"Remove all settings from iCloud" = "iCloudから設定を削除";
+"RemoveAllSettingsFromiCloudDescription" = "iCloudに保存したmacSKKの設定をすべて削除し、同期を無効にします。同じApple Accountの他のMacからも見えなくなります。このMacの設定自体は削除されません。";
+"RemoveAllSettingsFromiCloudConfirmation" = "iCloudに保存したmacSKKの設定をすべて削除します。同じApple Accountの他のMacからも見えなくなり、元に戻せません。このMacの設定自体は残ります。";

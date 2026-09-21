@@ -14,6 +14,10 @@ final class FakeKeyValueStore: KeyValueStore {
         self.values = values
     }
 
+    var dictionaryRepresentation: [String: Any] {
+        values
+    }
+
     func object(forKey key: String) -> Any? {
         values[key]
     }
@@ -430,6 +434,74 @@ final class SettingsSyncTests: XCTestCase {
         let categoryMessage = CloudSyncView.categoryConflictMessage(count: 3)
         XCTAssertTrue(categoryMessage.contains("3"), categoryMessage)
         XCTAssertFalse(categoryMessage.contains("%"), categoryMessage)
+    }
+
+    // MARK: - iCloudからの削除
+
+    /// iCloudの設定をすべて削除し、同期を無効にすること
+    func testRemoveAllRemoteSettings() {
+        let preserved = preserveUserDefaults()
+        defer { restoreUserDefaults(preserved) }
+
+        UserDefaults.app.set(13, forKey: UserDefaultsKeys.candidatesFontSize)
+        let store = FakeKeyValueStore(values: [
+            // 古いバージョンが書いたキーもまとめて消えること
+            "obsoleteKey": "value",
+        ])
+        let settingsViewModel = makeSettingsViewModel(store: store)
+        settingsViewModel.enableSyncSettingsWithiCloud(initialSync: .pushLocal)
+        XCTAssertFalse(store.dictionaryRepresentation.isEmpty)
+
+        settingsViewModel.removeAllSyncedSettingsFromiCloud()
+
+        XCTAssertTrue(store.dictionaryRepresentation.isEmpty)
+        XCTAssertFalse(settingsViewModel.syncSettingsWithiCloud)
+        XCTAssertTrue(settingsViewModel.syncedSettingsCategories.isEmpty)
+    }
+
+    /// 削除したあとにローカルの設定を変えてもiCloudに送り直さないこと
+    func testRemoveAllRemoteSettingsStopsSyncing() {
+        let preserved = preserveUserDefaults()
+        defer { restoreUserDefaults(preserved) }
+
+        UserDefaults.app.set(13, forKey: UserDefaultsKeys.candidatesFontSize)
+        let store = FakeKeyValueStore()
+        let settingsViewModel = makeSettingsViewModel(store: store)
+        settingsViewModel.enableSyncSettingsWithiCloud(initialSync: .pushLocal)
+
+        settingsViewModel.removeAllSyncedSettingsFromiCloud()
+        settingsViewModel.candidatesFontSize = 21
+        pumpRunLoop()
+
+        XCTAssertTrue(store.dictionaryRepresentation.isEmpty, "削除後に設定が送り直されています")
+    }
+
+    /// iCloudの値をJSONで取り出せること
+    func testRemoteValuesJSON() throws {
+        let preserved = preserveUserDefaults()
+        defer { restoreUserDefaults(preserved) }
+
+        let store = FakeKeyValueStore(values: [
+            UserDefaultsKeys.candidatesFontSize: 21,
+            UserDefaultsKeys.showAnnotation: true,
+            UserDefaultsKeys.directModeBundleIdentifiers: ["com.example.Foo"],
+        ])
+        let settingsViewModel = makeSettingsViewModel(store: store)
+
+        let json = settingsViewModel.remoteSyncedValuesJSON()
+        let data = try XCTUnwrap(json.data(using: .utf8))
+        let decoded = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: data) as? [String: Any])
+
+        XCTAssertEqual(decoded[UserDefaultsKeys.candidatesFontSize] as? Int, 21)
+        XCTAssertEqual(decoded[UserDefaultsKeys.showAnnotation] as? Bool, true)
+        XCTAssertEqual(decoded[UserDefaultsKeys.directModeBundleIdentifiers] as? [String], ["com.example.Foo"])
+    }
+
+    /// 値が空でもJSONとして壊れないこと
+    func testRemoteValuesJSONWhenEmpty() {
+        let settingsViewModel = makeSettingsViewModel(store: FakeKeyValueStore())
+        XCTAssertEqual(settingsViewModel.remoteSyncedValuesJSON(), "{}")
     }
 
     // MARK: -
