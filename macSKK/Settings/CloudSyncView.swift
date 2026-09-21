@@ -138,11 +138,11 @@ struct CloudSyncView: View {
                     // 三項演算子だとLocalizedStringKeyとして解釈されないので分岐する
                     if SettingsSync.isAvailable {
                         Text("SyncSettingsWithiCloudDescription")
-                            .font(.caption)
+                            .font(.subheadline)
                             .foregroundStyle(.secondary)
                     } else {
                         Text("SyncSettingsWithiCloudUnavailable")
-                            .font(.caption)
+                            .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
                 }
@@ -157,7 +157,7 @@ struct CloudSyncView: View {
                     Text("SyncedSettingsCategories")
                 } footer: {
                     Text("SyncedSettingsCategoriesDescription")
-                        .font(.caption)
+                        .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
                 Section {
@@ -167,7 +167,7 @@ struct CloudSyncView: View {
                     .disabled(!SettingsSync.isAvailable)
                 } footer: {
                     Text("RemoveAllSettingsFromiCloudDescription")
-                        .font(.caption)
+                        .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
                 #if DEBUG
