@@ -14,12 +14,21 @@ final class FakeKeyValueStore: KeyValueStore {
         self.values = values
     }
 
+    /// 呼ばれた順番を記録する。start()がストアを読む前にsynchronize()するかの検証に使う。
+    private(set) var operations: [String] = []
+
     var dictionaryRepresentation: [String: Any] {
-        values
+        operations.append("dictionaryRepresentation")
+        return values
     }
 
     func object(forKey key: String) -> Any? {
-        values[key]
+        operations.append("object")
+        return values[key]
+    }
+
+    func resetOperations() {
+        operations.removeAll()
     }
 
     func set(_ value: Any?, forKey key: String) {
@@ -36,7 +45,8 @@ final class FakeKeyValueStore: KeyValueStore {
     }
 
     func synchronize() -> Bool {
-        true
+        operations.append("synchronize")
+        return true
     }
 }
 
@@ -502,6 +512,46 @@ final class SettingsSyncTests: XCTestCase {
     func testRemoteValuesJSONWhenEmpty() {
         let settingsViewModel = makeSettingsViewModel(store: FakeKeyValueStore())
         XCTAssertEqual(settingsViewModel.remoteSyncedValuesJSON(), "{}")
+    }
+
+    /// 同期開始時はiCloudの値を読む前にsynchronize()すること。
+    /// アプリが動いていない間に他のMacから届いた変更を取りこぼさないため。
+    func testStartSynchronizesBeforeReadingStore() {
+        let preserved = preserveUserDefaults()
+        defer { restoreUserDefaults(preserved) }
+
+        let store = FakeKeyValueStore(values: [UserDefaultsKeys.candidatesFontSize: 21])
+        let settingsViewModel = makeSettingsViewModel(store: store)
+        store.resetOperations()
+
+        settingsViewModel.enableSyncSettingsWithiCloud(initialSync: .pullRemote)
+
+        let synchronizeIndex = store.operations.firstIndex(of: "synchronize")
+        let firstReadIndex = store.operations.firstIndex(of: "object")
+        XCTAssertNotNil(synchronizeIndex, "synchronize()が呼ばれていません")
+        XCTAssertNotNil(firstReadIndex, "iCloudの値を読んでいません")
+        if let synchronizeIndex, let firstReadIndex {
+            XCTAssertLessThan(synchronizeIndex, firstReadIndex, "読み取りの前にsynchronize()していません")
+        }
+    }
+
+    /// 書き込みのたびにsynchronize()を呼ばないこと。
+    /// システムが少し遅れて自動で書き出すうえ、呼んでもアップロードは早まらない。
+    func testPushLocalChangesDoesNotSynchronize() {
+        let preserved = preserveUserDefaults()
+        defer { restoreUserDefaults(preserved) }
+
+        UserDefaults.app.set(13, forKey: UserDefaultsKeys.candidatesFontSize)
+        let store = FakeKeyValueStore()
+        let settingsViewModel = makeSettingsViewModel(store: store)
+        settingsViewModel.enableSyncSettingsWithiCloud(initialSync: .pushLocal)
+        store.resetOperations()
+
+        settingsViewModel.candidatesFontSize = 21
+        pumpRunLoop()
+
+        XCTAssertEqual(store.object(forKey: UserDefaultsKeys.candidatesFontSize) as? Int, 21, "設定が送られていません")
+        XCTAssertFalse(store.operations.contains("synchronize"))
     }
 
     // MARK: -

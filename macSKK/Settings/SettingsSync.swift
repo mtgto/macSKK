@@ -199,6 +199,10 @@ final class SettingsSync {
             return
         }
         isRunning = true
+        // iCloudの値を読む前にメモリ上のコピーをディスクの内容で最新にする。
+        // アプリが動いていない間に他のMacから届いた変更を取りこぼさないため。
+        // NSUbiquitousKeyValueStoreのドキュメントが起動時に呼ぶことを勧めているのはこのため。
+        store.synchronize()
         let syncedKeys = self.syncedKeys
         snapshot = Self.localValues(keys: syncedKeys)
         switch initialSync {
@@ -215,7 +219,6 @@ final class SettingsSync {
                 store.set(snapshot[key], forKey: key)
             }
         }
-        store.synchronize()
         observe()
         logger.log("設定のiCloud同期を開始しました")
     }
@@ -247,6 +250,8 @@ final class SettingsSync {
         for key in keys {
             store.removeObject(forKey: key)
         }
+        // ユーザーが明示的に要求した削除なので、システムの自動書き出しを待たずに
+        // ディスクに反映しておく。ただしiCloudへの反映が即時になるわけではない。
         store.synchronize()
         logger.log("iCloudに保存していた設定を\(keys.count)件削除しました")
     }
@@ -303,7 +308,6 @@ final class SettingsSync {
             }
         }
         apply(keys: remoteKeys)
-        store.synchronize()
     }
 
     private func observe() {
@@ -327,7 +331,6 @@ final class SettingsSync {
         guard isRunning else {
             return
         }
-        var changed = false
         for key in syncedKeys {
             let value = UserDefaults.app.object(forKey: key) as? NSObject
             guard snapshot[key] != value else {
@@ -335,12 +338,11 @@ final class SettingsSync {
             }
             snapshot[key] = value
             store.set(value, forKey: key)
-            changed = true
             logger.log("設定 \(key, privacy: .public) をiCloudに送信しました")
         }
-        if changed {
-            store.synchronize()
-        }
+        // 書き込んだあとにsynchronize()は呼ばない。
+        // ローカルの変更は少し遅れてシステムが自動でディスクに書き出すし、
+        // synchronize()を呼んでもiCloudへのアップロードを早められるわけではない。
     }
 
     private func storeDidChangeExternally(_ notification: Notification) {
