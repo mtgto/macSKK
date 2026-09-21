@@ -29,4 +29,4 @@ $ ./build_restart.sh
 
 リポジトリの標準の設定 (`macSKK/macSKK.entitlements`) にはこのentitlementを含めていないため、Apple Developer Programに参加していなくてもこれまでどおりビルドできます。このビルドでは設定画面のiCloud同期のトグルが無効になるだけで、それ以外の動作は変わりません。
 
-手元でiCloud同期を有効にしたビルドを作る場合は、Developer PortalでApp IDにiCloud capabilityを有効にしたプロビジョニングプロファイルを作成・インストールした上で、`macSKK/Config/Local.xcconfig.sample` を `macSKK/Config/Local.xcconfig` にコピーして自分の環境に合わせて書き換えてください。`Local.xcconfig` は`.gitignore`に入れてあるのでコミットされません。
+手元でiCloud同期を有効にしたビルドを作る場合は、Developer PortalでApp IDにiCloud capabilityを有効にしたプロビジョニングプロファイルを作成・インストールした上で、`macSKK/Config/Local.xcconfig.sample` を `macSKK/Config/Local.xcconfig` にコピーして自分の環境に合わせて書き換えてください。

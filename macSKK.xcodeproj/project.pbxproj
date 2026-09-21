@@ -296,7 +296,6 @@
 		CE40D9A22A6D0C3900D44799 /* SystemDict.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemDict.swift; sourceTree = "<group>"; };
 		CE420CFG2F00000100000001 /* macSKK.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = macSKK.xcconfig; sourceTree = "<group>"; };
 		CE420CFG2F00000100000002 /* macSKK-iCloud.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "macSKK-iCloud.entitlements"; sourceTree = "<group>"; };
-		CE420CFG2F00000100000003 /* Local.xcconfig.sample */ = {isa = PBXFileReference; lastKnownFileType = text; path = Local.xcconfig.sample; sourceTree = "<group>"; };
 		CE420CSV2F00000100000001 /* CloudSyncView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudSyncView.swift; sourceTree = "<group>"; };
 		CE420SYNC2F00000100000001 /* SettingsSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsSync.swift; sourceTree = "<group>"; };
 		CE420SYNC2F00000100000003 /* SettingsSyncTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsSyncTests.swift; sourceTree = "<group>"; };
@@ -505,7 +504,6 @@
 			isa = PBXGroup;
 			children = (
 				CE420CFG2F00000100000001 /* macSKK.xcconfig */,
-				CE420CFG2F00000100000003 /* Local.xcconfig.sample */,
 			);
 			path = Config;
 			sourceTree = "<group>";
