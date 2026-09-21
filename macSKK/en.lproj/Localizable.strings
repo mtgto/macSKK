@@ -215,12 +215,12 @@
 "SyncedSettingsCategories" = "Settings to sync";
 "SyncedSettingsCategoriesDescription" = "Only the settings you choose are stored in iCloud. You can choose which settings to sync on each Mac. If a setting differs between iCloud and this Mac, macSKK asks whether to take the iCloud value or overwrite it with the value on this Mac.";
 "SettingsSyncCategoryGeneral" = "General";
-"SettingsSyncCategoryCandidateWindow" = "Candidate Window";
+"SettingsSyncCategoryCandidateWindow" = "Candidates Panel";
 "SettingsSyncCategoryCompletion" = "Completion";
-"SettingsSyncCategoryKeyBinding" = "Key Binding";
+"SettingsSyncCategoryKeyBinding" = "Key Bindings";
 "SettingsSyncCategoryDateConversion" = "Date Conversion";
-"SettingsSyncCategoryDirectMode" = "Direct Input";
-"SettingsSyncCategoryWorkaround" = "Application Compatibility";
+"SettingsSyncCategoryDirectMode" = "Direct Mode";
+"SettingsSyncCategoryWorkaround" = "Workaround";
 "SettingsSyncCategorySKKServ" = "SKK Dictionary Server";
 
 "Remove all settings from iCloud" = "Remove Settings from iCloud";

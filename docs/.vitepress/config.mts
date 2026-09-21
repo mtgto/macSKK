@@ -42,6 +42,7 @@ export default defineConfig({
           { text: "キーバインド", link: "/config/keybinding" },
           { text: "ローマ字かな変換ルール", link: "/config/kana-rule" },
           { text: "ソフトウェアアップデート", link: "/config/software-update" },
+          { text: "iCloud", link: "/config/icloud" },
           { text: "直接入力", link: "/config/direct-mode" },
           { text: "互換性の設定", link: "/config/workaround" },
           { text: "ログ", link: "/config/log" },

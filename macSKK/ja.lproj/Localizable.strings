@@ -215,12 +215,12 @@
 "SyncedSettingsCategories" = "同期する設定";
 "SyncedSettingsCategoriesDescription" = "選んだ設定だけをiCloudに保存します。どの設定を同期するかはMacごとに選べます。iCloudとこのMacで設定が異なる場合は、iCloudの設定を取り込むか、このMacの設定で上書きするかを確認します。";
 "SettingsSyncCategoryGeneral" = "一般";
-"SettingsSyncCategoryCandidateWindow" = "変換候補ウィンドウ";
+"SettingsSyncCategoryCandidateWindow" = "変換候補パネル";
 "SettingsSyncCategoryCompletion" = "補完";
 "SettingsSyncCategoryKeyBinding" = "キーバインド";
 "SettingsSyncCategoryDateConversion" = "日付変換";
 "SettingsSyncCategoryDirectMode" = "直接入力";
-"SettingsSyncCategoryWorkaround" = "アプリ互換性";
+"SettingsSyncCategoryWorkaround" = "互換性の設定";
 "SettingsSyncCategorySKKServ" = "SKK辞書サーバー";
 
 "Remove all settings from iCloud" = "iCloudから設定を削除";
