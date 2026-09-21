@@ -15,6 +15,7 @@
 "SettingsNameCompletion" = "Completion";
 "SettingsNameKeyBinding" = "Key Bindings";
 "SettingsNameSoftwareUpdate" = "Software Update";
+"SettingsNameCloudSync" = "iCloud";
 "SettingsNameDirectMode" = "Direct Mode";
 "SettingsNameWorkaround" = "Workaround";
 "SettingsNameLog" = "Log";
@@ -211,9 +212,8 @@
 "Overwrite iCloud settings with settings of this Mac" = "Overwrite iCloud settings with settings of this Mac";
 "Apply iCloud settings to this Mac" = "Apply iCloud settings to this Mac";
 
-"SettingsNameCloudSync" = "iCloud";
 "SyncedSettingsCategories" = "Settings to sync";
-"SyncedSettingsCategoriesDescription" = "Only the settings you choose are stored in iCloud. You can choose which settings to sync on each Mac. Turning a setting on takes the value from iCloud if there is one. Note that a setting already stored in iCloud is not removed when you turn it off; syncing just stops so that other Macs can keep using it.";
+"SyncedSettingsCategoriesDescription" = "Only the settings you choose are stored in iCloud. You can choose which settings to sync on each Mac. If a setting differs between iCloud and this Mac, macSKK asks whether to take the iCloud value or overwrite it with the value on this Mac.";
 "SettingsSyncCategoryGeneral" = "General";
 "SettingsSyncCategoryCandidateWindow" = "Candidate Window";
 "SettingsSyncCategoryCompletion" = "Completion";
@@ -224,5 +224,5 @@
 "SettingsSyncCategorySKKServ" = "SKK Dictionary Server";
 
 "Remove all settings from iCloud" = "Remove Settings from iCloud";
-"RemoveAllSettingsFromiCloudDescription" = "Removes all macSKK settings stored in iCloud and turns off syncing. They will also disappear from other Macs signed in with the same Apple Account. The settings on this Mac are not removed.";
+"RemoveAllSettingsFromiCloudDescription" = "Settings stored in iCloud are kept even after you stop syncing them; use this button to remove them. This removes all macSKK settings stored in iCloud and turns off syncing. They will also disappear from other Macs signed in with the same Apple Account. The settings on this Mac are not removed.";
 "RemoveAllSettingsFromiCloudConfirmation" = "All macSKK settings stored in iCloud will be removed. They will also disappear from other Macs signed in with the same Apple Account, and this cannot be undone. The settings on this Mac are kept.";

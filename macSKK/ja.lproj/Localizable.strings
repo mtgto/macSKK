@@ -15,6 +15,7 @@
 "SettingsNameCompletion" = "補完";
 "SettingsNameKeyBinding" = "キーバインド";
 "SettingsNameSoftwareUpdate" = "ソフトウェアアップデート";
+"SettingsNameCloudSync" = "iCloud";
 "SettingsNameDirectMode" = "直接入力";
 "SettingsNameWorkaround" = "互換性の設定";
 "SettingsNameLog" = "ログ";
@@ -211,9 +212,8 @@
 "Overwrite iCloud settings with settings of this Mac" = "このMacの設定でiCloudを上書きする";
 "Apply iCloud settings to this Mac" = "iCloudの設定をこのMacに反映する";
 
-"SettingsNameCloudSync" = "iCloud";
 "SyncedSettingsCategories" = "同期する設定";
-"SyncedSettingsCategoriesDescription" = "選んだ設定だけをiCloudに保存します。どの設定を同期するかはMacごとに選べます。同期を追加した設定はiCloudに値があればそれを取り込みます。一度iCloudに保存した設定は同期を外しても消えないことに注意してください。他のMacが引き続き同期できるよう、送受信を止めるだけにしています。";
+"SyncedSettingsCategoriesDescription" = "選んだ設定だけをiCloudに保存します。どの設定を同期するかはMacごとに選べます。iCloudとこのMacで設定が異なる場合は、iCloudの設定を取り込むか、このMacの設定で上書きするかを確認します。";
 "SettingsSyncCategoryGeneral" = "一般";
 "SettingsSyncCategoryCandidateWindow" = "変換候補ウィンドウ";
 "SettingsSyncCategoryCompletion" = "補完";
@@ -224,5 +224,5 @@
 "SettingsSyncCategorySKKServ" = "SKK辞書サーバー";
 
 "Remove all settings from iCloud" = "iCloudから設定を削除";
-"RemoveAllSettingsFromiCloudDescription" = "iCloudに保存したmacSKKの設定をすべて削除し、同期を無効にします。同じApple Accountの他のMacからも見えなくなります。このMacの設定自体は削除されません。";
+"RemoveAllSettingsFromiCloudDescription" = "同期を外してもiCloudに保存した設定は残ります。削除するにはこのボタンを使ってください。iCloudに保存したmacSKKの設定をすべて削除し、同期を無効にします。同じApple Accountの他のMacからも見えなくなります。このMacの設定自体は削除されません。";
 "RemoveAllSettingsFromiCloudConfirmation" = "iCloudに保存したmacSKKの設定をすべて削除します。同じApple Accountの他のMacからも見えなくなり、元に戻せません。このMacの設定自体は残ります。";
