@@ -554,6 +554,18 @@ final class SettingsSyncTests: XCTestCase {
         XCTAssertFalse(store.operations.contains("synchronize"))
     }
 
+    /// すべてのカテゴリの表示名がLocalizable.stringsから引けること。
+    /// カテゴリの表示名は設定画面の名前を流用しているので、
+    /// 画面名のキーが変わると気づかないうちにキー名がそのまま表示されてしまう。
+    func testCategoryLocalizedNames() {
+        for category in SettingsSync.Category.allCases {
+            XCTAssertNotEqual(
+                category.localizedName, category.localizationKey,
+                "カテゴリ \(category.rawValue) の文言 \(category.localizationKey) がLocalizable.stringsにありません")
+            XCTAssertFalse(category.localizedName.isEmpty, "カテゴリ \(category.rawValue) の文言が空です")
+        }
+    }
+
     // MARK: -
 
     /// 同期対象のカテゴリを指定してSettingsViewModelを作る。

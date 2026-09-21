@@ -3,22 +3,29 @@
 import SwiftUI
 
 extension SettingsSync.Category {
+    /**
+     * 表示名のLocalizable.stringsのキー。
+     *
+     * カテゴリは設定画面の区分に対応しているので、設定画面の名前をそのまま使う。
+     * 専用の文言を用意すると画面名を変えたときにずれるため。
+     * skkservだけは対応する設定画面がない (辞書画面の一部) ので専用の文言を用意している。
+     */
     var localizationKey: String {
         switch self {
         case .general:
-            "SettingsSyncCategoryGeneral"
+            "SettingsNameGeneral"
         case .candidateWindow:
-            "SettingsSyncCategoryCandidateWindow"
+            "SettingsNameCandidateWindow"
         case .completion:
-            "SettingsSyncCategoryCompletion"
+            "SettingsNameCompletion"
         case .keyBinding:
-            "SettingsSyncCategoryKeyBinding"
+            "SettingsNameKeyBinding"
         case .dateConversion:
-            "SettingsSyncCategoryDateConversion"
+            "SettingsNameDateConversion"
         case .directMode:
-            "SettingsSyncCategoryDirectMode"
+            "SettingsNameDirectMode"
         case .workaround:
-            "SettingsSyncCategoryWorkaround"
+            "SettingsNameWorkaround"
         case .skkserv:
             "SettingsSyncCategorySKKServ"
         }
