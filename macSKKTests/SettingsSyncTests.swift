@@ -7,15 +7,18 @@ import XCTest
 /// テスト用のKey-Value Store
 final class FakeKeyValueStore: KeyValueStore {
     private(set) var values: [String: Any]
+    /// 呼ばれた操作を順に記録する。呼び出し順や回数の検証に使う。
+    private(set) var operations: [String] = []
     /// setが呼ばれた回数
-    private(set) var setCount: Int = 0
+    var setCount: Int { operations.filter { $0 == "set" }.count }
 
     init(values: [String: Any] = [:]) {
         self.values = values
     }
 
-    /// 呼ばれた順番を記録する。start()がストアを読む前にsynchronize()するかの検証に使う。
-    private(set) var operations: [String] = []
+    func resetOperations() {
+        operations.removeAll()
+    }
 
     var dictionaryRepresentation: [String: Any] {
         operations.append("dictionaryRepresentation")
@@ -27,12 +30,8 @@ final class FakeKeyValueStore: KeyValueStore {
         return values[key]
     }
 
-    func resetOperations() {
-        operations.removeAll()
-    }
-
     func set(_ value: Any?, forKey key: String) {
-        setCount += 1
+        operations.append("set")
         if let value {
             values[key] = value
         } else {
@@ -41,6 +40,7 @@ final class FakeKeyValueStore: KeyValueStore {
     }
 
     func removeObject(forKey key: String) {
+        operations.append("removeObject")
         values.removeValue(forKey: key)
     }
 
@@ -61,6 +61,9 @@ final class SettingsSyncTests: XCTestCase {
             UserDefaultsKeys.syncedSettingsCategories,
         ]
 
+    // MARK: - 同期の開始と停止
+
+    /// このMacの設定を優先して開始すると、同期対象だけがiCloudに保存されること
     func testStartWithPushLocal() {
         let preserved = preserveUserDefaults()
         defer { restoreUserDefaults(preserved) }
@@ -82,6 +85,7 @@ final class SettingsSyncTests: XCTestCase {
         XCTAssertNil(store.object(forKey: UserDefaultsKeys.syncSettingsWithiCloud))
     }
 
+    /// iCloudを優先して開始すると取り込まれ、iCloudにない設定はこのMacの値が送られること
     func testStartWithPullRemote() {
         let preserved = preserveUserDefaults()
         defer { restoreUserDefaults(preserved) }
@@ -105,6 +109,7 @@ final class SettingsSyncTests: XCTestCase {
         XCTAssertEqual(store.object(forKey: UserDefaultsKeys.displayCandidateCount) as? Int, 9)
     }
 
+    /// このMacで設定を変更するとiCloudに送られること
     func testLocalChangeIsSentToStore() {
         let preserved = preserveUserDefaults()
         defer { restoreUserDefaults(preserved) }
@@ -115,27 +120,29 @@ final class SettingsSyncTests: XCTestCase {
         settingsViewModel.enableSyncSettingsWithiCloud(initialSync: .pushLocal)
 
         settingsViewModel.selectCandidateKeys = "ASDFGHJKL"
-        pumpRunLoop()
+        pumpRunLoop { store.object(forKey: UserDefaultsKeys.selectCandidateKeys) as? String == "ASDFGHJKL" }
 
         XCTAssertEqual(store.object(forKey: UserDefaultsKeys.selectCandidateKeys) as? String, "ASDFGHJKL")
     }
 
-    func testExcludedKeyIsNotSentToStore() {
+    /// 同期を停止したあとにこのMacで設定を変更してもiCloudに送らないこと
+    func testStopDoesNotSendLocalChange() {
         let preserved = preserveUserDefaults()
         defer { restoreUserDefaults(preserved) }
 
+        UserDefaults.app.set(13, forKey: UserDefaultsKeys.candidatesFontSize)
         let store = FakeKeyValueStore()
         let settingsViewModel = makeSettingsViewModel(store: store)
         settingsViewModel.enableSyncSettingsWithiCloud(initialSync: .pushLocal)
+        settingsViewModel.syncSettingsWithiCloud = false
 
-        UserDefaults.app.set("my-kana-rule.conf", forKey: UserDefaultsKeys.kanaRule)
-        UserDefaults.app.set([["filename": "SKK-JISYO.L", "enabled": true]], forKey: UserDefaultsKeys.dictionaries)
+        settingsViewModel.candidatesFontSize = 21
         pumpRunLoop()
 
-        XCTAssertNil(store.object(forKey: UserDefaultsKeys.kanaRule))
-        XCTAssertNil(store.object(forKey: UserDefaultsKeys.dictionaries))
+        XCTAssertEqual(store.object(forKey: UserDefaultsKeys.candidatesFontSize) as? Int, 13)
     }
 
+    /// iCloudでの変更を取り込み、取り込んだ設定をiCloudに送り返さないこと
     func testExternalChangeIsApplied() {
         let preserved = preserveUserDefaults()
         defer { restoreUserDefaults(preserved) }
@@ -151,7 +158,7 @@ final class SettingsSyncTests: XCTestCase {
         let setCountBeforeApply = store.setCount
         postDidChangeExternallyNotification(
             changedKeys: [UserDefaultsKeys.candidatesFontSize, UserDefaultsKeys.directModeBundleIdentifiers])
-        pumpRunLoop()
+        pumpRunLoop { settingsViewModel.candidatesFontSize == 21 }
 
         XCTAssertEqual(settingsViewModel.candidatesFontSize, 21)
         XCTAssertEqual(UserDefaults.app.integer(forKey: UserDefaultsKeys.candidatesFontSize), 21)
@@ -163,6 +170,7 @@ final class SettingsSyncTests: XCTestCase {
         XCTAssertEqual(store.setCount, setCountBeforeApply, "取り込んだ設定がiCloudに送り返されています")
     }
 
+    /// iCloudアカウントが切り替わったときは、このMacの設定を置き換えないこと
     func testExternalChangeOnAccountChangeIsIgnored() {
         let preserved = preserveUserDefaults()
         defer { restoreUserDefaults(preserved) }
@@ -179,22 +187,6 @@ final class SettingsSyncTests: XCTestCase {
         pumpRunLoop()
 
         XCTAssertEqual(settingsViewModel.candidatesFontSize, 13)
-    }
-
-    func testStopDoesNotSendLocalChange() {
-        let preserved = preserveUserDefaults()
-        defer { restoreUserDefaults(preserved) }
-
-        UserDefaults.app.set(13, forKey: UserDefaultsKeys.candidatesFontSize)
-        let store = FakeKeyValueStore()
-        let settingsViewModel = makeSettingsViewModel(store: store)
-        settingsViewModel.enableSyncSettingsWithiCloud(initialSync: .pushLocal)
-        settingsViewModel.syncSettingsWithiCloud = false
-
-        settingsViewModel.candidatesFontSize = 21
-        pumpRunLoop()
-
-        XCTAssertEqual(store.object(forKey: UserDefaultsKeys.candidatesFontSize) as? Int, 13)
     }
 
     /// 同期対象のキーはすべて設定画面に反映できること
@@ -218,12 +210,7 @@ final class SettingsSyncTests: XCTestCase {
 
         UserDefaults.app.removeObject(forKey: UserDefaultsKeys.syncedSettingsCategories)
         let store = FakeKeyValueStore()
-        let settingsViewModel = try! SettingsViewModel(
-            dictionariesDirectoryUrl: FileManager.default.temporaryDirectory.appending(path: "Dictionaries"),
-            keyValueStore: store)
-        addTeardownBlock { @MainActor in
-            settingsViewModel.syncSettingsWithiCloud = false
-        }
+        let settingsViewModel = makeSettingsViewModel(store: store, categories: nil)
 
         XCTAssertTrue(settingsViewModel.syncedSettingsCategories.isEmpty)
 
@@ -246,7 +233,6 @@ final class SettingsSyncTests: XCTestCase {
     func testCategoriesHaveNoDuplicateOrExcludedKeys() {
         let keys = SettingsSync.allSyncedKeys
         XCTAssertEqual(keys.count, Set(keys).count, "複数のカテゴリに含まれているキーがあります")
-        // 意図的に同期していないキーが紛れこんでいないこと
         for key in [UserDefaultsKeys.dictionaries, UserDefaultsKeys.kanaRule, UserDefaultsKeys.skkservClient,
                     UserDefaultsKeys.selectedInputSource, UserDefaultsKeys.privateMode,
                     UserDefaultsKeys.syncSettingsWithiCloud, UserDefaultsKeys.syncedSettingsCategories] {
@@ -291,23 +277,6 @@ final class SettingsSyncTests: XCTestCase {
         XCTAssertEqual(settingsViewModel.candidatesFontSize, 13)
     }
 
-    /// カテゴリを有効にするとiCloudにある値を取り込むこと
-    func testEnablingCategoryPullsRemoteValue() {
-        let preserved = preserveUserDefaults()
-        defer { restoreUserDefaults(preserved) }
-
-        UserDefaults.app.set(13, forKey: UserDefaultsKeys.candidatesFontSize)
-        let store = FakeKeyValueStore(values: [UserDefaultsKeys.candidatesFontSize: 21])
-        let settingsViewModel = makeSettingsViewModel(store: store, categories: [.general])
-        settingsViewModel.enableSyncSettingsWithiCloud(initialSync: .pushLocal)
-        XCTAssertEqual(settingsViewModel.candidatesFontSize, 13)
-
-        settingsViewModel.syncedSettingsCategories.insert(.candidateWindow)
-
-        XCTAssertEqual(settingsViewModel.candidatesFontSize, 21)
-        XCTAssertEqual(UserDefaults.app.integer(forKey: UserDefaultsKeys.candidatesFontSize), 21)
-    }
-
     /// iCloudに値がないカテゴリを有効にするとこのMacの値を送ること
     func testEnablingCategoryPushesLocalValueWhenRemoteIsEmpty() {
         let preserved = preserveUserDefaults()
@@ -349,8 +318,8 @@ final class SettingsSyncTests: XCTestCase {
         let settingsViewModel = makeSettingsViewModel(store: store)
         settingsViewModel.enableSyncSettingsWithiCloud(initialSync: .pushLocal)
 
+        // sinkは@Publishedへの代入で同期的に走るのでRunLoopを回す必要はない
         settingsViewModel.syncedSettingsCategories = [.general, .keyBinding]
-        pumpRunLoop()
 
         XCTAssertEqual(
             UserDefaults.app.array(forKey: UserDefaultsKeys.syncedSettingsCategories) as? [String],
@@ -360,7 +329,7 @@ final class SettingsSyncTests: XCTestCase {
 
     // MARK: - 衝突の解決
 
-    /// iCloudとこのMacで値が異なる設定だけを衝突として返すこと
+    /// iCloudとこのMacで値が異なる設定だけを、指定したカテゴリの範囲で衝突として返すこと
     func testConflictsOnlyReportsDifferingKeys() {
         let preserved = preserveUserDefaults()
         defer { restoreUserDefaults(preserved) }
@@ -385,19 +354,10 @@ final class SettingsSyncTests: XCTestCase {
         XCTAssertEqual(conflicts[.workaround], [UserDefaultsKeys.workarounds])
         // iCloudに値がない設定は衝突しない
         XCTAssertNil(conflicts[.general])
-    }
-
-    /// 指定したカテゴリの衝突だけを返すこと
-    func testConflictsAreLimitedToGivenCategories() {
-        let preserved = preserveUserDefaults()
-        defer { restoreUserDefaults(preserved) }
-
-        UserDefaults.app.set(13, forKey: UserDefaultsKeys.candidatesFontSize)
-        let store = FakeKeyValueStore(values: [UserDefaultsKeys.candidatesFontSize: 21])
-        let settingsViewModel = makeSettingsViewModel(store: store)
-
+        // 指定したカテゴリの衝突だけを返す
         XCTAssertTrue(settingsViewModel.syncConflicts(categories: [.general]).isEmpty)
-        XCTAssertFalse(settingsViewModel.syncConflicts(categories: [.candidateWindow]).isEmpty)
+        XCTAssertEqual(
+            Set(settingsViewModel.syncConflicts(categories: [.candidateWindow]).keys), [.candidateWindow])
     }
 
     /// カテゴリの有効化でこのMacの設定を選ぶとiCloudを上書きすること
@@ -432,6 +392,7 @@ final class SettingsSyncTests: XCTestCase {
         XCTAssertEqual(settingsViewModel.candidatesFontSize, 21)
         XCTAssertEqual(UserDefaults.app.integer(forKey: UserDefaultsKeys.candidatesFontSize), 21)
     }
+
     /// 衝突を伝えるメッセージがフォーマット指定子と噛み合っていること
     func testConflictMessageFormatting() {
         let message = CloudSyncView.conflictMessage([
@@ -502,19 +463,16 @@ final class SettingsSyncTests: XCTestCase {
 
         let json = settingsViewModel.remoteSyncedValuesJSON()
         let data = try XCTUnwrap(json.data(using: .utf8))
-        let decoded = try XCTUnwrap(
-            JSONSerialization.jsonObject(with: data) as? [String: Any])
+        let decoded = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
 
         XCTAssertEqual(decoded[UserDefaultsKeys.candidatesFontSize] as? Int, 21)
         XCTAssertEqual(decoded[UserDefaultsKeys.showAnnotation] as? Bool, true)
         XCTAssertEqual(decoded[UserDefaultsKeys.directModeBundleIdentifiers] as? [String], ["com.example.Foo"])
+        // 値が空でも壊れたJSONにならない
+        XCTAssertEqual(makeSettingsViewModel(store: FakeKeyValueStore()).remoteSyncedValuesJSON(), "{}")
     }
 
-    /// 値が空でもJSONとして壊れないこと
-    func testRemoteValuesJSONWhenEmpty() {
-        let settingsViewModel = makeSettingsViewModel(store: FakeKeyValueStore())
-        XCTAssertEqual(settingsViewModel.remoteSyncedValuesJSON(), "{}")
-    }
+    // MARK: - synchronizeを呼ぶタイミング
 
     /// 同期開始時はiCloudの値を読む前にsynchronize()すること。
     /// アプリが動いていない間に他のMacから届いた変更を取りこぼさないため。
@@ -550,11 +508,13 @@ final class SettingsSyncTests: XCTestCase {
         store.resetOperations()
 
         settingsViewModel.candidatesFontSize = 21
-        pumpRunLoop()
+        pumpRunLoop { store.values[UserDefaultsKeys.candidatesFontSize] as? Int == 21 }
 
-        XCTAssertEqual(store.object(forKey: UserDefaultsKeys.candidatesFontSize) as? Int, 21, "設定が送られていません")
+        XCTAssertEqual(store.values[UserDefaultsKeys.candidatesFontSize] as? Int, 21, "設定が送られていません")
         XCTAssertFalse(store.operations.contains("synchronize"))
     }
+
+    // MARK: - カテゴリの表示名
 
     /// すべてのカテゴリの表示名がLocalizable.stringsから引けること。
     /// カテゴリの表示名は設定画面の名前を流用しているので、
@@ -571,23 +531,27 @@ final class SettingsSyncTests: XCTestCase {
     // MARK: -
 
     /// 同期対象のカテゴリを指定してSettingsViewModelを作る。
-    /// 標準ではどのカテゴリも同期しないので、テストでは明示的に指定する。
+    /// categoriesにnilを渡すと設定せず、UserDefaultsから読み込んだ値のままにする。
     private func makeSettingsViewModel(
         store: FakeKeyValueStore,
-        categories: Set<SettingsSync.Category> = Set(SettingsSync.Category.allCases)
+        categories: Set<SettingsSync.Category>? = Set(SettingsSync.Category.allCases)
     ) -> SettingsViewModel {
         // 辞書ディレクトリは使わないので存在しなくてよい
         let settingsViewModel = try! SettingsViewModel(
             dictionariesDirectoryUrl: FileManager.default.temporaryDirectory.appending(path: "Dictionaries"),
             keyValueStore: store)
-        settingsViewModel.syncedSettingsCategories = categories
+        if let categories {
+            settingsViewModel.syncedSettingsCategories = categories
+        }
         addTeardownBlock { @MainActor in
             settingsViewModel.syncSettingsWithiCloud = false
         }
         return settingsViewModel
     }
 
-    private func postDidChangeExternallyNotification(changedKeys: [String], reason: Int = NSUbiquitousKeyValueStoreServerChange) {
+    private func postDidChangeExternallyNotification(
+        changedKeys: [String], reason: Int = NSUbiquitousKeyValueStoreServerChange
+    ) {
         NotificationCenter.default.post(
             name: NSUbiquitousKeyValueStore.didChangeExternallyNotification,
             object: nil,
@@ -597,7 +561,16 @@ final class SettingsSyncTests: XCTestCase {
             ])
     }
 
-    /// RunLoopに積まれた通知の処理を実行する
+    /// conditionが真になるまでRunLoopを回す。届くはずの変更を待つのに使う。
+    private func pumpRunLoop(timeout: TimeInterval = 1, until condition: () -> Bool) {
+        let deadline = Date(timeIntervalSinceNow: timeout)
+        while !condition() && Date() < deadline {
+            RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.01))
+        }
+    }
+
+    /// RunLoopに積まれた通知の処理を実行する。
+    /// 「何も起きないこと」を確かめるテストは待つ条件がないのでこちらを使う。
     private func pumpRunLoop(seconds: TimeInterval = 0.3) {
         RunLoop.current.run(until: Date(timeIntervalSinceNow: seconds))
     }
