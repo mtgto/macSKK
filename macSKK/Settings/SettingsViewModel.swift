@@ -48,6 +48,7 @@ struct DirectModeApplication: Identifiable, Equatable {
 
     var id: ID { bundleIdentifier }
 
+
     static func ==(lhs: Self, rhs: Self) -> Bool {
         return lhs.id == rhs.id
     }
@@ -67,6 +68,37 @@ struct WorkaroundApplication: Identifiable, Equatable {
     var displayName: String?
 
     var id: ID { bundleIdentifier }
+    init(bundleIdentifier: String, insertBlankString: Bool, treatFirstCharacterAsMarkedText: Bool,
+         showMarkerWhenEmpty: Bool, icon: NSImage? = nil, displayName: String? = nil) {
+        self.bundleIdentifier = bundleIdentifier
+        self.insertBlankString = insertBlankString
+        self.treatFirstCharacterAsMarkedText = treatFirstCharacterAsMarkedText
+        self.showMarkerWhenEmpty = showMarkerWhenEmpty
+        self.icon = icon
+        self.displayName = displayName
+    }
+
+    init?(_ dictionary: [String: Any]) {
+        guard let bundleIdentifier = dictionary["bundleIdentifier"] as? String,
+              let insertBlankString = dictionary["insertBlankString"] as? Bool else {
+            return nil
+        }
+        self.bundleIdentifier = bundleIdentifier
+        self.insertBlankString = insertBlankString
+        // treatFirstCharacterAsMarkedTextはv2.1+ で追加された
+        self.treatFirstCharacterAsMarkedText = dictionary["treatFirstCharacterAsMarkedText"] as? Bool ?? false
+        // showMarkerWhenEmptyはv2.15+ で追加された
+        self.showMarkerWhenEmpty = dictionary["showMarkerWhenEmpty"] as? Bool ?? false
+    }
+
+    func encode() -> [String: Any] {
+        [
+            "bundleIdentifier": bundleIdentifier,
+            "insertBlankString": insertBlankString,
+            "treatFirstCharacterAsMarkedText": treatFirstCharacterAsMarkedText,
+            "showMarkerWhenEmpty": showMarkerWhenEmpty,
+        ]
+    }
 
     static func ==(lhs: Self, rhs: Self) -> Bool {
         return lhs.id == rhs.id
@@ -268,7 +300,7 @@ final class SettingsViewModel: ObservableObject {
     /// iCloudで同期する設定のカテゴリ。この選択自体は同期しない。
     @Published var syncedSettingsCategories: Set<SettingsSync.Category>
     /// 設定のiCloud同期。entitlementがないビルドやテスト実行時はnil
-    private(set) var settingsSync: SettingsSync? = nil
+    private var settingsSync: SettingsSync? = nil
 
     // 辞書ディレクトリ
     let dictionariesDirectoryUrl: URL
@@ -458,13 +490,7 @@ final class SettingsViewModel: ObservableObject {
         .store(in: &cancellables)
 
         $workaroundApplications.dropFirst().sink { applications in
-            let settings = applications.map { [
-                "bundleIdentifier": $0.bundleIdentifier,
-                "insertBlankString": $0.insertBlankString,
-                "treatFirstCharacterAsMarkedText": $0.treatFirstCharacterAsMarkedText,
-                "showMarkerWhenEmpty": $0.showMarkerWhenEmpty,
-            ] }
-            UserDefaults.app.set(settings, forKey: UserDefaultsKeys.workarounds)
+            UserDefaults.app.set(applications.map { $0.encode() }, forKey: UserDefaultsKeys.workarounds)
         }.store(in: &cancellables)
 
         $workaroundApplications.sink { applications in
@@ -854,10 +880,10 @@ final class SettingsViewModel: ObservableObject {
         $syncSettingsWithiCloud.dropFirst().removeDuplicates().sink { [weak self] syncSettingsWithiCloud in
             logger.log("設定のiCloud同期を\(syncSettingsWithiCloud ? "有効" : "無効", privacy: .public)にしました")
             UserDefaults.app.set(syncSettingsWithiCloud, forKey: UserDefaultsKeys.syncSettingsWithiCloud)
-            if syncSettingsWithiCloud {
-                // enableSyncSettingsWithiCloud(initialSync:)から有効化された場合はすでに開始済みなので何も起きない
-                self?.settingsSync?.start(initialSync: .pushLocal)
-            } else {
+            // 開始はenableSyncSettingsWithiCloud(initialSync:)と
+            // startSyncSettingsWithiCloudIfEnabled()だけが行う。
+            // ここでstartすると、どちらの設定を使うかユーザーに確認せずに開始してしまう。
+            if !syncSettingsWithiCloud {
                 self?.settingsSync?.stop()
             }
         }.store(in: &cancellables)
@@ -1074,20 +1100,8 @@ final class SettingsViewModel: ObservableObject {
 
     /// UserDefaultsからワークアラウンドの設定を読み込む
     private static func loadWorkaroundApplications() -> [WorkaroundApplication] {
-        UserDefaults.app.array(forKey: UserDefaultsKeys.workarounds)?.compactMap { workaround in
-            if let workaround = workaround as? Dictionary<String, Any>, let bundleIdentifier = workaround["bundleIdentifier"] as? String,
-                let insertBlankString = workaround["insertBlankString"] as? Bool {
-                // treatFirstCharacterAsMarkedTextはv2.1+ で追加された
-                let treatFirstCharacterAsMarkedText = workaround["treatFirstCharacterAsMarkedText"] as? Bool ?? false
-                // showMarkerWhenEmptyはv2.15+ で追加された
-                let showMarkerWhenEmpty = workaround["showMarkerWhenEmpty"] as? Bool ?? false
-                return WorkaroundApplication(bundleIdentifier: bundleIdentifier,
-                                             insertBlankString: insertBlankString,
-                                             treatFirstCharacterAsMarkedText: treatFirstCharacterAsMarkedText,
-                                             showMarkerWhenEmpty: showMarkerWhenEmpty)
-            } else {
-                return nil
-            }
+        UserDefaults.app.array(forKey: UserDefaultsKeys.workarounds)?.compactMap {
+            ($0 as? [String: Any]).flatMap(WorkaroundApplication.init)
         } ?? []
     }
 

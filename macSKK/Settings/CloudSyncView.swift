@@ -4,36 +4,32 @@ import SwiftUI
 
 extension SettingsSync.Category {
     /**
-     * 表示名のLocalizable.stringsのキー。
+     * 対応する設定画面。
      *
-     * カテゴリは設定画面の区分に対応しているので、設定画面の名前をそのまま使う。
-     * 専用の文言を用意すると画面名を変えたときにずれるため。
-     * skkservだけは対応する設定画面がない (辞書画面の一部) ので専用の文言を用意している。
+     * カテゴリは設定画面の区分そのものなので、表示名は画面の名前を使う。
+     * skkservだけは対応する設定画面がない (辞書画面の一部) のでnil。
      */
-    var localizationKey: String {
+    var settingsSection: SettingsView.Section? {
         switch self {
-        case .general:
-            "SettingsNameGeneral"
-        case .candidateWindow:
-            "SettingsNameCandidateWindow"
-        case .completion:
-            "SettingsNameCompletion"
-        case .keyBinding:
-            "SettingsNameKeyBinding"
-        case .dateConversion:
-            "SettingsNameDateConversion"
-        case .directMode:
-            "SettingsNameDirectMode"
-        case .workaround:
-            "SettingsNameWorkaround"
-        case .skkserv:
-            "SettingsSyncCategorySKKServ"
+        case .general: .general
+        case .candidateWindow: .candidateWindow
+        case .completion: .completion
+        case .keyBinding: .keyBinding
+        case .dateConversion: .dateConversion
+        case .directMode: .directMode
+        case .workaround: .workaround
+        case .skkserv: nil
         }
+    }
+
+    /// 表示名のLocalizable.stringsのキー
+    var localizationKey: String {
+        settingsSection?.rawValue ?? "SettingsSyncCategorySKKServ"
     }
 
     var localizedStringKey: LocalizedStringKey { LocalizedStringKey(localizationKey) }
 
-    var localizedName: String { String(localized: String.LocalizationValue(localizationKey)) }
+    var localizedName: String { String(localized: LocalizedStringResource(stringLiteral: localizationKey)) }
 }
 
 struct CloudSyncView: View {
@@ -116,6 +112,20 @@ struct CloudSyncView: View {
         return String(format: String(localized: "SyncSettingsWithiCloudConflictMessage"), list)
     }
 
+    /// 衝突したときにどちらの設定を使うか選ぶボタン。全体用とカテゴリ用のダイアログで共通。
+    @ViewBuilder
+    private func conflictResolutionButtons(
+        onResolve: @escaping (SettingsSync.InitialSync) -> Void
+    ) -> some View {
+        Button("Overwrite iCloud settings with settings of this Mac") {
+            onResolve(.pushLocal)
+        }
+        Button("Apply iCloud settings to this Mac") {
+            onResolve(.pullRemote)
+        }
+        Button("Cancel", role: .cancel) {}
+    }
+
     var body: some View {
         VStack {
             Form {
@@ -177,28 +187,18 @@ struct CloudSyncView: View {
             .formStyle(.grouped)
         }
         .confirmationDialog("Sync settings with iCloud", isPresented: $isShowingInitialSyncDialog) {
-            Button("Overwrite iCloud settings with settings of this Mac") {
-                settingsViewModel.enableSyncSettingsWithiCloud(initialSync: .pushLocal)
+            conflictResolutionButtons { resolution in
+                settingsViewModel.enableSyncSettingsWithiCloud(initialSync: resolution)
             }
-            Button("Apply iCloud settings to this Mac") {
-                settingsViewModel.enableSyncSettingsWithiCloud(initialSync: .pullRemote)
-            }
-            Button("Cancel", role: .cancel) {}
         } message: {
             Text(conflictMessage)
         }
         .confirmationDialog("SyncedSettingsCategories", isPresented: $isShowingCategoryConflictDialog) {
-            Button("Overwrite iCloud settings with settings of this Mac") {
+            conflictResolutionButtons { resolution in
                 if let conflictingCategory {
-                    settingsViewModel.enableSyncedSettingsCategory(conflictingCategory, resolution: .pushLocal)
+                    settingsViewModel.enableSyncedSettingsCategory(conflictingCategory, resolution: resolution)
                 }
             }
-            Button("Apply iCloud settings to this Mac") {
-                if let conflictingCategory {
-                    settingsViewModel.enableSyncedSettingsCategory(conflictingCategory, resolution: .pullRemote)
-                }
-            }
-            Button("Cancel", role: .cancel) {}
         } message: {
             Text(conflictMessage)
         }

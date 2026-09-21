@@ -238,12 +238,14 @@ final class SettingsSyncTests: XCTestCase {
         XCTAssertNil(store.object(forKey: UserDefaultsKeys.showAnnotation))
     }
 
-    /// カテゴリに分けたキーが以前の同期対象と過不足なく一致し、重複もないこと。
-    /// 設定キーを追加したときにどのカテゴリにも入れ忘れるのを防ぐ。
-    func testCategoriesCoverAllSyncedKeysWithoutDuplicates() {
-        let keys = SettingsSync.Category.allCases.flatMap { $0.keys }
+    /// 同じキーが複数のカテゴリに入っていないこと、
+    /// および意図的に同期しないキーがカテゴリに紛れこんでいないこと。
+    ///
+    /// なお「新しい設定キーをどのカテゴリにも入れ忘れた」ことはここでは検出できない。
+    /// UserDefaultsKeysが静的メンバーの集まりで、全キーを列挙する手段がないため。
+    func testCategoriesHaveNoDuplicateOrExcludedKeys() {
+        let keys = SettingsSync.allSyncedKeys
         XCTAssertEqual(keys.count, Set(keys).count, "複数のカテゴリに含まれているキーがあります")
-        XCTAssertEqual(Set(keys), Set(SettingsSync.allSyncedKeys))
         // 意図的に同期していないキーが紛れこんでいないこと
         for key in [UserDefaultsKeys.dictionaries, UserDefaultsKeys.kanaRule, UserDefaultsKeys.skkservClient,
                     UserDefaultsKeys.selectedInputSource, UserDefaultsKeys.privateMode,

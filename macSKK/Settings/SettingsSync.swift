@@ -124,7 +124,7 @@ final class SettingsSync {
     }
 
     /// iCloudのKey-Value Storeを使うために必要なentitlement
-    static let entitlement = "com.apple.developer.ubiquity-kvstore-identifier"
+    private static let entitlement = "com.apple.developer.ubiquity-kvstore-identifier"
 
     /// 同期しうるすべての設定のキー
     static let allSyncedKeys: [String] = Category.allCases.flatMap { $0.keys }
@@ -158,16 +158,20 @@ final class SettingsSync {
     private var snapshot: [String: NSObject] = [:]
     /// 同期するカテゴリ
     private var categories: Set<Category>
-    private(set) var isRunning: Bool = false
+    /// 現在同期対象になっている設定のキー。``SettingsSync/Category`` の並び順。
+    /// UserDefaultsが変更されるたびに走査するので、categoriesから毎回導出せずに持っておく。
+    private var syncedKeys: [String]
+    private var isRunning: Bool = false
 
     init(store: any KeyValueStore, settingsViewModel: SettingsViewModel?, categories: Set<Category>) {
         self.store = store
         self.settingsViewModel = settingsViewModel
         self.categories = categories
+        self.syncedKeys = Self.keys(of: categories)
     }
 
-    /// 現在同期対象になっている設定のキー。``SettingsSync/Category`` の並び順。
-    var syncedKeys: [String] {
+    /// カテゴリの集合を、適用順 (``SettingsSync/Category`` の宣言順) に並べたキーにする
+    private static func keys(of categories: Set<Category>) -> [String] {
         Category.allCases.filter { categories.contains($0) }.flatMap { $0.keys }
     }
 
@@ -178,13 +182,14 @@ final class SettingsSync {
      * 衝突がなければどちらの設定を使っても結果が同じなので、ユーザーに選ばせる必要はない。
      */
     func conflicts(categories: Set<Category>) -> [Category: [String]] {
+        let defaults = UserDefaults.app
         var conflicts: [Category: [String]] = [:]
-        for category in Category.allCases where categories.contains(category) {
+        for category in categories {
             let keys = category.keys.filter { key in
                 guard let remoteValue = store.object(forKey: key) as? NSObject else {
                     return false
                 }
-                return remoteValue != UserDefaults.app.object(forKey: key) as? NSObject
+                return remoteValue != defaults.object(forKey: key) as? NSObject
             }
             if !keys.isEmpty {
                 conflicts[category] = keys
@@ -203,22 +208,8 @@ final class SettingsSync {
         // アプリが動いていない間に他のMacから届いた変更を取りこぼさないため。
         // NSUbiquitousKeyValueStoreのドキュメントが起動時に呼ぶことを勧めているのはこのため。
         store.synchronize()
-        let syncedKeys = self.syncedKeys
-        snapshot = Self.localValues(keys: syncedKeys)
-        switch initialSync {
-        case .pushLocal:
-            for key in syncedKeys {
-                store.set(snapshot[key], forKey: key)
-            }
-            logger.log("このMacの設定をiCloudに保存しました")
-        case .pullRemote:
-            let remoteKeys = syncedKeys.filter { store.object(forKey: $0) != nil }
-            apply(keys: remoteKeys)
-            // iCloud側にまだない設定はこのMacの値を送る
-            for key in syncedKeys where !remoteKeys.contains(key) {
-                store.set(snapshot[key], forKey: key)
-            }
-        }
+        snapshot = [:]
+        resolve(keys: syncedKeys, resolution: initialSync)
         observe()
         logger.log("設定のiCloud同期を開始しました")
     }
@@ -286,6 +277,7 @@ final class SettingsSync {
         let added = newCategories.subtracting(categories)
         let removed = categories.subtracting(newCategories)
         categories = newCategories
+        syncedKeys = Self.keys(of: newCategories)
         guard isRunning else {
             return
         }
@@ -296,15 +288,26 @@ final class SettingsSync {
         guard !added.isEmpty else {
             return
         }
-        let addedKeys = Category.allCases.filter { added.contains($0) }.flatMap { $0.keys }
+        resolve(keys: Self.keys(of: added), resolution: resolution)
+    }
+
+    /**
+     * 指定したキーについて、iCloudとこのMacのどちらの設定を使うかを解決する。
+     *
+     * `.pullRemote` はiCloudに値があるキーを取り込み、ないキーはこのMacの値を送る。
+     * `.pushLocal` はすべてこのMacの値でiCloudを上書きする。
+     */
+    private func resolve(keys: [String], resolution: InitialSync) {
+        let defaults = UserDefaults.app
         var remoteKeys: [String] = []
-        for key in addedKeys {
+        for key in keys {
+            let localValue = defaults.object(forKey: key) as? NSObject
+            // 先にsnapshotを埋めておくと、iCloudと同じ値のときにapplyが取り込みを省略できる
+            snapshot[key] = localValue
             if resolution == .pullRemote, store.object(forKey: key) != nil {
                 remoteKeys.append(key)
             } else {
-                let value = UserDefaults.app.object(forKey: key) as? NSObject
-                snapshot[key] = value
-                store.set(value, forKey: key)
+                store.set(localValue, forKey: key)
             }
         }
         apply(keys: remoteKeys)
@@ -331,8 +334,10 @@ final class SettingsSync {
         guard isRunning else {
             return
         }
+        // UserDefaults.appはcomputedでProcessInfoを参照するため、ループの外で1度だけ解決する
+        let defaults = UserDefaults.app
         for key in syncedKeys {
-            let value = UserDefaults.app.object(forKey: key) as? NSObject
+            let value = defaults.object(forKey: key) as? NSObject
             guard snapshot[key] != value else {
                 continue
             }
@@ -370,26 +375,21 @@ final class SettingsSync {
 
     /// iCloudの設定をUserDefaultsと設定画面に反映する
     private func apply(keys: [String]) {
+        guard !keys.isEmpty else {
+            return
+        }
+        let changedKeys = Set(keys)
+        let defaults = UserDefaults.app
         // 同期対象のキーを適用順に処理する
-        for key in syncedKeys where keys.contains(key) {
+        for key in syncedKeys where changedKeys.contains(key) {
             guard let value = store.object(forKey: key) as? NSObject, snapshot[key] != value else {
                 continue
             }
-            UserDefaults.app.set(value, forKey: key)
+            defaults.set(value, forKey: key)
             // 先にsnapshotを更新することでiCloudへの送り返しを防ぐ
             snapshot[key] = value
             settingsViewModel?.applySyncedValue(key: key)
             logger.log("iCloudから設定 \(key, privacy: .public) を取り込みました")
         }
-    }
-
-    private static func localValues(keys: [String]) -> [String: NSObject] {
-        var values: [String: NSObject] = [:]
-        for key in keys {
-            if let value = UserDefaults.app.object(forKey: key) as? NSObject {
-                values[key] = value
-            }
-        }
-        return values
     }
 }
