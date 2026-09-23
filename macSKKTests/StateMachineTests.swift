@@ -737,7 +737,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleNormalCancel() {
         let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(10).sink { events in
+        stateMachine.inputMethodEvent.collect(9).sink { events in
             XCTAssertEqual(events[0], .composing("え"))
             XCTAssertEqual(events[1], .modeChanged(.hiragana))
             XCTAssertEqual(events[2], .markedPlain("[登録：え]"))
@@ -745,9 +745,8 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[4], .emptyMarked)
             XCTAssertEqual(events[5], .markedPlain("n"))
             XCTAssertEqual(events[6], .fixedText("ん"))
-            XCTAssertEqual(events[7], .emptyMarked)
-            XCTAssertEqual(events[8], .composing("n"))
-            XCTAssertEqual(events[9], .emptyMarked)
+            XCTAssertEqual(events[7], .composing("n"))
+            XCTAssertEqual(events[8], .emptyMarked)
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertFalse(stateMachine.handle(cancelAction))
@@ -775,6 +774,47 @@ final class StateMachineTests: XCTestCase {
         XCTAssertEqual(stateMachine.state.inputMethod, .normal)
         XCTAssertFalse(stateMachine.handle(leftKeyAction))
         wait(for: [expectation], timeout: 1.0)
+    }
+
+    // キャンセルしたときにmarkedTextを二重送信しない
+    @MainActor func testHandleComposingCancelSendsMarkedTextOnce() {
+        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        var events: [InputMethodEvent] = []
+        stateMachine.inputMethodEvent.sink { events.append($0) }.store(in: &cancellables)
+
+        // "k" は確定する文字列がないので空のmarkedTextだけが1回流れる
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "k")))
+        XCTAssertTrue(stateMachine.handle(cancelAction))
+        XCTAssertEqual(events, [.markedPlain("k"), .emptyMarked])
+        XCTAssertEqual(stateMachine.state.inputMethod, .normal)
+
+        // 単語登録中はaddFixedTextがmarkedTextの更新も行うので、そちらも1回だけになること
+        events.removeAll()
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
+        XCTAssertEqual(events, [
+            .composing("あ"),
+            .modeChanged(.hiragana),
+            .markedPlain("[登録：あ]"),
+        ])
+
+        // "n" は "ん" として登録中の単語に追加される
+        events.removeAll()
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n")))
+        XCTAssertTrue(stateMachine.handle(cancelAction))
+        XCTAssertEqual(events, [
+            .markedText(MarkedText([.plain("[登録：あ]"), .plain("n")])),
+            .markedText(MarkedText([.plain("[登録：あ]"), .plain("ん")])),
+        ])
+
+        // "k" は確定する文字列がないので未確定ローマ字が消えるだけ
+        events.removeAll()
+        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "k")))
+        XCTAssertTrue(stateMachine.handle(cancelAction))
+        XCTAssertEqual(events, [
+            .markedText(MarkedText([.plain("[登録：あ]"), .plain("ん"), .plain("k")])),
+            .markedText(MarkedText([.plain("[登録：あ]"), .plain("ん")])),
+        ])
     }
 
     @MainActor func testHandleNormalArrowKeys() {
@@ -841,8 +881,8 @@ final class StateMachineTests: XCTestCase {
             XCTAssertEqual(events[7], .modeChanged(.direct))
             XCTAssertEqual(events[8], .composing())
             XCTAssertEqual(events[9], .composing("b"))
-            XCTAssertEqual(events[10], .modeChanged(.hankaku))
-            XCTAssertEqual(events[11], .emptyMarked)
+            XCTAssertEqual(events[10], .emptyMarked)
+            XCTAssertEqual(events[11], .modeChanged(.hankaku))
             expectation.fulfill()
         }.store(in: &cancellables)
         XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q"))) // カタカナモードにしておく
