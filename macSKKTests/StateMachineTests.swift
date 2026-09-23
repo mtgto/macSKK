@@ -31,313 +31,163 @@ final class StateMachineTests: XCTestCase {
     }
 
     @MainActor func testHandleNormalSimple() {
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-        let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.sink { event in
-            if case .fixedText("あ") = event {
-                expectation.fulfill()
-            } else {
-                XCTFail(#"想定していた状態遷移が起きませんでした: "\#(event)""#)
-            }
-        }.store(in: &cancellables)
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
-        wait(for: [expectation], timeout: 1.0)
+        let ctx = StateMachineTestContext()
+        ctx.step(printableKeyEventAction(character: "a"), [.fixedText("あ")])
     }
 
     @MainActor func testHandleNormalRomaji() {
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-        let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(16).sink { events in
-            XCTAssertEqual(events[0], .markedPlain("n"))
-            XCTAssertEqual(events[1], .fixedText("ん"))
-            XCTAssertEqual(events[2], .markedPlain("g"))
-            XCTAssertEqual(events[3], .fixedText("が"))
-            XCTAssertEqual(events[4], .markedPlain("f"))
-            XCTAssertEqual(events[5], .fixedText("ふ"))
-            XCTAssertEqual(events[6], .markedPlain("d"))
-            XCTAssertEqual(events[7], .markedPlain("dh"))
-            XCTAssertEqual(events[8], .fixedText("でぃ"))
-            XCTAssertEqual(events[9], .markedPlain("t"))
-            XCTAssertEqual(events[10], .markedPlain("th"))
-            XCTAssertEqual(events[11], .fixedText("てぃ"))
-            XCTAssertEqual(events[12], .markedPlain("b"))
-            XCTAssertEqual(events[13], .markedPlain("by"))
-            XCTAssertEqual(events[14], .markedPlain("n"))
-            XCTAssertEqual(events[15], .fixedText("ん"))
-            expectation.fulfill()
-        }.store(in: &cancellables)
-        "ngafudhithibyn".forEach { char in
-            XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: char)))
-        }
-        XCTAssertTrue(stateMachine.handle(enterAction))
-        wait(for: [expectation], timeout: 1.0)
+        let ctx = StateMachineTestContext()
+        ctx.step(printableKeyEventAction(character: "n"), [.markedPlain("n")])
+        ctx.step(printableKeyEventAction(character: "g"), [.fixedText("ん"), .markedPlain("g")])
+        ctx.step(printableKeyEventAction(character: "a"), [.fixedText("が")])
+        ctx.step(printableKeyEventAction(character: "f"), [.markedPlain("f")])
+        ctx.step(printableKeyEventAction(character: "u"), [.fixedText("ふ")])
+        ctx.step(printableKeyEventAction(character: "d"), [.markedPlain("d")])
+        ctx.step(printableKeyEventAction(character: "h"), [.markedPlain("dh")])
+        ctx.step(printableKeyEventAction(character: "i"), [.fixedText("でぃ")])
+        ctx.step(printableKeyEventAction(character: "t"), [.markedPlain("t")])
+        ctx.step(printableKeyEventAction(character: "h"), [.markedPlain("th")])
+        ctx.step(printableKeyEventAction(character: "i"), [.fixedText("てぃ")])
+        ctx.step(printableKeyEventAction(character: "b"), [.markedPlain("b")])
+        ctx.step(printableKeyEventAction(character: "y"), [.markedPlain("by")])
+        ctx.step(printableKeyEventAction(character: "n"), [.markedPlain("n")])
+        ctx.step(enterAction, [.fixedText("ん")])
     }
 
     @MainActor func testHandleNormalRomajiN() {
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-        let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(3).sink { events in
-            XCTAssertEqual(events[0], .markedPlain("n"))
-            XCTAssertEqual(events[1], .fixedText("ん"))
-            XCTAssertEqual(events[2], .markedPlain("t"))
-            expectation.fulfill()
-        }.store(in: &cancellables)
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t")))
-        wait(for: [expectation], timeout: 1.0)
+        let ctx = StateMachineTestContext()
+        ctx.step(printableKeyEventAction(character: "n"), [.markedPlain("n")])
+        ctx.step(printableKeyEventAction(character: "t"), [.fixedText("ん"), .markedPlain("t")])
     }
 
     @MainActor func testHandleNormalRomajiEnableMarkedTextWorkaround() {
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-        stateMachine.enableMarkedTextWorkaround = true
-        let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(11).sink { events in
-            XCTAssertEqual(events[0], .markedPlain("あ")) // 未確定文字列で"あ"を表示
-            XCTAssertEqual(events[1], .fixedText("あ"))
-            XCTAssertEqual(events[2], .markedPlain("い")) // あは確定し、未確定文字列で"い"を表示
-            XCTAssertEqual(events[3], .fixedText("い")) // Enterでも確定する
-            XCTAssertEqual(events[4], .markedPlain("う"))
-            XCTAssertEqual(events[5], .fixedText("う")) // ESCでも確定する
-            XCTAssertEqual(events[6], .markedPlain("え"))
-            XCTAssertEqual(events[7], .fixedText("え")) // Backspaceでも確定する
-            XCTAssertEqual(events[8], .markedPlain("。")) // 母音以外も1文字で登録されているキーは対象
-            XCTAssertEqual(events[9], .fixedText("。")) // 他のアルファベットキーでも確定する
-            XCTAssertEqual(events[10], .markedPlain("k"))
-            expectation.fulfill()
-        }.store(in: &cancellables)
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
-        XCTAssertTrue(stateMachine.handle(enterAction)) // 未確定文字列の確定だけして改行させないようにtrueを返す
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u")))
-        XCTAssertFalse(stateMachine.handle(cancelAction))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e")))
-        XCTAssertFalse(stateMachine.handle(backspaceAction))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ".")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "k")))
-        wait(for: [expectation], timeout: 1.0)
+        let ctx = StateMachineTestContext(enableMarkedTextWorkaround: true)
+        // 未確定文字列で"あ"を表示
+        ctx.step(printableKeyEventAction(character: "a"), [.markedPlain("あ")])
+        // あは確定し、未確定文字列で"い"を表示
+        ctx.step(printableKeyEventAction(character: "i"), [.fixedText("あ"), .markedPlain("い")])
+        // Enterでも確定する。未確定文字列の確定だけして改行させないようにtrueを返す
+        ctx.step(enterAction, [.fixedText("い")])
+        ctx.step(printableKeyEventAction(character: "u"), [.markedPlain("う")])
+        // ESCでも確定する
+        ctx.step(cancelAction, [.fixedText("う")], returns: false)
+        ctx.step(printableKeyEventAction(character: "e"), [.markedPlain("え")])
+        // Backspaceでも確定する
+        ctx.step(backspaceAction, [.fixedText("え")], returns: false)
+        // 母音以外も1文字で登録されているキーは対象
+        ctx.step(printableKeyEventAction(character: "."), [.markedPlain("。")])
+        // 他のアルファベットキーでも確定する
+        ctx.step(printableKeyEventAction(character: "k"), [.fixedText("。"), .markedPlain("k")])
     }
 
     @MainActor func testHandleNormalChangeModeEnableMarkedTextWorkaround() {
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-        stateMachine.enableMarkedTextWorkaround = true
-        let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(13).sink { events in
-            XCTAssertEqual(events[0], .modeChanged(.katakana))
-            XCTAssertEqual(events[1], .markedPlain("[カナ]"))
-            XCTAssertEqual(events[2], .emptyMarked)
-            XCTAssertEqual(events[3], .modeChanged(.hiragana))
-            XCTAssertEqual(events[4], .markedPlain("[かな]"))
-            XCTAssertEqual(events[5], .emptyMarked)
-            XCTAssertEqual(events[6], .modeChanged(.direct))
-            XCTAssertEqual(events[7], .markedPlain("[英数]"))
-            XCTAssertEqual(events[8], .emptyMarked)
-            XCTAssertEqual(events[9], .modeChanged(.hiragana))
-            XCTAssertEqual(events[10], .markedPlain("[かな]"))
-            XCTAssertEqual(events[11], .emptyMarked)
-            XCTAssertEqual(events[12], .modeChanged(.hiragana))
-            expectation.fulfill()
-        }.store(in: &cancellables)
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "l")))
-        XCTAssertFalse(stateMachine.handle(printableKeyEventAction(character: "q")))
-        XCTAssertTrue(stateMachine.handle(hiraganaAction))
-        XCTAssertFalse(stateMachine.handle(cancelAction))
-        XCTAssertTrue(stateMachine.handle(kanaKeyAction))
-        wait(for: [expectation], timeout: 1.0)
+        let ctx = StateMachineTestContext(enableMarkedTextWorkaround: true)
+        ctx.step(printableKeyEventAction(character: "q"), [.modeChanged(.katakana), .markedPlain("[カナ]")])
+        ctx.step(printableKeyEventAction(character: "q"),
+                 [.emptyMarked, .modeChanged(.hiragana), .markedPlain("[かな]")])
+        ctx.step(printableKeyEventAction(character: "l"),
+                 [.emptyMarked, .modeChanged(.direct), .markedPlain("[英数]")])
+        ctx.step(printableKeyEventAction(character: "q"), [.emptyMarked], returns: false)
+        ctx.step(hiraganaAction, [.modeChanged(.hiragana), .markedPlain("[かな]")])
+        ctx.step(cancelAction, [.emptyMarked], returns: false)
+        ctx.step(kanaKeyAction, [.modeChanged(.hiragana)])
     }
 
     @MainActor func testHandleNormalToggleDirectEnableMarkedTextWorkaround() {
         // toggleDirectにはデフォルトのキー割り当てがないのでCtrl-\を割り当てておく。
         Global.keyBinding = KeyBindingSet.defaultKeyBindingSet.update(
             for: .toggleDirect, inputs: [KeyBinding.Input(key: .character("\\"), modifierFlags: .control)])
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-        stateMachine.enableMarkedTextWorkaround = true
-        let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(5).sink { events in
-            XCTAssertEqual(events[0], .modeChanged(.direct))
-            XCTAssertEqual(events[1], .markedText(MarkedText([.plain("[英数]")])))
-            // 2回目は直前のワークアラウンドの未確定文字列をクリアしてhandleNormalに遷移する
-            XCTAssertEqual(events[2], .markedText(MarkedText([])))
-            XCTAssertEqual(events[3], .modeChanged(.hiragana))
-            XCTAssertEqual(events[4], .markedText(MarkedText([.plain("[かな]")])))
-            expectation.fulfill()
-        }.store(in: &cancellables)
-        XCTAssertTrue(stateMachine.handle(toggleDirectAction))
-        XCTAssertTrue(stateMachine.handle(toggleDirectAction))
-        wait(for: [expectation], timeout: 1.0)
+        let ctx = StateMachineTestContext(enableMarkedTextWorkaround: true)
+        ctx.step(toggleDirectAction, [.modeChanged(.direct), .markedPlain("[英数]")])
+        // 2回目は直前のワークアラウンドの未確定文字列をクリアしてhandleNormalに遷移する
+        ctx.step(toggleDirectAction, [.emptyMarked, .modeChanged(.hiragana), .markedPlain("[かな]")])
     }
 
     @MainActor func testHandleNormalNAndHyphen() {
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-        let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(9).sink { events in
-            XCTAssertEqual(events[0], .markedPlain("n"))
-            XCTAssertEqual(events[1], .fixedText("ん"))
-            XCTAssertEqual(events[2], .fixedText("ー"))
-            XCTAssertEqual(events[3], .markedPlain("n"))
-            XCTAssertEqual(events[4], .fixedText("ん"))
-            XCTAssertEqual(events[5], .fixedText("1"))
-            XCTAssertEqual(events[6], .markedPlain("n"))
-            XCTAssertEqual(events[7], .fixedText("ん"))
-            XCTAssertEqual(events[8], .fixedText("!"))
-            expectation.fulfill()
-        }.store(in: &cancellables)
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "-")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "1")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n")))
-        XCTAssertTrue(stateMachine.handle(shiftKey("!", "1")))
-        wait(for: [expectation], timeout: 1.0)
+        let ctx = StateMachineTestContext()
+        ctx.step(printableKeyEventAction(character: "n"), [.markedPlain("n")])
+        ctx.step(printableKeyEventAction(character: "-"), [.fixedText("ん"), .fixedText("ー")])
+        ctx.step(printableKeyEventAction(character: "n"), [.markedPlain("n")])
+        ctx.step(printableKeyEventAction(character: "1"), [.fixedText("ん"), .fixedText("1")])
+        ctx.step(printableKeyEventAction(character: "n"), [.markedPlain("n")])
+        ctx.step(shiftKey("!", "1"), [.fixedText("ん"), .fixedText("!")])
     }
 
     @MainActor func testHandleNormalRomajiNAndSpace() {
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-        let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(2).sink { events in
-            XCTAssertEqual(events[0], .markedPlain("n"))
-            XCTAssertEqual(events[1], .fixedText("ん "))
-            expectation.fulfill()
-        }.store(in: &cancellables)
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
-        wait(for: [expectation], timeout: 1.0)
+        let ctx = StateMachineTestContext()
+        ctx.step(printableKeyEventAction(character: "n"), [.markedPlain("n")])
+        ctx.step(printableKeyEventAction(character: " "), [.fixedText("ん ")])
     }
 
     @MainActor func testHandleNormalRomajiNQ() {
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-        let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(10).sink { events in
-            XCTAssertEqual(events[0], .markedPlain("n"))
-            XCTAssertEqual(events[1], .fixedText("ん"))
-            XCTAssertEqual(events[2], .modeChanged(.katakana))
-            XCTAssertEqual(events[3], .markedPlain("n"))
-            XCTAssertEqual(events[4], .fixedText("ン"))
-            XCTAssertEqual(events[5], .modeChanged(.hiragana))
-            XCTAssertEqual(events[6], .modeChanged(.hankaku))
-            XCTAssertEqual(events[7], .markedPlain("n"))
-            XCTAssertEqual(events[8], .fixedText("ﾝ"))
-            XCTAssertEqual(events[9], .modeChanged(.hiragana))
-            expectation.fulfill()
-        }.store(in: &cancellables)
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n")))
-        XCTAssertTrue(stateMachine.handle(toggleAndFixKanaAction))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n")))
-        XCTAssertTrue(stateMachine.handle(toggleAndFixKanaAction))
-        XCTAssertTrue(stateMachine.handle(hankakuKanaAction))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n")))
-        XCTAssertTrue(stateMachine.handle(toggleAndFixKanaAction))
-        wait(for: [expectation], timeout: 1.0)
+        let ctx = StateMachineTestContext()
+        ctx.step(printableKeyEventAction(character: "n"), [.markedPlain("n")])
+        ctx.step(toggleAndFixKanaAction, [.fixedText("ん"), .modeChanged(.katakana)])
+        ctx.step(printableKeyEventAction(character: "n"), [.markedPlain("n")])
+        ctx.step(toggleAndFixKanaAction, [.fixedText("ン"), .modeChanged(.hiragana)])
+        ctx.step(hankakuKanaAction, [.modeChanged(.hankaku)])
+        ctx.step(printableKeyEventAction(character: "n"), [.markedPlain("n")])
+        ctx.step(toggleAndFixKanaAction, [.fixedText("ﾝ"), .modeChanged(.hiragana)])
     }
 
     @MainActor func testHandleNormalRomajiKanaRuleQ() {
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         Global.kanaRule = try! Romaji(source: "tq,たん", initialRomaji: nil)
-        let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(2).sink { events in
-            XCTAssertEqual(events[0], .markedPlain("t"))
-            XCTAssertEqual(events[1], .fixedText("たん"))
-            expectation.fulfill()
-        }.store(in: &cancellables)
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "t")))
-        XCTAssertTrue(stateMachine.handle(toggleAndFixKanaAction))
-        wait(for: [expectation], timeout: 1.0)
+        let ctx = StateMachineTestContext()
+        ctx.step(printableKeyEventAction(character: "t"), [.markedPlain("t")])
+        ctx.step(toggleAndFixKanaAction, [.fixedText("たん")])
     }
 
     @MainActor func testHandleNormalRomajiKanaRuleAzik() {
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .direct))
         Global.kanaRule = try! Romaji(source: [";,っ", ":,<shift>;"].joined(separator: "\n"), initialRomaji: nil)
-        let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(3).sink { events in
-            XCTAssertEqual(events[0], .modeChanged(.hiragana))
-            XCTAssertEqual(events[1], .fixedText("っ"))
-            XCTAssertEqual(events[2], .composing("っ"))
-            expectation.fulfill()
-        }.store(in: &cancellables)
+        let ctx = StateMachineTestContext(inputMode: .direct)
         // direct時はmacSKKでは処理しない
-        XCTAssertFalse(stateMachine.handle(shiftKey(":", ";")))
-        XCTAssertTrue(stateMachine.handle(hiraganaAction))
+        ctx.step(shiftKey(":", ";"), returns: false)
+        ctx.step(hiraganaAction, [.modeChanged(.hiragana)])
         // 非StickyShiftでシフトなしで ";" 入力時は "っ" が入力される
-        XCTAssertTrue(stateMachine.handle(Action(keyBind: nil, event: generateNSEvent(character: ";", characterIgnoringModifiers: ";"))))
+        ctx.step(Action(keyBind: nil, event: generateNSEvent(character: ";", characterIgnoringModifiers: ";")),
+                 [.fixedText("っ")])
         // ひらがなモード時はローマ字かな変換テーブルが参照され "っ" がシフトを押しながら入力されたとする
-        XCTAssertTrue(stateMachine.handle(shiftKey(":", ";")))
-        wait(for: [expectation], timeout: 1.0)
+        ctx.step(shiftKey(":", ";"), [.composing("っ")])
     }
 
     @MainActor func testHandleNormalOkuriRuleWithoutShift() {
         // 通常モードで `gq,が<okuri>い` ルールがある状態で gq を入力すると "がい" が確定入力される
         Global.kanaRule = try! Romaji(source: "gq,が<okuri>い", initialRomaji: nil)
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-        let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(2).sink { events in
-            XCTAssertEqual(events[0], .markedPlain("g"))
-            XCTAssertEqual(events[1], .fixedText("がい"))
-            expectation.fulfill()
-        }.store(in: &cancellables)
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "g")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
-        wait(for: [expectation], timeout: 1.0)
+        let ctx = StateMachineTestContext()
+        ctx.step(printableKeyEventAction(character: "g"), [.markedPlain("g")])
+        ctx.step(printableKeyEventAction(character: "q"), [.fixedText("がい")])
     }
 
     @MainActor func testHandleNormalOkuriRuleWithShift() {
         // 通常モードで `gq,が<okuri>い` ルールがある状態で g + Shift+Q を入力すると
         // "が" が確定入力され、"い" が読みとしてcomposingに入る
         Global.kanaRule = try! Romaji(source: "gq,が<okuri>い", initialRomaji: nil)
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-        let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(3).sink { events in
-            XCTAssertEqual(events[0], .markedPlain("g"))
-            XCTAssertEqual(events[1], .fixedText("が"))
-            XCTAssertEqual(events[2], .composing("い"))
-            expectation.fulfill()
-        }.store(in: &cancellables)
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "g")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q", withShift: true)))
-        wait(for: [expectation], timeout: 1.0)
+        let ctx = StateMachineTestContext()
+        ctx.step(printableKeyEventAction(character: "g"), [.markedPlain("g")])
+        ctx.step(printableKeyEventAction(character: "q", withShift: true),
+                 [.fixedText("が"), .composing("い")])
     }
 
     @MainActor func testHandleNormalRomajiKanaRuleN() {
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         Global.kanaRule = try! Romaji(source: ["nn,ん", "a,あ"].joined(separator: "\n"), initialRomaji: nil)
-        let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(2).sink { events in
-            XCTAssertEqual(events[0], .markedPlain("n"))
-            XCTAssertEqual(events[1], .fixedText("あ"))
-            expectation.fulfill()
-        }.store(in: &cancellables)
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
-        wait(for: [expectation], timeout: 1.0)
+        let ctx = StateMachineTestContext()
+        ctx.step(printableKeyEventAction(character: "n"), [.markedPlain("n")])
+        ctx.step(printableKeyEventAction(character: "a"), [.fixedText("あ")])
     }
 
     // https://github.com/mtgto/macSKK/issues/455
     @MainActor func testHandleNormalKanaRuleShiftSemicolon() {
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         Global.kanaRule = try! Romaji(source: ";,っ\nz:,：\n:,<shift>;", initialRomaji: nil)
-        let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(2).sink { events in
-            XCTAssertEqual(events[0], .markedText(MarkedText([.plain("z")])))
-            XCTAssertEqual(events[1], .fixedText("："))
-            expectation.fulfill()
-        }.store(in: &cancellables)
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "z")))
+        let ctx = StateMachineTestContext()
+        ctx.step(printableKeyEventAction(character: "z"), [.markedPlain("z")])
         // 英字配列で `:` 入力 (`:` はShift+;)
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ":", characterIgnoringModifier: ";", withShift: true)))
-        wait(for: [expectation], timeout: 1.0)
+        ctx.step(shiftKey(":", ";"), [.fixedText("：")])
     }
 
     @MainActor func testHandleNormalSpace() {
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-        let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(2).sink { events in
-            XCTAssertEqual(events[0], .markedPlain("s"))
-            XCTAssertEqual(events[1], .fixedText(" "))
-            expectation.fulfill()
-        }.store(in: &cancellables)
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "s")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
-        wait(for: [expectation], timeout: 1.0)
+        let ctx = StateMachineTestContext()
+        ctx.step(printableKeyEventAction(character: "s"), [.markedPlain("s")])
+        ctx.step(printableKeyEventAction(character: " "), [.fixedText(" ")])
     }
 
     @MainActor func testHandleNormalSpaceCustomized() {
@@ -347,653 +197,402 @@ final class StateMachineTests: XCTestCase {
                 KeyBinding.Input(key: .character("n"), modifierFlags: [.control])
             ])
         ])
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-        let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(1).sink { events in
-            XCTAssertEqual(events[0], .fixedText("1")) // 変換開始や変換中じゃないので入力キーがそのまま入力される
-            expectation.fulfill()
-        }.store(in: &cancellables)
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "1")))
-        XCTAssertFalse(stateMachine.handle(ctrlNAction)) // Ctrlを含むキー入力は無視して本来の挙動を優先する
-        wait(for: [expectation], timeout: 1.0)
+        let ctx = StateMachineTestContext()
+        // 変換開始や変換中じゃないので入力キーがそのまま入力される
+        ctx.step(printableKeyEventAction(character: "1"), [.fixedText("1")])
+        // Ctrlを含むキー入力は無視して本来の挙動を優先する
+        ctx.step(ctrlNAction, returns: false)
     }
 
     @MainActor func testHandleNormalTab() {
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let ctx = StateMachineTestContext()
         // Normal時はタブは処理しない (Composingでは補完に使用する)
-        XCTAssertFalse(stateMachine.handle(tabAction))
+        ctx.step(tabAction, returns: false)
     }
 
     @MainActor func testHandleNormalEnter() {
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let ctx = StateMachineTestContext()
         // 未入力状態ならfalse
-        XCTAssertFalse(stateMachine.handle(enterAction))
+        ctx.step(enterAction, returns: false)
     }
 
     @MainActor func testHandleNormalEisu() {
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let ctx = StateMachineTestContext()
         // Normal時は英数キーは無視する
-        XCTAssertTrue(stateMachine.handle(eisuKeyAction))
+        ctx.step(eisuKeyAction)
     }
 
     @MainActor func testHandleNormalSpecialSymbol() {
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-        let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(20).sink { events in
-            XCTAssertEqual(events[0], .markedPlain("z"))
-            XCTAssertEqual(events[1], .fixedText("〜"))
-            XCTAssertEqual(events[2], .markedPlain("z"))
-            XCTAssertEqual(events[3], .fixedText("‥"))
-            XCTAssertEqual(events[4], .markedPlain("z"))
-            XCTAssertEqual(events[5], .fixedText("…"))
-            XCTAssertEqual(events[6], .markedPlain("z"))
-            XCTAssertEqual(events[7], .fixedText("・"))
-            XCTAssertEqual(events[8], .markedPlain("z"))
-            XCTAssertEqual(events[9], .fixedText("←"))
-            XCTAssertEqual(events[10], .markedPlain("z"))
-            XCTAssertEqual(events[11], .fixedText("↓"))
-            XCTAssertEqual(events[12], .markedPlain("z"))
-            XCTAssertEqual(events[13], .fixedText("↑"))
-            XCTAssertEqual(events[14], .markedPlain("z"))
-            XCTAssertEqual(events[15], .fixedText("→"))
-            XCTAssertEqual(events[16], .markedPlain("z"))
-            XCTAssertEqual(events[17], .fixedText("　"))
-            XCTAssertEqual(events[18], .markedPlain("z"))
-            XCTAssertEqual(events[19], .fixedText("（"))
-            expectation.fulfill()
-        }.store(in: &cancellables)
-        "z-z,z.z/zhzjzkzlz".forEach { char in
-            XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: char)))
-        }
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "z")))
-        XCTAssertTrue(stateMachine.handle(shiftKey("(", "9")))
-        wait(for: [expectation], timeout: 1.0)
+        let ctx = StateMachineTestContext()
+        ctx.step(printableKeyEventAction(character: "z"), [.markedPlain("z")])
+        ctx.step(printableKeyEventAction(character: "-"), [.fixedText("〜")])
+        ctx.step(printableKeyEventAction(character: "z"), [.markedPlain("z")])
+        ctx.step(printableKeyEventAction(character: ","), [.fixedText("‥")])
+        ctx.step(printableKeyEventAction(character: "z"), [.markedPlain("z")])
+        ctx.step(printableKeyEventAction(character: "."), [.fixedText("…")])
+        ctx.step(printableKeyEventAction(character: "z"), [.markedPlain("z")])
+        ctx.step(printableKeyEventAction(character: "/"), [.fixedText("・")])
+        ctx.step(printableKeyEventAction(character: "z"), [.markedPlain("z")])
+        ctx.step(printableKeyEventAction(character: "h"), [.fixedText("←")])
+        ctx.step(printableKeyEventAction(character: "z"), [.markedPlain("z")])
+        ctx.step(printableKeyEventAction(character: "j"), [.fixedText("↓")])
+        ctx.step(printableKeyEventAction(character: "z"), [.markedPlain("z")])
+        ctx.step(printableKeyEventAction(character: "k"), [.fixedText("↑")])
+        ctx.step(printableKeyEventAction(character: "z"), [.markedPlain("z")])
+        ctx.step(printableKeyEventAction(character: "l"), [.fixedText("→")])
+        ctx.step(printableKeyEventAction(character: "z"), [.markedPlain("z")])
+        ctx.step(printableKeyEventAction(character: " "), [.fixedText("　")])
+        ctx.step(printableKeyEventAction(character: "z"), [.markedPlain("z")])
+        ctx.step(shiftKey("(", "9"), [.fixedText("（")])
     }
 
     @MainActor func testHandleNormalNoAlphabet() {
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-        let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(9).sink { events in
-            XCTAssertEqual(events[0], .fixedText(":"))
-            XCTAssertEqual(events[1], .fixedText("!"))
-            XCTAssertEqual(events[2], .fixedText("@"))
-            XCTAssertEqual(events[3], .fixedText("#"))
-            XCTAssertEqual(events[4], .fixedText("、"))
-            XCTAssertEqual(events[5], .fixedText("。"))
-            XCTAssertEqual(events[6], .fixedText("ー"))
-            XCTAssertEqual(events[7], .fixedText("<"))
-            XCTAssertEqual(events[8], .fixedText("5"))
-            expectation.fulfill()
-        }.store(in: &cancellables)
-        XCTAssertTrue(stateMachine.handle(shiftKey(":", ";")))
-        XCTAssertTrue(stateMachine.handle(shiftKey("!", "1")))
-        XCTAssertTrue(stateMachine.handle(shiftKey("@", "2")))
-        XCTAssertTrue(stateMachine.handle(shiftKey("#", "3")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ",")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ".")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "-")))
-        XCTAssertTrue(stateMachine.handle(shiftKey("<", ",")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "5")))
-        wait(for: [expectation], timeout: 1.0)
+        let ctx = StateMachineTestContext()
+        ctx.step(shiftKey(":", ";"), [.fixedText(":")])
+        ctx.step(shiftKey("!", "1"), [.fixedText("!")])
+        ctx.step(shiftKey("@", "2"), [.fixedText("@")])
+        ctx.step(shiftKey("#", "3"), [.fixedText("#")])
+        ctx.step(printableKeyEventAction(character: ","), [.fixedText("、")])
+        ctx.step(printableKeyEventAction(character: "."), [.fixedText("。")])
+        ctx.step(printableKeyEventAction(character: "-"), [.fixedText("ー")])
+        ctx.step(shiftKey("<", ","), [.fixedText("<")])
+        ctx.step(printableKeyEventAction(character: "5"), [.fixedText("5")])
     }
 
     @MainActor func testHandleNormalNoAlphabetRomajiKanaRule() {
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
         Global.kanaRule = try! Romaji(source: "0a,あ", initialRomaji: nil)
-        let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(2).sink { events in
-            XCTAssertEqual(events[0], .markedPlain("0"))
-            XCTAssertEqual(events[1], .fixedText("あ"))
-            expectation.fulfill()
-        }.store(in: &cancellables)
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "0")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
-        wait(for: [expectation], timeout: 1.0)
+        let ctx = StateMachineTestContext()
+        ctx.step(printableKeyEventAction(character: "0"), [.markedPlain("0")])
+        ctx.step(printableKeyEventAction(character: "a"), [.fixedText("あ")])
     }
 
     @MainActor func testHandleNormalUnregisteredKeyEventWithModifiers() {
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
+        let ctx = StateMachineTestContext()
         // キーバインドとして登録されてないC-kはhandleはfalseを返す
-        XCTAssertFalse(stateMachine.handle(Action(keyBind: nil, event: generateNSEvent(character: "k", characterIgnoringModifiers: "k", modifierFlags: .control))))
+        ctx.step(Action(keyBind: nil, event: generateNSEvent(character: "k", characterIgnoringModifiers: "k", modifierFlags: .control)),
+                 returns: false)
         // Cmd-cもhandleせずfalseを返す
-        XCTAssertFalse(stateMachine.handle(Action(keyBind: nil, event: generateNSEvent(character: "c", characterIgnoringModifiers: "c", modifierFlags: .command))))
+        ctx.step(Action(keyBind: nil, event: generateNSEvent(character: "c", characterIgnoringModifiers: "c", modifierFlags: .command)),
+                 returns: false)
     }
 
     @MainActor func testHandleNormalNoAlphabetEisu() {
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .eisu))
-        let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(4).sink { events in
-            XCTAssertEqual(events[0], .fixedText("５"))
-            XCTAssertEqual(events[1], .fixedText("％"))
-            XCTAssertEqual(events[2], .fixedText("／"))
-            XCTAssertEqual(events[3], .fixedText("　"))
-            expectation.fulfill()
-        }.store(in: &cancellables)
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "5")))
-        XCTAssertTrue(stateMachine.handle(shiftKey("%", "5")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "/")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
-        wait(for: [expectation], timeout: 1.0)
+        let ctx = StateMachineTestContext(inputMode: .eisu)
+        ctx.step(printableKeyEventAction(character: "5"), [.fixedText("５")])
+        ctx.step(shiftKey("%", "5"), [.fixedText("％")])
+        ctx.step(printableKeyEventAction(character: "/"), [.fixedText("／")])
+        ctx.step(printableKeyEventAction(character: " "), [.fixedText("　")])
     }
 
     @MainActor func testHandleNormalUpDownPagedown() {
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-        XCTAssertFalse(stateMachine.handle(upKeyAction))
-        XCTAssertFalse(stateMachine.handle(downKeyAction))
-        XCTAssertFalse(stateMachine.handle(pagedownKeyAction))
+        let ctx = StateMachineTestContext()
+        ctx.step(upKeyAction, returns: false)
+        ctx.step(downKeyAction, returns: false)
+        ctx.step(pagedownKeyAction, returns: false)
     }
 
     @MainActor func testHandleNormalPrintableDirect() {
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .direct))
-        XCTAssertFalse(stateMachine.handle(printableKeyEventAction(character: "c")))
-        XCTAssertFalse(stateMachine.handle(printableKeyEventAction(character: "c", withShift: true)))
+        let ctx = StateMachineTestContext(inputMode: .direct)
+        ctx.step(printableKeyEventAction(character: "c"), returns: false)
+        ctx.step(printableKeyEventAction(character: "c", withShift: true), returns: false)
         // 変換候補選択画面で登録解除へ遷移するキー。Normalではなにも起きない
-        XCTAssertFalse(stateMachine.handle(printableKeyEventAction(character: "x", withShift: true)))
+        ctx.step(printableKeyEventAction(character: "x", withShift: true), returns: false)
         // 変換候補選択画面で前の候補へ遷移するキー。Normalではなにも起きない
-        XCTAssertFalse(stateMachine.handle(printableKeyEventAction(character: "x")))
-        XCTAssertFalse(stateMachine.handle(printableKeyEventAction(character: "l")))
-        XCTAssertFalse(stateMachine.handle(printableKeyEventAction(character: "l", withShift: true)))
-        XCTAssertFalse(stateMachine.handle(printableKeyEventAction(character: "q")))
-        XCTAssertFalse(stateMachine.handle(printableKeyEventAction(character: "q", withShift: true)))
+        ctx.step(printableKeyEventAction(character: "x"), returns: false)
+        ctx.step(printableKeyEventAction(character: "l"), returns: false)
+        ctx.step(printableKeyEventAction(character: "l", withShift: true), returns: false)
+        ctx.step(printableKeyEventAction(character: "q"), returns: false)
+        ctx.step(printableKeyEventAction(character: "q", withShift: true), returns: false)
     }
 
     @MainActor func testHandleNormalPrintableEisu() {
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .eisu))
-        let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(4).sink { events in
-            XCTAssertEqual(events[0], .fixedText("ａ"))
-            XCTAssertEqual(events[1], .fixedText("Ａ"))
-            XCTAssertEqual(events[2], .fixedText("ｌ"))
-            XCTAssertEqual(events[3], .fixedText("Ｌ"))
-            expectation.fulfill()
-        }.store(in: &cancellables)
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "l")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "l", withShift: true)))
-        wait(for: [expectation], timeout: 1.0)
+        let ctx = StateMachineTestContext(inputMode: .eisu)
+        ctx.step(printableKeyEventAction(character: "a"), [.fixedText("ａ")])
+        ctx.step(printableKeyEventAction(character: "a", withShift: true), [.fixedText("Ａ")])
+        ctx.step(printableKeyEventAction(character: "l"), [.fixedText("ｌ")])
+        ctx.step(printableKeyEventAction(character: "l", withShift: true), [.fixedText("Ｌ")])
     }
 
     @MainActor func testHandleNormalRegistering() {
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-        let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(5).sink { events in
-            XCTAssertEqual(events[0], .composing("あ"))
-            XCTAssertEqual(events[1], .modeChanged(.hiragana))
-            XCTAssertEqual(events[2], .markedPlain("[登録：あ]"))
-            XCTAssertEqual(events[3], .markedText(MarkedText([.plain("[登録：あ]"), .plain("い")])))
-            XCTAssertEqual(events[4], .markedText(MarkedText([.plain("[登録：あ]"), .plain("い"), .markerCompose, .plain("う")])))
-            expectation.fulfill()
-        }.store(in: &cancellables)
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "u", withShift: true)))
-        wait(for: [expectation], timeout: 1.0)
+        let ctx = StateMachineTestContext()
+        ctx.step(printableKeyEventAction(character: "a", withShift: true), [.composing("あ")])
+        ctx.step(printableKeyEventAction(character: " "),
+                 [.modeChanged(.hiragana), .markedPlain("[登録：あ]")])
+        ctx.step(printableKeyEventAction(character: "i"),
+                 [.markedText(MarkedText([.plain("[登録：あ]"), .plain("い")]))])
+        ctx.step(printableKeyEventAction(character: "u", withShift: true),
+                 [.markedText(MarkedText([.plain("[登録：あ]"), .plain("い"), .markerCompose, .plain("う")]))])
     }
 
     @MainActor func testHandleNormalStickyShift() {
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-        let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(6).sink { events in
-            XCTAssertEqual(events[0], .composing())
-            XCTAssertEqual(events[1], .fixedText("；"))
-            XCTAssertEqual(events[2], .composing())
-            XCTAssertEqual(events[3], .composing("い"))
-            XCTAssertEqual(events[4], .composing("い*"))
-            XCTAssertEqual(events[5], .composing("い*j"))
-            expectation.fulfill()
-        }.store(in: &cancellables)
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ";")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ";")))
+        let ctx = StateMachineTestContext()
+        ctx.step(printableKeyEventAction(character: ";"), [.composing()])
+        ctx.step(printableKeyEventAction(character: ";"), [.fixedText("；")])
 
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ";")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: ";")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "j")))
-        wait(for: [expectation], timeout: 1.0)
+        ctx.step(printableKeyEventAction(character: ";"), [.composing()])
+        ctx.step(printableKeyEventAction(character: "i"), [.composing("い")])
+        ctx.step(printableKeyEventAction(character: ";"), [.composing("い*")])
+        ctx.step(printableKeyEventAction(character: "j"), [.composing("い*j")])
     }
 
     @MainActor func testHandleNormalStickyShiftCustomized() {
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .direct))
+        let ctx = StateMachineTestContext(inputMode: .direct)
         // zキーをStickyShiftにカスタマイズしているという設定。directモードなのでなにもしない
-        XCTAssertFalse(stateMachine.handle(Action(keyBind: .stickyShift,
-                                                 event: generateNSEvent(character: "z", characterIgnoringModifiers: "z"))))
+        ctx.step(Action(keyBind: .stickyShift,
+                        event: generateNSEvent(character: "z", characterIgnoringModifiers: "z")),
+                 returns: false)
     }
 
     @MainActor func testHandleNormalToggleDirect() {
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-        let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(8).sink { events in
-            XCTAssertEqual(events[0], .modeChanged(.direct))
-            XCTAssertEqual(events[1], .modeChanged(.hiragana))
-            XCTAssertEqual(events[2], .modeChanged(.katakana))
-            XCTAssertEqual(events[3], .modeChanged(.direct), "カタカナからも直接入力に切り替わる")
-            XCTAssertEqual(events[4], .modeChanged(.hiragana), "直接入力からは常にひらがなに戻る")
-            XCTAssertEqual(events[5], .modeChanged(.hankaku))
-            XCTAssertEqual(events[6], .modeChanged(.direct), "半角カナからも直接入力に切り替わる")
-            XCTAssertEqual(events[7], .modeChanged(.hiragana), "直前が半角カナでもひらがなに戻る")
-            expectation.fulfill()
-        }.store(in: &cancellables)
-        XCTAssertTrue(stateMachine.handle(toggleDirectAction))
-        XCTAssertTrue(stateMachine.handle(toggleDirectAction))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
-        XCTAssertTrue(stateMachine.handle(toggleDirectAction))
-        XCTAssertTrue(stateMachine.handle(toggleDirectAction))
-        XCTAssertTrue(stateMachine.handle(hankakuKanaAction))
-        XCTAssertTrue(stateMachine.handle(toggleDirectAction))
-        XCTAssertTrue(stateMachine.handle(toggleDirectAction))
-        XCTAssertEqual(stateMachine.state.inputMode, .hiragana)
-        wait(for: [expectation], timeout: 1.0)
+        let ctx = StateMachineTestContext()
+        ctx.step(toggleDirectAction, [.modeChanged(.direct)])
+        ctx.step(toggleDirectAction, [.modeChanged(.hiragana)])
+        ctx.step(printableKeyEventAction(character: "q"), [.modeChanged(.katakana)])
+        // カタカナからも直接入力に切り替わる
+        ctx.step(toggleDirectAction, [.modeChanged(.direct)])
+        // 直接入力からは常にひらがなに戻る
+        ctx.step(toggleDirectAction, [.modeChanged(.hiragana)])
+        ctx.step(hankakuKanaAction, [.modeChanged(.hankaku)])
+        // 半角カナからも直接入力に切り替わる
+        ctx.step(toggleDirectAction, [.modeChanged(.direct)])
+        // 直前が半角カナでもひらがなに戻る
+        ctx.step(toggleDirectAction, [.modeChanged(.hiragana)])
+        XCTAssertEqual(ctx.stateMachine.state.inputMode, .hiragana)
     }
 
     @MainActor func testHandleNormalToggleDirectFromEisu() {
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .eisu))
-        let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(2).sink { events in
-            XCTAssertEqual(events[0], .modeChanged(.direct), "全角英数からも直接入力に切り替わる")
-            XCTAssertEqual(events[1], .modeChanged(.hiragana))
-            expectation.fulfill()
-        }.store(in: &cancellables)
-        XCTAssertTrue(stateMachine.handle(toggleDirectAction))
-        XCTAssertTrue(stateMachine.handle(toggleDirectAction))
-        wait(for: [expectation], timeout: 1.0)
+        let ctx = StateMachineTestContext(inputMode: .eisu)
+        // 全角英数からも直接入力に切り替わる
+        ctx.step(toggleDirectAction, [.modeChanged(.direct)])
+        ctx.step(toggleDirectAction, [.modeChanged(.hiragana)])
     }
 
     @MainActor func testHandleRegisteringToggleDirect() {
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-        let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(7).sink { events in
-            XCTAssertEqual(events[0], .markedText(MarkedText([.markerCompose, .plain("あ")])))
-            XCTAssertEqual(events[1], .modeChanged(.hiragana))
-            XCTAssertEqual(events[2], .markedText(MarkedText([.plain("[登録：あ]")])))
-            XCTAssertEqual(events[3], .modeChanged(.direct))
-            XCTAssertEqual(events[4], .markedText(MarkedText([.plain("[登録：あ]")])), "単語登録中はmarkedTextを再送信する")
-            XCTAssertEqual(events[5], .modeChanged(.hiragana))
-            XCTAssertEqual(events[6], .markedText(MarkedText([.plain("[登録：あ]")])), "直接入力からひらがなに戻すときもmarkedTextを再送信する")
-            expectation.fulfill()
-        }.store(in: &cancellables)
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
-        XCTAssertTrue(stateMachine.handle(toggleDirectAction))
-        XCTAssertEqual(stateMachine.state.inputMode, .direct)
-        XCTAssertTrue(stateMachine.handle(toggleDirectAction))
-        XCTAssertEqual(stateMachine.state.inputMode, .hiragana)
-        wait(for: [expectation], timeout: 1.0)
+        let ctx = StateMachineTestContext()
+        ctx.step(printableKeyEventAction(character: "a", withShift: true), [.composing("あ")])
+        ctx.step(printableKeyEventAction(character: " "),
+                 [.modeChanged(.hiragana), .markedPlain("[登録：あ]")])
+        // 単語登録中はmarkedTextを再送信する
+        ctx.step(toggleDirectAction, [.modeChanged(.direct), .markedPlain("[登録：あ]")])
+        XCTAssertEqual(ctx.stateMachine.state.inputMode, .direct)
+        // 直接入力からひらがなに戻すときもmarkedTextを再送信する
+        ctx.step(toggleDirectAction, [.modeChanged(.hiragana), .markedPlain("[登録：あ]")])
+        XCTAssertEqual(ctx.stateMachine.state.inputMode, .hiragana)
     }
 
     @MainActor func testHandleNormalCtrlJ() {
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .direct))
-        let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(10).sink { events in
-            XCTAssertEqual(events[0], .modeChanged(.hiragana))
-            XCTAssertEqual(events[1], .modeChanged(.hiragana), "複数回CtrlJ打ったときにイベントは毎回発生する")
-            XCTAssertEqual(events[2], .modeChanged(.direct))
-            XCTAssertEqual(events[3], .modeChanged(.hiragana))
-            XCTAssertEqual(events[4], .modeChanged(.eisu))
-            XCTAssertEqual(events[5], .modeChanged(.hiragana))
-            XCTAssertEqual(events[6], .modeChanged(.katakana))
-            XCTAssertEqual(events[7], .modeChanged(.hiragana))
-            XCTAssertEqual(events[8], .modeChanged(.hankaku))
-            XCTAssertEqual(events[9], .modeChanged(.hiragana))
-            expectation.fulfill()
-        }.store(in: &cancellables)
-        XCTAssertTrue(stateMachine.handle(hiraganaAction))
-        XCTAssertTrue(stateMachine.handle(hiraganaAction))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "l", withShift: false)))
-        XCTAssertTrue(stateMachine.handle(hiraganaAction))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "l", withShift: true)))
-        XCTAssertTrue(stateMachine.handle(hiraganaAction))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q", withShift: false)))
-        XCTAssertTrue(stateMachine.handle(hiraganaAction))
-        XCTAssertTrue(stateMachine.handle(hankakuKanaAction))
-        XCTAssertTrue(stateMachine.handle(hiraganaAction))
-        wait(for: [expectation], timeout: 1.0)
+        let ctx = StateMachineTestContext(inputMode: .direct)
+        ctx.step(hiraganaAction, [.modeChanged(.hiragana)])
+        // 複数回CtrlJ打ったときにイベントは毎回発生する
+        ctx.step(hiraganaAction, [.modeChanged(.hiragana)])
+        ctx.step(printableKeyEventAction(character: "l", withShift: false), [.modeChanged(.direct)])
+        ctx.step(hiraganaAction, [.modeChanged(.hiragana)])
+        ctx.step(printableKeyEventAction(character: "l", withShift: true), [.modeChanged(.eisu)])
+        ctx.step(hiraganaAction, [.modeChanged(.hiragana)])
+        ctx.step(printableKeyEventAction(character: "q", withShift: false), [.modeChanged(.katakana)])
+        ctx.step(hiraganaAction, [.modeChanged(.hiragana)])
+        ctx.step(hankakuKanaAction, [.modeChanged(.hankaku)])
+        ctx.step(hiraganaAction, [.modeChanged(.hiragana)])
     }
     
     @MainActor func testHandleNormalKanaKeyAsSameAsCtrlJ() {
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-        let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(4).sink { events in
-            XCTAssertEqual(events[0], .modeChanged(.hankaku))
-            XCTAssertEqual(events[1], .modeChanged(.hiragana))
-            XCTAssertEqual(events[2], .modeChanged(.hankaku))
-            XCTAssertEqual(events[3], .modeChanged(.hiragana))
-            expectation.fulfill()
-        }.store(in: &cancellables)
-        XCTAssertTrue(stateMachine.handle(hankakuKanaAction))
-        XCTAssertTrue(stateMachine.handle(hiraganaAction))
-        XCTAssertTrue(stateMachine.handle(hankakuKanaAction))
-        XCTAssertTrue(stateMachine.handle(kanaKeyAction))
-        wait(for: [expectation], timeout: 1.0)
+        let ctx = StateMachineTestContext()
+        ctx.step(hankakuKanaAction, [.modeChanged(.hankaku)])
+        ctx.step(hiraganaAction, [.modeChanged(.hiragana)])
+        ctx.step(hankakuKanaAction, [.modeChanged(.hankaku)])
+        ctx.step(kanaKeyAction, [.modeChanged(.hiragana)])
     }
 
     @MainActor func testHandleNormalQ() {
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-        let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(4).sink { events in
-            XCTAssertEqual(events[0], .modeChanged(.katakana))
-            XCTAssertEqual(events[1], .modeChanged(.hiragana))
-            XCTAssertEqual(events[2], .modeChanged(.hankaku))
-            XCTAssertEqual(events[3], .modeChanged(.hiragana))
-            expectation.fulfill()
-        }.store(in: &cancellables)
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
-        XCTAssertTrue(stateMachine.handle(hankakuKanaAction))
-        XCTAssertTrue(stateMachine.handle(hankakuKanaAction))
-        wait(for: [expectation], timeout: 1.0)
+        let ctx = StateMachineTestContext()
+        ctx.step(printableKeyEventAction(character: "q"), [.modeChanged(.katakana)])
+        ctx.step(printableKeyEventAction(character: "q"), [.modeChanged(.hiragana)])
+        ctx.step(hankakuKanaAction, [.modeChanged(.hankaku)])
+        ctx.step(hankakuKanaAction, [.modeChanged(.hiragana)])
     }
 
     @MainActor func testHandleNormalShiftQ() {
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-        let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(9).sink { events in
-            XCTAssertEqual(events[0], .modeChanged(.direct))
-            XCTAssertEqual(events[1], .modeChanged(.hiragana))
-            XCTAssertEqual(events[2], .modeChanged(.eisu))
-            XCTAssertEqual(events[3], .fixedText("Ｑ"))
-            XCTAssertEqual(events[4], .modeChanged(.hiragana))
-            XCTAssertEqual(events[5], .composing())
-            XCTAssertEqual(events[6], .composing("あ"))
-            XCTAssertEqual(events[7], .fixedText("あ"))
-            XCTAssertEqual(events[8], .composing())
-            expectation.fulfill()
-        }.store(in: &cancellables)
+        let ctx = StateMachineTestContext()
         // 直接入力
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "l")))
-        XCTAssertFalse(stateMachine.handle(printableKeyEventAction(character: "q", withShift: true)))
+        ctx.step(printableKeyEventAction(character: "l"), [.modeChanged(.direct)])
+        ctx.step(printableKeyEventAction(character: "q", withShift: true), returns: false)
         // 英数入力
-        XCTAssertTrue(stateMachine.handle(hiraganaAction))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "l", withShift: true)))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q", withShift: true)))
+        ctx.step(hiraganaAction, [.modeChanged(.hiragana)])
+        ctx.step(printableKeyEventAction(character: "l", withShift: true), [.modeChanged(.eisu)])
+        ctx.step(printableKeyEventAction(character: "q", withShift: true), [.fixedText("Ｑ")])
         // ひらがな入力
-        XCTAssertTrue(stateMachine.handle(hiraganaAction))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q", withShift: true)))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q", withShift: true)), "二回目は何も起きない")
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q", withShift: true)))
-        wait(for: [expectation], timeout: 1.0)
+        ctx.step(hiraganaAction, [.modeChanged(.hiragana)])
+        ctx.step(printableKeyEventAction(character: "q", withShift: true), [.composing()])
+        // 二回目は何も起きない
+        ctx.step(printableKeyEventAction(character: "q", withShift: true))
+        ctx.step(printableKeyEventAction(character: "a", withShift: true), [.composing("あ")])
+        ctx.step(printableKeyEventAction(character: "q", withShift: true), [.fixedText("あ"), .composing()])
     }
 
     @MainActor func testHandleNormalCtrlQ() {
-        var stateMachine = StateMachine(initialState: IMEState(inputMode: .direct))
-        XCTAssertFalse(stateMachine.handle(hankakuKanaAction))
-        let expectation = XCTestExpectation()
-        stateMachine = StateMachine(initialState: IMEState(inputMode: .katakana))
-        stateMachine.inputMethodEvent.collect(3).sink { events in
-            XCTAssertEqual(events[0], .modeChanged(.hankaku))
-            XCTAssertEqual(events[1], .modeChanged(.hiragana))
-            XCTAssertEqual(events[2], .modeChanged(.hankaku))
-            expectation.fulfill()
-        }.store(in: &cancellables)
-        XCTAssertTrue(stateMachine.handle(hankakuKanaAction))
-        XCTAssertTrue(stateMachine.handle(hankakuKanaAction))
-        XCTAssertTrue(stateMachine.handle(hankakuKanaAction))
-        wait(for: [expectation], timeout: 1.0)
+        let directCtx = StateMachineTestContext(inputMode: .direct)
+        directCtx.step(hankakuKanaAction, returns: false)
+
+        let ctx = StateMachineTestContext(inputMode: .katakana)
+        ctx.step(hankakuKanaAction, [.modeChanged(.hankaku)])
+        ctx.step(hankakuKanaAction, [.modeChanged(.hiragana)])
+        ctx.step(hankakuKanaAction, [.modeChanged(.hankaku)])
     }
 
     @MainActor func testHandleNormalCancel() {
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-        let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(9).sink { events in
-            XCTAssertEqual(events[0], .composing("え"))
-            XCTAssertEqual(events[1], .modeChanged(.hiragana))
-            XCTAssertEqual(events[2], .markedPlain("[登録：え]"))
-            XCTAssertEqual(events[3], .composing("え"))
-            XCTAssertEqual(events[4], .emptyMarked)
-            XCTAssertEqual(events[5], .markedPlain("n"))
-            XCTAssertEqual(events[6], .fixedText("ん"))
-            XCTAssertEqual(events[7], .composing("n"))
-            XCTAssertEqual(events[8], .emptyMarked)
-            expectation.fulfill()
-        }.store(in: &cancellables)
-        XCTAssertFalse(stateMachine.handle(cancelAction))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e", withShift: true)))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
-        XCTAssertTrue(stateMachine.handle(cancelAction))
-        XCTAssertTrue(stateMachine.handle(cancelAction))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n")))
-        XCTAssertTrue(stateMachine.handle(cancelAction))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n", withShift: true)))
-        XCTAssertTrue(stateMachine.handle(cancelAction))
-        wait(for: [expectation], timeout: 1.0)
+        let ctx = StateMachineTestContext()
+        ctx.step(cancelAction, returns: false)
+        ctx.step(printableKeyEventAction(character: "e", withShift: true), [.composing("え")])
+        ctx.step(printableKeyEventAction(character: " "),
+                 [.modeChanged(.hiragana), .markedPlain("[登録：え]")])
+        ctx.step(cancelAction, [.composing("え")])
+        ctx.step(cancelAction, [.emptyMarked])
+        ctx.step(printableKeyEventAction(character: "n"), [.markedPlain("n")])
+        ctx.step(cancelAction, [.fixedText("ん")])
+        ctx.step(printableKeyEventAction(character: "n", withShift: true), [.composing("n")])
+        ctx.step(cancelAction, [.emptyMarked])
     }
 
     @MainActor func testHandleNormalCancelRomajiOnly() {
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-        let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(2).sink { events in
-            XCTAssertEqual(events[0], .markedPlain("k"))
-            XCTAssertEqual(events[1], .emptyMarked)
-            expectation.fulfill()
-        }.store(in: &cancellables)
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "k")))
-        XCTAssertTrue(stateMachine.handle(cancelAction))
-        XCTAssertEqual(stateMachine.state.inputMethod, .normal)
-        XCTAssertFalse(stateMachine.handle(leftKeyAction))
-        wait(for: [expectation], timeout: 1.0)
+        let ctx = StateMachineTestContext()
+        ctx.step(printableKeyEventAction(character: "k"), [.markedPlain("k")])
+        ctx.step(cancelAction, [.emptyMarked])
+        XCTAssertEqual(ctx.stateMachine.state.inputMethod, .normal)
+        ctx.step(leftKeyAction, returns: false)
     }
 
     // キャンセルしたときにmarkedTextを二重送信しない
     @MainActor func testHandleComposingCancelSendsMarkedTextOnce() {
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-        var events: [InputMethodEvent] = []
-        stateMachine.inputMethodEvent.sink { events.append($0) }.store(in: &cancellables)
-
+        let ctx = StateMachineTestContext()
         // "k" は確定する文字列がないので空のmarkedTextだけが1回流れる
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "k")))
-        XCTAssertTrue(stateMachine.handle(cancelAction))
-        XCTAssertEqual(events, [.markedPlain("k"), .emptyMarked])
-        XCTAssertEqual(stateMachine.state.inputMethod, .normal)
+        ctx.step(printableKeyEventAction(character: "k"), [.markedPlain("k")])
+        ctx.step(cancelAction, [.emptyMarked])
+        XCTAssertEqual(ctx.stateMachine.state.inputMethod, .normal)
 
         // 単語登録中はaddFixedTextがmarkedTextの更新も行うので、そちらも1回だけになること
-        events.removeAll()
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
-        XCTAssertEqual(events, [
-            .composing("あ"),
-            .modeChanged(.hiragana),
-            .markedPlain("[登録：あ]"),
-        ])
+        let prompt = "[登録：あ]"
+        ctx.step(printableKeyEventAction(character: "a", withShift: true), [.composing("あ")])
+        ctx.step(printableKeyEventAction(character: " "), [.modeChanged(.hiragana), .markedPlain(prompt)])
 
         // "n" は "ん" として登録中の単語に追加される
-        events.removeAll()
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "n")))
-        XCTAssertTrue(stateMachine.handle(cancelAction))
-        XCTAssertEqual(events, [
-            .markedText(MarkedText([.plain("[登録：あ]"), .plain("n")])),
-            .markedText(MarkedText([.plain("[登録：あ]"), .plain("ん")])),
-        ])
+        ctx.step(printableKeyEventAction(character: "n"),
+                 [.markedText(MarkedText([.plain(prompt), .plain("n")]))])
+        ctx.step(cancelAction,
+                 [.markedText(MarkedText([.plain(prompt), .plain("ん")]))])
 
         // "k" は確定する文字列がないので未確定ローマ字が消えるだけ
-        events.removeAll()
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "k")))
-        XCTAssertTrue(stateMachine.handle(cancelAction))
-        XCTAssertEqual(events, [
-            .markedText(MarkedText([.plain("[登録：あ]"), .plain("ん"), .plain("k")])),
-            .markedText(MarkedText([.plain("[登録：あ]"), .plain("ん")])),
-        ])
+        ctx.step(printableKeyEventAction(character: "k"),
+                 [.markedText(MarkedText([.plain(prompt), .plain("ん"), .plain("k")]))])
+        ctx.step(cancelAction,
+                 [.markedText(MarkedText([.plain(prompt), .plain("ん")]))])
     }
 
     @MainActor func testHandleNormalArrowKeys() {
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-        XCTAssertFalse(stateMachine.handle(leftKeyAction))
-        XCTAssertFalse(stateMachine.handle(rightKeyAction))
-        XCTAssertFalse(stateMachine.handle(downKeyAction))
-        XCTAssertFalse(stateMachine.handle(upKeyAction))
+        let ctx = StateMachineTestContext()
+        ctx.step(leftKeyAction, returns: false)
+        ctx.step(rightKeyAction, returns: false)
+        ctx.step(downKeyAction, returns: false)
+        ctx.step(upKeyAction, returns: false)
         // シフトキーを押しながら矢印キーを押したときも矢印アクションとして扱われ、falseが返る
         let shiftRightKeyAction = Action(keyBind: .right, event: generateNSEvent(character: "\u{63235}", characterIgnoringModifiers: "\u{63235}", modifierFlags: [.function, .numericPad, .shift]))
-        XCTAssertFalse(stateMachine.handle(shiftRightKeyAction))
+        ctx.step(shiftRightKeyAction, returns: false)
     }
 
     @MainActor func testHandleNormalCtrlAEY() {
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-        XCTAssertFalse(stateMachine.handle(startOfLineAction))
-        XCTAssertFalse(stateMachine.handle(endOfLineAction))
-        XCTAssertFalse(stateMachine.handle(registerPasteAction))
+        let ctx = StateMachineTestContext()
+        ctx.step(startOfLineAction, returns: false)
+        ctx.step(endOfLineAction, returns: false)
+        ctx.step(registerPasteAction, returns: false)
     }
 
     @MainActor func testHandleNormalAbbrev() {
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-        let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(12).sink { events in
-            XCTAssertEqual(events[0], .modeChanged(.direct))
-            XCTAssertEqual(events[1], .composing())
-            XCTAssertEqual(events[2], .composing("a"))
-            XCTAssertEqual(events[3], .composing("al"))
-            XCTAssertEqual(events[4], .composing("alL"))
-            XCTAssertEqual(events[5], .composing("alLq"))
-            XCTAssertEqual(events[6], .composing("alLqQ"))
-            XCTAssertEqual(events[7], .composing("alLqQ_"))
-            XCTAssertEqual(events[8], .composing("alLqQ_<"))
-            XCTAssertEqual(events[9], .composing("alLqQ_<>"))
-            XCTAssertEqual(events[10], .composing("alLqQ_<>?"))
-            XCTAssertEqual(events[11], .composing("alLqQ_<>?A"))
-            expectation.fulfill()
-        }.store(in: &cancellables)
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "/")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "l")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "l", withShift: true)))
-        XCTAssertTrue(stateMachine.handle(toggleAndFixKanaAction))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q", withShift: true)))
-        XCTAssertTrue(stateMachine.handle(shiftKey("_", "-")))
-        XCTAssertTrue(stateMachine.handle(shiftKey("<", ",")))
-        XCTAssertTrue(stateMachine.handle(shiftKey(">", ".")))
-        XCTAssertTrue(stateMachine.handle(shiftKey("?", "/")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a", withShift: true)))
-        wait(for: [expectation], timeout: 1.0)
+        let ctx = StateMachineTestContext()
+        ctx.step(printableKeyEventAction(character: "/"), [.modeChanged(.direct), .composing()])
+        ctx.step(printableKeyEventAction(character: "a"), [.composing("a")])
+        ctx.step(printableKeyEventAction(character: "l"), [.composing("al")])
+        ctx.step(printableKeyEventAction(character: "l", withShift: true), [.composing("alL")])
+        ctx.step(toggleAndFixKanaAction, [.composing("alLq")])
+        ctx.step(printableKeyEventAction(character: "q", withShift: true), [.composing("alLqQ")])
+        ctx.step(shiftKey("_", "-"), [.composing("alLqQ_")])
+        ctx.step(shiftKey("<", ","), [.composing("alLqQ_<")])
+        ctx.step(shiftKey(">", "."), [.composing("alLqQ_<>")])
+        ctx.step(shiftKey("?", "/"), [.composing("alLqQ_<>?")])
+        ctx.step(printableKeyEventAction(character: "a", withShift: true), [.composing("alLqQ_<>?A")])
     }
 
     @MainActor func testHandleNormalAbbrevPrevMode() {
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-        let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(12).sink { events in
-            XCTAssertEqual(events[0], .modeChanged(.katakana))
-            XCTAssertEqual(events[1], .modeChanged(.direct))
-            XCTAssertEqual(events[2], .composing())
-            XCTAssertEqual(events[3], .composing("a"))
-            XCTAssertEqual(events[4], .fixedText("a"))
-            XCTAssertEqual(events[5], .modeChanged(.katakana))
-            XCTAssertEqual(events[6], .modeChanged(.hankaku))
-            XCTAssertEqual(events[7], .modeChanged(.direct))
-            XCTAssertEqual(events[8], .composing())
-            XCTAssertEqual(events[9], .composing("b"))
-            XCTAssertEqual(events[10], .emptyMarked)
-            XCTAssertEqual(events[11], .modeChanged(.hankaku))
-            expectation.fulfill()
-        }.store(in: &cancellables)
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q"))) // カタカナモードにしておく
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "/")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
-        XCTAssertTrue(stateMachine.handle(enterAction))
-        XCTAssertTrue(stateMachine.handle(hankakuKanaAction)) // 半角カナモード
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "/")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "b")))
-        XCTAssertTrue(stateMachine.handle(cancelAction))
-        wait(for: [expectation], timeout: 1.0)
+        let ctx = StateMachineTestContext()
+        // カタカナモードにしておく
+        ctx.step(printableKeyEventAction(character: "q"), [.modeChanged(.katakana)])
+        ctx.step(printableKeyEventAction(character: "/"), [.modeChanged(.direct), .composing()])
+        ctx.step(printableKeyEventAction(character: "a"), [.composing("a")])
+        ctx.step(enterAction, [.fixedText("a"), .modeChanged(.katakana)])
+        // 半角カナモード
+        ctx.step(hankakuKanaAction, [.modeChanged(.hankaku)])
+        ctx.step(printableKeyEventAction(character: "/"), [.modeChanged(.direct), .composing()])
+        ctx.step(printableKeyEventAction(character: "b"), [.composing("b")])
+        ctx.step(cancelAction, [.emptyMarked, .modeChanged(.hankaku)])
     }
 
     @MainActor func testHandleNormalAbbrevRegisteringPrevMode() {
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-        let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(19).sink { events in
-            XCTAssertEqual(events[0], .modeChanged(.direct))
-            XCTAssertEqual(events[1], .composing())
-            XCTAssertEqual(events[2], .composing("a"))
-            XCTAssertEqual(events[3], .modeChanged(.hiragana))
-            XCTAssertEqual(events[4], .markedPlain("[登録：a]"))
-            XCTAssertEqual(events[5], .modeChanged(.katakana))
-            XCTAssertEqual(events[6], .markedPlain("[登録：a]"))
-            XCTAssertEqual(events[7], .markedText(MarkedText([.plain("[登録：a]"), .plain("エ")])))
-            XCTAssertEqual(events[8], .modeChanged(.direct))
-            XCTAssertEqual(events[9], .markedText(MarkedText([.plain("[登録：a]"), .plain("エ"), .markerCompose])))
-            XCTAssertEqual(events[10], .markedText(MarkedText([.plain("[登録：a]"), .plain("エ"), .markerCompose, .plain("b")])))
-            XCTAssertEqual(events[11], .modeChanged(.hiragana))
-            XCTAssertEqual(events[12], .markedPlain("[[登録：b]]"))
-            XCTAssertEqual(events[13], .markedText(MarkedText([.plain("[[登録：b]]"), .plain("b")])))
-            XCTAssertEqual(events[14], .markedText(MarkedText([.plain("[[登録：b]]"), .plain("び")])))
-            XCTAssertEqual(events[15], .modeChanged(.katakana))
-            XCTAssertEqual(events[16], .markedText(MarkedText([.plain("[登録：a]"), .plain("エび")])))
-            XCTAssertEqual(events[17], .modeChanged(.hiragana))
-            XCTAssertEqual(events[18], .fixedText("エび"))
-            expectation.fulfill()
-        }.store(in: &cancellables)
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "/")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "q")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "e")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "/")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "b")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "b")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "i")))
-        XCTAssertTrue(stateMachine.handle(enterAction))
-        XCTAssertEqual(stateMachine.state.inputMode, .katakana)
-        XCTAssertTrue(stateMachine.handle(enterAction))
-        XCTAssertEqual(stateMachine.state.inputMode, .hiragana)
-        wait(for: [expectation], timeout: 1.0)
+        let ctx = StateMachineTestContext()
+        ctx.step(printableKeyEventAction(character: "/"), [.modeChanged(.direct), .composing()])
+        ctx.step(printableKeyEventAction(character: "a"), [.composing("a")])
+        ctx.step(printableKeyEventAction(character: " "),
+                 [.modeChanged(.hiragana), .markedPlain("[登録：a]")])
+        ctx.step(printableKeyEventAction(character: "q"),
+                 [.modeChanged(.katakana), .markedPlain("[登録：a]")])
+        ctx.step(printableKeyEventAction(character: "e"),
+                 [.markedText(MarkedText([.plain("[登録：a]"), .plain("エ")]))])
+        ctx.step(printableKeyEventAction(character: "/"),
+                 [.modeChanged(.direct),
+                  .markedText(MarkedText([.plain("[登録：a]"), .plain("エ"), .markerCompose]))])
+        ctx.step(printableKeyEventAction(character: "b"),
+                 [.markedText(MarkedText([.plain("[登録：a]"), .plain("エ"), .markerCompose, .plain("b")]))])
+        ctx.step(printableKeyEventAction(character: " "),
+                 [.modeChanged(.hiragana), .markedPlain("[[登録：b]]")])
+        ctx.step(printableKeyEventAction(character: "b"),
+                 [.markedText(MarkedText([.plain("[[登録：b]]"), .plain("b")]))])
+        ctx.step(printableKeyEventAction(character: "i"),
+                 [.markedText(MarkedText([.plain("[[登録：b]]"), .plain("び")]))])
+        ctx.step(enterAction,
+                 [.modeChanged(.katakana),
+                  .markedText(MarkedText([.plain("[登録：a]"), .plain("エび")]))])
+        XCTAssertEqual(ctx.stateMachine.state.inputMode, .katakana)
+        ctx.step(enterAction, [.modeChanged(.hiragana), .fixedText("エび")])
+        XCTAssertEqual(ctx.stateMachine.state.inputMode, .hiragana)
     }
     
     @MainActor func testHandleAbbrevUnegisteringPrevMode() {
         Global.dictionary.setEntries(["a": [Word("エイ")]])
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-        let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(10).sink { events in
-            XCTAssertEqual(events[0], .modeChanged(.direct))
-            XCTAssertEqual(events[1], .composing())
-            XCTAssertEqual(events[2], .composing("a"))
-            XCTAssertEqual(events[3], .selecting("エイ"))
-            XCTAssertEqual(events[4], .markedPlain("a /エイ/ を削除します(yes/no)"))
-            XCTAssertEqual(events[5], .markedText(MarkedText([.plain("a /エイ/ を削除します(yes/no)"), .plain("y")])))
-            XCTAssertEqual(events[6], .markedText(MarkedText([.plain("a /エイ/ を削除します(yes/no)"), .plain("ye")])))
-            XCTAssertEqual(events[7], .markedText(MarkedText([.plain("a /エイ/ を削除します(yes/no)"), .plain("yes")])))
-            XCTAssertEqual(events[8], .modeChanged(.hiragana))
-            XCTAssertEqual(events[9], .emptyMarked)
-            expectation.fulfill()
-        }.store(in: &cancellables)
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "/")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: " ")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "x", withShift: true)))
-        "yes".forEach { character in
-            XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: character)))
-        }
-        XCTAssertTrue(stateMachine.handle(enterAction))
-        XCTAssertEqual(stateMachine.state.inputMode, .hiragana)
-        wait(for: [expectation], timeout: 1.0)
+        let ctx = StateMachineTestContext()
+        let unregisterPrompt = "a /エイ/ を削除します(yes/no)"
+        ctx.step(printableKeyEventAction(character: "/"), [.modeChanged(.direct), .composing()])
+        ctx.step(printableKeyEventAction(character: "a"), [.composing("a")])
+        ctx.step(printableKeyEventAction(character: " "), [.selecting("エイ")])
+        ctx.step(printableKeyEventAction(character: "x", withShift: true), [.markedPlain(unregisterPrompt)])
+        ctx.step(printableKeyEventAction(character: "y"),
+                 [.markedText(MarkedText([.plain(unregisterPrompt), .plain("y")]))])
+        ctx.step(printableKeyEventAction(character: "e"),
+                 [.markedText(MarkedText([.plain(unregisterPrompt), .plain("ye")]))])
+        ctx.step(printableKeyEventAction(character: "s"),
+                 [.markedText(MarkedText([.plain(unregisterPrompt), .plain("yes")]))])
+        ctx.step(enterAction, [.modeChanged(.hiragana), .emptyMarked])
+        XCTAssertEqual(ctx.stateMachine.state.inputMode, .hiragana)
     }
 
     @MainActor func testHandleNormalAbbrevCompletion() {
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-        let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(6).sink { events in
-            XCTAssertEqual(events[0], .modeChanged(.direct))
-            XCTAssertEqual(events[1], .composing())
-            XCTAssertEqual(events[2], .composing("a"))
-            XCTAssertEqual(events[3], .composing("apple"))
-            XCTAssertEqual(events[4], .fixedText("apple"))
-            XCTAssertEqual(events[5], .modeChanged(.hiragana)) // abbrevモードでTab補完して確定したとき前のモードに戻す
-            expectation.fulfill()
-        }.store(in: &cancellables)
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "/")))
-        XCTAssertTrue(stateMachine.handle(printableKeyEventAction(character: "a")))
-        stateMachine.completion = .yomi(["apple"], 0)
-        XCTAssertTrue(stateMachine.handle(tabAction))
-        XCTAssertTrue(stateMachine.handle(enterAction))
-        wait(for: [expectation], timeout: 1.0)
+        let ctx = StateMachineTestContext()
+        ctx.step(printableKeyEventAction(character: "/"), [.modeChanged(.direct), .composing()])
+        ctx.step(printableKeyEventAction(character: "a"), [.composing("a")])
+        ctx.stateMachine.completion = .yomi(["apple"], 0)
+        ctx.step(tabAction, [.composing("apple")])
+        // abbrevモードでTab補完して確定したとき前のモードに戻す
+        ctx.step(enterAction, [.fixedText("apple"), .modeChanged(.hiragana)])
     }
 
     @MainActor func testHandleNormalOptionModifier() {
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .hiragana))
-        let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(1).sink { events in
-            XCTAssertEqual(events[0], .fixedText("Ω"))
-            expectation.fulfill()
-        }.store(in: &cancellables)
+        let ctx = StateMachineTestContext()
 
         let event = generateNSEvent(
             character: "Ω",
@@ -1001,18 +600,11 @@ final class StateMachineTests: XCTestCase {
             modifierFlags: [.option])
         let action = Action(keyBind: nil, event: event)
 
-        XCTAssertTrue(stateMachine.handle(action))
-        wait(for: [expectation], timeout: 1.0)
+        ctx.step(action, [.fixedText("Ω")])
     }
 
     @MainActor func testHandleNormalDirectAbbrev() {
-        let stateMachine = StateMachine(initialState: IMEState(inputMode: .direct))
-        let expectation = XCTestExpectation()
-        stateMachine.inputMethodEvent.collect(2).sink { events in
-            XCTAssertEqual(events[0], .modeChanged(.direct))
-            XCTAssertEqual(events[1], .composing())
-            expectation.fulfill()
-        }.store(in: &cancellables)
+        let ctx = StateMachineTestContext(inputMode: .direct)
 
         let event = generateNSEvent(
             character: ";",
@@ -1020,8 +612,7 @@ final class StateMachineTests: XCTestCase {
             modifierFlags: [.control])
         let action = Action(keyBind: .directAbbrev, event: event)
 
-        XCTAssertTrue(stateMachine.handle(action))
-        wait(for: [expectation], timeout: 1.0)
+        ctx.step(action, [.modeChanged(.direct), .composing()])
     }
 
     @MainActor func testHandleComposingNandQ() {
@@ -4813,5 +4404,82 @@ fileprivate extension InputMethodEvent {
 
     static func selectingWithCursor(_ text: String, after: String) -> Self {
         .markedText(MarkedText([.markerSelect, .emphasized(text), .cursor, .plain(after)]))
+    }
+}
+
+/// `StateMachine` にキーを1つ送るたびに、そのキーで流れたイベントを検証するためのヘルパー。
+///
+/// `StateMachine.handle` は同期的に各 publisher へイベントを送るので、`handle` から戻った時点で
+/// そのキーにより流れるイベントは出揃っている。よって `XCTestExpectation` による待ち合わせは不要で、
+/// バッファに溜めたイベントをそのまま検証できる。
+@MainActor final class StateMachineTestContext {
+    /// `step` で厳密に検証する対象のイベント。
+    enum Channel {
+        case inputMethod
+        case yomi
+        case candidate
+    }
+
+    let stateMachine: StateMachine
+
+    private let verifying: Set<Channel>
+    private var cancellables: Set<AnyCancellable> = []
+    private var inputMethodBuffer: [InputMethodEvent] = []
+    private var yomiBuffer: [YomiEvent] = []
+    private var candidateBuffer: [Candidates?] = []
+
+    /// - Parameters:
+    ///   - verifying: `step` で厳密に検証するイベント。ここに含めたイベントは `step` の引数と完全一致することを検証する
+    ///                (引数を省略した場合は「そのキーでは何も流れない」ことの検証になる)。
+    init(inputMode: InputMode = .hiragana,
+         verifying: Set<Channel> = [.inputMethod],
+         enableMarkedTextWorkaround: Bool = false) {
+        stateMachine = StateMachine(initialState: IMEState(inputMode: inputMode))
+        stateMachine.enableMarkedTextWorkaround = enableMarkedTextWorkaround
+        self.verifying = verifying
+        // yomiEvent, candidateEvent には removeDuplicates が挟まっており、その状態は購読ごとに持たれる。
+        // stepごとに購読しなおすと重複除去がリセットされて本番と挙動が変わってしまうため、
+        // 検証対象でないイベントも含めて購読はテスト全体で1回だけ行う。
+        stateMachine.inputMethodEvent.sink { [weak self] in self?.inputMethodBuffer.append($0) }
+            .store(in: &cancellables)
+        stateMachine.yomiEvent.sink { [weak self] in self?.yomiBuffer.append($0) }
+            .store(in: &cancellables)
+        stateMachine.candidateEvent.sink { [weak self] in self?.candidateBuffer.append($0) }
+            .store(in: &cancellables)
+    }
+
+    /// キーを1つ送り、そのキーで流れたイベントが期待通りかを検証する。
+    ///
+    /// - Parameters:
+    ///   - action: 送るキー入力。
+    ///   - inputMethod: このキーで流れる `InputMethodEvent`。
+    ///   - returns: `StateMachine.handle` の期待される戻り値。
+    ///   - yomi: このキーで流れる `YomiEvent`。`verifying` に `.yomi` を含めた場合のみ検証される。
+    ///   - candidate: このキーで流れる `Candidates?` を1イベントずつ検証するクロージャ。
+    ///                `verifying` に `.candidate` を含めた場合のみ検証される。
+    @discardableResult
+    func step(_ action: Action,
+              _ inputMethod: [InputMethodEvent] = [],
+              returns: Bool = true,
+              yomi: [YomiEvent] = [],
+              candidate: [(Candidates?) -> Void] = [],
+              file: StaticString = #filePath,
+              line: UInt = #line) -> Bool {
+        let result = stateMachine.handle(action)
+        XCTAssertEqual(result, returns, "handle()の戻り値", file: file, line: line)
+        if verifying.contains(.inputMethod) {
+            XCTAssertEqual(inputMethodBuffer, inputMethod, "inputMethodEvent", file: file, line: line)
+        }
+        if verifying.contains(.yomi) {
+            XCTAssertEqual(yomiBuffer, yomi, "yomiEvent", file: file, line: line)
+        }
+        if verifying.contains(.candidate) {
+            XCTAssertEqual(candidateBuffer.count, candidate.count, "candidateEventの個数", file: file, line: line)
+            zip(candidateBuffer, candidate).forEach { $1($0) }
+        }
+        inputMethodBuffer.removeAll()
+        yomiBuffer.removeAll()
+        candidateBuffer.removeAll()
+        return result
     }
 }
