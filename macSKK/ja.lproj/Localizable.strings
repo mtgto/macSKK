@@ -204,7 +204,7 @@
 "InputModeEisu" = "全角英数";
 
 "Sync settings with iCloud" = "設定をiCloudで同期する";
-"SyncSettingsWithiCloudDescription" = "同じApple Accountでサインインした他のMacのmacSKKと設定を同期します。辞書とその設定、キー配列、skkservの接続設定、ローマ字かな変換ルールの選択は同期しません。";
+"SyncSettingsWithiCloudDescription" = "同じApple Accountでサインインした他のMacのmacSKKと設定を同期します。辞書、キー配列、skkservの接続設定、ローマ字かな変換ルールの選択は同期に対応していません。";
 "SyncSettingsWithiCloudUnavailable" = "このビルドのmacSKKはiCloudでの設定同期に対応していません。";
 "SyncSettingsWithiCloudConflictMessage" = "iCloudとこのMacで次の設定が異なります。\n\n%@\n\nどちらの設定を使いますか?";
 "SyncCategoryConflictMessage" = "この分類の設定のうち%lld件がiCloudとこのMacで異なります。どちらの設定を使いますか?";

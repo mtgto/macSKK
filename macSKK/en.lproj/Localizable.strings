@@ -204,7 +204,7 @@
 "InputModeEisu" = "Zenkaku";
 
 "Sync settings with iCloud" = "Sync settings with iCloud";
-"SyncSettingsWithiCloudDescription" = "Sync settings with macSKK on other Macs signed in with the same Apple Account. Dictionaries and their settings, keyboard layout, skkserv settings and the selected romaji-kana rule are not synced.";
+"SyncSettingsWithiCloudDescription" = "Sync settings with macSKK on other Macs signed in with the same Apple Account. Syncing dictionaries, keyboard layout, skkserv settings and the selected romaji-kana rule is not supported.";
 "SyncSettingsWithiCloudUnavailable" = "This build of macSKK does not support syncing settings with iCloud.";
 "SyncSettingsWithiCloudConflictMessage" = "These settings differ between iCloud and this Mac:\n\n%@\n\nWhich settings do you want to use?";
 "SyncCategoryConflictMessage" = "%lld settings in this group differ between iCloud and this Mac. Which settings do you want to use?";
