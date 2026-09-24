@@ -175,10 +175,22 @@ struct CloudSyncView: View {
                     Button("現在のiCloudの値を表示") {
                         remoteValuesJSON = settingsViewModel.remoteSyncedValuesJSON()
                     }
-                    // 読み取り専用にしつつ選択とコピーはできるようにする
+                    // 読み取り専用にしつつ選択とコピーはできるようにする。
+                    // 値が増えても縦に伸びないよう高さを固定する。
                     TextEditor(text: .constant(remoteValuesJSON))
                         .font(.system(.caption, design: .monospaced))
-                        .frame(minHeight: 200)
+                        .frame(height: 260)
+                    HStack {
+                        Spacer()
+                        Button {
+                            let pasteboard = NSPasteboard.general
+                            pasteboard.clearContents()
+                            pasteboard.setString(remoteValuesJSON, forType: .string)
+                        } label: {
+                            Text("Copy")
+                        }
+                        .disabled(remoteValuesJSON.isEmpty)
+                    }
                 } header: {
                     Text("デバッグ")
                 }
