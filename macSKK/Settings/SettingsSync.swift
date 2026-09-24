@@ -47,14 +47,16 @@ final class SettingsSync {
      * - `syncSettingsWithiCloud`, `syncedSettingsCategories`: 同期設定自体
      */
     enum Category: String, CaseIterable, Identifiable, Sendable {
+        // 宣言順が設定画面での表示順になるので、設定画面のサイドバーの並びに合わせている。
+        // skkservは対応する画面がないが、設定自体は辞書画面にあるのでその位置に置く。
         case general
+        case skkserv
         case candidateWindow
+        case dateConversion
         case completion
         case keyBinding
-        case dateConversion
         case directMode
         case workaround
-        case skkserv
 
         var id: String { rawValue }
 
@@ -86,6 +88,8 @@ final class SettingsSync {
                     UserDefaultsKeys.systemDict,
                     UserDefaultsKeys.ignoreUserDictInPrivateMode,
                 ]
+            case .skkserv:
+                [UserDefaultsKeys.skkservAutoDisableThreshold]
             case .candidateWindow:
                 [
                     UserDefaultsKeys.candidatesFontFamily,
@@ -97,6 +101,8 @@ final class SettingsSync {
                     UserDefaultsKeys.overridesAnnotationBackgroundColor,
                     UserDefaultsKeys.annotationBackgroundColor,
                 ]
+            case .dateConversion:
+                [UserDefaultsKeys.dateConversions]
             case .completion:
                 [
                     UserDefaultsKeys.showCompletion,
@@ -111,14 +117,10 @@ final class SettingsSync {
                     UserDefaultsKeys.keyBindingSets,
                     UserDefaultsKeys.selectedKeyBindingSetId,
                 ]
-            case .dateConversion:
-                [UserDefaultsKeys.dateConversions]
             case .directMode:
                 [UserDefaultsKeys.directModeBundleIdentifiers]
             case .workaround:
                 [UserDefaultsKeys.workarounds]
-            case .skkserv:
-                [UserDefaultsKeys.skkservAutoDisableThreshold]
             }
         }
     }

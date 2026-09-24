@@ -12,13 +12,15 @@ extension SettingsSync.Category {
     var settingsSection: SettingsView.Section? {
         switch self {
         case .general: .general
+        // skkservの設定は辞書画面にあるが、カテゴリは辞書全体ではなく接続設定だけなので
+        // 画面名ではなく専用の文言を使う
+        case .skkserv: nil
         case .candidateWindow: .candidateWindow
+        case .dateConversion: .dateConversion
         case .completion: .completion
         case .keyBinding: .keyBinding
-        case .dateConversion: .dateConversion
         case .directMode: .directMode
         case .workaround: .workaround
-        case .skkserv: nil
         }
     }
 
