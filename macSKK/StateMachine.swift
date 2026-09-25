@@ -974,16 +974,20 @@ final class StateMachine {
             if text.isEmpty || romaji.isEmpty {
                 // 下線テキストをリセットする
                 state.inputMethod = .normal
+                let fixedText: String
                 if let reconvertText = composing.reconvertText {
-                    addFixedText(reconvertText)
+                    fixedText = reconvertText
                 } else if !isShift {
                     // `n` だけ入力した状態でESC押したときは `ん` を確定させる。Shiftが押されているときは確定させない
-                    addFixedText(composing.string(for: state.inputMode, kanaRule: Global.kanaRule))
+                    fixedText = composing.string(for: state.inputMode, kanaRule: Global.kanaRule)
+                } else {
+                    fixedText = ""
                 }
+                addFixedText(fixedText)
                 updateModeIfPrevModeExists()
-            } else {
-                state.inputMethod = .composing(ComposingState(isShift: isShift, text: text, okuri: nil, romaji: ""))
+                return true
             }
+            state.inputMethod = .composing(ComposingState(isShift: isShift, text: text, okuri: nil, romaji: ""))
             updateMarkedText()
             return true
         case .left:
