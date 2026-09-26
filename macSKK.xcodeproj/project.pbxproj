@@ -77,6 +77,9 @@
 		CE3E44AD2B5391DB00105798 /* SettingsWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE3E44AC2B5391DB00105798 /* SettingsWatcher.swift */; };
 		CE40D9A12A6D0C2F00D44799 /* SystemDictView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE40D9A02A6D0C2F00D44799 /* SystemDictView.swift */; };
 		CE40D9A32A6D0C3900D44799 /* SystemDict.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE40D9A22A6D0C3900D44799 /* SystemDict.swift */; };
+		CE420CSV2F00000100000002 /* CloudSyncView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE420CSV2F00000100000001 /* CloudSyncView.swift */; };
+		CE420SYNC2F00000100000002 /* SettingsSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE420SYNC2F00000100000001 /* SettingsSync.swift */; };
+		CE420SYNC2F00000100000004 /* SettingsSyncTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE420SYNC2F00000100000003 /* SettingsSyncTests.swift */; };
 		CE485A882A8FA195008271EF /* Release+UNNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE485A872A8FA195008271EF /* Release+UNNotification.swift */; };
 		CE485A8A2A8FA5C6008271EF /* UserNotificationDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE485A892A8FA5C6008271EF /* UserNotificationDelegate.swift */; };
 		CE496C8C2B43968A001C623C /* LogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE496C8B2B43968A001C623C /* LogView.swift */; };
@@ -291,6 +294,11 @@
 		CE3E44AC2B5391DB00105798 /* SettingsWatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWatcher.swift; sourceTree = "<group>"; };
 		CE40D9A02A6D0C2F00D44799 /* SystemDictView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemDictView.swift; sourceTree = "<group>"; };
 		CE40D9A22A6D0C3900D44799 /* SystemDict.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemDict.swift; sourceTree = "<group>"; };
+		CE420CFG2F00000100000001 /* macSKK.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = macSKK.xcconfig; sourceTree = "<group>"; };
+		CE420CFG2F00000100000002 /* macSKK-iCloud.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "macSKK-iCloud.entitlements"; sourceTree = "<group>"; };
+		CE420CSV2F00000100000001 /* CloudSyncView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudSyncView.swift; sourceTree = "<group>"; };
+		CE420SYNC2F00000100000001 /* SettingsSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsSync.swift; sourceTree = "<group>"; };
+		CE420SYNC2F00000100000003 /* SettingsSyncTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsSyncTests.swift; sourceTree = "<group>"; };
 		CE485A872A8FA195008271EF /* Release+UNNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Release+UNNotification.swift"; sourceTree = "<group>"; };
 		CE485A892A8FA5C6008271EF /* UserNotificationDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserNotificationDelegate.swift; sourceTree = "<group>"; };
 		CE496C8B2B43968A001C623C /* LogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogView.swift; sourceTree = "<group>"; };
@@ -492,6 +500,14 @@
 			path = Network;
 			sourceTree = "<group>";
 		};
+		CE420CFG2F00000100000004 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				CE420CFG2F00000100000001 /* macSKK.xcconfig */,
+			);
+			path = Config;
+			sourceTree = "<group>";
+		};
 		CE496C962B440CCA001C623C /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -591,6 +607,8 @@
 				CE1A01472C5931D40034FA7D /* eisu.tiff */,
 				CE5ECF612957061A00E7BE7D /* Info.plist */,
 				CE5ECF3E2957034D00E7BE7D /* macSKK.entitlements */,
+				CE420CFG2F00000100000002 /* macSKK-iCloud.entitlements */,
+				CE420CFG2F00000100000004 /* Config */,
 				CE5ECF632957077D00E7BE7D /* InfoPlist.strings */,
 				CE6DBAC62A85BF3E00F5A227 /* Localizable.strings */,
 				CEB0888B2A7F342000EFD1E3 /* Credits.rtf */,
@@ -643,6 +661,7 @@
 				CE496C942B440BBD001C623C /* Data+EucJis2004Tests.swift */,
 				CE2573D02F9E557800533A05 /* Data+GzipTests.swift */,
 				CEA253992E23DA9000618E64 /* DictSettingTests.swift */,
+				CE420SYNC2F00000100000003 /* SettingsSyncTests.swift */,
 				CEA253932E228E2000618E64 /* SKKServDictSettingTests.swift */,
 				CEAB00002E228E2000618E64 /* SKKServDestinationTests.swift */,
 				CE06CA332AAC199500E80E5E /* UserDict+Utilities.swift */,
@@ -701,6 +720,7 @@
 				CE8871312E574CC900E20BFB /* CompletionSettingsView.swift */,
 				CEA602A92F02C6FD00E605F2 /* CandidateWindowSettingsView.swift */,
 				CEE3717429653112000DB2C3 /* SoftwareUpdateView.swift */,
+				CE420CSV2F00000100000001 /* CloudSyncView.swift */,
 				CE97887A2A9B93EB00F9B196 /* DirectModeView.swift */,
 				CED098502B95F32600F2E844 /* WorkaroundView.swift */,
 				CEF3D86B2B9C022900BD1D3A /* WorkaroundApplicationView.swift */,
@@ -710,6 +730,7 @@
 				CE00FCCD2C30E99300AC6EEB /* KeyBinding */,
 				CEA602AF2F264FC600E605F2 /* KanaRuleView.swift */,
 				CE2157652B2EA985006E4C41 /* UserDefaultsKeys.swift */,
+				CE420SYNC2F00000100000001 /* SettingsSync.swift */,
 				CEA602AB2F02CFB000E605F2 /* OptionalBackgroundModifier.swift */,
 			);
 			path = Settings;
@@ -1039,6 +1060,8 @@
 				CEB52CC62E080B030025542F /* DateConversionsView.swift in Sources */,
 				CED7F51F2AB5F4A7007FC6BD /* Character+Additions.swift in Sources */,
 				CE2157662B2EA985006E4C41 /* UserDefaultsKeys.swift in Sources */,
+				CE420SYNC2F00000100000002 /* SettingsSync.swift in Sources */,
+				CE420CSV2F00000100000002 /* CloudSyncView.swift in Sources */,
 				CE84A3B929570C37009394C4 /* InputController.swift in Sources */,
 				CE00C0DE0000000000000001 /* CompletionPresenter.swift in Sources */,
 				CE6599DC2ADBF2630052F8C0 /* SettingsWindow.swift in Sources */,
@@ -1127,6 +1150,7 @@
 				CE118EE52CE0B4DE00A7C300 /* KeyTests.swift in Sources */,
 				4B8E87D82CE068A0004E7461 /* CurrentInputTests.swift in Sources */,
 				CEA2539A2E23DA9000618E64 /* DictSettingTests.swift in Sources */,
+				CE420SYNC2F00000100000004 /* SettingsSyncTests.swift in Sources */,
 				CE84A3ED295DA818009394C4 /* MemoryDictTests.swift in Sources */,
 				CE06CA342AAC199500E80E5E /* UserDict+Utilities.swift in Sources */,
 				CE84A3E9295DA504009394C4 /* RomajiTests.swift in Sources */,
@@ -1381,16 +1405,14 @@
 		};
 		CE5ECF582957034D00E7BE7D /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = CE420CFG2F00000100000001 /* macSKK.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = macSKK/macSKK.entitlements;
-				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"macSKK/Preview Content\"";
-				DEVELOPMENT_TEAM = W3A6B7FDC7;
 				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1413,16 +1435,14 @@
 		};
 		CE5ECF592957034D00E7BE7D /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = CE420CFG2F00000100000001 /* macSKK.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = macSKK/macSKK.entitlements;
-				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"macSKK/Preview Content\"";
-				DEVELOPMENT_TEAM = W3A6B7FDC7;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;

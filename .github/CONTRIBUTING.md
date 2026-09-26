@@ -22,3 +22,11 @@ $ ./build_restart.sh
 3. 既存のmacSKKのプロセスをkillして再起動
 
 👆の3つが実行され、実行したPCで開発中のバージョンを試すことができます。
+
+## iCloudでの設定同期について
+
+設定をiCloudで同期する機能 (`NSUbiquitousKeyValueStore`) には `com.apple.developer.ubiquity-kvstore-identifier` というentitlementが必要で、これを使うにはApp IDにiCloud capabilityを有効にしたプロビジョニングプロファイルが要ります。
+
+リポジトリの標準の設定 (`macSKK/macSKK.entitlements`) にはこのentitlementを含めていないため、Apple Developer Programに参加していなくてもこれまでどおりビルドできます。このビルドでは設定画面のiCloud同期のトグルが無効になるだけで、それ以外の動作は変わりません。
+
+手元でiCloud同期を有効にしたビルドを作る場合は、Developer PortalでApp IDにiCloud capabilityを有効にしたプロビジョニングプロファイルを作成・インストールした上で、`macSKK/Config/Local.xcconfig.sample` を `macSKK/Config/Local.xcconfig` にコピーして自分の環境に合わせて書き換えてください。

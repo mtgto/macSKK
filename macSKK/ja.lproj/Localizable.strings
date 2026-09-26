@@ -15,6 +15,7 @@
 "SettingsNameCompletion" = "補完";
 "SettingsNameKeyBinding" = "キーバインド";
 "SettingsNameSoftwareUpdate" = "ソフトウェアアップデート";
+"SettingsNameCloudSync" = "iCloud";
 "SettingsNameDirectMode" = "直接入力";
 "SettingsNameWorkaround" = "互換性の設定";
 "SettingsNameLog" = "ログ";
@@ -201,3 +202,20 @@
 "InputModeKatakana" = "カタカナ";
 "InputModeHankaku" = "半角カナ";
 "InputModeEisu" = "全角英数";
+
+"Sync settings with iCloud" = "設定をiCloudで同期する";
+"SyncSettingsWithiCloudDescription" = "同じApple Accountでサインインした他のMacのmacSKKと設定を同期します。辞書、キー配列、skkservの接続設定、ローマ字かな変換ルールの選択は同期に対応していません。";
+"SyncSettingsWithiCloudUnavailable" = "このビルドのmacSKKはiCloudでの設定同期に対応していません。";
+"SyncSettingsWithiCloudConflictMessage" = "iCloudとこのMacで次の設定が異なります。\n\n%@\n\nどちらの設定を使いますか?";
+"SyncCategoryConflictMessage" = "この分類の設定のうち%lld件がiCloudとこのMacで異なります。どちらの設定を使いますか?";
+"SyncConflictCategoryCount" = "%1$@ (%2$lld件)";
+"Overwrite iCloud settings with settings of this Mac" = "このMacの設定でiCloudを上書きする";
+"Apply iCloud settings to this Mac" = "iCloudの設定をこのMacに反映する";
+
+"SyncedSettingsCategories" = "同期する設定";
+"SyncedSettingsCategoriesDescription" = "選んだ設定だけをiCloudに保存します。どの設定を同期するかはMacごとに選べます。iCloudとこのMacで設定が異なる場合は、iCloudの設定を取り込むか、このMacの設定で上書きするかを確認します。";
+"SettingsSyncCategorySKKServ" = "SKK辞書サーバー";
+
+"Remove all settings from iCloud" = "iCloudから設定を削除";
+"RemoveAllSettingsFromiCloudDescription" = "同期を外してもiCloudに保存した設定は残ります。削除するにはこのボタンを使ってください。iCloudに保存したmacSKKの設定をすべて削除し、同期を無効にします。同じApple Accountの他のMacからも見えなくなります。このMacの設定自体は削除されません。";
+"RemoveAllSettingsFromiCloudConfirmation" = "iCloudに保存したmacSKKの設定をすべて削除します。同じApple Accountの他のMacからも見えなくなり、元に戻せません。このMacの設定自体は残ります。";

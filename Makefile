@@ -8,6 +8,14 @@
 # 設定項目
 #APPLE_ID := hogerappa@gmail.com
 APPLE_TEAM_ID := W3A6B7FDC7
+# iCloudでの設定同期 (NSUbiquitousKeyValueStore) にはentitlementが必要で、
+# App IDにiCloud capabilityを有効にしたDeveloper IDのプロビジョニングプロファイルが要る。
+# Developer Portalで作成してインストールし、そのプロファイル名を指定すること。
+# script/export-options.plist の provisioningProfiles にも同じ名前を書くこと。
+# entitlementを含まない macSKK/macSKK.entitlements がリポジトリの標準で、
+# 公式ビルドではこちらのiCloud版を使う。詳細は macSKK/Config/macSKK.xcconfig を参照。
+PROVISIONING_PROFILE := macSKKRelease
+ENTITLEMENTS := macSKK/macSKK-iCloud.entitlements
 CREDENTIALS_PROFILE := macSKK
 VERSION := $(shell xcodebuild -project macSKK.xcodeproj -target macSKK -showBuildSettings -json | jq -r '.[0].buildSettings.MARKETING_VERSION')
 
@@ -32,7 +40,7 @@ PRODUCT_SIGN_ID := "Developer ID Installer"
 .PHONY: all
 
 $(XCARCHIVE):
-	xcodebuild -project macSKK.xcodeproj -scheme macSKK -configuration Release CODE_SIGN_IDENTITY="Developer ID Application" DEVELOPMENT_TEAM=$(APPLE_TEAM_ID) OTHER_CODE_SIGN_FLAGS="--timestamp --options=runtime" CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO CODE_SIGN_STYLE=Manual -archivePath $(XCARCHIVE) archive
+	xcodebuild -project macSKK.xcodeproj -scheme macSKK -configuration Release CODE_SIGN_IDENTITY="Developer ID Application" DEVELOPMENT_TEAM=$(APPLE_TEAM_ID) OTHER_CODE_SIGN_FLAGS="--timestamp --options=runtime" CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO CODE_SIGN_STYLE=Manual MACSKK_PROVISIONING_PROFILE="$(PROVISIONING_PROFILE)" MACSKK_ENTITLEMENTS="$(ENTITLEMENTS)" -archivePath $(XCARCHIVE) archive
 
 $(APP): $(XCARCHIVE)
 	xcodebuild -exportArchive -archivePath $(XCARCHIVE) -exportOptionsPlist script/export-options.plist -exportPath $(WORKDIR)/export

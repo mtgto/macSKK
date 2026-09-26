@@ -1,0 +1,30 @@
+// macSKKの署名まわりのビルド設定。
+//
+// git cloneした状態ではiCloudでの設定同期 (NSUbiquitousKeyValueStore) を含みません。
+// iCloudで設定同期するにはApp IDにiCloud capabilityを有効にしたプロビジョニングプロファイルが
+// 必要になるため、含めてしまうとDeveloper Programに参加していない環境でビルドできなくなるためです。
+// iCloud同期の設定が無効になるだけで、それ以外は同じように動きます。
+//
+// iCloud同期を有効にしたビルドを作る場合は、Local.xcconfig.sample を元に
+// このディレクトリに Local.xcconfig を作成して設定を上書きしてください。
+// 詳細は .github/CONTRIBUTING.md を参照してください。
+
+MACSKK_ENTITLEMENTS = macSKK/macSKK.entitlements
+MACSKK_PROVISIONING_PROFILE =
+
+CODE_SIGN_STYLE = Automatic
+DEVELOPMENT_TEAM = W3A6B7FDC7
+
+// entitlementとプロビジョニングプロファイルはこのxcconfigを使うmacSKKターゲットにだけ
+// 適用したいので、MACSKK_で始まる変数を経由して設定している。
+// xcodebuildのコマンドライン引数で直接 CODE_SIGN_ENTITLEMENTS などを渡すと
+// XPCサービスのSKKServClientやFetchUpdateServiceにも適用されてしまい、
+// Bundle Identifierが一致しないためにビルドが失敗する。
+CODE_SIGN_ENTITLEMENTS = $(MACSKK_ENTITLEMENTS)
+PROVISIONING_PROFILE_SPECIFIER = $(MACSKK_PROVISIONING_PROFILE)
+
+// Local.xcconfigは最後に読み込む。
+// これによりMACSKK_の変数でもCODE_SIGN_ENTITLEMENTSのような設定名の直接指定でも
+// 上書きできる。コマンドライン引数はxcconfigより優先されるので、
+// Local.xcconfigがあってもMakefileからのリリースビルドには影響しない。
+#include? "Local.xcconfig"
