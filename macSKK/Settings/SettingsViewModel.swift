@@ -48,7 +48,6 @@ struct DirectModeApplication: Identifiable, Equatable {
 
     var id: ID { bundleIdentifier }
 
-
     static func ==(lhs: Self, rhs: Self) -> Bool {
         return lhs.id == rhs.id
     }
@@ -68,6 +67,7 @@ struct WorkaroundApplication: Identifiable, Equatable {
     var displayName: String?
 
     var id: ID { bundleIdentifier }
+
     init(bundleIdentifier: String, insertBlankString: Bool, treatFirstCharacterAsMarkedText: Bool,
          showMarkerWhenEmpty: Bool, icon: NSImage? = nil, displayName: String? = nil) {
         self.bundleIdentifier = bundleIdentifier
