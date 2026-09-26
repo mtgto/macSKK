@@ -129,6 +129,7 @@
 		CEA253942E228E2000618E64 /* SKKServDictSettingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA253932E228E2000618E64 /* SKKServDictSettingTests.swift */; };
 		CEA253962E2290AC00618E64 /* SKKServDictSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA253952E2290AC00618E64 /* SKKServDictSetting.swift */; };
 		CEA253982E23AB7600618E64 /* DictSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA253972E23AB7600618E64 /* DictSetting.swift */; };
+		CE420WAP2F00000100000002 /* WorkaroundApplication.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE420WAP2F00000100000001 /* WorkaroundApplication.swift */; };
 		CEA2539A2E23DA9000618E64 /* DictSettingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA253992E23DA9000618E64 /* DictSettingTests.swift */; };
 		CE420WAT2F00000100000002 /* WorkaroundApplicationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE420WAT2F00000100000001 /* WorkaroundApplicationTests.swift */; };
 		CEA253E62E2E852000618E64 /* UserDefaults+App.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA253E52E2E852000618E64 /* UserDefaults+App.swift */; };
@@ -352,6 +353,7 @@
 		CEA253932E228E2000618E64 /* SKKServDictSettingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServDictSettingTests.swift; sourceTree = "<group>"; };
 		CEA253952E2290AC00618E64 /* SKKServDictSetting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServDictSetting.swift; sourceTree = "<group>"; };
 		CEA253972E23AB7600618E64 /* DictSetting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictSetting.swift; sourceTree = "<group>"; };
+		CE420WAP2F00000100000001 /* WorkaroundApplication.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkaroundApplication.swift; sourceTree = "<group>"; };
 		CEA253992E23DA9000618E64 /* DictSettingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictSettingTests.swift; sourceTree = "<group>"; };
 		CE420WAT2F00000100000001 /* WorkaroundApplicationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkaroundApplicationTests.swift; sourceTree = "<group>"; };
 		CEA253E52E2E852000618E64 /* UserDefaults+App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UserDefaults+App.swift"; sourceTree = "<group>"; };
@@ -711,6 +713,7 @@
 			children = (
 				CED7CA5A2A83DE7F004EF988 /* SettingsViewModel.swift */,
 				CEA253972E23AB7600618E64 /* DictSetting.swift */,
+				CE420WAP2F00000100000001 /* WorkaroundApplication.swift */,
 				CEA253952E2290AC00618E64 /* SKKServDictSetting.swift */,
 				CEC376E72965199500D9C432 /* SettingsView.swift */,
 				CEADA44E2B1357090026E2BD /* GeneralView.swift */,
@@ -1055,6 +1058,7 @@
 				CEC061CA2ABB0A7900A11614 /* CompletionViewModel.swift in Sources */,
 				CEF0825D296DB58600646366 /* CandidatesViewModel.swift in Sources */,
 				CEA253982E23AB7600618E64 /* DictSetting.swift in Sources */,
+				CE420WAP2F00000100000002 /* WorkaroundApplication.swift in Sources */,
 				CE7F9ADC2AB53E53001B1877 /* CompletionView.swift in Sources */,
 				CE6DBA8D2A845CE400F5A227 /* Release.swift in Sources */,
 				CED7CA5B2A83DE7F004EF988 /* SettingsViewModel.swift in Sources */,
