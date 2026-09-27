@@ -1,0 +1,12 @@
+// iCloudでの設定同期を有効にしたビルドを作るためのローカル設定の雛形。
+// このファイルを Local.xcconfig にコピーして、自分の環境に合わせて書き換えてください。
+// Local.xcconfig は .gitignore に入れてあるのでコミットされません。
+//
+// 事前にDeveloper PortalでApp IDにiCloud capabilityを有効にし、
+// プロビジョニングプロファイルを作成してインストールしておく必要があります。
+
+MACSKK_ENTITLEMENTS = macSKK/macSKK-iCloud.entitlements
+// 作成したプロビジョニングプロファイルの名前
+MACSKK_PROVISIONING_PROFILE = macSKKDev
+CODE_SIGN_STYLE = Manual
+CODE_SIGN_IDENTITY = Apple Development

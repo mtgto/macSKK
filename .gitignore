@@ -68,3 +68,6 @@ fastlane/test_output
 
 # Installer
 /script/work/
+
+# iCloud同期を有効にしたビルドを作るためのローカル設定
+macSKK/Config/Local.xcconfig
