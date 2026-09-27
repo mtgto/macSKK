@@ -24,12 +24,12 @@ defaults:
 
 jobs:
   test:
-    runs-on: macos-26
+    runs-on: xcode-27
     timeout-minutes: 5
     steps:
-    # https://github.com/actions/runner-images/blob/main/images/macos/macos-26-arm64-Readme.md#xcode
+    # https://github.com/actions/runner-images/blob/main/images/macos/xcode-27-arm64-Readme.md#xcode
     - name: Select Xcode version
-      run: sudo xcode-select -s '/Applications/Xcode_26.6.app/Contents/Developer'
+      run: sudo xcode-select -s '/Applications/Xcode_27.0.app/Contents/Developer'
     - uses: actions/checkout@v7
     - name: test
       run: |
