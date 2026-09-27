@@ -80,6 +80,8 @@
 		CE420CSV2F00000100000002 /* CloudSyncView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE420CSV2F00000100000001 /* CloudSyncView.swift */; };
 		CE420SYNC2F00000100000002 /* SettingsSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE420SYNC2F00000100000001 /* SettingsSync.swift */; };
 		CE420SYNC2F00000100000004 /* SettingsSyncTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE420SYNC2F00000100000003 /* SettingsSyncTests.swift */; };
+		CE420WAP2F00000100000002 /* WorkaroundApplication.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE420WAP2F00000100000001 /* WorkaroundApplication.swift */; };
+		CE420WAT2F00000100000002 /* WorkaroundApplicationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE420WAT2F00000100000001 /* WorkaroundApplicationTests.swift */; };
 		CE485A882A8FA195008271EF /* Release+UNNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE485A872A8FA195008271EF /* Release+UNNotification.swift */; };
 		CE485A8A2A8FA5C6008271EF /* UserNotificationDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE485A892A8FA5C6008271EF /* UserNotificationDelegate.swift */; };
 		CE496C8C2B43968A001C623C /* LogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE496C8B2B43968A001C623C /* LogView.swift */; };
@@ -129,9 +131,7 @@
 		CEA253942E228E2000618E64 /* SKKServDictSettingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA253932E228E2000618E64 /* SKKServDictSettingTests.swift */; };
 		CEA253962E2290AC00618E64 /* SKKServDictSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA253952E2290AC00618E64 /* SKKServDictSetting.swift */; };
 		CEA253982E23AB7600618E64 /* DictSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA253972E23AB7600618E64 /* DictSetting.swift */; };
-		CE420WAP2F00000100000002 /* WorkaroundApplication.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE420WAP2F00000100000001 /* WorkaroundApplication.swift */; };
 		CEA2539A2E23DA9000618E64 /* DictSettingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA253992E23DA9000618E64 /* DictSettingTests.swift */; };
-		CE420WAT2F00000100000002 /* WorkaroundApplicationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE420WAT2F00000100000001 /* WorkaroundApplicationTests.swift */; };
 		CEA253E62E2E852000618E64 /* UserDefaults+App.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA253E52E2E852000618E64 /* UserDefaults+App.swift */; };
 		CEA602AA2F02C6FD00E605F2 /* CandidateWindowSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA602A92F02C6FD00E605F2 /* CandidateWindowSettingsView.swift */; };
 		CEA602AC2F02CFB000E605F2 /* OptionalBackgroundModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA602AB2F02CFB000E605F2 /* OptionalBackgroundModifier.swift */; };
@@ -301,6 +301,8 @@
 		CE420CSV2F00000100000001 /* CloudSyncView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudSyncView.swift; sourceTree = "<group>"; };
 		CE420SYNC2F00000100000001 /* SettingsSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsSync.swift; sourceTree = "<group>"; };
 		CE420SYNC2F00000100000003 /* SettingsSyncTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsSyncTests.swift; sourceTree = "<group>"; };
+		CE420WAP2F00000100000001 /* WorkaroundApplication.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkaroundApplication.swift; sourceTree = "<group>"; };
+		CE420WAT2F00000100000001 /* WorkaroundApplicationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkaroundApplicationTests.swift; sourceTree = "<group>"; };
 		CE485A872A8FA195008271EF /* Release+UNNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Release+UNNotification.swift"; sourceTree = "<group>"; };
 		CE485A892A8FA5C6008271EF /* UserNotificationDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserNotificationDelegate.swift; sourceTree = "<group>"; };
 		CE496C8B2B43968A001C623C /* LogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogView.swift; sourceTree = "<group>"; };
@@ -353,9 +355,7 @@
 		CEA253932E228E2000618E64 /* SKKServDictSettingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServDictSettingTests.swift; sourceTree = "<group>"; };
 		CEA253952E2290AC00618E64 /* SKKServDictSetting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServDictSetting.swift; sourceTree = "<group>"; };
 		CEA253972E23AB7600618E64 /* DictSetting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictSetting.swift; sourceTree = "<group>"; };
-		CE420WAP2F00000100000001 /* WorkaroundApplication.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkaroundApplication.swift; sourceTree = "<group>"; };
 		CEA253992E23DA9000618E64 /* DictSettingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictSettingTests.swift; sourceTree = "<group>"; };
-		CE420WAT2F00000100000001 /* WorkaroundApplicationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkaroundApplicationTests.swift; sourceTree = "<group>"; };
 		CEA253E52E2E852000618E64 /* UserDefaults+App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UserDefaults+App.swift"; sourceTree = "<group>"; };
 		CEA602A92F02C6FD00E605F2 /* CandidateWindowSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CandidateWindowSettingsView.swift; sourceTree = "<group>"; };
 		CEA602AB2F02CFB000E605F2 /* OptionalBackgroundModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OptionalBackgroundModifier.swift; sourceTree = "<group>"; };
@@ -1320,7 +1320,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 110;
+				CURRENT_PROJECT_VERSION = 111;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -1341,7 +1341,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.3;
-				MARKETING_VERSION = 2.20.0;
+				MARKETING_VERSION = 2.21.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -1386,7 +1386,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 110;
+				CURRENT_PROJECT_VERSION = 111;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
@@ -1401,7 +1401,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.3;
-				MARKETING_VERSION = 2.20.0;
+				MARKETING_VERSION = 2.21.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
