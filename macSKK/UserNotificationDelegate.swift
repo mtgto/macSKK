@@ -17,6 +17,9 @@ class UserNotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
             } else {
                 logger.error("通知メッセージにリリースページの情報が含まれていません。バグの可能性が高いです")
             }
+        } else if response.notification.request.identifier == UNNotifier.userNotificationSettingsSyncedIdentifier {
+            // 取り込んだ設定を確認できるよう設定画面を開く
+            NotificationCenter.default.post(name: notificationNameOpenSettings, object: nil)
         }
         completionHandler()
     }

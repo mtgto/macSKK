@@ -222,13 +222,20 @@ final class SettingsViewModel: ObservableObject {
     @Published var syncedSettingsCategories: Set<SettingsSync.Category>
     /// 設定のiCloud同期。entitlementがないビルドやテスト実行時はnil
     private var settingsSync: SettingsSync? = nil
+    /// 他のMacで変更された設定を取り込んだことをユーザーに知らせる。テストで差し替えられるようにしている。
+    private let notifyRemoteSettingsApplied: (Set<SettingsSync.Category>) -> Void
 
     // 辞書ディレクトリ
     let dictionariesDirectoryUrl: URL
     private var cancellables = Set<AnyCancellable>()
 
-    init(dictionariesDirectoryUrl: URL, keyValueStore: (any KeyValueStore)? = SettingsSync.defaultStore) throws {
+    init(
+        dictionariesDirectoryUrl: URL,
+        keyValueStore: (any KeyValueStore)? = SettingsSync.defaultStore,
+        notifyRemoteSettingsApplied: @escaping (Set<SettingsSync.Category>) -> Void = UNNotifier.sendNotificationForSettingsSynced
+    ) throws {
         self.dictionariesDirectoryUrl = dictionariesDirectoryUrl
+        self.notifyRemoteSettingsApplied = notifyRemoteSettingsApplied
         if let bundleIdentifiers = UserDefaults.app.array(forKey: "directModeBundleIdentifiers") as? [String] {
             directModeApplications = bundleIdentifiers.map { DirectModeApplication(bundleIdentifier: $0) }
         }
@@ -853,10 +860,14 @@ final class SettingsViewModel: ObservableObject {
         guard syncSettingsWithiCloud else {
             return
         }
-        settingsSync?.start(initialSync: .pullRemote)
+        // アプリが動いていない間に他のMacで変更された設定を取り込んだかもしれないので知らせる
+        if let appliedCategories = settingsSync?.start(initialSync: .pullRemote), !appliedCategories.isEmpty {
+            notifyRemoteSettingsApplied(appliedCategories)
+        }
     }
 
-    /// 設定のiCloud同期を有効にする
+    /// 設定のiCloud同期を有効にする。
+    /// iCloudの設定を取り込んでもユーザー自身の操作によるものなので通知しない。
     /// - Parameter initialSync: 有効にした時点でこのMacとiCloudのどちらの設定を優先するか
     func enableSyncSettingsWithiCloud(initialSync: SettingsSync.InitialSync) {
         settingsSync?.start(initialSync: initialSync)
@@ -891,6 +902,11 @@ final class SettingsViewModel: ObservableObject {
         // syncedSettingsCategoriesのsinkもsetCategoriesを呼ぶが、
         // すでに反映済みなので何も起きない
         syncedSettingsCategories = categories
+    }
+
+    /// 他のMacで変更された設定をiCloudから取り込んだときに ``SettingsSync`` から呼ばれる
+    func didApplyRemoteSettings(categories: Set<SettingsSync.Category>) {
+        notifyRemoteSettingsApplied(categories)
     }
 
     /**
@@ -1072,6 +1088,7 @@ final class SettingsViewModel: ObservableObject {
             appropriateFor: nil,
             create: false
         ).appending(path: "Dictionaries")
+        notifyRemoteSettingsApplied = { _ in }
         selectedInputSourceId = InputSource.defaultInputSourceId
         showAnnotation = true
         inlineCandidateCount = 3
