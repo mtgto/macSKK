@@ -19,7 +19,12 @@ class UserNotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
             }
         } else if response.notification.request.identifier == UNNotifier.userNotificationSettingsSyncedIdentifier {
             // 取り込んだ設定を確認できるよう設定画面を開く
-            NotificationCenter.default.post(name: notificationNameOpenSettings, object: nil)
+            if #available(macOS 14, *) {
+                NotificationCenter.default.post(name: notificationNameOpenSettings, object: nil)
+            } else {
+                NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+                NSApp.activate(ignoringOtherApps: true)
+            }
         }
         completionHandler()
     }
