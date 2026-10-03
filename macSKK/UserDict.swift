@@ -271,7 +271,14 @@ enum UserDictAddSource {
             && applied.okuriNashiYomis == dict.dict.okuriNashiYomis {
             return
         }
-        logger.log("ユーザー辞書にiCloud同期の変更を反映します")
+        let changes = dict.dict.candidateChanges(to: applied)
+        logger.log("ユーザー辞書にiCloud同期の変更を反映します。追加 \(changes.added.reduce(0) { $0 + $1.candidates.count }) 件、削除 \(changes.removed.reduce(0) { $0 + $1.candidates.count }) 件")
+        for entry in changes.added {
+            logger.log("iCloud同期でユーザー辞書に追加します: \(entry.serialize(), privacy: .public)")
+        }
+        for entry in changes.removed {
+            logger.log("iCloud同期でユーザー辞書から削除します: \(entry.serialize(), privacy: .public)")
+        }
         dict.replace(dict: applied)
         // 他の端末で削除された候補は直近の辞書登録履歴からも取り除く
         recentRegisteredCandidates.removeAll { candidate in

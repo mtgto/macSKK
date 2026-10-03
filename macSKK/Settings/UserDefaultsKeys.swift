@@ -96,4 +96,6 @@ struct UserDefaultsKeys {
     // ユーザー辞書のiCloud同期で、初回同期が完了していない場合のモード (UserDictInitialSyncMode) のrawValue。
     // 初回同期が完了したら削除する。
     static let userDictInitialSyncMode = "userDictInitialSyncMode"
+    // ユーザー辞書のiCloud同期で最後に取得・送信が完了した日時。
+    static let userDictLastSyncedAt = "userDictLastSyncedAt"
 }

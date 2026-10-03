@@ -229,3 +229,9 @@
 "SyncUserDictWithiCloudInitialSyncMessage" = "How do you want to handle the words already in the user dictionary on this Mac?\n\n\"Sync only conversions from now on\" syncs only words you convert, register or delete after syncing starts. Existing words are synced once you convert them again.\n\n\"Sync all words\" sends all existing words to iCloud. On the second and later Macs, the candidate order of the Mac that started syncing first takes precedence.";
 "Sync only conversions from now on" = "Sync only conversions from now on";
 "Sync all words" = "Sync all words";
+"UserDictSyncFetching" = "Fetching changes from iCloud…";
+"UserDictSyncSending" = "Sending to iCloud… (%lld remaining)";
+"UserDictLastSyncedAt" = "Last synced: %@";
+"UserDictNotSyncedYet" = "Not synced yet";
+"UserDictSyncError" = "Sync error: %@";
+"Sync Now" = "Sync Now";

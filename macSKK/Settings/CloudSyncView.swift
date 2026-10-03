@@ -94,6 +94,34 @@ struct CloudSyncView: View {
         )
     }
 
+    /// ユーザー辞書の同期状態と今すぐ同期するボタン
+    private var userDictSyncStatusRow: some View {
+        let status = settingsViewModel.userDictSyncStatus
+        return HStack {
+            switch status.activity {
+            case .fetching:
+                ProgressView().controlSize(.small)
+                Text("UserDictSyncFetching")
+            case .sending(let remaining):
+                ProgressView().controlSize(.small)
+                Text(String(format: String(localized: "UserDictSyncSending"), remaining))
+            case .idle:
+                if let lastSyncedAt = status.lastSyncedAt {
+                    Text(String(format: String(localized: "UserDictLastSyncedAt"),
+                                lastSyncedAt.formatted(date: .abbreviated, time: .standard)))
+                } else {
+                    Text("UserDictNotSyncedYet")
+                }
+            }
+            Spacer()
+            Button("Sync Now") {
+                settingsViewModel.syncUserDictWithiCloudNow()
+            }
+            .disabled(status.activity != .idle)
+        }
+        .foregroundStyle(.secondary)
+    }
+
     /// 同期する設定のカテゴリのトグル。
     /// 有効化したときに衝突があればどちらの設定を使うか確認する。
     private func category(_ category: SettingsSync.Category) -> Binding<Bool> {
@@ -196,6 +224,13 @@ struct CloudSyncView: View {
                         Text("Sync user dictionary with iCloud")
                     })
                     .disabled(!SettingsViewModel.isUserDictCloudSyncAvailable)
+                    if settingsViewModel.syncUserDictWithiCloud {
+                        userDictSyncStatusRow
+                        if let lastError = settingsViewModel.userDictSyncStatus.lastError {
+                            Text(String(format: String(localized: "UserDictSyncError"), lastError))
+                                .foregroundStyle(.red)
+                        }
+                    }
                 } header: {
                     Text("User Dictionary")
                 } footer: {

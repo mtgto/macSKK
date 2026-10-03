@@ -11,6 +11,24 @@ enum UserDictInitialSyncMode: String {
     case all
 }
 
+/// ユーザー辞書のiCloud同期の状態。設定画面に表示する。
+struct UserDictSyncStatus: Equatable {
+    enum Activity: Equatable {
+        /// 待機中
+        case idle
+        /// iCloudから変更を取得中
+        case fetching
+        /// iCloudに送信中。remainingは未送信の変換候補の数
+        case sending(remaining: Int)
+    }
+
+    var activity: Activity = .idle
+    /// 最後に取得・送信が完了した日時
+    var lastSyncedAt: Date?
+    /// 最後に発生したエラー。同期に成功したら消える
+    var lastError: String?
+}
+
 /**
  * ユーザー辞書の同期情報をCloudKitのプライベートデータベースと同期する。
  *
@@ -51,6 +69,17 @@ enum UserDictInitialSyncMode: String {
     var didReset: (() -> Void)?
     /// 初回同期が完了したときに呼ばれる
     var didCompleteInitialSync: (() -> Void)?
+    /// 同期の状態が変わったときに呼ばれる
+    var didChangeStatus: ((UserDictSyncStatus) -> Void)?
+    private(set) var status: UserDictSyncStatus {
+        didSet {
+            if status != oldValue {
+                didChangeStatus?(status)
+            }
+        }
+    }
+    /// 同期開始前からある変換候補を送信中かどうか。完了をログに出すのに使う
+    private var isSendingExistingCandidates = false
 
     /// CloudKitを利用可能かどうか。entitlementがないビルドでCKContainerを作るとクラッシュするので事前に確認する。
     nonisolated static let isAvailable: Bool = {
@@ -77,6 +106,7 @@ enum UserDictInitialSyncMode: String {
         self.recorder = recorder
         self.stateFileURL = stateFileURL
         self.initialSyncMode = initialSyncMode
+        status = UserDictSyncStatus(lastSyncedAt: UserDefaults.app.object(forKey: UserDefaultsKeys.userDictLastSyncedAt) as? Date)
         for key in recorder.metadata.records.keys {
             keys[key.recordName] = key
         }
@@ -96,6 +126,7 @@ enum UserDictInitialSyncMode: String {
         recorder.didRecord = { [weak self] key in
             self?.addPending([key])
         }
+        didChangeStatus?(status)
         userDict.applySyncMetadata()
         addPending(recorder.metadata.pendingKeys)
         if let initialSyncMode {
@@ -104,13 +135,30 @@ enum UserDictInitialSyncMode: String {
         fetchTask = Task { [weak self] in
             while !Task.isCancelled {
                 try? await Task.sleep(for: Self.fetchInterval)
-                guard !Task.isCancelled, let syncEngine = self?.syncEngine else { return }
-                do {
-                    try await syncEngine.fetchChanges()
-                } catch {
-                    logger.error("iCloudからユーザー辞書の変更の取得に失敗しました: \(error)")
-                }
+                guard !Task.isCancelled, let self else { return }
+                await self.fetchChanges()
             }
+        }
+    }
+
+    /// 他の端末の変更を取得し、未送信の変更を送信する
+    func syncNow() async {
+        logger.log("ユーザー辞書をiCloudと今すぐ同期します")
+        await fetchChanges()
+        do {
+            try await syncEngine.sendChanges()
+        } catch {
+            logger.error("iCloudへのユーザー辞書の送信に失敗しました: \(error)")
+            status.lastError = error.localizedDescription
+        }
+    }
+
+    private func fetchChanges() async {
+        do {
+            try await syncEngine.fetchChanges()
+        } catch {
+            logger.error("iCloudからユーザー辞書の変更の取得に失敗しました: \(error)")
+            status.lastError = error.localizedDescription
         }
     }
 
@@ -154,13 +202,16 @@ enum UserDictInitialSyncMode: String {
             try await syncEngine.fetchChanges()
         } catch {
             logger.error("iCloudからユーザー辞書の取得に失敗しました: \(error)")
+            status.lastError = error.localizedDescription
             return
         }
         if mode == .all, let dict = userDict.userDict as? FileDict {
-            logger.log("同期開始前からあるユーザー辞書の変換候補をiCloudに送信します")
             recorder.assignSyntheticTimestamps(from: dict.dict)
             saveRecorder()
-            addPending(recorder.metadata.pendingKeys)
+            let pendingKeys = recorder.metadata.pendingKeys
+            logger.log("同期開始前からあるユーザー辞書の変換候補を含む \(pendingKeys.count) 件をiCloudに送信します")
+            isSendingExistingCandidates = !pendingKeys.isEmpty
+            addPending(pendingKeys)
         }
         initialSyncMode = nil
         didCompleteInitialSync?()
@@ -202,14 +253,33 @@ enum UserDictInitialSyncMode: String {
             }
         case .sentRecordZoneChanges(let changes):
             handleSentRecordZoneChanges(changes)
+        case .willFetchChanges:
+            status.activity = .fetching
+        case .didFetchRecordZoneChanges(let event):
+            if let error = event.error {
+                logger.error("iCloudからユーザー辞書の変更の取得に失敗しました: \(error)")
+                status.lastError = error.localizedDescription
+            }
         case .didFetchChanges:
             if needsApply {
                 needsApply = false
                 userDict.applySyncMetadata()
             }
+            completeActivity()
+        case .willSendChanges:
+            status.activity = .sending(remaining: recorder.metadata.pendingKeys.count)
+        case .didSendChanges:
+            completeActivity()
         default:
             break
         }
+    }
+
+    /// 取得・送信が終わったときに状態を更新する
+    private func completeActivity() {
+        let now = Date()
+        UserDefaults.app.set(now, forKey: UserDefaultsKeys.userDictLastSyncedAt)
+        status = UserDictSyncStatus(activity: .idle, lastSyncedAt: now, lastError: status.lastError)
     }
 
     private func handleAccountChange(_ change: CKSyncEngine.Event.AccountChange) {
@@ -253,6 +323,20 @@ enum UserDictInitialSyncMode: String {
             }
         }
         recorder.markSent(sentRecords)
+        let remaining = recorder.metadata.pendingKeys.count
+        if !sentRecords.isEmpty {
+            logger.log("iCloudにユーザー辞書の変換候補を \(sentRecords.count) 件送信しました。未送信は残り \(remaining) 件です")
+            if changes.failedRecordSaves.isEmpty {
+                status.lastError = nil
+            }
+        }
+        if isSendingExistingCandidates && remaining == 0 {
+            isSendingExistingCandidates = false
+            logger.log("同期開始前からあるユーザー辞書の変換候補のiCloudへの送信が完了しました")
+        }
+        if case .sending = status.activity {
+            status.activity = .sending(remaining: remaining)
+        }
         for failed in changes.failedRecordSaves {
             let recordID = failed.record.recordID
             let recordName = recordID.recordName
@@ -278,6 +362,7 @@ enum UserDictInitialSyncMode: String {
                 break
             default:
                 logger.error("iCloudへのユーザー辞書の送信に失敗しました: \(failed.error)")
+                status.lastError = failed.error.localizedDescription
             }
         }
         saveRecorder()

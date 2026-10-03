@@ -168,4 +168,15 @@ final class UserDictSyncMetadataTests: XCTestCase {
         XCTAssertNil(applied.entries["あ"])
         XCTAssertEqual(applied.okuriNashiYomis, [])
     }
+
+    func testCandidateChanges() {
+        let old = MemoryDict(entries: ["あ": [Word("阿"), Word("亜")], "い": [Word("伊")], "いt": [Word("行", okuri: "った")]], readonly: false)
+        let new = MemoryDict(entries: ["あ": [Word("亜"), Word("唖")], "う": [Word("鵜")], "いt": [Word("行")]], readonly: false)
+        let changes = old.candidateChanges(to: new)
+        XCTAssertEqual(changes.added.map { $0.serialize() }, ["あ /唖/", "いt /行/", "う /鵜/"])
+        XCTAssertEqual(changes.removed.map { $0.serialize() }, ["あ /阿/", "い /伊/", "いt /[った/行/]/"])
+        let reordered = MemoryDict(entries: ["あ": [Word("亜"), Word("阿")], "い": [Word("伊")], "いt": [Word("行", okuri: "った")]], readonly: false)
+        XCTAssertTrue(old.candidateChanges(to: reordered).added.isEmpty, "並び順の変化は含まない")
+        XCTAssertTrue(old.candidateChanges(to: reordered).removed.isEmpty)
+    }
 }

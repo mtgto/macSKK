@@ -250,6 +250,33 @@ extension UserDictSyncMetadata: Codable {
 }
 
 extension MemoryDict {
+    /// 変換候補の追加・削除。並び順の変化は含まない
+    struct CandidateChanges {
+        var added: [Entry] = []
+        var removed: [Entry] = []
+    }
+
+    /// otherとの変換候補の違いを返す。読みは辞書順、変換候補はそれぞれの辞書での順に並ぶ
+    func candidateChanges(to other: MemoryDict) -> CandidateChanges {
+        func contains(_ words: [Word], _ word: Word) -> Bool {
+            words.contains { $0.word == word.word && $0.okuri == word.okuri }
+        }
+        var changes = CandidateChanges()
+        for yomi in Set(entries.keys).union(other.entries.keys).sorted() {
+            let oldWords = entries[yomi] ?? []
+            let newWords = other.entries[yomi] ?? []
+            let added = newWords.filter { !contains(oldWords, $0) }
+            let removed = oldWords.filter { !contains(newWords, $0) }
+            if !added.isEmpty {
+                changes.added.append(Entry(yomi: yomi, candidates: added))
+            }
+            if !removed.isEmpty {
+                changes.removed.append(Entry(yomi: yomi, candidates: removed))
+            }
+        }
+        return changes
+    }
+
     /**
      * 同期情報を反映したユーザー辞書を返す。
      *

@@ -229,3 +229,9 @@
 "SyncUserDictWithiCloudInitialSyncMessage" = "このMacのユーザー辞書にすでにある単語をどう扱いますか?\n\n「これ以降の変換だけ同期」は、同期を開始してから変換・単語登録・削除した単語だけを同期します。すでにある単語も、もう一度変換すれば同期されます。\n\n「すべて同期」は、すでにある単語もすべてiCloudに送ります。2台目以降のMacでは、先に同期を開始したMacの候補の順序が優先されます。";
 "Sync only conversions from now on" = "これ以降の変換だけ同期";
 "Sync all words" = "すべて同期";
+"UserDictSyncFetching" = "iCloudから変更を取得中…";
+"UserDictSyncSending" = "iCloudに送信中… (残り%lld件)";
+"UserDictLastSyncedAt" = "最終同期: %@";
+"UserDictNotSyncedYet" = "まだ同期していません";
+"UserDictSyncError" = "同期エラー: %@";
+"Sync Now" = "今すぐ同期";

@@ -226,6 +226,8 @@ final class SettingsViewModel: ObservableObject {
     private let notifyRemoteSettingsApplied: (Set<SettingsSync.Category>) -> Void
     /// ユーザー辞書をiCloudで他のMacと同期するかどうか
     @Published private(set) var syncUserDictWithiCloud: Bool
+    /// ユーザー辞書のiCloud同期の状態
+    @Published private(set) var userDictSyncStatus = UserDictSyncStatus()
     /// ユーザー辞書のiCloud同期 (``UserDictCloudSyncer``)。macOS 14未満やentitlementがないビルドでは常にnil
     private var userDictCloudSyncer: AnyObject? = nil
 
@@ -915,6 +917,15 @@ final class SettingsViewModel: ObservableObject {
         UserDefaults.app.set(enabled, forKey: UserDefaultsKeys.syncUserDictWithiCloud)
         if !enabled {
             UserDefaults.app.removeObject(forKey: UserDefaultsKeys.userDictInitialSyncMode)
+            UserDefaults.app.removeObject(forKey: UserDefaultsKeys.userDictLastSyncedAt)
+            userDictSyncStatus = UserDictSyncStatus()
+        }
+    }
+
+    /// ユーザー辞書をiCloudと今すぐ同期する
+    func syncUserDictWithiCloudNow() {
+        if #available(macOS 14, *), let syncer = userDictCloudSyncer as? UserDictCloudSyncer {
+            Task { await syncer.syncNow() }
         }
     }
 
@@ -930,6 +941,9 @@ final class SettingsViewModel: ObservableObject {
                                              initialSyncMode: initialSyncMode)
             syncer.didCompleteInitialSync = {
                 UserDefaults.app.removeObject(forKey: UserDefaultsKeys.userDictInitialSyncMode)
+            }
+            syncer.didChangeStatus = { [weak self] status in
+                self?.userDictSyncStatus = status
             }
             syncer.didReset = { [weak self] in
                 self?.setSyncUserDictWithiCloud(false)
