@@ -222,3 +222,10 @@
 "Remove all settings from iCloud" = "Remove Settings from iCloud";
 "RemoveAllSettingsFromiCloudDescription" = "Settings stored in iCloud are kept even after you stop syncing them; use this button to remove them. This removes all macSKK settings stored in iCloud and turns off syncing. They will also disappear from other Macs signed in with the same Apple Account. The settings on this Mac are not removed.";
 "RemoveAllSettingsFromiCloudConfirmation" = "All macSKK settings stored in iCloud will be removed. They will also disappear from other Macs signed in with the same Apple Account, and this cannot be undone. The settings on this Mac are kept.";
+"Sync user dictionary with iCloud" = "Sync user dictionary with iCloud";
+"SyncUserDictWithiCloudDescription" = "Sync the user dictionary with macSKK on other Macs signed in with the same Apple Account. Changes on other Macs are applied within a few minutes. Turning off syncing removes the sync information on this Mac, but does not remove the data in iCloud or your user dictionary.";
+"SyncUserDictWithiCloudRequiresMacOS14" = "Syncing the user dictionary requires macOS 14 or later.";
+"SyncUserDictWithiCloudUnavailable" = "This build of macSKK does not support syncing the user dictionary with iCloud.";
+"SyncUserDictWithiCloudInitialSyncMessage" = "How do you want to handle the words already in the user dictionary on this Mac?\n\n\"Sync only conversions from now on\" syncs only words you convert, register or delete after syncing starts. Existing words are synced once you convert them again.\n\n\"Sync all words\" sends all existing words to iCloud. On the second and later Macs, the candidate order of the Mac that started syncing first takes precedence.";
+"Sync only conversions from now on" = "Sync only conversions from now on";
+"Sync all words" = "Sync all words";

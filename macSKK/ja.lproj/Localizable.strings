@@ -222,3 +222,10 @@
 "Remove all settings from iCloud" = "iCloudから設定を削除";
 "RemoveAllSettingsFromiCloudDescription" = "同期を外してもiCloudに保存した設定は残ります。削除するにはこのボタンを使ってください。iCloudに保存したmacSKKの設定をすべて削除し、同期を無効にします。同じApple Accountの他のMacからも見えなくなります。このMacの設定自体は削除されません。";
 "RemoveAllSettingsFromiCloudConfirmation" = "iCloudに保存したmacSKKの設定をすべて削除します。同じApple Accountの他のMacからも見えなくなり、元に戻せません。このMacの設定自体は残ります。";
+"Sync user dictionary with iCloud" = "ユーザー辞書をiCloudで同期する";
+"SyncUserDictWithiCloudDescription" = "同じApple Accountでサインインした他のMacのmacSKKとユーザー辞書を同期します。他のMacでの変更は数分以内に反映されます。同期を無効にするとこのMacの同期情報は削除されますが、iCloud上のデータとユーザー辞書は削除されません。";
+"SyncUserDictWithiCloudRequiresMacOS14" = "ユーザー辞書の同期はmacOS 14以降で利用できます。";
+"SyncUserDictWithiCloudUnavailable" = "このビルドのmacSKKはiCloudでのユーザー辞書の同期に対応していません。";
+"SyncUserDictWithiCloudInitialSyncMessage" = "このMacのユーザー辞書にすでにある単語をどう扱いますか?\n\n「これ以降の変換だけ同期」は、同期を開始してから変換・単語登録・削除した単語だけを同期します。すでにある単語も、もう一度変換すれば同期されます。\n\n「すべて同期」は、すでにある単語もすべてiCloudに送ります。2台目以降のMacでは、先に同期を開始したMacの候補の順序が優先されます。";
+"Sync only conversions from now on" = "これ以降の変換だけ同期";
+"Sync all words" = "すべて同期";

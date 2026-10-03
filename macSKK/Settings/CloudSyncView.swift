@@ -39,6 +39,7 @@ struct CloudSyncView: View {
     @State private var isShowingInitialSyncDialog = false
     @State private var isShowingCategoryConflictDialog = false
     @State private var isShowingRemoveAllDialog = false
+    @State private var isShowingUserDictInitialSyncDialog = false
     #if DEBUG
     /// デバッグ用に表示するiCloudの値
     @State private var remoteValuesJSON: String = ""
@@ -70,6 +71,24 @@ struct CloudSyncView: View {
                 } else {
                     conflictMessage = Self.conflictMessage(conflicts)
                     isShowingInitialSyncDialog = true
+                }
+            }
+        )
+    }
+
+    /**
+     * ユーザー辞書のiCloud同期のトグル。
+     *
+     * 有効化するときは、同期開始前からあるユーザー辞書の変換候補をどう扱うか確認する。
+     */
+    private var syncUserDictWithiCloud: Binding<Bool> {
+        Binding(
+            get: { settingsViewModel.syncUserDictWithiCloud },
+            set: { enabled in
+                if enabled {
+                    isShowingUserDictInitialSyncDialog = true
+                } else {
+                    settingsViewModel.disableSyncUserDictWithiCloud()
                 }
             }
         )
@@ -172,6 +191,26 @@ struct CloudSyncView: View {
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
+                Section {
+                    Toggle(isOn: syncUserDictWithiCloud, label: {
+                        Text("Sync user dictionary with iCloud")
+                    })
+                    .disabled(!SettingsViewModel.isUserDictCloudSyncAvailable)
+                } header: {
+                    Text("User Dictionary")
+                } footer: {
+                    Group {
+                        if #unavailable(macOS 14) {
+                            Text("SyncUserDictWithiCloudRequiresMacOS14")
+                        } else if SettingsViewModel.isUserDictCloudSyncAvailable {
+                            Text("SyncUserDictWithiCloudDescription")
+                        } else {
+                            Text("SyncUserDictWithiCloudUnavailable")
+                        }
+                    }
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                }
                 #if DEBUG
                 Section {
                     Button("現在のiCloudの値を表示") {
@@ -215,6 +254,17 @@ struct CloudSyncView: View {
             }
         } message: {
             Text(conflictMessage)
+        }
+        .confirmationDialog("Sync user dictionary with iCloud", isPresented: $isShowingUserDictInitialSyncDialog) {
+            Button("Sync only conversions from now on") {
+                settingsViewModel.enableSyncUserDictWithiCloud(initialSyncMode: .fromNow)
+            }
+            Button("Sync all words") {
+                settingsViewModel.enableSyncUserDictWithiCloud(initialSyncMode: .all)
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("SyncUserDictWithiCloudInitialSyncMessage")
         }
         .confirmationDialog("Remove all settings from iCloud", isPresented: $isShowingRemoveAllDialog) {
             Button("Delete", role: .destructive) {
