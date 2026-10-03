@@ -231,7 +231,7 @@ final class SettingsViewModel: ObservableObject {
 
     init(
         dictionariesDirectoryUrl: URL,
-        keyValueStore: (any KeyValueStore)? = SettingsSync.defaultStore,
+        keyValueStore: any KeyValueStore? = SettingsSync.defaultStore,
         notifyRemoteSettingsApplied: @escaping (Set<SettingsSync.Category>) -> Void = UNNotifier.sendNotificationForSettingsSynced
     ) throws {
         self.dictionariesDirectoryUrl = dictionariesDirectoryUrl

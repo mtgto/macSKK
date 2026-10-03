@@ -145,7 +145,7 @@ final class SettingsSync {
     }()
 
     /// 実行環境で使えるKey-Value Store。entitlementがないビルドやテスト実行時はnil。
-    static var defaultStore: (any KeyValueStore)? {
+    static var defaultStore: any KeyValueStore? {
         guard !isTest(), isAvailable else {
             return nil
         }
