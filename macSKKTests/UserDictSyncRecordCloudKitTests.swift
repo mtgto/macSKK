@@ -43,21 +43,9 @@ final class UserDictSyncRecordCloudKitTests: XCTestCase {
 
     func testMillisecondsRoundTrip() {
         for date in [Date(), Date(timeIntervalSince1970: 0.0015), Date(timeIntervalSince1970: -0.0025), Date(milliseconds: 1_700_000_000_001)] {
-            let truncated = UserDictSyncMetadata.truncate(date)
+            let truncated = UserDictSyncRecord.truncate(date)
             XCTAssertEqual(Date(milliseconds: truncated.milliseconds), truncated)
-            XCTAssertEqual(UserDictSyncMetadata.truncate(truncated), truncated)
+            XCTAssertEqual(UserDictSyncRecord.truncate(truncated), truncated)
         }
-    }
-
-    func testRecordUseTruncatesDate() {
-        var metadata = UserDictSyncMetadata()
-        metadata.recordUse(yomi: "い", word: Word("井"), at: Date(timeIntervalSince1970: 1.23456))
-        let record = metadata.records[UserDictSyncKey(yomi: "い", word: "井", okuri: nil)]!
-        XCTAssertEqual(record.lastUsedAt?.milliseconds, 1235)
-        // サーバーを経由した自分の更新を受け取っても未送信にならない
-        metadata.markSent(metadata.pendingRecords)
-        let echoed = UserDictSyncRecord(key: record.key, lastUsedAt: record.lastUsedAt.map { Date(milliseconds: $0.milliseconds) })
-        XCTAssertEqual(metadata.merge(remote: [echoed]), [])
-        XCTAssertTrue(metadata.pendingKeys.isEmpty)
     }
 }

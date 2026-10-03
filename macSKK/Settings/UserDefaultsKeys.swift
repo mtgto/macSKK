@@ -98,4 +98,6 @@ struct UserDefaultsKeys {
     static let userDictInitialSyncMode = "userDictInitialSyncMode"
     // ユーザー辞書のiCloud同期で最後に取得・送信が完了した日時。
     static let userDictLastSyncedAt = "userDictLastSyncedAt"
+    // ユーザー辞書のiCloud同期で使うCKSyncEngineの同期状態 (CKSyncEngine.State.SerializationをJSONにしたData)。
+    static let userDictSyncEngineState = "userDictSyncEngineState"
 }

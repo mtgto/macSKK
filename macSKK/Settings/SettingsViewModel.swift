@@ -906,14 +906,18 @@ final class SettingsViewModel: ObservableObject {
     /**
      * ユーザー辞書のiCloud同期を無効にする。
      *
-     * 無効にしている間の変換・削除は記録しないので、ローカルの同期情報は破棄して、
+     * 無効にしている間の変換・削除は同期しないので、同期状態を破棄して、
      * 次に有効にするときは初回同期からやり直す。iCloud上のデータは削除しない。
      */
     func disableSyncUserDictWithiCloud() {
         logger.log("ユーザー辞書のiCloud同期を無効にしました")
         setSyncUserDictWithiCloud(false)
-        if #available(macOS 14, *), let syncer = userDictCloudSyncer as? UserDictCloudSyncer {
-            Task { await syncer.reset() }
+        if #available(macOS 14, *) {
+            if let syncer = userDictCloudSyncer as? UserDictCloudSyncer {
+                Task { await syncer.reset() }
+            } else {
+                UserDictCloudSyncer.removeState()
+            }
         }
         userDictCloudSyncer = nil
     }
@@ -945,8 +949,7 @@ final class SettingsViewModel: ObservableObject {
                 } else {
                     try await UserDictCloudSyncer.deleteZone(
                         from: CKContainer(identifier: UserDictCloudSyncer.containerIdentifier).privateCloudDatabase)
-                    try UserDictSyncRecorder(fileURL: try UserDictSyncRecorder.defaultFileURL()).removeAll()
-                    try UserDictCloudSyncer.removeState(at: try UserDictCloudSyncer.defaultStateFileURL())
+                    UserDictCloudSyncer.removeState()
                 }
                 userDictCloudSyncer = nil
                 setSyncUserDictWithiCloud(false)
@@ -967,33 +970,25 @@ final class SettingsViewModel: ObservableObject {
 
     private func startUserDictCloudSyncer() {
         guard #available(macOS 14, *), UserDictCloudSyncer.isAvailable, userDictCloudSyncer == nil else { return }
-        do {
-            let recorder = UserDictSyncRecorder(fileURL: try UserDictSyncRecorder.defaultFileURL())
-            let initialSyncMode = UserDefaults.app.string(forKey: UserDefaultsKeys.userDictInitialSyncMode)
-                .flatMap(UserDictInitialSyncMode.init(rawValue:))
-            let syncer = UserDictCloudSyncer(userDict: Global.dictionary,
-                                             recorder: recorder,
-                                             stateFileURL: try UserDictCloudSyncer.defaultStateFileURL(),
-                                             initialSyncMode: initialSyncMode)
-            syncer.didCompleteInitialSync = {
-                UserDefaults.app.removeObject(forKey: UserDefaultsKeys.userDictInitialSyncMode)
-            }
-            syncer.didChangeStatus = { [weak self] status in
-                self?.userDictSyncStatus = status
-            }
-            syncer.didReset = { [weak self] reason in
-                self?.setSyncUserDictWithiCloud(false)
-                self?.userDictCloudSyncer = nil
-                self?.userDictSyncNotice = switch reason {
-                case .accountChanged: String(localized: "UserDictSyncStoppedByAccountChange")
-                case .deletedFromiCloud: String(localized: "UserDictSyncStoppedByDeletion")
-                }
-            }
-            syncer.start()
-            userDictCloudSyncer = syncer
-        } catch {
-            logger.error("ユーザー辞書のiCloud同期を開始できませんでした: \(error)")
+        let initialSyncMode = UserDefaults.app.string(forKey: UserDefaultsKeys.userDictInitialSyncMode)
+            .flatMap(UserDictInitialSyncMode.init(rawValue:))
+        let syncer = UserDictCloudSyncer(userDict: Global.dictionary, initialSyncMode: initialSyncMode)
+        syncer.didCompleteInitialSync = {
+            UserDefaults.app.removeObject(forKey: UserDefaultsKeys.userDictInitialSyncMode)
         }
+        syncer.didChangeStatus = { [weak self] status in
+            self?.userDictSyncStatus = status
+        }
+        syncer.didReset = { [weak self] reason in
+            self?.setSyncUserDictWithiCloud(false)
+            self?.userDictCloudSyncer = nil
+            self?.userDictSyncNotice = switch reason {
+            case .accountChanged: String(localized: "UserDictSyncStoppedByAccountChange")
+            case .deletedFromiCloud: String(localized: "UserDictSyncStoppedByDeletion")
+            }
+        }
+        syncer.start()
+        userDictCloudSyncer = syncer
     }
 
     /// 設定のiCloud同期を有効にする。

@@ -50,8 +50,8 @@ enum UserDictAddSource {
     private let ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>
     private var cancellables: Set<AnyCancellable> = []
     private(set) var recentRegisteredCandidates: [RecentRegisteredCandidate] = []
-    /// ユーザー辞書の同期情報を記録する。iCloud同期が無効のときはnil。
-    var syncRecorder: UserDictSyncRecorder?
+    /// ユーザー辞書を変換・単語登録・削除したときに、その同期情報を受け取る。iCloud同期が無効のときはnil。
+    var syncChangeHandler: ((UserDictSyncRecord) -> Void)?
     private let maxRecentRegisteredCandidateCount = 3
 
     // MARK: NSFilePresenter
@@ -112,15 +112,6 @@ enum UserDictAddSource {
                 logger.log("プライベートモードが解除されました")
             }
             UserDefaults.app.set(privateMode, forKey: UserDefaultsKeys.privateMode)
-        }
-        .store(in: &cancellables)
-
-        // ユーザー辞書をファイルから読み込んだら (外部での編集による再読み込みを含む) 同期情報を反映する
-        NotificationCenter.default.publisher(for: notificationNameDictLoad).receive(on: RunLoop.main).sink { [weak self] notification in
-            guard let self, let event = notification.object as? DictLoadEvent, event.trigger == .load,
-                  case .loaded = event.status,
-                  let userDict = self.userDict as? FileDict, userDict.id == event.id else { return }
-            self.applySyncMetadata()
         }
         .store(in: &cancellables)
     }
@@ -221,7 +212,7 @@ enum UserDictAddSource {
         if !privateMode.value {
             if let dict = userDict as? FileDict {
                 dict.add(yomi: yomi, word: word)
-                syncRecorder?.recordUse(yomi: yomi, word: word)
+                syncChangeHandler?(.use(yomi: yomi, word: word))
                 if source == .registering {
                     addRecentRegisteredCandidate(yomi: yomi, word: word)
                 }
@@ -252,7 +243,7 @@ enum UserDictAddSource {
             return true
         } else if let dict = userDict as? FileDict {
             if dict.delete(yomi: yomi, word: word) {
-                syncRecorder?.recordDelete(yomi: yomi, word: word)
+                syncChangeHandler?(.delete(yomi: yomi, word: word))
                 logger.log("ユーザー辞書からエントリ \(Entry(yomi: yomi, candidates: [word]).serialize(), privacy: .public) を削除しました")
                 recentRegisteredCandidates.removeAll { $0.yomi == yomi && $0.word == word }
                 scheduleSave()
@@ -262,10 +253,19 @@ enum UserDictAddSource {
         return false
     }
 
-    /// ユーザー辞書に同期情報を反映する。iCloud同期で他の端末の変更を受け取ったときに使う。
-    @MainActor func applySyncMetadata() {
-        guard let syncRecorder, let dict = userDict as? FileDict, dict.isLoaded else { return }
-        let applied = dict.dict.applying(syncRecorder.metadata, dictId: dict.id)
+    /// ユーザー辞書をファイルから読み込み済みかどうか
+    var isUserDictLoaded: Bool {
+        (userDict as? FileDict)?.isLoaded ?? false
+    }
+
+    /**
+     * 他の端末から受け取った同期情報をユーザー辞書に反映して、すぐに保存する。
+     *
+     * 反映した変更は再取得できないので、保存を遅らせずに行う。
+     */
+    @MainActor func applySyncRecords(_ records: [UserDictSyncRecord]) {
+        guard let dict = userDict as? FileDict, dict.isLoaded, !records.isEmpty else { return }
+        let applied = dict.dict.applying(records, dictId: dict.id)
         if applied.entries == dict.dict.entries
             && applied.okuriAriYomis == dict.dict.okuriAriYomis
             && applied.okuriNashiYomis == dict.dict.okuriNashiYomis {
@@ -284,7 +284,8 @@ enum UserDictAddSource {
         recentRegisteredCandidates.removeAll { candidate in
             !dict.dict.refer(candidate.yomi, option: nil).contains { $0.word == candidate.word.word && $0.okuri == candidate.word.okuri }
         }
-        scheduleSave()
+        saveTask?.cancel()
+        save()
     }
 
     /// ユーザー辞書の永続化を予約する
@@ -310,22 +311,12 @@ enum UserDictAddSource {
             if let dict = userDict as? FileDict {
                 logger.log("ユーザー辞書を永続化します。現在のエントリ数は \(dict.dict.entries.count)")
                 dict.save()
-                saveSyncRecorder()
             } else {
                 // ユニットテストなど特殊な場合のみ
                 logger.info("永続化が要求されましたが、ユーザー辞書がファイル形式でないため無視されます")
             }
         } else {
             logger.debug("ユーザー辞書を読み込みできてないため永続化はスキップします")
-        }
-    }
-
-    private func saveSyncRecorder() {
-        guard let syncRecorder, syncRecorder.hasUnsavedChanges else { return }
-        do {
-            try syncRecorder.save()
-        } catch {
-            logger.error("ユーザー辞書の同期情報の保存に失敗しました: \(error)")
         }
     }
 
@@ -342,7 +333,7 @@ enum UserDictAddSource {
 
     var hasUnsavedChanges: Bool {
         if let dict = userDict as? FileDict {
-            return dict.hasUnsavedChanges || syncRecorder?.hasUnsavedChanges == true
+            return dict.hasUnsavedChanges
         } else {
             return false
         }

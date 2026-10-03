@@ -3,7 +3,7 @@
 import Foundation
 
 /// ユーザー辞書の同期で変換候補を一意に識別するキー
-struct UserDictSyncKey: Hashable, Codable, Sendable {
+struct UserDictSyncKey: Hashable, Sendable {
     let yomi: String
     let word: String
     /// 送り仮名ブロックのひらがな
@@ -21,12 +21,21 @@ struct UserDictSyncKey: Hashable, Codable, Sendable {
 }
 
 /**
- * ユーザー辞書の変換候補1つ分の同期情報。
+ * ユーザー辞書の変換候補1つ分の同期情報。iCloudのレコード1つに対応する。
  *
  * 各日時は他の端末の値と大きいほうを採用してマージするので、
  * どの端末でどの順番にマージしても同じ結果に収束する。
  */
-struct UserDictSyncRecord: Equatable, Codable, Sendable {
+struct UserDictSyncRecord: Equatable, Sendable {
+    /**
+     * 同期開始前からある変換候補に割り当てる合成日時の上限。
+     *
+     * 実際の変換日時は必ずこれより後になるので、同期開始後に変換した候補が常に優先される。
+     */
+    static let syntheticTimestampCeiling = Date(timeIntervalSince1970: 0)
+    /// 合成日時の間隔
+    static let syntheticTimestampInterval: TimeInterval = 0.001
+
     let key: UserDictSyncKey
     /// 注釈の文字列
     var annotation: String?
@@ -38,8 +47,28 @@ struct UserDictSyncRecord: Equatable, Codable, Sendable {
     init(key: UserDictSyncKey, annotation: String? = nil, lastUsedAt: Date? = nil, deletedAt: Date? = nil) {
         self.key = key
         self.annotation = annotation
-        self.lastUsedAt = lastUsedAt
-        self.deletedAt = deletedAt
+        self.lastUsedAt = lastUsedAt.map(Self.truncate)
+        self.deletedAt = deletedAt.map(Self.truncate)
+    }
+
+    /// 変換・単語登録したことを表す同期情報
+    static func use(yomi: String, word: Word, at date: Date = Date()) -> Self {
+        Self(key: UserDictSyncKey(yomi: yomi, word: word), annotation: word.annotation?.text, lastUsedAt: date)
+    }
+
+    /// 削除したことを表す同期情報
+    static func delete(yomi: String, word: Word, at date: Date = Date()) -> Self {
+        Self(key: UserDictSyncKey(yomi: yomi, word: word), deletedAt: date)
+    }
+
+    /**
+     * 日時をミリ秒単位に丸める。
+     *
+     * CloudKitに保存できる精度に合わせておかないと、サーバーを経由した自分の更新を
+     * 別の更新と判定してしまう。
+     */
+    static func truncate(_ date: Date) -> Date {
+        Date(milliseconds: date.milliseconds)
     }
 
     /// ユーザー辞書に存在するべきかどうか。削除より後に変換・単語登録していれば存在する。
@@ -74,137 +103,34 @@ struct UserDictSyncRecord: Equatable, Codable, Sendable {
         guard let rhs else { return lhs }
         return Swift.max(lhs, rhs)
     }
-}
-
-/**
- * ユーザー辞書の同期情報。ユーザー辞書ファイルとは別のJSONファイルに保存する。
- *
- * ユーザー辞書にあって同期情報をもたない変換候補 (同期開始前から存在する候補) は、
- * 同期情報をもつどの変換候補よりも古いものとして扱う。
- */
-struct UserDictSyncMetadata: Equatable, Sendable {
-    /// 現在のファイル形式のバージョン
-    static let currentVersion = 1
-    /**
-     * 同期開始前の変換候補に割り当てる合成日時の上限。
-     *
-     * 実際の変換日時は必ずこれより後になるので、同期開始後に変換した候補が常に優先される。
-     */
-    static let syntheticTimestampCeiling = Date(timeIntervalSince1970: 0)
-    /// 合成日時の間隔
-    static let syntheticTimestampInterval: TimeInterval = 0.001
-
-    private(set) var records: [UserDictSyncKey: UserDictSyncRecord]
-    /// サーバーに未送信の変換候補
-    private(set) var pendingKeys: Set<UserDictSyncKey>
-
-    init(records: [UserDictSyncKey: UserDictSyncRecord] = [:], pendingKeys: Set<UserDictSyncKey> = []) {
-        self.records = records
-        self.pendingKeys = pendingKeys
-    }
 
     /**
-     * 日時をミリ秒単位に丸める。
-     *
-     * CloudKitに保存できる精度に合わせておかないと、サーバーから受け取った自分の更新を
-     * ローカルより古いと判定して送り返し続けてしまう。
-     */
-    static func truncate(_ date: Date) -> Date {
-        Date(milliseconds: date.milliseconds)
-    }
-
-    /// 変換・単語登録したことを記録する
-    mutating func recordUse(yomi: String, word: Word, at date: Date) {
-        let key = UserDictSyncKey(yomi: yomi, word: word)
-        update(UserDictSyncRecord(key: key, annotation: word.annotation?.text, lastUsedAt: Self.truncate(date)))
-    }
-
-    /// 削除したことを記録する
-    mutating func recordDelete(yomi: String, word: Word, at date: Date) {
-        let key = UserDictSyncKey(yomi: yomi, word: word)
-        update(UserDictSyncRecord(key: key, deletedAt: Self.truncate(date)))
-    }
-
-    /// すべての同期情報を破棄する
-    mutating func removeAll() {
-        records.removeAll()
-        pendingKeys.removeAll()
-    }
-
-    private mutating func update(_ record: UserDictSyncRecord) {
-        let merged = records[record.key].map { $0.merged(with: record) } ?? record
-        if merged != records[record.key] {
-            records[record.key] = merged
-            pendingKeys.insert(record.key)
-        }
-    }
-
-    /**
-     * 他の端末から受け取った同期情報をマージする。
-     *
-     * マージ結果が受け取ったものより新しい場合は、サーバーに送り返すために未送信として扱う。
-     *
-     * - Returns: ローカルの同期情報が変化した変換候補のキー
-     */
-    @discardableResult
-    mutating func merge(remote: some Sequence<UserDictSyncRecord>) -> Set<UserDictSyncKey> {
-        var changedKeys: Set<UserDictSyncKey> = []
-        for remoteRecord in remote {
-            let key = remoteRecord.key
-            let merged = records[key].map { $0.merged(with: remoteRecord) } ?? remoteRecord
-            if merged != records[key] {
-                records[key] = merged
-                changedKeys.insert(key)
-            }
-            if merged != remoteRecord {
-                pendingKeys.insert(key)
-            }
-        }
-        return changedKeys
-    }
-
-    /// 未送信の同期情報
-    var pendingRecords: [UserDictSyncRecord] {
-        pendingKeys.compactMap { records[$0] }
-    }
-
-    /**
-     * サーバーへの送信が完了したことを記録する。
-     *
-     * 送信中にローカルで更新されていた変換候補は未送信のままにする。
-     */
-    mutating func markSent(_ sentRecords: some Sequence<UserDictSyncRecord>) {
-        for sentRecord in sentRecords where records[sentRecord.key] == sentRecord {
-            pendingKeys.remove(sentRecord.key)
-        }
-    }
-
-    /**
-     * 同期情報をもたないユーザー辞書の変換候補に、辞書内の順序から合成日時を割り当てる。
+     * ユーザー辞書の変換候補に、辞書内の順序から合成日時を割り当てた同期情報を返す。
      *
      * 「これまでのユーザー辞書をすべて同期する」を選んだときに使う。
-     * 合成日時は既に同期情報がもつどの日時よりも前になるように割り当てるので、
-     * 先に同期を開始した端末 (サーバー) の順序が優先される。
+     *
+     * - Parameters:
+     *   - dict: ユーザー辞書
+     *   - excludedKeys: 既にiCloudにある変換候補。これらには割り当てない
+     *   - ceiling: 合成日時の上限。先に同期を開始した端末の合成日時より前にすると、その端末の順序が優先される
      */
-    mutating func assignSyntheticTimestamps(from dict: MemoryDict) {
-        var ceiling = Self.syntheticTimestampCeiling
-        for record in records.values {
-            if let lastUsedAt = record.lastUsedAt, lastUsedAt < ceiling {
-                ceiling = lastUsedAt
-            }
-        }
+    static func syntheticRecords(from dict: MemoryDict,
+                                 excluding excludedKeys: Set<UserDictSyncKey>,
+                                 before ceiling: Date = syntheticTimestampCeiling) -> [Self] {
+        var records: [Self] = []
         for yomis in [dict.okuriAriYomis, dict.okuriNashiYomis] {
             // 古いものから順に並べる。yomisは最近変換したものが後に登場する
-            let keys = yomis.flatMap { yomi in
+            let words = yomis.flatMap { yomi in
                 (dict.entries[yomi] ?? []).reversed().map { (yomi, $0) }
             }.filter { yomi, word in
-                records[UserDictSyncKey(yomi: yomi, word: word)] == nil
+                !excludedKeys.contains(UserDictSyncKey(yomi: yomi, word: word))
             }
-            for (index, (yomi, word)) in keys.enumerated() {
-                let date = ceiling.addingTimeInterval(-Double(keys.count - index) * Self.syntheticTimestampInterval)
-                recordUse(yomi: yomi, word: word, at: date)
+            for (index, (yomi, word)) in words.enumerated() {
+                let date = ceiling.addingTimeInterval(-Double(words.count - index) * syntheticTimestampInterval)
+                records.append(.use(yomi: yomi, word: word, at: date))
             }
         }
+        return records
     }
 }
 
@@ -216,36 +142,6 @@ extension Date {
 
     init(milliseconds: Int64) {
         self.init(timeIntervalSince1970: Double(milliseconds) / 1000)
-    }
-}
-
-extension UserDictSyncMetadata: Codable {
-    private enum CodingKeys: String, CodingKey {
-        case version
-        case records
-        case pendingKeys
-    }
-
-    enum DecodingError: Error {
-        case unsupportedVersion(Int)
-    }
-
-    init(from decoder: any Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        let version = try container.decode(Int.self, forKey: .version)
-        guard version == Self.currentVersion else {
-            throw DecodingError.unsupportedVersion(version)
-        }
-        let records = try container.decode([UserDictSyncRecord].self, forKey: .records)
-        self.records = Dictionary(records.map { ($0.key, $0) }) { _, last in last }
-        self.pendingKeys = try container.decode(Set<UserDictSyncKey>.self, forKey: .pendingKeys)
-    }
-
-    func encode(to encoder: any Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(Self.currentVersion, forKey: .version)
-        try container.encode(Array(records.values), forKey: .records)
-        try container.encode(pendingKeys, forKey: .pendingKeys)
     }
 }
 
@@ -278,19 +174,25 @@ extension MemoryDict {
     }
 
     /**
-     * 同期情報を反映したユーザー辞書を返す。
+     * 他の端末から受け取った同期情報を反映したユーザー辞書を返す。
+     *
+     * 受け取った同期情報は、どれもこの端末の変換候補より新しい変更として扱う。
      *
      * - 削除されている変換候補は取り除き、存在するべき変換候補は追加する
-     * - 同期情報をもつ変換候補は最後に変換した日時の新しい順に並べ、同期情報をもたない変換候補はその後に元の順序で並べる
-     * - 読みも同様に、変換候補の最後に変換した日時が新しいものほど最近変換したものとして扱う
+     * - 受け取った変換候補は最後に変換した日時の新しい順に先頭に並べ、それ以外の変換候補はその後に元の順序で並べる
+     * - 読みも同様に、受け取った変換候補をもつ読みを最近変換したものとして扱う
      *
      * - Parameters:
-     *   - metadata: 同期情報
+     *   - records: 他の端末から受け取った同期情報
      *   - dictId: 追加する変換候補の注釈に設定する辞書ID
      */
-    func applying(_ metadata: UserDictSyncMetadata, dictId: FileDict.ID) -> MemoryDict {
+    func applying(_ records: [UserDictSyncRecord], dictId: FileDict.ID) -> MemoryDict {
+        var recordsByKey: [UserDictSyncKey: UserDictSyncRecord] = [:]
+        for record in records {
+            recordsByKey[record.key] = recordsByKey[record.key].map { $0.merged(with: record) } ?? record
+        }
         var entries = self.entries
-        for record in metadata.records.values {
+        for record in recordsByKey.values {
             let key = record.key
             var words = entries[key.yomi] ?? []
             let index = words.firstIndex { $0.word == key.word && $0.okuri == key.okuri }
@@ -308,11 +210,13 @@ extension MemoryDict {
         }
 
         func lastUsedAt(yomi: String, word: Word) -> Date? {
-            metadata.records[UserDictSyncKey(yomi: yomi, word: word)]?.lastUsedAt
+            guard let record = recordsByKey[UserDictSyncKey(yomi: yomi, word: word)], record.isAlive else { return nil }
+            return record.lastUsedAt
         }
 
         var latestDates: [String: Date] = [:]
-        for (yomi, words) in entries {
+        for yomi in Set(recordsByKey.keys.map(\.yomi)) {
+            guard let words = entries[yomi] else { continue }
             let sorted = words.enumerated().sorted { lhs, rhs in
                 switch (lastUsedAt(yomi: yomi, word: lhs.element), lastUsedAt(yomi: yomi, word: rhs.element)) {
                 case let (.some(l), .some(r)) where l != r:
