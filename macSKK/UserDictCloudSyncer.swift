@@ -74,6 +74,12 @@ struct UserDictSyncStatus: Equatable {
     private var systemFields: [String: Data] = [:]
     /// 取得中かどうか
     private var isFetching = false
+    /**
+     * 同期状態なしで始めた最初の取得かどうか。
+     *
+     * 最初から取得するとゾーンを削除した過去の履歴も届くが、手元に同期済みのデータはないので同期を停止する理由にならない。
+     */
+    private var isFetchingFromScratch = false
     /// 取得したがまだユーザー辞書に反映していない同期情報
     private var fetchedRecords: [UserDictSyncRecord] = []
     /// 取得した同期情報をユーザー辞書に反映するまで保存を遅らせている同期状態
@@ -128,6 +134,7 @@ struct UserDictSyncStatus: Equatable {
         syncEngine = CKSyncEngine(configuration)
         if stateSerialization == nil {
             logger.log("ユーザー辞書のiCloud同期を最初から開始します")
+            isFetchingFromScratch = true
             syncEngine.state.add(pendingDatabaseChanges: [.saveZone(CKRecordZone(zoneID: Self.zoneID))])
         }
     }
@@ -307,7 +314,9 @@ struct UserDictSyncStatus: Equatable {
             handleAccountChange(change)
         case .fetchedDatabaseChanges(let changes):
             if let deletion = changes.deletions.first(where: { $0.zoneID == Self.zoneID }) {
-                if deletion.reason == .encryptedDataReset {
+                if isFetchingFromScratch {
+                    logger.log("過去にiCloudのユーザー辞書が削除された履歴を受け取りましたが、最初からの同期なので無視します")
+                } else if deletion.reason == .encryptedDataReset {
                     // Advanced Data Protectionの鍵がリセットされて暗号化されたデータが失われた。
                     // ローカルには同期用のデータがないので、ゾーンを作り直して以降の変更だけ同期する
                     logger.log("iCloudの暗号化されたデータがリセットされたため、ユーザー辞書のゾーンを作り直します")
@@ -338,6 +347,7 @@ struct UserDictSyncStatus: Equatable {
             }
         case .didFetchChanges:
             isFetching = false
+            isFetchingFromScratch = false
             applyFetchedRecords()
             completeActivity()
         case .willSendChanges:
