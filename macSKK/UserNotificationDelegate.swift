@@ -22,8 +22,10 @@ class UserNotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
             if #available(macOS 14, *) {
                 NotificationCenter.default.post(name: notificationNameOpenSettings, object: nil)
             } else {
-                NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
-                NSApp.activate(ignoringOtherApps: true)
+                Task { @MainActor in
+                    NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+                    NSApp.activate(ignoringOtherApps: true)
+                }
             }
         }
         completionHandler()
