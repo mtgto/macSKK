@@ -262,19 +262,25 @@ enum UserDictAddSource {
      * 他の端末から受け取った同期情報をユーザー辞書に反映して、すぐに保存する。
      *
      * 反映した変更は再取得できないので、保存を遅らせずに行う。
+     *
+     * - Returns: 反映した変換候補の追加・更新・削除
      */
-    @MainActor func applySyncRecords(_ records: [UserDictSyncRecord]) {
-        guard let dict = userDict as? FileDict, dict.isLoaded, !records.isEmpty else { return }
+    @discardableResult
+    @MainActor func applySyncRecords(_ records: [UserDictSyncRecord]) -> MemoryDict.CandidateChanges {
+        guard let dict = userDict as? FileDict, dict.isLoaded, !records.isEmpty else { return MemoryDict.CandidateChanges() }
         let applied = dict.dict.applying(records, dictId: dict.id)
         if applied.entries == dict.dict.entries
             && applied.okuriAriYomis == dict.dict.okuriAriYomis
             && applied.okuriNashiYomis == dict.dict.okuriNashiYomis {
-            return
+            return MemoryDict.CandidateChanges()
         }
-        let changes = dict.dict.candidateChanges(to: applied)
-        logger.log("ユーザー辞書にiCloud同期の変更を反映します。追加 \(changes.added.reduce(0) { $0 + $1.candidates.count }) 件、削除 \(changes.removed.reduce(0) { $0 + $1.candidates.count }) 件")
+        let changes = dict.dict.candidateChanges(to: applied, receiving: records)
+        logger.log("ユーザー辞書にiCloud同期の変更を反映します。追加 \(changes.addedCount) 件、更新 \(changes.updatedCount) 件、削除 \(changes.removedCount) 件")
         for entry in changes.added {
             logger.log("iCloud同期でユーザー辞書に追加します: \(entry.serialize(), privacy: .public)")
+        }
+        for entry in changes.updated {
+            logger.log("iCloud同期でユーザー辞書を更新します: \(entry.serialize(), privacy: .public)")
         }
         for entry in changes.removed {
             logger.log("iCloud同期でユーザー辞書から削除します: \(entry.serialize(), privacy: .public)")
@@ -286,6 +292,7 @@ enum UserDictAddSource {
         }
         saveTask?.cancel()
         save()
+        return changes
     }
 
     /// ユーザー辞書の永続化を予約する

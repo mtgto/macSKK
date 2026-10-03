@@ -54,6 +54,11 @@
 "Encoding" = "エンコーディング";
 "UNNewVersionTitle" = "新しいバージョンがあります";
 "UNNewVersionBody" = "macSKKの新しいバージョン %@ がリリースされています。";
+"UNUserDictSyncedTitle" = "ユーザー辞書がiCloudと同期されました";
+"UNUserDictSyncedBody" = "他のMacで変更されたユーザー辞書を取り込みました (%@)。";
+"UNUserDictSyncedAdded" = "追加 %lld件";
+"UNUserDictSyncedUpdated" = "更新 %lld件";
+"UNUserDictSyncedRemoved" = "削除 %lld件";
 "UNUserDictReadErrorTitle" = "エラー";
 "UNUserDictReadErrorBody" = "ユーザー辞書の読み込みに失敗しました";
 "UNUserDictReadFailureEntryTitle" = "エラー";

@@ -82,6 +82,8 @@ struct UserDictSyncStatus: Equatable {
     private var isFetchingFromScratch = false
     /// 取得したがまだユーザー辞書に反映していない同期情報
     private var fetchedRecords: [UserDictSyncRecord] = []
+    /// 取得したがまだユーザー辞書に反映していない同期情報に、初回同期や最初からの取得で受け取ったものが含まれるか
+    private var fetchedRecordsIncludeInitialFetch = false
     /// 取得した同期情報をユーザー辞書に反映するまで保存を遅らせている同期状態
     private var deferredState: CKSyncEngine.State.Serialization?
     /// 初回同期の取得中に受け取った変換候補。「すべて同期」で合成日時を割り当てる対象から除く
@@ -102,6 +104,8 @@ struct UserDictSyncStatus: Equatable {
     var didReset: ((UserDictSyncResetReason) -> Void)?
     /// 初回同期が完了したときに呼ばれる
     var didCompleteInitialSync: (() -> Void)?
+    /// 他の端末の変更をユーザー辞書に反映したときに呼ばれる。初回同期や最初からの取得による反映では呼ばれない
+    var didApplyRemoteChanges: ((MemoryDict.CandidateChanges) -> Void)?
     /// 同期の状態が変わったときに呼ばれる
     var didChangeStatus: ((UserDictSyncStatus) -> Void)?
     private(set) var status: UserDictSyncStatus {
@@ -403,6 +407,10 @@ struct UserDictSyncStatus: Equatable {
                 continue
             }
             fetchedRecords.append(mergeWithPending(remote))
+            if initialFetchedKeys != nil || isFetchingFromScratch {
+                // ユーザー自身が同期を有効にしたことによる取り込みなので知らせない
+                fetchedRecordsIncludeInitialFetch = true
+            }
         }
     }
 
@@ -424,8 +432,12 @@ struct UserDictSyncStatus: Equatable {
         guard isRunning, !isFetching, userDict.isUserDictLoaded else { return }
         if !fetchedRecords.isEmpty {
             logger.log("iCloudからユーザー辞書の変換候補 \(self.fetchedRecords.count) 件の変更を受け取りました")
-            userDict.applySyncRecords(fetchedRecords)
+            let changes = userDict.applySyncRecords(fetchedRecords)
+            if !fetchedRecordsIncludeInitialFetch && !changes.isEmpty {
+                didApplyRemoteChanges?(changes)
+            }
             fetchedRecords.removeAll()
+            fetchedRecordsIncludeInitialFetch = false
         }
         if let deferredState {
             Self.saveState(deferredState)

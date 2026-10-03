@@ -146,13 +146,38 @@ extension Date {
 }
 
 extension MemoryDict {
-    /// 変換候補の追加・削除。並び順の変化は含まない
+    /// 変換候補の追加・更新・削除
     struct CandidateChanges {
         var added: [Entry] = []
+        /// 追加でも削除でもなく、他の端末で変換されて先頭に移動するなどした変換候補
+        var updated: [Entry] = []
         var removed: [Entry] = []
+
+        var addedCount: Int { added.reduce(0) { $0 + $1.candidates.count } }
+        var updatedCount: Int { updated.reduce(0) { $0 + $1.candidates.count } }
+        var removedCount: Int { removed.reduce(0) { $0 + $1.candidates.count } }
+        var isEmpty: Bool { added.isEmpty && updated.isEmpty && removed.isEmpty }
     }
 
-    /// otherとの変換候補の違いを返す。読みは辞書順、変換候補はそれぞれの辞書での順に並ぶ
+    /**
+     * 他の端末から受け取った同期情報を反映したotherとの変換候補の違いを返す。
+     *
+     * 受け取った同期情報のうち、両方の辞書にある変換候補を更新として扱う。
+     */
+    func candidateChanges(to other: MemoryDict, receiving records: [UserDictSyncRecord]) -> CandidateChanges {
+        var changes = candidateChanges(to: other)
+        func contains(_ dict: MemoryDict, _ key: UserDictSyncKey) -> Bool {
+            dict.entries[key.yomi]?.contains { $0.word == key.word && $0.okuri == key.okuri } ?? false
+        }
+        var updatedWords: [String: [Word]] = [:]
+        for key in Set(records.filter(\.isAlive).map(\.key)) where contains(self, key) && contains(other, key) {
+            updatedWords[key.yomi, default: []].append(Word(key.word, okuri: key.okuri))
+        }
+        changes.updated = updatedWords.keys.sorted().map { Entry(yomi: $0, candidates: updatedWords[$0]!) }
+        return changes
+    }
+
+    /// otherとの変換候補の違いを返す。並び順の変化は含まない。読みは辞書順、変換候補はそれぞれの辞書での順に並ぶ
     func candidateChanges(to other: MemoryDict) -> CandidateChanges {
         func contains(_ words: [Word], _ word: Word) -> Bool {
             words.contains { $0.word == word.word && $0.okuri == word.okuri }

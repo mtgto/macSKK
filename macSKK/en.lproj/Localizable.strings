@@ -54,6 +54,11 @@
 "Encoding" = "Encoding";
 "UNNewVersionTitle" = "A new version is available";
 "UNNewVersionBody" = "macSKK %@ is now available.";
+"UNUserDictSyncedTitle" = "User dictionary synced with iCloud";
+"UNUserDictSyncedBody" = "Imported changes to the user dictionary made on another Mac (%@).";
+"UNUserDictSyncedAdded" = "%lld added";
+"UNUserDictSyncedUpdated" = "%lld updated";
+"UNUserDictSyncedRemoved" = "%lld removed";
 "UNUserDictReadErrorTitle" = "Error";
 "UNUserDictReadErrorBody" = "Failed to load the user dictionary";
 "UNUserDictReadFailureEntryTitle" = "Error";

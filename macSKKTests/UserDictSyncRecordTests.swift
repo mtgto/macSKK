@@ -132,4 +132,22 @@ final class UserDictSyncRecordTests: XCTestCase {
         XCTAssertTrue(old.candidateChanges(to: reordered).added.isEmpty, "並び順の変化は含まない")
         XCTAssertTrue(old.candidateChanges(to: reordered).removed.isEmpty)
     }
+
+    func testCandidateChangesReceivingRecords() {
+        let old = MemoryDict(entries: ["あ": [Word("阿"), Word("亜")], "い": [Word("伊")]], readonly: false)
+        let records: [UserDictSyncRecord] = [
+            .use(yomi: "あ", word: Word("亜"), at: t2),
+            .use(yomi: "あ", word: Word("亜"), at: t1),
+            .use(yomi: "う", word: Word("鵜"), at: t1),
+            .delete(yomi: "い", word: Word("伊"), at: t1),
+        ]
+        let new = old.applying(records, dictId: "skk-jisyo.utf8")
+        let changes = old.candidateChanges(to: new, receiving: records)
+        XCTAssertEqual(changes.added.map { $0.serialize() }, ["う /鵜/"])
+        XCTAssertEqual(changes.updated.map { $0.serialize() }, ["あ /亜/"], "既にある変換候補を受け取ったら更新として数える")
+        XCTAssertEqual(changes.removed.map { $0.serialize() }, ["い /伊/"])
+        XCTAssertEqual([changes.addedCount, changes.updatedCount, changes.removedCount], [1, 1, 1])
+        XCTAssertFalse(changes.isEmpty)
+        XCTAssertTrue(old.candidateChanges(to: old, receiving: []).isEmpty)
+    }
 }

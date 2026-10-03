@@ -979,6 +979,9 @@ final class SettingsViewModel: ObservableObject {
         syncer.didChangeStatus = { [weak self] status in
             self?.userDictSyncStatus = status
         }
+        syncer.didApplyRemoteChanges = { changes in
+            UNNotifier.sendNotificationForUserDictSynced(changes: changes)
+        }
         syncer.didReset = { [weak self] reason in
             self?.setSyncUserDictWithiCloud(false)
             self?.userDictCloudSyncer = nil
