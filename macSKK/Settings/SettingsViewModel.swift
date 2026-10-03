@@ -224,6 +224,10 @@ final class SettingsViewModel: ObservableObject {
     private var settingsSync: SettingsSync? = nil
     /// 他のMacで変更された設定を取り込んだことをユーザーに知らせる。テストで差し替えられるようにしている。
     private let notifyRemoteSettingsApplied: (Set<SettingsSync.Category>) -> Void
+    /// ユーザー辞書をiCloudで他のMacと同期するかどうか
+    @Published private(set) var syncUserDictWithiCloud: Bool
+    /// ユーザー辞書のiCloud同期 (``UserDictCloudSyncer``)。macOS 14未満やentitlementがないビルドでは常にnil
+    private var userDictCloudSyncer: AnyObject? = nil
 
     // 辞書ディレクトリ
     let dictionariesDirectoryUrl: URL
@@ -308,6 +312,7 @@ final class SettingsViewModel: ObservableObject {
         completionConfirmationTimeLimit = UserDefaults.app.integer(forKey: UserDefaultsKeys.completionConfirmationTimeLimit)
         syncSettingsWithiCloud = UserDefaults.app.bool(forKey: UserDefaultsKeys.syncSettingsWithiCloud)
         syncedSettingsCategories = Self.loadSyncedSettingsCategories()
+        syncUserDictWithiCloud = UserDefaults.app.bool(forKey: UserDefaultsKeys.syncUserDictWithiCloud)
 
         let inputModeColorSets = Self.loadInputModeColorSets()
         self.inputModeColorSets = inputModeColorSets
@@ -866,6 +871,77 @@ final class SettingsViewModel: ObservableObject {
         }
     }
 
+    /// ユーザー辞書のiCloud同期が利用可能かどうか。macOS 14以降でCloudKitのentitlementがあるビルドのみ利用可能
+    static var isUserDictCloudSyncAvailable: Bool {
+        if #available(macOS 14, *) {
+            UserDictCloudSyncer.isAvailable
+        } else {
+            false
+        }
+    }
+
+    /// ユーザー辞書のiCloud同期が有効なら開始する。Global.dictionaryの初期化が終わってから呼ぶこと。
+    func startSyncUserDictWithiCloudIfEnabled() {
+        guard syncUserDictWithiCloud else { return }
+        startUserDictCloudSyncer()
+    }
+
+    /// ユーザー辞書のiCloud同期を有効にする
+    /// - Parameter initialSyncMode: 同期開始前からあるユーザー辞書の変換候補をどう扱うか
+    func enableSyncUserDictWithiCloud(initialSyncMode: UserDictInitialSyncMode) {
+        logger.log("ユーザー辞書のiCloud同期を有効にしました")
+        UserDefaults.app.set(initialSyncMode.rawValue, forKey: UserDefaultsKeys.userDictInitialSyncMode)
+        setSyncUserDictWithiCloud(true)
+        startUserDictCloudSyncer()
+    }
+
+    /**
+     * ユーザー辞書のiCloud同期を無効にする。
+     *
+     * 無効にしている間の変換・削除は記録しないので、ローカルの同期情報は破棄して、
+     * 次に有効にするときは初回同期からやり直す。iCloud上のデータは削除しない。
+     */
+    func disableSyncUserDictWithiCloud() {
+        logger.log("ユーザー辞書のiCloud同期を無効にしました")
+        setSyncUserDictWithiCloud(false)
+        if #available(macOS 14, *), let syncer = userDictCloudSyncer as? UserDictCloudSyncer {
+            Task { await syncer.reset() }
+        }
+        userDictCloudSyncer = nil
+    }
+
+    private func setSyncUserDictWithiCloud(_ enabled: Bool) {
+        syncUserDictWithiCloud = enabled
+        UserDefaults.app.set(enabled, forKey: UserDefaultsKeys.syncUserDictWithiCloud)
+        if !enabled {
+            UserDefaults.app.removeObject(forKey: UserDefaultsKeys.userDictInitialSyncMode)
+        }
+    }
+
+    private func startUserDictCloudSyncer() {
+        guard #available(macOS 14, *), UserDictCloudSyncer.isAvailable, userDictCloudSyncer == nil else { return }
+        do {
+            let recorder = UserDictSyncRecorder(fileURL: try UserDictSyncRecorder.defaultFileURL())
+            let initialSyncMode = UserDefaults.app.string(forKey: UserDefaultsKeys.userDictInitialSyncMode)
+                .flatMap(UserDictInitialSyncMode.init(rawValue:))
+            let syncer = UserDictCloudSyncer(userDict: Global.dictionary,
+                                             recorder: recorder,
+                                             stateFileURL: try UserDictCloudSyncer.defaultStateFileURL(),
+                                             initialSyncMode: initialSyncMode)
+            syncer.didCompleteInitialSync = {
+                UserDefaults.app.removeObject(forKey: UserDefaultsKeys.userDictInitialSyncMode)
+            }
+            syncer.didReset = { [weak self] in
+                self?.setSyncUserDictWithiCloud(false)
+                self?.userDictCloudSyncer = nil
+            }
+            syncer.start()
+            userDictCloudSyncer = syncer
+        } catch {
+            logger.error("ユーザー辞書のiCloud同期を開始できませんでした: \(error)")
+        }
+    }
+
     /// 設定のiCloud同期を有効にする。
     /// iCloudの設定を取り込んでもユーザー自身の操作によるものなので通知しない。
     /// - Parameter initialSync: 有効にした時点でこのMacとiCloudのどちらの設定を優先するか
@@ -1145,6 +1221,7 @@ final class SettingsViewModel: ObservableObject {
         completionConfirmationTimeLimit = 500
         syncSettingsWithiCloud = false
         syncedSettingsCategories = Set(SettingsSync.Category.allCases)
+        syncUserDictWithiCloud = false
     }
 
     // InputModeSettingsViewのPreviewProvider用

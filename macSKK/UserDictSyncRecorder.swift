@@ -14,6 +14,8 @@ import Foundation
     private(set) var metadata: UserDictSyncMetadata
     /// 保存してない変更があるかどうか
     private(set) var hasUnsavedChanges: Bool = false
+    /// 変換・単語登録・削除を記録したときに呼び出される
+    var didRecord: ((UserDictSyncKey) -> Void)?
 
     /// Application Supportフォルダの同期情報ファイルを使う
     static func defaultFileURL() throws -> URL {
@@ -46,12 +48,50 @@ import Foundation
     func recordUse(yomi: String, word: Word, at date: Date = Date()) {
         metadata.recordUse(yomi: yomi, word: word, at: date)
         hasUnsavedChanges = true
+        didRecord?(UserDictSyncKey(yomi: yomi, word: word))
     }
 
     /// 削除したことを記録する
     func recordDelete(yomi: String, word: Word, at date: Date = Date()) {
         metadata.recordDelete(yomi: yomi, word: word, at: date)
         hasUnsavedChanges = true
+        didRecord?(UserDictSyncKey(yomi: yomi, word: word))
+    }
+
+    /// 他の端末から受け取った同期情報をマージする。ローカルの同期情報が変化した変換候補のキーを返す
+    @discardableResult
+    func merge(remote: some Sequence<UserDictSyncRecord>) -> Set<UserDictSyncKey> {
+        let pendingKeys = metadata.pendingKeys
+        let changedKeys = metadata.merge(remote: remote)
+        if !changedKeys.isEmpty || pendingKeys != metadata.pendingKeys {
+            hasUnsavedChanges = true
+        }
+        return changedKeys
+    }
+
+    /// サーバーへの送信が完了したことを記録する
+    func markSent(_ sentRecords: some Sequence<UserDictSyncRecord>) {
+        let pendingKeys = metadata.pendingKeys
+        metadata.markSent(sentRecords)
+        if pendingKeys != metadata.pendingKeys {
+            hasUnsavedChanges = true
+        }
+    }
+
+    /// 同期情報をもたないユーザー辞書の変換候補に合成日時を割り当てる
+    func assignSyntheticTimestamps(from dict: MemoryDict) {
+        metadata.assignSyntheticTimestamps(from: dict)
+        hasUnsavedChanges = true
+    }
+
+    /// すべての同期情報を破棄してファイルも削除する
+    func removeAll() throws {
+        metadata.removeAll()
+        hasUnsavedChanges = false
+        do {
+            try FileManager.default.removeItem(at: fileURL)
+        } catch CocoaError.fileNoSuchFile {
+        }
     }
 
     /// 同期情報をファイルに保存する

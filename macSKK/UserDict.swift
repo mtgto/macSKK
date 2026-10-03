@@ -114,6 +114,15 @@ enum UserDictAddSource {
             UserDefaults.app.set(privateMode, forKey: UserDefaultsKeys.privateMode)
         }
         .store(in: &cancellables)
+
+        // ユーザー辞書をファイルから読み込んだら (外部での編集による再読み込みを含む) 同期情報を反映する
+        NotificationCenter.default.publisher(for: notificationNameDictLoad).receive(on: RunLoop.main).sink { [weak self] notification in
+            guard let self, let event = notification.object as? DictLoadEvent, event.trigger == .load,
+                  case .loaded = event.status,
+                  let userDict = self.userDict as? FileDict, userDict.id == event.id else { return }
+            self.applySyncMetadata()
+        }
+        .store(in: &cancellables)
     }
 
     deinit {
@@ -251,6 +260,24 @@ enum UserDictAddSource {
             }
         }
         return false
+    }
+
+    /// ユーザー辞書に同期情報を反映する。iCloud同期で他の端末の変更を受け取ったときに使う。
+    @MainActor func applySyncMetadata() {
+        guard let syncRecorder, let dict = userDict as? FileDict, dict.isLoaded else { return }
+        let applied = dict.dict.applying(syncRecorder.metadata, dictId: dict.id)
+        if applied.entries == dict.dict.entries
+            && applied.okuriAriYomis == dict.dict.okuriAriYomis
+            && applied.okuriNashiYomis == dict.dict.okuriNashiYomis {
+            return
+        }
+        logger.log("ユーザー辞書にiCloud同期の変更を反映します")
+        dict.replace(dict: applied)
+        // 他の端末で削除された候補は直近の辞書登録履歴からも取り除く
+        recentRegisteredCandidates.removeAll { candidate in
+            !dict.dict.refer(candidate.yomi, option: nil).contains { $0.word == candidate.word.word && $0.okuri == candidate.word.okuri }
+        }
+        scheduleSave()
     }
 
     /// ユーザー辞書の永続化を予約する

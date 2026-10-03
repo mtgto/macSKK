@@ -40,6 +40,8 @@ enum FileDictType: Equatable {
     private var fileModificationDate: Date?
     /// 保存してない変更があるかどうか (UIDocumentのパクり)
     private(set) var hasUnsavedChanges: Bool = false
+    /// ファイルからの読み込みに一度でも成功したかどうか
+    private(set) var isLoaded: Bool = false
     private(set) var dict: MemoryDict
     /**
      * 読み込み専用で保存しないかどうか
@@ -157,6 +159,7 @@ enum FileDictType: Equatable {
         switch result {
         case .success(let memoryDict):
             self.dict = memoryDict
+            isLoaded = true
             logger.log("辞書 \(self.id, privacy: .public) から \(self.dict.entries.count) エントリ読み込みました")
             NotificationCenter.default.post(name: notificationNameDictLoad,
                                             object: DictLoadEvent(id: self.id,
@@ -303,6 +306,16 @@ enum FileDictType: Equatable {
                                                               status: .loaded(success: dict.entryCount, failure: dict.failedEntryCount),
                                                               trigger: .edit))
         hasUnsavedChanges = true
+    }
+
+    /// 辞書の内容を置き換える。iCloud同期で他の端末の変更を反映するときに使う。
+    @MainActor func replace(dict: MemoryDict) {
+        self.dict = dict
+        hasUnsavedChanges = true
+        NotificationCenter.default.post(name: notificationNameDictLoad,
+                                        object: DictLoadEvent(id: self.id,
+                                                              status: .loaded(success: dict.entryCount, failure: dict.failedEntryCount),
+                                                              trigger: .edit))
     }
 
     @MainActor func delete(yomi: String, word: Word) -> Bool {

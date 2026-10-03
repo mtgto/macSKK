@@ -103,16 +103,32 @@ struct UserDictSyncMetadata: Equatable, Sendable {
         self.pendingKeys = pendingKeys
     }
 
+    /**
+     * 日時をミリ秒単位に丸める。
+     *
+     * CloudKitに保存できる精度に合わせておかないと、サーバーから受け取った自分の更新を
+     * ローカルより古いと判定して送り返し続けてしまう。
+     */
+    static func truncate(_ date: Date) -> Date {
+        Date(milliseconds: date.milliseconds)
+    }
+
     /// 変換・単語登録したことを記録する
     mutating func recordUse(yomi: String, word: Word, at date: Date) {
         let key = UserDictSyncKey(yomi: yomi, word: word)
-        update(UserDictSyncRecord(key: key, annotation: word.annotation?.text, lastUsedAt: date))
+        update(UserDictSyncRecord(key: key, annotation: word.annotation?.text, lastUsedAt: Self.truncate(date)))
     }
 
     /// 削除したことを記録する
     mutating func recordDelete(yomi: String, word: Word, at date: Date) {
         let key = UserDictSyncKey(yomi: yomi, word: word)
-        update(UserDictSyncRecord(key: key, deletedAt: date))
+        update(UserDictSyncRecord(key: key, deletedAt: Self.truncate(date)))
+    }
+
+    /// すべての同期情報を破棄する
+    mutating func removeAll() {
+        records.removeAll()
+        pendingKeys.removeAll()
     }
 
     private mutating func update(_ record: UserDictSyncRecord) {
@@ -189,6 +205,17 @@ struct UserDictSyncMetadata: Equatable, Sendable {
                 recordUse(yomi: yomi, word: word, at: date)
             }
         }
+    }
+}
+
+extension Date {
+    /// 1970年1月1日からのミリ秒
+    var milliseconds: Int64 {
+        Int64((timeIntervalSince1970 * 1000).rounded())
+    }
+
+    init(milliseconds: Int64) {
+        self.init(timeIntervalSince1970: Double(milliseconds) / 1000)
     }
 }
 
