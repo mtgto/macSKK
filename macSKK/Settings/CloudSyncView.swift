@@ -40,6 +40,7 @@ struct CloudSyncView: View {
     @State private var isShowingCategoryConflictDialog = false
     @State private var isShowingRemoveAllDialog = false
     @State private var isShowingUserDictInitialSyncDialog = false
+    @State private var isShowingDeleteUserDictDialog = false
     #if DEBUG
     /// デバッグ用に表示するiCloudの値
     @State private var remoteValuesJSON: String = ""
@@ -231,6 +232,19 @@ struct CloudSyncView: View {
                                 .foregroundStyle(.red)
                         }
                     }
+                    if let notice = settingsViewModel.userDictSyncNotice {
+                        Text(notice)
+                            .foregroundStyle(.secondary)
+                    }
+                    HStack {
+                        Button("Remove user dictionary from iCloud", role: .destructive) {
+                            isShowingDeleteUserDictDialog = true
+                        }
+                        .disabled(!SettingsViewModel.isUserDictCloudSyncAvailable || settingsViewModel.isDeletingUserDictFromiCloud)
+                        if settingsViewModel.isDeletingUserDictFromiCloud {
+                            ProgressView().controlSize(.small)
+                        }
+                    }
                 } header: {
                     Text("User Dictionary")
                 } footer: {
@@ -300,6 +314,14 @@ struct CloudSyncView: View {
             Button("Cancel", role: .cancel) {}
         } message: {
             Text("SyncUserDictWithiCloudInitialSyncMessage")
+        }
+        .confirmationDialog("Remove user dictionary from iCloud", isPresented: $isShowingDeleteUserDictDialog) {
+            Button("Delete", role: .destructive) {
+                settingsViewModel.deleteUserDictFromiCloud()
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("RemoveUserDictFromiCloudConfirmation")
         }
         .confirmationDialog("Remove all settings from iCloud", isPresented: $isShowingRemoveAllDialog) {
             Button("Delete", role: .destructive) {

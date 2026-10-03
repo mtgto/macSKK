@@ -235,3 +235,9 @@
 "UserDictNotSyncedYet" = "Not synced yet";
 "UserDictSyncError" = "Sync error: %@";
 "Sync Now" = "Sync Now";
+"Remove user dictionary from iCloud" = "Remove user dictionary from iCloud";
+"RemoveUserDictFromiCloudConfirmation" = "This removes the user dictionary stored in iCloud and turns off syncing on this Mac. Other Macs syncing the user dictionary also stop syncing. The user dictionary on each Mac is not removed; if you want to remove a word, delete it from the user dictionary on each Mac as well.";
+"UserDictDeletedFromiCloud" = "Removed the user dictionary from iCloud.";
+"UserDictDeleteFromiCloudFailed" = "Could not remove the user dictionary from iCloud: %@";
+"UserDictSyncStoppedByAccountChange" = "Stopped syncing because the iCloud account was changed.";
+"UserDictSyncStoppedByDeletion" = "Stopped syncing because the user dictionary in iCloud was removed on another Mac.";

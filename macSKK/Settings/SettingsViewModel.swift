@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2023 mtgto <hogerappa@gmail.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import CloudKit
 import Combine
 import Foundation
 import SwiftUI
@@ -228,6 +229,10 @@ final class SettingsViewModel: ObservableObject {
     @Published private(set) var syncUserDictWithiCloud: Bool
     /// ユーザー辞書のiCloud同期の状態
     @Published private(set) var userDictSyncStatus = UserDictSyncStatus()
+    /// ユーザー辞書のiCloud同期についてユーザーに伝えるメッセージ。同期を自動で停止したときなどに設定する
+    @Published private(set) var userDictSyncNotice: String? = nil
+    /// iCloudからユーザー辞書を削除しているところかどうか
+    @Published private(set) var isDeletingUserDictFromiCloud = false
     /// ユーザー辞書のiCloud同期 (``UserDictCloudSyncer``)。macOS 14未満やentitlementがないビルドでは常にnil
     private var userDictCloudSyncer: AnyObject? = nil
 
@@ -892,6 +897,7 @@ final class SettingsViewModel: ObservableObject {
     /// - Parameter initialSyncMode: 同期開始前からあるユーザー辞書の変換候補をどう扱うか
     func enableSyncUserDictWithiCloud(initialSyncMode: UserDictInitialSyncMode) {
         logger.log("ユーザー辞書のiCloud同期を有効にしました")
+        userDictSyncNotice = nil
         UserDefaults.app.set(initialSyncMode.rawValue, forKey: UserDefaultsKeys.userDictInitialSyncMode)
         setSyncUserDictWithiCloud(true)
         startUserDictCloudSyncer()
@@ -922,6 +928,36 @@ final class SettingsViewModel: ObservableObject {
         }
     }
 
+    /**
+     * iCloudに保存したユーザー辞書をすべて削除し、このMacの同期を無効にする。
+     *
+     * 同期している他のMacは削除を検知して同期を停止する。各Macのユーザー辞書自体は削除しない。
+     */
+    func deleteUserDictFromiCloud() {
+        guard #available(macOS 14, *), UserDictCloudSyncer.isAvailable, !isDeletingUserDictFromiCloud else { return }
+        isDeletingUserDictFromiCloud = true
+        let syncer = userDictCloudSyncer as? UserDictCloudSyncer
+        Task {
+            defer { isDeletingUserDictFromiCloud = false }
+            do {
+                if let syncer {
+                    try await syncer.deleteAllFromiCloud()
+                } else {
+                    try await UserDictCloudSyncer.deleteZone(
+                        from: CKContainer(identifier: UserDictCloudSyncer.containerIdentifier).privateCloudDatabase)
+                    try UserDictSyncRecorder(fileURL: try UserDictSyncRecorder.defaultFileURL()).removeAll()
+                    try UserDictCloudSyncer.removeState(at: try UserDictCloudSyncer.defaultStateFileURL())
+                }
+                userDictCloudSyncer = nil
+                setSyncUserDictWithiCloud(false)
+                userDictSyncNotice = String(localized: "UserDictDeletedFromiCloud")
+            } catch {
+                logger.error("iCloudからユーザー辞書を削除できませんでした: \(error)")
+                userDictSyncNotice = String(format: String(localized: "UserDictDeleteFromiCloudFailed"), error.localizedDescription)
+            }
+        }
+    }
+
     /// ユーザー辞書をiCloudと今すぐ同期する
     func syncUserDictWithiCloudNow() {
         if #available(macOS 14, *), let syncer = userDictCloudSyncer as? UserDictCloudSyncer {
@@ -945,9 +981,13 @@ final class SettingsViewModel: ObservableObject {
             syncer.didChangeStatus = { [weak self] status in
                 self?.userDictSyncStatus = status
             }
-            syncer.didReset = { [weak self] in
+            syncer.didReset = { [weak self] reason in
                 self?.setSyncUserDictWithiCloud(false)
                 self?.userDictCloudSyncer = nil
+                self?.userDictSyncNotice = switch reason {
+                case .accountChanged: String(localized: "UserDictSyncStoppedByAccountChange")
+                case .deletedFromiCloud: String(localized: "UserDictSyncStoppedByDeletion")
+                }
             }
             syncer.start()
             userDictCloudSyncer = syncer

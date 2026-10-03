@@ -11,6 +11,14 @@ enum UserDictInitialSyncMode: String {
     case all
 }
 
+/// ユーザー辞書のiCloud同期を自動的に停止した理由
+enum UserDictSyncResetReason {
+    /// iCloudアカウントからサインアウトした、または別のアカウントに切り替えた
+    case accountChanged
+    /// 他の端末でiCloudのユーザー辞書が削除された
+    case deletedFromiCloud
+}
+
 /// ユーザー辞書のiCloud同期の状態。設定画面に表示する。
 struct UserDictSyncStatus: Equatable {
     enum Activity: Equatable {
@@ -66,7 +74,7 @@ struct UserDictSyncStatus: Equatable {
     private var needsApply = false
     private var fetchTask: Task<Void, Never>?
     /// iCloudアカウントからサインアウトしたなどで同期情報を破棄したときに呼ばれる
-    var didReset: (() -> Void)?
+    var didReset: ((UserDictSyncResetReason) -> Void)?
     /// 初回同期が完了したときに呼ばれる
     var didCompleteInitialSync: (() -> Void)?
     /// 同期の状態が変わったときに呼ばれる
@@ -80,6 +88,10 @@ struct UserDictSyncStatus: Equatable {
     }
     /// 同期開始前からある変換候補を送信中かどうか。完了をログに出すのに使う
     private var isSendingExistingCandidates = false
+    /// 同期を停止して同期情報を破棄しているところかどうか
+    private var isResetting = false
+    /// 同期中かどうか。停止後に届いたイベントで同期情報を書き戻さないようにする
+    private var isRunning = false
 
     /// CloudKitを利用可能かどうか。entitlementがないビルドでCKContainerを作るとクラッシュするので事前に確認する。
     nonisolated static let isAvailable: Bool = {
@@ -122,6 +134,7 @@ struct UserDictSyncStatus: Equatable {
 
     /// 同期を開始する
     func start() {
+        isRunning = true
         userDict.syncRecorder = recorder
         recorder.didRecord = { [weak self] key in
             self?.addPending([key])
@@ -164,6 +177,7 @@ struct UserDictSyncStatus: Equatable {
 
     /// 同期を停止する。ローカルの同期情報は残す
     func stop() async {
+        isRunning = false
         fetchTask?.cancel()
         fetchTask = nil
         recorder.didRecord = nil
@@ -181,6 +195,32 @@ struct UserDictSyncStatus: Equatable {
             try Self.removeState(at: stateFileURL)
         } catch {
             logger.error("ユーザー辞書の同期情報の削除に失敗しました: \(error)")
+        }
+    }
+
+    /**
+     * iCloudに保存したユーザー辞書をすべて削除して、このMacの同期情報も破棄する。
+     *
+     * 削除に失敗した場合は同期を再開してエラーを投げる。
+     */
+    func deleteAllFromiCloud() async throws {
+        await stop()
+        do {
+            try await Self.deleteZone(from: syncEngine.database)
+        } catch {
+            start()
+            throw error
+        }
+        await reset()
+    }
+
+    /// iCloudからユーザー辞書のゾーンを削除する。ゾーンがなければ何もしない
+    nonisolated static func deleteZone(from database: CKDatabase) async throws {
+        do {
+            _ = try await database.deleteRecordZone(withID: zoneID)
+            logger.log("iCloudからユーザー辞書を削除しました")
+        } catch let error as CKError where error.code == .zoneNotFound {
+            logger.log("iCloudにユーザー辞書がないため削除は不要です")
         }
     }
 
@@ -233,17 +273,25 @@ struct UserDictSyncStatus: Equatable {
     // MARK: -
 
     private func handle(_ event: CKSyncEngine.Event) {
+        guard isRunning else { return }
         switch event {
         case .stateUpdate(let update):
             saveState(update.stateSerialization)
         case .accountChange(let change):
             handleAccountChange(change)
         case .fetchedDatabaseChanges(let changes):
-            if changes.deletions.contains(where: { $0.zoneID == Self.zoneID }) {
-                logger.log("iCloudのユーザー辞書のゾーンが削除されたため、すべての同期情報を送り直します")
-                systemFields.removeAll()
-                syncEngine.state.add(pendingDatabaseChanges: [.saveZone(CKRecordZone(zoneID: Self.zoneID))])
-                addPending(recorder.metadata.records.keys)
+            if let deletion = changes.deletions.first(where: { $0.zoneID == Self.zoneID }) {
+                if deletion.reason == .encryptedDataReset {
+                    // Advanced Data Protectionの鍵がリセットされて暗号化されたデータが失われた
+                    logger.log("iCloudの暗号化されたデータがリセットされたため、すべての同期情報を送り直します")
+                    systemFields.removeAll()
+                    syncEngine.state.add(pendingDatabaseChanges: [.saveZone(CKRecordZone(zoneID: Self.zoneID))])
+                    addPending(recorder.metadata.records.keys)
+                } else {
+                    // 送り直すと他の端末で削除したデータが復活してしまうので、同期をやめる
+                    logger.log("他の端末でiCloudのユーザー辞書が削除されたため、同期を停止して同期情報を破棄します")
+                    resetAndNotify(reason: .deletedFromiCloud)
+                }
             }
         case .fetchedRecordZoneChanges(let changes):
             merge(changes.modifications.compactMap { UserDictSyncRecord(record: $0.record) })
@@ -282,16 +330,21 @@ struct UserDictSyncStatus: Equatable {
         status = UserDictSyncStatus(activity: .idle, lastSyncedAt: now, lastError: status.lastError)
     }
 
+    /// 同期を停止して同期情報を破棄し、そのことを通知する
+    private func resetAndNotify(reason: UserDictSyncResetReason) {
+        Task {
+            await reset()
+            didReset?(reason)
+        }
+    }
+
     private func handleAccountChange(_ change: CKSyncEngine.Event.AccountChange) {
         switch change.changeType {
         case .signIn:
             break
         case .signOut, .switchAccounts:
             logger.log("iCloudアカウントが変更されたため、ユーザー辞書の同期を停止して同期情報を破棄します")
-            Task {
-                await reset()
-                didReset?()
-            }
+            resetAndNotify(reason: .accountChanged)
         @unknown default:
             break
         }
@@ -351,9 +404,13 @@ struct UserDictSyncStatus: Equatable {
                     }
                 }
             case .zoneNotFound:
-                systemFields.removeValue(forKey: recordName)
-                syncEngine.state.add(pendingDatabaseChanges: [.saveZone(CKRecordZone(zoneID: Self.zoneID))])
-                syncEngine.state.add(pendingRecordZoneChanges: [.saveRecord(recordID)])
+                // ゾーンは送信より先に作成するので、ここでゾーンがないのは他の端末で削除されたとき。
+                // 作り直すと削除したデータが復活してしまうので、同期をやめる
+                if !isResetting {
+                    logger.log("iCloudのユーザー辞書のゾーンが見つからないため、同期を停止して同期情報を破棄します")
+                    isResetting = true
+                    resetAndNotify(reason: .deletedFromiCloud)
+                }
             case .unknownItem:
                 systemFields.removeValue(forKey: recordName)
                 syncEngine.state.add(pendingRecordZoneChanges: [.saveRecord(recordID)])
@@ -371,7 +428,8 @@ struct UserDictSyncStatus: Equatable {
     /// 送信するレコードを作る。送信の必要がなくなっていたらnilを返す
     private func record(for recordID: CKRecord.ID) -> CKRecord? {
         let recordName = recordID.recordName
-        guard let key = keys[recordName],
+        guard isRunning,
+              let key = keys[recordName],
               recorder.metadata.pendingKeys.contains(key),
               let syncRecord = recorder.metadata.records[key] else {
             syncEngine.state.remove(pendingRecordZoneChanges: [.saveRecord(recordID)])
