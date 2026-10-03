@@ -62,6 +62,8 @@
 "UNUserDictWriteErrorBody" = "Failed to save the user dictionary";
 "UNSKKServAutoDisabledTitle" = "SKKServ Disabled";
 "UNSKKServAutoDisabledBody" = "SKKServ was automatically disabled after %d consecutive connection errors.";
+"UNSettingsSyncedTitle" = "Settings Synced from iCloud";
+"UNSettingsSyncedBody" = "Applied settings changed on another Mac (%@).";
 "User Dictionary" = "User Dictionary";
 "Delete" = "Delete";
 "Unregistered" = "Unregistered";

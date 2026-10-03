@@ -400,6 +400,7 @@ class InputController: IMKInputController {
             NotificationCenter.default.post(name: notificationNameOpenSettings, object: nil)
         } else {
             NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+            NSApp.activate(ignoringOtherApps: true)
         }
     }
 

@@ -170,6 +170,100 @@ final class SettingsSyncTests: XCTestCase {
         XCTAssertEqual(store.setCount, setCountBeforeApply, "取り込んだ設定がiCloudに送り返されています")
     }
 
+    // MARK: - 取り込んだことの通知
+
+    /// 起動時にiCloudの設定を取り込んだとき、実際に値が変わった設定のカテゴリだけが通知されること
+    func testStartupPullNotifiesAppliedCategories() {
+        let preserved = preserveUserDefaults()
+        defer { restoreUserDefaults(preserved) }
+
+        UserDefaults.app.set(true, forKey: UserDefaultsKeys.showAnnotation)
+        UserDefaults.app.set(13, forKey: UserDefaultsKeys.candidatesFontSize)
+        UserDefaults.app.set(9, forKey: UserDefaultsKeys.displayCandidateCount)
+        UserDefaults.app.set(true, forKey: UserDefaultsKeys.syncSettingsWithiCloud)
+        let store = FakeKeyValueStore(values: [
+            UserDefaultsKeys.showAnnotation: false,
+            UserDefaultsKeys.candidatesFontSize: 21,
+            // このMacと同じ値なので取り込んだことにならない
+            UserDefaultsKeys.displayCandidateCount: 9,
+        ])
+        var notified: [Set<SettingsSync.Category>] = []
+        let settingsViewModel = makeSettingsViewModel(store: store) { notified.append($0) }
+
+        settingsViewModel.startSyncSettingsWithiCloudIfEnabled()
+
+        XCTAssertEqual(notified, [[.general, .candidateWindow]])
+    }
+
+    /// 他のMacでの変更を取り込んだとき、取り込んだ設定のカテゴリが通知されること
+    func testExternalChangeNotifiesAppliedCategories() {
+        let preserved = preserveUserDefaults()
+        defer { restoreUserDefaults(preserved) }
+
+        UserDefaults.app.set(13, forKey: UserDefaultsKeys.candidatesFontSize)
+        let store = FakeKeyValueStore()
+        var notified: [Set<SettingsSync.Category>] = []
+        let settingsViewModel = makeSettingsViewModel(store: store) { notified.append($0) }
+        settingsViewModel.enableSyncSettingsWithiCloud(initialSync: .pushLocal)
+
+        store.set(21, forKey: UserDefaultsKeys.candidatesFontSize)
+        postDidChangeExternallyNotification(changedKeys: [UserDefaultsKeys.candidatesFontSize])
+        pumpRunLoop { !notified.isEmpty }
+
+        XCTAssertEqual(notified, [[.candidateWindow]])
+    }
+
+    /// iCloudとこのMacの値が同じなら、取り込んだことにしないこと
+    func testSameValueIsNotNotified() {
+        let preserved = preserveUserDefaults()
+        defer { restoreUserDefaults(preserved) }
+
+        UserDefaults.app.set(13, forKey: UserDefaultsKeys.candidatesFontSize)
+        UserDefaults.app.set(true, forKey: UserDefaultsKeys.syncSettingsWithiCloud)
+        let store = FakeKeyValueStore(values: [UserDefaultsKeys.candidatesFontSize: 13])
+        var notified: [Set<SettingsSync.Category>] = []
+        let settingsViewModel = makeSettingsViewModel(store: store) { notified.append($0) }
+
+        settingsViewModel.startSyncSettingsWithiCloudIfEnabled()
+        postDidChangeExternallyNotification(changedKeys: [UserDefaultsKeys.candidatesFontSize])
+        pumpRunLoop()
+
+        XCTAssertEqual(notified, [])
+    }
+
+    /// ユーザーが同期を有効にしてiCloudの設定を取り込んだときは通知しないこと
+    func testEnablingSyncWithPullRemoteIsNotNotified() {
+        let preserved = preserveUserDefaults()
+        defer { restoreUserDefaults(preserved) }
+
+        UserDefaults.app.set(13, forKey: UserDefaultsKeys.candidatesFontSize)
+        let store = FakeKeyValueStore(values: [UserDefaultsKeys.candidatesFontSize: 21])
+        var notified: [Set<SettingsSync.Category>] = []
+        let settingsViewModel = makeSettingsViewModel(store: store) { notified.append($0) }
+
+        settingsViewModel.enableSyncSettingsWithiCloud(initialSync: .pullRemote)
+
+        XCTAssertEqual(settingsViewModel.candidatesFontSize, 21)
+        XCTAssertEqual(notified, [])
+    }
+
+    /// ユーザーがカテゴリを有効にしてiCloudの設定を取り込んだときは通知しないこと
+    func testEnablingCategoryWithPullRemoteIsNotNotified() {
+        let preserved = preserveUserDefaults()
+        defer { restoreUserDefaults(preserved) }
+
+        UserDefaults.app.set(13, forKey: UserDefaultsKeys.candidatesFontSize)
+        let store = FakeKeyValueStore(values: [UserDefaultsKeys.candidatesFontSize: 21])
+        var notified: [Set<SettingsSync.Category>] = []
+        let settingsViewModel = makeSettingsViewModel(store: store, categories: []) { notified.append($0) }
+        settingsViewModel.enableSyncSettingsWithiCloud(initialSync: .pushLocal)
+
+        settingsViewModel.enableSyncedSettingsCategory(.candidateWindow, resolution: .pullRemote)
+
+        XCTAssertEqual(settingsViewModel.candidatesFontSize, 21)
+        XCTAssertEqual(notified, [])
+    }
+
     /// iCloudアカウントが切り替わったときは、このMacの設定を置き換えないこと
     func testExternalChangeOnAccountChangeIsIgnored() {
         let preserved = preserveUserDefaults()
@@ -534,12 +628,15 @@ final class SettingsSyncTests: XCTestCase {
     /// categoriesにnilを渡すと設定せず、UserDefaultsから読み込んだ値のままにする。
     private func makeSettingsViewModel(
         store: FakeKeyValueStore,
-        categories: Set<SettingsSync.Category>? = Set(SettingsSync.Category.allCases)
+        categories: Set<SettingsSync.Category>? = Set(SettingsSync.Category.allCases),
+        // テスト中に通知センターへ通知しないよう、標準では何もしない
+        notifyRemoteSettingsApplied: @escaping (Set<SettingsSync.Category>) -> Void = { _ in }
     ) -> SettingsViewModel {
         // 辞書ディレクトリは使わないので存在しなくてよい
         let settingsViewModel = try! SettingsViewModel(
             dictionariesDirectoryUrl: FileManager.default.temporaryDirectory.appending(path: "Dictionaries"),
-            keyValueStore: store)
+            keyValueStore: store,
+            notifyRemoteSettingsApplied: notifyRemoteSettingsApplied)
         if let categories {
             settingsViewModel.syncedSettingsCategories = categories
         }

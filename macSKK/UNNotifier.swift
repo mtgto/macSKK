@@ -12,6 +12,8 @@ struct UNNotifier {
     static let userNotificationWriteErrorIdentifier = "net.mtgto.inputmethod.macSKK.userNotification.userDictWriteError"
     // skkservの自動無効化の通知センター用通知のID
     static let userNotificationSKKServAutoDisabledIdentifier = "net.mtgto.inputmethod.macSKK.userNotification.skkservAutoDisabled"
+    // iCloudから設定を取り込んだことの通知センター用通知のID。
+    static let userNotificationSettingsSyncedIdentifier = "net.mtgto.inputmethod.macSKK.userNotification.settingsSynced"
 
     static func sendNotificationForUserDict(readError: any Error) {
         let content = UNMutableNotificationContent()
@@ -37,6 +39,18 @@ struct UNNotifier {
         content.body = String(format: String(localized: "UNSKKServAutoDisabledBody", comment: "SKKServへの接続エラーが連続して発生したため無効化されました"), consecutiveErrorCount)
 
         let request = UNNotificationRequest(identifier: Self.userNotificationSKKServAutoDisabledIdentifier, content: content, trigger: nil)
+        sendUserNotification(request: request)
+    }
+
+    static func sendNotificationForSettingsSynced(categories: Set<SettingsSync.Category>) {
+        let content = UNMutableNotificationContent()
+        content.title = String(localized: "UNSettingsSyncedTitle", comment: "設定がiCloudと同期されました")
+        // カテゴリは設定画面のサイドバーと同じ順に並べる
+        let names = SettingsSync.Category.allCases.filter { categories.contains($0) }.map { $0.localizedName }
+        content.body = String(format: String(localized: "UNSettingsSyncedBody", comment: "他のMacで変更された設定 (%@) を取り込みました"),
+                              ListFormatter.localizedString(byJoining: names))
+
+        let request = UNNotificationRequest(identifier: Self.userNotificationSettingsSyncedIdentifier, content: content, trigger: nil)
         sendUserNotification(request: request)
     }
 

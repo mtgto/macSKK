@@ -17,6 +17,16 @@ class UserNotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
             } else {
                 logger.error("通知メッセージにリリースページの情報が含まれていません。バグの可能性が高いです")
             }
+        } else if response.notification.request.identifier == UNNotifier.userNotificationSettingsSyncedIdentifier {
+            // 取り込んだ設定を確認できるよう設定画面を開く
+            if #available(macOS 14, *) {
+                NotificationCenter.default.post(name: notificationNameOpenSettings, object: nil)
+            } else {
+                Task { @MainActor in
+                    NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+                    NSApp.activate(ignoringOtherApps: true)
+                }
+            }
         }
         completionHandler()
     }
