@@ -50,6 +50,8 @@ enum UserDictAddSource {
     private let ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>
     private var cancellables: Set<AnyCancellable> = []
     private(set) var recentRegisteredCandidates: [RecentRegisteredCandidate] = []
+    /// ユーザー辞書の同期情報を記録する。iCloud同期が無効のときはnil。
+    var syncRecorder: UserDictSyncRecorder?
     private let maxRecentRegisteredCandidateCount = 3
 
     // MARK: NSFilePresenter
@@ -210,6 +212,7 @@ enum UserDictAddSource {
         if !privateMode.value {
             if let dict = userDict as? FileDict {
                 dict.add(yomi: yomi, word: word)
+                syncRecorder?.recordUse(yomi: yomi, word: word)
                 if source == .registering {
                     addRecentRegisteredCandidate(yomi: yomi, word: word)
                 }
@@ -240,6 +243,7 @@ enum UserDictAddSource {
             return true
         } else if let dict = userDict as? FileDict {
             if dict.delete(yomi: yomi, word: word) {
+                syncRecorder?.recordDelete(yomi: yomi, word: word)
                 logger.log("ユーザー辞書からエントリ \(Entry(yomi: yomi, candidates: [word]).serialize(), privacy: .public) を削除しました")
                 recentRegisteredCandidates.removeAll { $0.yomi == yomi && $0.word == word }
                 scheduleSave()
@@ -272,12 +276,22 @@ enum UserDictAddSource {
             if let dict = userDict as? FileDict {
                 logger.log("ユーザー辞書を永続化します。現在のエントリ数は \(dict.dict.entries.count)")
                 dict.save()
+                saveSyncRecorder()
             } else {
                 // ユニットテストなど特殊な場合のみ
                 logger.info("永続化が要求されましたが、ユーザー辞書がファイル形式でないため無視されます")
             }
         } else {
             logger.debug("ユーザー辞書を読み込みできてないため永続化はスキップします")
+        }
+    }
+
+    private func saveSyncRecorder() {
+        guard let syncRecorder, syncRecorder.hasUnsavedChanges else { return }
+        do {
+            try syncRecorder.save()
+        } catch {
+            logger.error("ユーザー辞書の同期情報の保存に失敗しました: \(error)")
         }
     }
 
@@ -294,7 +308,7 @@ enum UserDictAddSource {
 
     var hasUnsavedChanges: Bool {
         if let dict = userDict as? FileDict {
-            return dict.hasUnsavedChanges
+            return dict.hasUnsavedChanges || syncRecorder?.hasUnsavedChanges == true
         } else {
             return false
         }
