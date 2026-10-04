@@ -27,9 +27,9 @@ import XCTest
         }
         let loadedExpectation = expectation(forNotification: notificationNameDictLoad, object: nil) { notification in
             guard let loadEvent = notification.object as? DictLoadEvent, loadEvent.id == dictId,
-                  case .loaded(let loadCount, let failureCount) = loadEvent.status else { return false }
+                  case .loaded(let loadCount, let failures) = loadEvent.status else { return false }
             XCTAssertEqual(loadCount, 3)
-            XCTAssertEqual(failureCount, 0)
+            XCTAssertEqual(failures, [])
             XCTAssertEqual(loadEvent.trigger, .load, "ファイル読み込みの通知はすべて .load であるべき")
             return true
         }
@@ -56,7 +56,40 @@ import XCTest
             return true
         }
         await dict.load()
+        XCTAssertTrue(dict.dict.readFailures.isEmpty)
         await fulfillment(of: [loadingExpectation, failExpectation], timeout: 1.0, enforceOrder: true)
+    }
+
+    func testLoadBadLineSurvivesEdit() async throws {
+        let fileURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("macSKK-unread-\(UUID().uuidString).txt")
+        let badLine = "い/胃/"
+        try "あ /亜/\n\(badLine)\n".write(to: fileURL, atomically: true, encoding: .utf8)
+        defer { try? FileManager.default.removeItem(at: fileURL) }
+
+        let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: true, saveToUserDict: true)
+        let dictId = dict.id
+        let failure = DictReadFailure(lineNumber: 2, line: badLine, reason: .missingSeparator)
+        let loadedExpectation = expectation(forNotification: notificationNameDictLoad, object: nil) { notification in
+            guard let loadEvent = notification.object as? DictLoadEvent, loadEvent.id == dictId,
+                  case .loaded(let loadCount, let failures) = loadEvent.status,
+                  loadEvent.trigger == .load else { return false }
+            XCTAssertEqual(loadCount, 1)
+            XCTAssertEqual(failures, [failure])
+            return true
+        }
+        await dict.load()
+        await fulfillment(of: [loadedExpectation], timeout: 1.0)
+
+        let editExpectation = expectation(forNotification: notificationNameDictLoad, object: nil) { notification in
+            guard let loadEvent = notification.object as? DictLoadEvent, loadEvent.id == dictId,
+                  case .loaded(_, let failures) = loadEvent.status else { return false }
+            XCTAssertEqual(loadEvent.trigger, .edit)
+            XCTAssertEqual(failures, [failure])
+            return true
+        }
+        dict.add(yomi: "う", word: Word("宇"))
+        await fulfillment(of: [editExpectation], timeout: 1.0)
     }
 
     func testLoadGzippedTraditional() async throws {
@@ -71,9 +104,9 @@ import XCTest
         }
         let loadedExpectation = expectation(forNotification: notificationNameDictLoad, object: nil) { notification in
             guard let loadEvent = notification.object as? DictLoadEvent, loadEvent.id == dictId,
-                  case .loaded(let loadCount, let failureCount) = loadEvent.status else { return false }
+                  case .loaded(let loadCount, let failures) = loadEvent.status else { return false }
             XCTAssertEqual(loadCount, 1)
-            XCTAssertEqual(failureCount, 0)
+            XCTAssertEqual(failures, [])
             XCTAssertEqual(loadEvent.trigger, .load, "ファイル読み込みの通知はすべて .load であるべき")
             return true
         }
@@ -94,9 +127,9 @@ import XCTest
         }
         let loadedExpectation = expectation(forNotification: notificationNameDictLoad, object: nil) { notification in
             guard let loadEvent = notification.object as? DictLoadEvent, loadEvent.id == dictId,
-                  case .loaded(let loadCount, let failureCount) = loadEvent.status else { return false }
+                  case .loaded(let loadCount, let failures) = loadEvent.status else { return false }
             XCTAssertEqual(loadCount, 3)
-            XCTAssertEqual(failureCount, 0)
+            XCTAssertEqual(failures, [])
             XCTAssertEqual(loadEvent.trigger, .load, "ファイル読み込みの通知はすべて .load であるべき")
             return true
         }
@@ -120,9 +153,9 @@ import XCTest
         }
         let loadedExpectation = expectation(forNotification: notificationNameDictLoad, object: nil) { notification in
             guard let loadEvent = notification.object as? DictLoadEvent, loadEvent.id == dictId,
-                  case .loaded(let loadCount, let failureCount) = loadEvent.status else { return false }
+                  case .loaded(let loadCount, let failures) = loadEvent.status else { return false }
             XCTAssertEqual(loadCount, 1)
-            XCTAssertEqual(failureCount, 0)
+            XCTAssertEqual(failures, [])
             XCTAssertEqual(loadEvent.trigger, .load, "ファイル読み込みの通知はすべて .load であるべき")
             return true
         }
