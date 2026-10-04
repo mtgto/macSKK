@@ -23,6 +23,9 @@ $ ./build_restart.sh
 
 👆の3つが実行され、実行したPCで開発中のバージョンを試すことができます。
 
+> [!NOTE]
+> `build_restart.sh` はDebug構成でビルドします。Debug構成ではInfo.plistに `LSUIElement` と `LSBackgroundOnly` が設定されないため、macSKKが通常のアプリとして扱われます。そのためmacOSの再起動やログアウトのときに、一度終了したmacSKKがすぐ自動で起動し直され、「"macSKK"が終了しないため再起動できませんでした」というダイアログが表示されることがあります。その場合はもう一度再起動を実行してください。
+
 ## iCloudでの設定同期について
 
 設定をiCloudで同期する機能 (`NSUbiquitousKeyValueStore`) には `com.apple.developer.ubiquity-kvstore-identifier` というentitlementが必要で、これを使うにはApp IDにiCloud capabilityを有効にしたプロビジョニングプロファイルが要ります。
