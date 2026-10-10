@@ -65,6 +65,7 @@
 		CE2573D12F9E557800533A05 /* Data+GzipTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE2573D02F9E557800533A05 /* Data+GzipTests.swift */; };
 		CE2573D32F9E562000533A05 /* SKK-JISYO.test.utf8.gz in Resources */ = {isa = PBXBuildFile; fileRef = CE2573D22F9E562000533A05 /* SKK-JISYO.test.utf8.gz */; };
 		CE2573D52F9E566900533A05 /* SKK-JISYO.test.json.gz in Resources */ = {isa = PBXBuildFile; fileRef = CE2573D42F9E566900533A05 /* SKK-JISYO.test.json.gz */; };
+		CE25D7DB307A95290080B25E /* MockTextInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE25D7DA307A95290080B25E /* MockTextInput.swift */; };
 		CE2F3B132C030C9A00CE342B /* KeyBindingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE2F3B122C030C9A00CE342B /* KeyBindingTests.swift */; };
 		CE313A1F2AF5213700A49142 /* Candidate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE313A1E2AF5213700A49142 /* Candidate.swift */; };
 		CE39DB212A8DFD8F00BC619F /* MarkedText.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE39DB202A8DFD8F00BC619F /* MarkedText.swift */; };
@@ -138,7 +139,6 @@
 		CEA602AE2F03795D00E605F2 /* ColorEncoding.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA602AD2F03795D00E605F2 /* ColorEncoding.swift */; };
 		CEA602B02F264FC600E605F2 /* KanaRuleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA602AF2F264FC600E605F2 /* KanaRuleView.swift */; };
 		CEA78FAA295EBCAC00B67E25 /* StateMachineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA78FA9295EBCAC00B67E25 /* StateMachineTests.swift */; };
-		CEB0F1A13000000000000002 /* MockTextInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEB0F1A13000000000000001 /* MockTextInput.swift */; };
 		CEA78FAC2960401F00B67E25 /* String+Transform.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA78FAB2960401F00B67E25 /* String+Transform.swift */; };
 		CEA78FAE2961BA1D00B67E25 /* String+TransformTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA78FAD2961BA1D00B67E25 /* String+TransformTests.swift */; };
 		CEA78FB02964209B00B67E25 /* UserDict.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA78FAF2964209B00B67E25 /* UserDict.swift */; };
@@ -286,6 +286,7 @@
 		CE2573D02F9E557800533A05 /* Data+GzipTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+GzipTests.swift"; sourceTree = "<group>"; };
 		CE2573D22F9E562000533A05 /* SKK-JISYO.test.utf8.gz */ = {isa = PBXFileReference; lastKnownFileType = archive.gzip; path = "SKK-JISYO.test.utf8.gz"; sourceTree = "<group>"; };
 		CE2573D42F9E566900533A05 /* SKK-JISYO.test.json.gz */ = {isa = PBXFileReference; lastKnownFileType = archive.gzip; path = "SKK-JISYO.test.json.gz"; sourceTree = "<group>"; };
+		CE25D7DA307A95290080B25E /* MockTextInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockTextInput.swift; sourceTree = "<group>"; };
 		CE2F3B122C030C9A00CE342B /* KeyBindingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyBindingTests.swift; sourceTree = "<group>"; };
 		CE313A1E2AF5213700A49142 /* Candidate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Candidate.swift; sourceTree = "<group>"; };
 		CE39DB202A8DFD8F00BC619F /* MarkedText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkedText.swift; sourceTree = "<group>"; };
@@ -363,7 +364,6 @@
 		CEA602AD2F03795D00E605F2 /* ColorEncoding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorEncoding.swift; sourceTree = "<group>"; };
 		CEA602AF2F264FC600E605F2 /* KanaRuleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KanaRuleView.swift; sourceTree = "<group>"; };
 		CEA78FA9295EBCAC00B67E25 /* StateMachineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateMachineTests.swift; sourceTree = "<group>"; };
-		CEB0F1A13000000000000001 /* MockTextInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockTextInput.swift; sourceTree = "<group>"; };
 		CEA78FAB2960401F00B67E25 /* String+Transform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Transform.swift"; sourceTree = "<group>"; };
 		CEA78FAD2961BA1D00B67E25 /* String+TransformTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+TransformTests.swift"; sourceTree = "<group>"; };
 		CEA78FAF2964209B00B67E25 /* UserDict.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDict.swift; sourceTree = "<group>"; };
@@ -643,7 +643,6 @@
 				CEE748812FA6388A00818B33 /* MarkedTextTests.swift */,
 				CEF0823529685C0800646366 /* StateTests.swift */,
 				CEA78FA9295EBCAC00B67E25 /* StateMachineTests.swift */,
-				CEB0F1A13000000000000001 /* MockTextInput.swift */,
 				CEE2D9782A99FEC700A4CD76 /* CandidateTest.swift */,
 				CE4CB5CD2AD55DF90046FA34 /* NumberEntryTests.swift */,
 				CE84A3EC295DA818009394C4 /* MemoryDictTests.swift */,
@@ -676,6 +675,7 @@
 				CE39FA942BEB942B00E293F0 /* Character+KeyCode.swift */,
 				CED7CA572A83BFE9004EF988 /* fixture */,
 				CE1E7BAA2E406B6700C2E410 /* URL+AdditionsTests.swift */,
+				CE25D7DA307A95290080B25E /* MockTextInput.swift */,
 			);
 			path = macSKKTests;
 			sourceTree = "<group>";
@@ -1160,6 +1160,7 @@
 				CE118EE52CE0B4DE00A7C300 /* KeyTests.swift in Sources */,
 				4B8E87D82CE068A0004E7461 /* CurrentInputTests.swift in Sources */,
 				CEA2539A2E23DA9000618E64 /* DictSettingTests.swift in Sources */,
+				CE25D7DB307A95290080B25E /* MockTextInput.swift in Sources */,
 				CE420WAT2F00000100000002 /* WorkaroundApplicationTests.swift in Sources */,
 				CE420SYNC2F00000100000004 /* SettingsSyncTests.swift in Sources */,
 				CE84A3ED295DA818009394C4 /* MemoryDictTests.swift in Sources */,
@@ -1171,7 +1172,6 @@
 				CEAB00012E228E2000618E64 /* SKKServDestinationTests.swift in Sources */,
 				CEADA44D2B025A8A0026E2BD /* EntryTests.swift in Sources */,
 				CEA78FAA295EBCAC00B67E25 /* StateMachineTests.swift in Sources */,
-				CEB0F1A13000000000000002 /* MockTextInput.swift in Sources */,
 				CE496C952B440BBD001C623C /* Data+EucJis2004Tests.swift in Sources */,
 				CEE2D9792A99FEC700A4CD76 /* CandidateTest.swift in Sources */,
 				CE1E7BAB2E406B6700C2E410 /* URL+AdditionsTests.swift in Sources */,
