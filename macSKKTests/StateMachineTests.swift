@@ -1244,6 +1244,13 @@ final class StateMachineTests: XCTestCase {
         ctx.step(cancelAction, [.emptyMarked])
     }
 
+    @MainActor func testHandleComposingCancelYomi() {
+        let ctx = StateMachineTestContext(verifying: [.inputMethod, .yomi])
+        ctx.step(printableKeyEventAction(character: "a", withShift: true), [.composing("あ")], yomi: [.other("あ")])
+        // 補完候補パネルを閉じるために空の読みが流れる
+        ctx.step(cancelAction, [.emptyMarked], yomi: [.other("")])
+    }
+
     @MainActor func testHandleComposingCtrlQ() {
         let ctx = StateMachineTestContext()
         ctx.step(printableKeyEventAction(character: ";"), [.composing()])
@@ -2753,6 +2760,18 @@ final class StateMachineTests: XCTestCase {
         ctx.expect([.emptyMarked])
         XCTAssertNil(ctx.stateMachine.state.specialState)
         XCTAssertEqual(ctx.stateMachine.state.inputMethod, .normal)
+    }
+
+    @MainActor func testCommitCompositionRegisterYomi() {
+        let ctx = StateMachineTestContext(verifying: [.inputMethod, .yomi])
+        ctx.step(printableKeyEventAction(character: "o", withShift: true), [.composing("お")], yomi: [.other("お")])
+        ctx.step(printableKeyEventAction(character: " "),
+                 [.modeChanged(.hiragana), .markedPlain("[登録：お]")], yomi: [.other("")])
+        ctx.step(printableKeyEventAction(character: "a", withShift: true),
+                 [.markedText(MarkedText([.plain("[登録：お]"), .markerCompose, .plain("あ")]))], yomi: [.other("あ")])
+        ctx.stateMachine.commitComposition()
+        // 補完候補パネルを閉じるために空の読みが流れる
+        ctx.expect([.emptyMarked], yomi: [.other("")])
     }
 
     @MainActor func testCommitCompositionUnregister() {
