@@ -79,6 +79,35 @@ class MemoryDictTests: XCTestCase {
         XCTAssertEqual(dict.entries["いぬ"]?.first?.annotation, Annotation(dictId: "testDict", text: "かわいい"))
     }
 
+    func testReadFailures() {
+        let source = """
+            あ /亜/
+            ; コメント
+
+            から //
+            い/胃/
+            い い /行/
+            い /胃
+            """
+        let dict = MemoryDict(dictId: "testDict", source: source, readonly: false)
+        XCTAssertEqual(dict.entries["あ"]?.map { $0.word }, ["亜"])
+        XCTAssertNil(dict.entries["から"])
+        XCTAssertEqual(dict.failedEntryCount, 3)
+        let failures = [
+            DictReadFailure(lineNumber: 5, line: "い/胃/", reason: .missingSeparator),
+            DictReadFailure(lineNumber: 6, line: "い い /行/", reason: .spaceInYomi),
+            DictReadFailure(lineNumber: 7, line: "い /胃", reason: .unterminatedCandidates),
+        ]
+        XCTAssertEqual(dict.readFailures, failures)
+        XCTAssertEqual(dict.with(saveToUserDict: false).readFailures, failures)
+    }
+
+    func testEntriesHaveNoReadFailures() {
+        let dict = MemoryDict(entries: ["あ": [Word("亜")]], readonly: true)
+        XCTAssertEqual(dict.readFailures, [])
+        XCTAssertEqual(dict.failedEntryCount, 0)
+    }
+
     func testParseEmptyCandidate() throws {
         // TODO: いまは空の変換候補をスキップしているが扱えるようにしたい
         let source = """
