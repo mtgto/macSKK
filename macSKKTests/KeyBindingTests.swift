@@ -78,6 +78,11 @@ final class KeyBindingTests: XCTestCase {
         XCTAssertTrue(inputEnter.accepts(currentInput: currentInputEnter))
         XCTAssertTrue(inputEnter.accepts(currentInput: currentInputOptionEnter))
         XCTAssertFalse(inputEnter.accepts(currentInput: currentInputLeft))
+        // 修飾キーを2つ要求する場合は、片方だけでは受け付けない
+        let inputControlShiftR = KeyBinding.Input(key: .character("r"), modifierFlags: [.control, .shift])
+        XCTAssertTrue(inputControlShiftR.accepts(currentInput: CurrentInput(key: .character("r"), modifierFlags: [.control, .shift])))
+        XCTAssertFalse(inputControlShiftR.accepts(currentInput: CurrentInput(key: .character("r"), modifierFlags: .control)))
+        XCTAssertFalse(inputControlShiftR.accepts(currentInput: CurrentInput(key: .character("r"), modifierFlags: .shift)))
     }
 
     func testActionAccepts() {
@@ -100,6 +105,13 @@ final class KeyBindingTests: XCTestCase {
                                        remain: [],
                                        completion: false)
         XCTAssertTrue(KeyBinding.Action.abbrev.accepts(inputMode: .direct, inputMethod: .selecting(selecting)))
+        XCTAssertTrue(KeyBinding.Action.kakuteiUndo.accepts(inputMode: .hiragana, inputMethod: .normal))
+        XCTAssertTrue(KeyBinding.Action.kakuteiUndo.accepts(inputMode: .katakana, inputMethod: .normal))
+        XCTAssertTrue(KeyBinding.Action.kakuteiUndo.accepts(inputMode: .hankaku, inputMethod: .normal))
+        XCTAssertFalse(KeyBinding.Action.kakuteiUndo.accepts(inputMode: .direct, inputMethod: .normal))
+        XCTAssertFalse(KeyBinding.Action.kakuteiUndo.accepts(inputMode: .eisu, inputMethod: .normal))
+        XCTAssertFalse(KeyBinding.Action.kakuteiUndo.accepts(inputMode: .hiragana, inputMethod: .composing(composing)))
+        XCTAssertFalse(KeyBinding.Action.kakuteiUndo.accepts(inputMode: .hiragana, inputMethod: .selecting(selecting)))
     }
 
     func testIsDefault() {
