@@ -18,6 +18,9 @@ class InputModePanel: NSPanel {
         isOpaque = false
         ignoresMouseEvents = true
         hasShadow = false
+        // フェードアウトしてもorderOutしないため、最初に表示した操作スペースにパネルが残り続ける。
+        // 他の操作スペースやフルスクリーンのアプリの上でも表示されるようにする。
+        collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         let hostingController = NSHostingController(rootView: InputModeView(viewModel: viewModel))
         contentViewController = hostingController
         setContentSize(viewSize)
