@@ -8,13 +8,9 @@ struct UserDictSyncKey: Hashable, Sendable {
     let word: String
     /// 送り仮名ブロックのひらがな
     let okuri: String?
+}
 
-    init(yomi: String, word: String, okuri: String?) {
-        self.yomi = yomi
-        self.word = word
-        self.okuri = okuri
-    }
-
+extension UserDictSyncKey {
     init(yomi: String, word: Word) {
         self.init(yomi: yomi, word: word.word, okuri: word.okuri)
     }

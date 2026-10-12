@@ -9,7 +9,8 @@ final class UserDictSyncRecordCloudKitTests: XCTestCase {
     func testRecordName() {
         let key = UserDictSyncKey(yomi: "いt", word: "行", okuri: "った")
         XCTAssertEqual(key.recordName, UserDictSyncKey(yomi: "いt", word: "行", okuri: "った").recordName, "同じキーなら同じレコード名")
-        XCTAssertEqual(key.recordName.count, 64)
+        XCTAssertEqual(key.recordName, "8f1c52cfd21e1d0768326227dd546e2fa82cd2b151c67460e49e04c5200c0718",
+                       "iCloudに保存済みのレコードと対応しなくなるので、レコード名の作り方は変えない")
         XCTAssertFalse(key.recordName.contains("行"), "読みや変換候補がそのまま含まれない")
         XCTAssertNotEqual(UserDictSyncKey(yomi: "いt", word: "行", okuri: nil).recordName,
                           UserDictSyncKey(yomi: "いt", word: "行", okuri: "").recordName,

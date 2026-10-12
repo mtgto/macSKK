@@ -947,9 +947,8 @@ final class SettingsViewModel: ObservableObject {
                 if let syncer {
                     try await syncer.deleteAllFromiCloud()
                 } else {
-                    try await UserDictCloudSyncer.deleteZone(
-                        from: CKContainer(identifier: UserDictCloudSyncer.containerIdentifier).privateCloudDatabase)
-                    UserDictCloudSyncer.removeState()
+                    try await UserDictCloudSyncer.deleteAllFromiCloud(
+                        database: CKContainer(identifier: UserDictCloudSyncer.containerIdentifier).privateCloudDatabase)
                 }
                 userDictCloudSyncer = nil
                 setSyncUserDictWithiCloud(false)

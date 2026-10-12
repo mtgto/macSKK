@@ -301,10 +301,7 @@ enum FileDictType: Equatable {
 
     @MainActor func add(yomi: String, word: Word) {
         dict.add(yomi: yomi, word: word)
-        NotificationCenter.default.post(name: notificationNameDictLoad,
-                                        object: DictLoadEvent(id: self.id,
-                                                              status: .loaded(success: dict.entryCount, failure: dict.failedEntryCount),
-                                                              trigger: .edit))
+        postEditEvent()
         hasUnsavedChanges = true
     }
 
@@ -312,22 +309,24 @@ enum FileDictType: Equatable {
     @MainActor func replace(dict: MemoryDict) {
         self.dict = dict
         hasUnsavedChanges = true
-        NotificationCenter.default.post(name: notificationNameDictLoad,
-                                        object: DictLoadEvent(id: self.id,
-                                                              status: .loaded(success: dict.entryCount, failure: dict.failedEntryCount),
-                                                              trigger: .edit))
+        postEditEvent()
     }
 
     @MainActor func delete(yomi: String, word: Word) -> Bool {
         if dict.delete(yomi: yomi, word: word) {
             hasUnsavedChanges = true
-            NotificationCenter.default.post(name: notificationNameDictLoad,
-                                            object: DictLoadEvent(id: self.id,
-                                                                  status: .loaded(success: dict.entryCount, failure: dict.failedEntryCount),
-                                                                  trigger: .edit))
+            postEditEvent()
             return true
         }
         return false
+    }
+
+    /// 辞書を編集したことを通知する
+    @MainActor private func postEditEvent() {
+        NotificationCenter.default.post(name: notificationNameDictLoad,
+                                        object: DictLoadEvent(id: id,
+                                                              status: .loaded(success: dict.entryCount, failure: dict.failedEntryCount),
+                                                              trigger: .edit))
     }
 
     func findCompletions(prefix: String) -> [String] {

@@ -14,7 +14,9 @@ extension UserDictSyncKey {
     var recordName: String {
         // 送り仮名なしと空文字列の送り仮名を区別する
         let source = [yomi, word, okuri.map { "o" + $0 } ?? "n"].joined(separator: "\u{0}")
-        return SHA256.hash(data: Data(source.utf8)).map { String(format: "%02x", $0) }.joined()
+        let digits = Array("0123456789abcdef".utf8)
+        let hex = SHA256.hash(data: Data(source.utf8)).flatMap { [digits[Int($0 >> 4)], digits[Int($0 & 0x0f)]] }
+        return String(decoding: hex, as: UTF8.self)
     }
 }
 
