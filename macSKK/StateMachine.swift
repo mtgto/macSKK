@@ -689,7 +689,9 @@ final class StateMachine {
             yomi: lastFix.selecting.yomi,
             candidates: lastFix.selecting.candidates,
             candidateIndex: lastFix.selecting.candidateIndex,
-            remain: lastFix.selecting.remain,
+            // ▽の途中にカーソルを移動して確定した場合、カーソルより右の読みはすでに入力済みなので引き継がない。
+            // 引き継ぐと確定し直したときに再び▽が始まり、同じ読みが二重に入る
+            remain: nil,
             completion: lastFix.selecting.completion,
         )
         state.inputMethod = .selecting(selecting)
@@ -1563,20 +1565,25 @@ final class StateMachine {
             if !fixedText.isEmpty {
                 addWordToUserDict(yomi: yomi, okuri: okuri, candidate: selecting.candidates[selecting.candidateIndex])
             }
-            updateCandidates(selecting: nil)
-            if let remain = selecting.remain {
-                addFixedText(fixedText)
-                state.inputMethod = .composing(ComposingState(isShift: true, text: remain, romaji: ""))
-                updateMarkedText()
-            } else {
-                state.inputMethod = .normal
-                addFixedText(fixedText)
+            func rememberFix() {
                 // バックスペースで末尾を削って確定した場合は変換候補と確定文字列が一致しないので確定アンドゥの対象外
                 if dropLast {
                     lastFix = nil
                 } else {
                     rememberLastFix(selecting: selecting, textInput: action.textInput)
                 }
+            }
+            updateCandidates(selecting: nil)
+            if let remain = selecting.remain {
+                addFixedText(fixedText)
+                // 残りの読みを未確定文字列として書き込むとキャレットがその後ろに移るので、先に確定した位置を覚える
+                rememberFix()
+                state.inputMethod = .composing(ComposingState(isShift: true, text: remain, romaji: ""))
+                updateMarkedText()
+            } else {
+                state.inputMethod = .normal
+                addFixedText(fixedText)
+                rememberFix()
                 if let prevMode = selecting.prev.composing.prevMode {
                     state.inputMode = prevMode
                     inputMethodEventSubject.send(.modeChanged(prevMode))
@@ -1725,6 +1732,9 @@ final class StateMachine {
             addWordToUserDict(yomi: selecting.yomi, okuri: selecting.okuri, candidate: selecting.candidates[selecting.candidateIndex])
             updateCandidates(selecting: nil)
             addFixedText(selecting.fixedText(dropLast: false))
+            // 接尾辞の入力をやめたときにも確定アンドゥできるようにする。
+            // 接尾辞や残りの読みを未確定文字列として書き込むとキャレットがその後ろに移るので、先に確定した位置を覚える
+            rememberLastFix(selecting: selecting, textInput: action.textInput)
             if let remain = selecting.remain {
                 state.inputMethod = .composing(ComposingState(isShift: true, text: remain, romaji: ""))
                 updateMarkedText()

@@ -3006,6 +3006,56 @@ final class StateMachineTests: XCTestCase {
         XCTAssertEqual(textInput.text, "TEST")
     }
 
+    /// ▽の途中にカーソルを移動して変換し確定した文字列も確定アンドゥできる
+    @MainActor func testKakuteiUndoAfterFixWithCursor() {
+        Global.dictionary.setEntries(["と": [Word("戸"), Word("都")], "え": [Word("絵"), Word("柄")]])
+
+        let textInput = MockTextInput()
+        let ctx = StateMachineTestContext(verifying: [], textInput: textInput)
+        ctx.step(printableKeyEventAction(character: "t", withShift: true))
+        ctx.step(printableKeyEventAction(character: "o"))
+        ctx.step(printableKeyEventAction(character: " "))
+        ctx.step(enterAction)
+        ctx.step(printableKeyEventAction(character: "e", withShift: true))
+        ctx.step(printableKeyEventAction(character: "i"))
+        ctx.step(leftKeyAction)
+        ctx.step(printableKeyEventAction(character: " "))
+        ctx.step(enterAction)
+        XCTAssertEqual(textInput.text, "戸絵▽い", "カーソルより右の読みは▽のまま残る")
+        ctx.step(enterAction)
+        XCTAssertEqual(textInput.text, "戸絵い")
+        ctx.step(kakuteiUndoAction)
+        XCTAssertEqual(textInput.text, "戸▼絵い", "前に確定した「戸」ではなく、カーソルを移動して確定した「絵」が戻る")
+        ctx.step(printableKeyEventAction(character: " "))
+        ctx.step(enterAction)
+        XCTAssertEqual(textInput.text, "戸柄い", "確定し直したときにカーソルより右だった読みを再び入力しない")
+        XCTAssertEqual(textInput.caret, 2)
+    }
+
+    /// 接辞変換で確定した文字列も確定アンドゥできる
+    @MainActor func testKakuteiUndoAfterFixWithAffix() {
+        Global.dictionary.setEntries(["と": [Word("戸"), Word("都")], "あ": [Word("阿"), Word("亜")]])
+
+        let textInput = MockTextInput()
+        let ctx = StateMachineTestContext(verifying: [], textInput: textInput)
+        ctx.step(printableKeyEventAction(character: "t", withShift: true))
+        ctx.step(printableKeyEventAction(character: "o"))
+        ctx.step(printableKeyEventAction(character: " "))
+        ctx.step(enterAction)
+        ctx.step(printableKeyEventAction(character: "a", withShift: true))
+        ctx.step(printableKeyEventAction(character: " "))
+        ctx.step(shiftKey(">", "."))
+        XCTAssertEqual(textInput.text, "戸阿▽>")
+        // 接尾辞の入力をやめる
+        ctx.step(cancelAction)
+        XCTAssertEqual(textInput.text, "戸阿")
+        ctx.step(kakuteiUndoAction)
+        XCTAssertEqual(textInput.text, "戸▼阿", "前に確定した「戸」ではなく、接辞変換の前に確定した「阿」が戻る")
+        ctx.step(printableKeyEventAction(character: " "))
+        ctx.step(enterAction)
+        XCTAssertEqual(textInput.text, "戸亜")
+    }
+
     /// Terminal.appはキャレットの直前で終わらない範囲を指定したsetMarkedTextを無視するので、続きを打った後は戻さない
     @MainActor func testKakuteiUndoInTerminalOnlyBeforeCaret() {
         Global.dictionary.setEntries(["と": [Word("戸"), Word("都")]])
