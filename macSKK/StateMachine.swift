@@ -493,20 +493,13 @@ final class StateMachine {
             }
             return true
         case .kakuteiUndo:
-            if kakuteiUndo(action: action) {
-                return true
-            }
-            // 取り消せない場合の扱いは割り当てられたキーによって変える。
-            // デフォルトのCtrl-Shift-rのような修飾キー付きのキーはアプリに渡さず、なにもせずに握り潰す。
+            // 取り消せない場合も、割り当てられたキーはアプリに渡さずなにもせずに握り潰す。
             // Ctrl-BackspaceやCtrl-uのように、アプリに渡るとターミナルなどで直前の単語や
             // 行が削除されてしまうキーを割り当てられるため
             // (ターミナルによっては握り潰してもターミナル側で処理されてしまう)。
-            // Shift-xのような文字キーは通常の文字入力として扱う。
-            let modifierFlags = action.event.modifierFlags
-            if modifierFlags.contains(.control) || modifierFlags.contains(.command) || modifierFlags.contains(.function) {
-                return true
-            }
-            break
+            // 文字キーを割り当てた場合も、取り消せないときにその文字が入力されるよりは何も起きないほうがよい
+            _ = kakuteiUndo(action: action)
+            return true
         case .eisu:
             // 何もしない (OSがIMEの切り替えはしてくれる)
             return true

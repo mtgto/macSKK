@@ -3191,12 +3191,11 @@ final class StateMachineTests: XCTestCase {
         ctx.step(printableKeyEventAction(character: "o"))
         ctx.step(printableKeyEventAction(character: " "))
         ctx.step(enterAction)
+        // 取り消せなくても文字キーはアプリに渡さず、文字も入力しない
         ctx.step(kakuteiUndoCharacterAction)
-        XCTAssertEqual(textInput.text, "戸▽x", "取り消せないときは文字キーを通常の文字入力として扱う (末尾の▽xはxの未確定文字列)")
-        if case .composing(let composing) = ctx.stateMachine.state.inputMethod {
-            XCTAssertEqual(composing.romaji, "x")
-        } else {
-            XCTFail("通常の文字入力として扱われること")
+        XCTAssertEqual(textInput.text, "戸")
+        if case .normal = ctx.stateMachine.state.inputMethod {} else {
+            XCTFail("状態が変わらないこと")
         }
     }
 
