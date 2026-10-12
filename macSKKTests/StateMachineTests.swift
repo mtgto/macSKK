@@ -2602,6 +2602,50 @@ final class StateMachineTests: XCTestCase {
         XCTAssertEqual(Global.dictionary.refer("え"), [])
     }
 
+    @MainActor func testHandleSelectingUnregisterCompletion() {
+        Global.dictionary.setEntries(["いろん": [Word("異論")]])
+
+        let ctx = StateMachineTestContext()
+        let unregisterPrompt = "いろん /異論/ を削除します(yes/no)"
+        ctx.step(printableKeyEventAction(character: "i", withShift: true), [.composing("い")])
+        ctx.stateMachine.completion = .candidates([
+            Candidate("異論", original: Candidate.Original(midashi: "いろん", word: "異論")),
+        ])
+        ctx.step(tabAction, [.selecting("異論")])
+        ctx.step(printableKeyEventAction(character: "x", withShift: true), [.markedPlain(unregisterPrompt)])
+        ctx.step(printableKeyEventAction(character: "y"),
+                 [.markedText(MarkedText([.plain(unregisterPrompt), .plain("y")]))])
+        ctx.step(printableKeyEventAction(character: "e"),
+                 [.markedText(MarkedText([.plain(unregisterPrompt), .plain("ye")]))])
+        ctx.step(printableKeyEventAction(character: "s"),
+                 [.markedText(MarkedText([.plain(unregisterPrompt), .plain("yes")]))])
+        // 入力した読み "い" ではなく辞書上の見出し "いろん" から削除する
+        ctx.step(enterAction, [.modeChanged(.hiragana), .emptyMarked])
+        XCTAssertEqual(Global.dictionary.refer("いろん"), [])
+    }
+
+    @MainActor func testHandleSelectingUnregisterNumber() {
+        Global.dictionary.setEntries(["だい#": [Word("第#1")]])
+
+        let ctx = StateMachineTestContext()
+        let unregisterPrompt = "だい# /第#1/ を削除します(yes/no)"
+        ctx.step(printableKeyEventAction(character: "d", withShift: true), [.composing("d")])
+        ctx.step(printableKeyEventAction(character: "a"), [.composing("だ")])
+        ctx.step(printableKeyEventAction(character: "i"), [.composing("だい")])
+        ctx.step(printableKeyEventAction(character: "5"), [.composing("だい5")])
+        ctx.step(printableKeyEventAction(character: " "), [.selecting("第５")])
+        ctx.step(printableKeyEventAction(character: "x", withShift: true), [.markedPlain(unregisterPrompt)])
+        ctx.step(printableKeyEventAction(character: "y"),
+                 [.markedText(MarkedText([.plain(unregisterPrompt), .plain("y")]))])
+        ctx.step(printableKeyEventAction(character: "e"),
+                 [.markedText(MarkedText([.plain(unregisterPrompt), .plain("ye")]))])
+        ctx.step(printableKeyEventAction(character: "s"),
+                 [.markedText(MarkedText([.plain(unregisterPrompt), .plain("yes")]))])
+        // 辞書上の表記 "だい#" "第#1" で削除する
+        ctx.step(enterAction, [.modeChanged(.hiragana), .emptyMarked])
+        XCTAssertEqual(Global.dictionary.refer("だい#"), [])
+    }
+
     @MainActor func testHandleSelectingUnregisterCancel() {
         Global.dictionary.setEntries(["え": [Word("絵")]])
 
