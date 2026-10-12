@@ -681,9 +681,18 @@ final class StateMachine {
      */
     @MainActor private func undoToSelecting(lastFix: LastFix, range: NSRange) {
         // 読みまで戻ってキャンセルしたときに元の確定文字列に戻せるよう、再変換と同じく確定文字列を持たせる
+        let composing = lastFix.selecting.prev.composing.with(reconvertText: lastFix.text)
+        // ddskkと同じく、確定したあとにqなどで入力モードを変えていても、ひらがな・カタカナ・半角カナは切り替えずに今のモードのまま戻す。
+        // 変換候補選択からキャンセルするとprev.modeに戻るので、prev.modeも今のモードにしておく。
+        // Abbrevから確定した場合はAbbrevの変換候補選択に戻し、変換を終えたら今のモードに戻るようにする
+        let prev: SelectingState.PrevState
+        if lastFix.selecting.prev.mode == .direct {
+            prev = SelectingState.PrevState(mode: .direct, composing: composing.with(prevMode: state.inputMode))
+        } else {
+            prev = SelectingState.PrevState(mode: state.inputMode, composing: composing)
+        }
         let selecting = SelectingState(
-            prev: SelectingState.PrevState(mode: lastFix.selecting.prev.mode,
-                                           composing: lastFix.selecting.prev.composing.with(reconvertText: lastFix.text)),
+            prev: prev,
             yomi: lastFix.selecting.yomi,
             candidates: lastFix.selecting.candidates,
             candidateIndex: lastFix.selecting.candidateIndex,
@@ -691,6 +700,12 @@ final class StateMachine {
             completion: lastFix.selecting.completion,
         )
         state.inputMethod = .selecting(selecting)
+        // .modeChangedを受けたInputControllerは空文字挿入のワークアラウンドでsetMarkedTextを呼ぶことがあり、
+        // undoFixedTextの後に送ると戻した未確定文字列が上書きされるので、先に送る
+        if state.inputMode != prev.mode {
+            state.inputMode = prev.mode
+            inputMethodEventSubject.send(.modeChanged(prev.mode))
+        }
         inputMethodEventSubject.send(.undoFixedText(state.displayText(), replacementRange: range))
         self.lastFix = nil
         updateCandidates(selecting: selecting)

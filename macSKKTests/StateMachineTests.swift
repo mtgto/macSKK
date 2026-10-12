@@ -2962,6 +2962,50 @@ final class StateMachineTests: XCTestCase {
         XCTAssertEqual(textInput.caret, 1, "キャレットは確定し直した文字列の直後に来る")
     }
 
+    /// ddskkと同じく、確定したあとに入力モードを変えていたら今のモードのまま変換候補選択に戻す
+    @MainActor func testKakuteiUndoKeepsCurrentInputMode() {
+        Global.dictionary.setEntries(["と": [Word("戸"), Word("都")]])
+
+        let textInput = MockTextInput()
+        let ctx = StateMachineTestContext(textInput: textInput)
+        ctx.step(printableKeyEventAction(character: "t", withShift: true), [.composing("t")])
+        ctx.step(printableKeyEventAction(character: "o"), [.composing("と")])
+        ctx.step(printableKeyEventAction(character: " "), [.selecting("戸")])
+        ctx.step(enterAction, [.fixedText("戸")])
+        ctx.step(printableKeyEventAction(character: "q"), [.modeChanged(.katakana)])
+        // 今のモード (カタカナ) のままなので.modeChangedは送られない
+        ctx.step(kakuteiUndoAction, [.undoFixedText(MarkedText([.markerSelect, .emphasized("戸")]), replacementRange: NSRange(location: 0, length: 1))])
+        XCTAssertEqual(ctx.stateMachine.state.inputMode, .katakana)
+        // キャンセルで戻った読みもカタカナで表示する
+        ctx.step(cancelAction, [.composing("ト")])
+        XCTAssertEqual(ctx.stateMachine.state.inputMode, .katakana)
+        ctx.step(printableKeyEventAction(character: " "), [.selecting("戸")])
+        ctx.step(enterAction, [.fixedText("戸")])
+        XCTAssertEqual(ctx.stateMachine.state.inputMode, .katakana, "確定したあともカタカナのまま")
+        XCTAssertEqual(textInput.text, "戸")
+    }
+
+    /// Abbrevから確定した場合はAbbrevの変換候補選択に戻し、確定し直したら今のモードに戻る
+    @MainActor func testKakuteiUndoFromAbbrev() {
+        Global.dictionary.setEntries(["test": [Word("TEST")]])
+
+        let textInput = MockTextInput()
+        let ctx = StateMachineTestContext(textInput: textInput)
+        ctx.step(printableKeyEventAction(character: "/"), [.modeChanged(.direct), .composing()])
+        ctx.step(printableKeyEventAction(character: "t"), [.composing("t")])
+        ctx.step(printableKeyEventAction(character: "e"), [.composing("te")])
+        ctx.step(printableKeyEventAction(character: "s"), [.composing("tes")])
+        ctx.step(printableKeyEventAction(character: "t"), [.composing("test")])
+        ctx.step(printableKeyEventAction(character: " "), [.selecting("TEST")])
+        ctx.step(enterAction, [.fixedText("TEST"), .modeChanged(.hiragana)])
+        ctx.step(printableKeyEventAction(character: "q"), [.modeChanged(.katakana)])
+        ctx.step(kakuteiUndoAction, [.modeChanged(.direct),
+                                     .undoFixedText(MarkedText([.markerSelect, .emphasized("TEST")]), replacementRange: NSRange(location: 0, length: 4))])
+        ctx.step(enterAction, [.fixedText("TEST"), .modeChanged(.katakana)])
+        XCTAssertEqual(ctx.stateMachine.state.inputMode, .katakana, "確定アンドゥしたときのモードに戻る")
+        XCTAssertEqual(textInput.text, "TEST")
+    }
+
     /// Terminal.appはキャレットの直前で終わらない範囲を指定したsetMarkedTextを無視するので、続きを打った後は戻さない
     @MainActor func testKakuteiUndoInTerminalOnlyBeforeCaret() {
         Global.dictionary.setEntries(["と": [Word("戸"), Word("都")]])

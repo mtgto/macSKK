@@ -253,6 +253,11 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
                               reconvertText: reconvertText, fixedWorkaroundText: fixedWorkaroundText)
     }
 
+    func with(prevMode: InputMode?) -> Self {
+        return ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: romaji, cursor: cursor, prevMode: prevMode,
+                              reconvertText: reconvertText, fixedWorkaroundText: fixedWorkaroundText)
+    }
+
     /**
      * カーソルより左のtext部分を返す。
      * ``trim(kanaRule:)`` と違い、未確定のローマ字部分の変換 ("n" を "ん" にするなど) は行わない。
