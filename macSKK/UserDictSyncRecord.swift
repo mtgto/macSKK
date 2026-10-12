@@ -181,87 +181,37 @@ extension MemoryDict {
         }
         return changes
     }
+}
 
+extension DictProtocol {
     /**
-     * 他の端末から受け取った同期情報を反映したユーザー辞書を返す。
+     * 他の端末から受け取った同期情報をユーザー辞書に反映する。
      *
      * 受け取った同期情報は、どれもこの端末の変換候補より新しい変更として扱う。
-     *
-     * - 削除されている変換候補は取り除き、存在するべき変換候補は追加する。既にある変換候補の注釈はそのまま残す
-     * - 受け取った変換候補は最後に変換した日時の新しい順に先頭に並べ、それ以外の変換候補はその後に元の順序で並べる
-     * - 読みも同様に、受け取った変換候補をもつ読みを最近変換したものとして扱う
+     * 削除されている変換候補は取り除き、存在するべき変換候補は最後に変換した日時の古い順に追加する。
+     * 追加すると変換候補は先頭に、読みは最近変換したものになるので、
+     * 受け取った変換候補は日時の新しい順に先頭に並び、それ以外の変換候補はその後に元の順序で並ぶ。
+     * 既にある変換候補の注釈はそのまま残る。
      *
      * - Parameter records: 他の端末から受け取った同期情報
      */
-    func applying(_ records: [UserDictSyncRecord]) -> MemoryDict {
+    @MainActor mutating func apply(_ records: [UserDictSyncRecord]) {
         var recordsByKey: [UserDictSyncKey: UserDictSyncRecord] = [:]
         for record in records {
             recordsByKey[record.key] = recordsByKey[record.key].map { $0.merged(with: record) } ?? record
         }
-        var entries = self.entries
-        for record in recordsByKey.values {
-            let key = record.key
-            var words = entries[key.yomi] ?? []
-            let index = words.firstIndex { $0.word == key.word && $0.okuri == key.okuri }
-            if record.isAlive {
-                if index == nil {
-                    words.append(Word(key.word, okuri: key.okuri))
-                }
-            } else if let index {
-                words.remove(at: index)
+        for record in recordsByKey.values where !record.isAlive {
+            _ = delete(yomi: record.key.yomi, word: Word(record.key.word, okuri: record.key.okuri))
+        }
+        // 日時が同じものはどの端末でも同じ順になるようにキーで並べる
+        let alive = recordsByKey.values.filter(\.isAlive).sorted { lhs, rhs in
+            if lhs.lastUsedAt != rhs.lastUsedAt {
+                return lhs.lastUsedAt! < rhs.lastUsedAt!
             }
-            entries[key.yomi] = words.isEmpty ? nil : words
+            return (lhs.key.yomi, lhs.key.word, lhs.key.okuri ?? "") < (rhs.key.yomi, rhs.key.word, rhs.key.okuri ?? "")
         }
-
-        func lastUsedAt(yomi: String, word: Word) -> Date? {
-            guard let record = recordsByKey[UserDictSyncKey(yomi: yomi, word: word)], record.isAlive else { return nil }
-            return record.lastUsedAt
+        for record in alive {
+            add(yomi: record.key.yomi, word: Word(record.key.word, okuri: record.key.okuri))
         }
-
-        var latestDates: [String: Date] = [:]
-        for yomi in Set(recordsByKey.keys.map(\.yomi)) {
-            guard let words = entries[yomi] else { continue }
-            let sorted = words.enumerated().sorted { lhs, rhs in
-                switch (lastUsedAt(yomi: yomi, word: lhs.element), lastUsedAt(yomi: yomi, word: rhs.element)) {
-                case let (.some(l), .some(r)) where l != r:
-                    return l > r
-                case (.some, .none):
-                    return true
-                case (.none, .some):
-                    return false
-                default:
-                    return lhs.offset < rhs.offset
-                }
-            }.map(\.element)
-            entries[yomi] = sorted
-            if let first = sorted.first, let date = lastUsedAt(yomi: yomi, word: first) {
-                latestDates[yomi] = date
-            }
-        }
-
-        // 最近変換したものが後に登場するように並べる
-        func sortYomis(_ yomis: [String]) -> [String] {
-            yomis.enumerated().sorted { lhs, rhs in
-                switch (latestDates[lhs.element], latestDates[rhs.element]) {
-                case let (.some(l), .some(r)) where l != r:
-                    return l < r
-                case (.some, .none):
-                    return false
-                case (.none, .some):
-                    return true
-                default:
-                    return lhs.offset < rhs.offset
-                }
-            }.map(\.element)
-        }
-        let existingYomis = Set(okuriAriYomis).union(okuriNashiYomis)
-        let addedYomis = entries.keys.filter { !existingYomis.contains($0) }.sorted()
-        let yomis = (okuriAriYomis + okuriNashiYomis + addedYomis).filter { entries[$0] != nil }
-        return MemoryDict(readonly: false,
-                          entries: entries,
-                          failedEntryCount: failedEntryCount,
-                          okuriNashiYomis: sortYomis(yomis.filter { !$0.isOkuriAri }),
-                          okuriAriYomis: sortYomis(yomis.filter { $0.isOkuriAri }),
-                          saveToUserDict: saveToUserDict)
     }
 }

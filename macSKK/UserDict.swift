@@ -212,6 +212,7 @@ enum UserDictAddSource {
         if !privateMode.value {
             if let dict = userDict as? FileDict {
                 dict.add(yomi: yomi, word: word)
+                postEditEvent(dict)
                 syncChangeHandler?(.use(yomi: yomi, word: word))
                 if source == .registering {
                     addRecentRegisteredCandidate(yomi: yomi, word: word)
@@ -243,6 +244,7 @@ enum UserDictAddSource {
             return true
         } else if let dict = userDict as? FileDict {
             if dict.delete(yomi: yomi, word: word) {
+                postEditEvent(dict)
                 syncChangeHandler?(.delete(yomi: yomi, word: word))
                 logger.log("ユーザー辞書からエントリ \(Entry(yomi: yomi, candidates: [word]).serialize(), privacy: .public) を削除しました")
                 recentRegisteredCandidates.removeAll { $0.yomi == yomi && $0.word == word }
@@ -267,25 +269,26 @@ enum UserDictAddSource {
      */
     @discardableResult
     @MainActor func applySyncRecords(_ records: [UserDictSyncRecord]) -> MemoryDict.CandidateChanges {
-        guard let dict = userDict as? FileDict, dict.isLoaded, !records.isEmpty else { return MemoryDict.CandidateChanges() }
-        let applied = dict.dict.applying(records)
-        if applied.entries == dict.dict.entries
-            && applied.okuriAriYomis == dict.dict.okuriAriYomis
-            && applied.okuriNashiYomis == dict.dict.okuriNashiYomis {
+        guard var dict = userDict as? FileDict, dict.isLoaded, !records.isEmpty else { return MemoryDict.CandidateChanges() }
+        let old = dict.dict
+        dict.apply(records)
+        if dict.dict.entries == old.entries
+            && dict.dict.okuriAriYomis == old.okuriAriYomis
+            && dict.dict.okuriNashiYomis == old.okuriNashiYomis {
             return MemoryDict.CandidateChanges()
         }
-        let changes = dict.dict.candidateChanges(to: applied, receiving: records)
-        logger.log("ユーザー辞書にiCloud同期の変更を反映します。追加 \(changes.addedCount) 件、更新 \(changes.updatedCount) 件、削除 \(changes.removedCount) 件")
+        let changes = old.candidateChanges(to: dict.dict, receiving: records)
+        logger.log("ユーザー辞書にiCloud同期の変更を反映しました。追加 \(changes.addedCount) 件、更新 \(changes.updatedCount) 件、削除 \(changes.removedCount) 件")
         for entry in changes.added {
-            logger.log("iCloud同期でユーザー辞書に追加します: \(entry.serialize(), privacy: .public)")
+            logger.log("iCloud同期でユーザー辞書に追加しました: \(entry.serialize(), privacy: .public)")
         }
         for entry in changes.updated {
-            logger.log("iCloud同期でユーザー辞書を更新します: \(entry.serialize(), privacy: .public)")
+            logger.log("iCloud同期でユーザー辞書を更新しました: \(entry.serialize(), privacy: .public)")
         }
         for entry in changes.removed {
-            logger.log("iCloud同期でユーザー辞書から削除します: \(entry.serialize(), privacy: .public)")
+            logger.log("iCloud同期でユーザー辞書から削除しました: \(entry.serialize(), privacy: .public)")
         }
-        dict.replace(dict: applied)
+        postEditEvent(dict)
         // 他の端末で削除された候補は直近の辞書登録履歴からも取り除く
         recentRegisteredCandidates.removeAll { candidate in
             !dict.dict.refer(candidate.yomi, option: nil).contains { $0.word == candidate.word.word && $0.okuri == candidate.word.okuri }
@@ -293,6 +296,14 @@ enum UserDictAddSource {
         saveTask?.cancel()
         save()
         return changes
+    }
+
+    /// ユーザー辞書を編集したことを通知する
+    @MainActor private func postEditEvent(_ dict: FileDict) {
+        NotificationCenter.default.post(name: notificationNameDictLoad,
+                                        object: DictLoadEvent(id: dict.id,
+                                                              status: .loaded(success: dict.entryCount, failure: dict.failedEntryCount),
+                                                              trigger: .edit))
     }
 
     /// ユーザー辞書の永続化を予約する

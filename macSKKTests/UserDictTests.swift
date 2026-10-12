@@ -46,6 +46,32 @@ final class UserDictTests: XCTestCase {
         XCTAssertTrue(userDict.delete(yomi: "い", word: Word("井")))
     }
 
+    @MainActor func testAddAndDeletePostEditEvent() throws {
+        let userDict = try UserDict(dicts: [],
+                                    userDictEntries: [:],
+                                    privateMode: CurrentValueSubject<Bool, Never>(false),
+                                    ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
+                                    dateYomis: [],
+                                    dateConversions: [])
+        let fileURL = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "empty", withExtension: "txt"))
+        let fileDict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: true, saveToUserDict: true)
+        userDict.userDict = fileDict
+        func editExpectation(_ entryCount: Int) -> XCTestExpectation {
+            expectation(forNotification: notificationNameDictLoad, object: nil) { notification in
+                guard let loadEvent = notification.object as? DictLoadEvent, loadEvent.id == fileDict.id else { return false }
+                XCTAssertEqual(loadEvent.trigger, .edit)
+                guard case .loaded(let success, _) = loadEvent.status else { return false }
+                return success == entryCount
+            }
+        }
+        let addExpectation = editExpectation(1)
+        userDict.add(yomi: "い", word: Word("井"), source: .conversion)
+        wait(for: [addExpectation], timeout: 1.0)
+        let deleteExpectation = editExpectation(0)
+        XCTAssertTrue(userDict.delete(yomi: "い", word: Word("井")))
+        wait(for: [deleteExpectation], timeout: 1.0)
+    }
+
     @MainActor func testHandleSKKServErrorDisablesSkkservDict() throws {
         let mock = MockSKKServDict(wordsPerYomi: [:], shouldFail: true)
         Global.skkservDict = mock

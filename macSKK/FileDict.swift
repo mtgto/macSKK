@@ -301,32 +301,15 @@ enum FileDictType: Equatable {
 
     @MainActor func add(yomi: String, word: Word) {
         dict.add(yomi: yomi, word: word)
-        postEditEvent()
         hasUnsavedChanges = true
-    }
-
-    /// 辞書の内容を置き換える。iCloud同期で他の端末の変更を反映するときに使う。
-    @MainActor func replace(dict: MemoryDict) {
-        self.dict = dict
-        hasUnsavedChanges = true
-        postEditEvent()
     }
 
     @MainActor func delete(yomi: String, word: Word) -> Bool {
         if dict.delete(yomi: yomi, word: word) {
             hasUnsavedChanges = true
-            postEditEvent()
             return true
         }
         return false
-    }
-
-    /// 辞書を編集したことを通知する
-    @MainActor private func postEditEvent() {
-        NotificationCenter.default.post(name: notificationNameDictLoad,
-                                        object: DictLoadEvent(id: id,
-                                                              status: .loaded(success: dict.entryCount, failure: dict.failedEntryCount),
-                                                              trigger: .edit))
     }
 
     func findCompletions(prefix: String) -> [String] {
