@@ -25,6 +25,9 @@ struct UserDictSyncKey: Hashable, Sendable {
  *
  * 各日時は他の端末の値と大きいほうを採用してマージするので、
  * どの端末でどの順番にマージしても同じ結果に収束する。
+ *
+ * 注釈は同期しない。将来同期するときに、この版が他の端末の注釈を消してしまわないように
+ * iCloudのレコードの注釈には読み書きどちらも触れない。
  */
 struct UserDictSyncRecord: Equatable, Sendable {
     /**
@@ -37,23 +40,20 @@ struct UserDictSyncRecord: Equatable, Sendable {
     static let syntheticTimestampInterval: TimeInterval = 0.001
 
     let key: UserDictSyncKey
-    /// 注釈の文字列
-    var annotation: String?
     /// 最後に変換・単語登録した日時
     var lastUsedAt: Date?
     /// 最後に削除した日時
     var deletedAt: Date?
 
-    init(key: UserDictSyncKey, annotation: String? = nil, lastUsedAt: Date? = nil, deletedAt: Date? = nil) {
+    init(key: UserDictSyncKey, lastUsedAt: Date? = nil, deletedAt: Date? = nil) {
         self.key = key
-        self.annotation = annotation
         self.lastUsedAt = lastUsedAt.map(Self.truncate)
         self.deletedAt = deletedAt.map(Self.truncate)
     }
 
     /// 変換・単語登録したことを表す同期情報
     static func use(yomi: String, word: Word, at date: Date = Date()) -> Self {
-        Self(key: UserDictSyncKey(yomi: yomi, word: word), annotation: word.annotation?.text, lastUsedAt: date)
+        Self(key: UserDictSyncKey(yomi: yomi, word: word), lastUsedAt: date)
     }
 
     /// 削除したことを表す同期情報
@@ -81,19 +81,7 @@ struct UserDictSyncRecord: Equatable, Sendable {
     /// 同じ変換候補の別の端末での同期情報とマージする
     func merged(with other: Self) -> Self {
         precondition(key == other.key, "異なる変換候補の同期情報はマージできません")
-        let annotation: String?
-        let selfLastUsedAt = lastUsedAt ?? .distantPast
-        let otherLastUsedAt = other.lastUsedAt ?? .distantPast
-        if selfLastUsedAt > otherLastUsedAt {
-            annotation = self.annotation ?? other.annotation
-        } else if selfLastUsedAt < otherLastUsedAt {
-            annotation = other.annotation ?? self.annotation
-        } else {
-            // 同時刻の場合はどちらの端末でも同じ結果になるように大きいほうを採用する
-            annotation = [self.annotation, other.annotation].compactMap { $0 }.max()
-        }
         return Self(key: key,
-                    annotation: annotation,
                     lastUsedAt: Self.max(lastUsedAt, other.lastUsedAt),
                     deletedAt: Self.max(deletedAt, other.deletedAt))
     }
@@ -203,15 +191,13 @@ extension MemoryDict {
      *
      * 受け取った同期情報は、どれもこの端末の変換候補より新しい変更として扱う。
      *
-     * - 削除されている変換候補は取り除き、存在するべき変換候補は追加する
+     * - 削除されている変換候補は取り除き、存在するべき変換候補は追加する。既にある変換候補の注釈はそのまま残す
      * - 受け取った変換候補は最後に変換した日時の新しい順に先頭に並べ、それ以外の変換候補はその後に元の順序で並べる
      * - 読みも同様に、受け取った変換候補をもつ読みを最近変換したものとして扱う
      *
-     * - Parameters:
-     *   - records: 他の端末から受け取った同期情報
-     *   - dictId: 追加する変換候補の注釈に設定する辞書ID
+     * - Parameter records: 他の端末から受け取った同期情報
      */
-    func applying(_ records: [UserDictSyncRecord], dictId: FileDict.ID) -> MemoryDict {
+    func applying(_ records: [UserDictSyncRecord]) -> MemoryDict {
         var recordsByKey: [UserDictSyncKey: UserDictSyncRecord] = [:]
         for record in records {
             recordsByKey[record.key] = recordsByKey[record.key].map { $0.merged(with: record) } ?? record
@@ -222,11 +208,8 @@ extension MemoryDict {
             var words = entries[key.yomi] ?? []
             let index = words.firstIndex { $0.word == key.word && $0.okuri == key.okuri }
             if record.isAlive {
-                let annotation = record.annotation.map { Annotation(dictId: dictId, text: $0) }
-                if let index {
-                    words[index] = Word(key.word, okuri: key.okuri, annotation: annotation ?? words[index].annotation)
-                } else {
-                    words.append(Word(key.word, okuri: key.okuri, annotation: annotation))
+                if index == nil {
+                    words.append(Word(key.word, okuri: key.okuri))
                 }
             } else if let index {
                 words.remove(at: index)

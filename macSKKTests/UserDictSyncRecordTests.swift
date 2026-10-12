@@ -21,24 +21,17 @@ final class UserDictSyncRecordTests: XCTestCase {
     }
 
     func testMergedIsCommutative() {
-        let a = UserDictSyncRecord(key: key("い", "井"), annotation: "古い", lastUsedAt: t1, deletedAt: t3)
-        let b = UserDictSyncRecord(key: key("い", "井"), annotation: "新しい", lastUsedAt: t2)
-        let expected = UserDictSyncRecord(key: key("い", "井"), annotation: "新しい", lastUsedAt: t2, deletedAt: t3)
+        let a = UserDictSyncRecord(key: key("い", "井"), lastUsedAt: t1, deletedAt: t3)
+        let b = UserDictSyncRecord(key: key("い", "井"), lastUsedAt: t2)
+        let expected = UserDictSyncRecord(key: key("い", "井"), lastUsedAt: t2, deletedAt: t3)
         XCTAssertEqual(a.merged(with: b), expected)
         XCTAssertEqual(b.merged(with: a), expected)
         XCTAssertEqual(expected.merged(with: expected), expected)
     }
 
-    func testMergedKeepsOlderAnnotationIfNewerHasNone() {
-        let a = UserDictSyncRecord(key: key("い", "井"), annotation: "注釈", lastUsedAt: t1)
-        let b = UserDictSyncRecord(key: key("い", "井"), lastUsedAt: t2)
-        XCTAssertEqual(a.merged(with: b).annotation, "注釈")
-        XCTAssertEqual(b.merged(with: a).annotation, "注釈")
-    }
-
     func testUseAndDelete() {
         let use = UserDictSyncRecord.use(yomi: "いt", word: Word("行", okuri: "った", annotation: Annotation(dictId: "d", text: "注釈")), at: t1)
-        XCTAssertEqual(use, UserDictSyncRecord(key: key("いt", "行", okuri: "った"), annotation: "注釈", lastUsedAt: t1))
+        XCTAssertEqual(use, UserDictSyncRecord(key: key("いt", "行", okuri: "った"), lastUsedAt: t1), "注釈は同期しない")
         let delete = UserDictSyncRecord.delete(yomi: "いt", word: Word("行"), at: t2)
         XCTAssertEqual(delete, UserDictSyncRecord(key: key("いt", "行"), deletedAt: t2))
     }
@@ -86,7 +79,7 @@ final class UserDictSyncRecordTests: XCTestCase {
         let applied = dict.applying([
             .use(yomi: "あ", word: Word("亜"), at: t2),
             .use(yomi: "う", word: Word("鵜"), at: t1),
-        ], dictId: "skk-jisyo.utf8")
+        ])
         XCTAssertEqual(applied.entries["あ"]?.map(\.word), ["亜", "阿"], "受け取った変換候補が先頭になる")
         XCTAssertEqual(applied.okuriNashiYomis, ["い", "う", "あ"], "受け取った読みが最近変換したものになり、日時の新しいものが後に並ぶ")
     }
@@ -97,13 +90,20 @@ final class UserDictSyncRecordTests: XCTestCase {
             UserDictSyncRecord(key: key("あ", "阿"), lastUsedAt: t1, deletedAt: t2),
             UserDictSyncRecord(key: key("い", "伊"), deletedAt: t1),
             UserDictSyncRecord(key: key("い", "井"), lastUsedAt: t1),
-            UserDictSyncRecord(key: key("かk", "書", okuri: "く"), annotation: "注釈", lastUsedAt: t3),
-        ], dictId: "skk-jisyo.utf8")
+            UserDictSyncRecord(key: key("かk", "書", okuri: "く"), lastUsedAt: t3),
+        ])
         XCTAssertEqual(applied.entries["あ"]?.map(\.word), ["亜"], "削除された候補は消える")
         XCTAssertEqual(applied.entries["い"]?.map(\.word), ["井"])
-        XCTAssertEqual(applied.entries["かk"], [Word("書", okuri: "く", annotation: Annotation(dictId: "skk-jisyo.utf8", text: "注釈"))])
+        XCTAssertEqual(applied.entries["かk"], [Word("書", okuri: "く")])
         XCTAssertEqual(applied.okuriAriYomis, ["かk"])
         XCTAssertEqual(applied.okuriNashiYomis, ["あ", "い"])
+    }
+
+    func testApplyingKeepsAnnotation() {
+        let annotation = Annotation(dictId: "skk-jisyo.utf8", text: "注釈")
+        let dict = MemoryDict(entries: ["あ": [Word("阿"), Word("亜", annotation: annotation)]], readonly: false)
+        let applied = dict.applying([.use(yomi: "あ", word: Word("亜"), at: t1)])
+        XCTAssertEqual(applied.entries["あ"], [Word("亜", annotation: annotation), Word("阿")], "既にある変換候補の注釈は残る")
     }
 
     func testApplyingMergesSameKey() {
@@ -111,13 +111,13 @@ final class UserDictSyncRecordTests: XCTestCase {
         let applied = dict.applying([
             UserDictSyncRecord(key: key("あ", "阿"), deletedAt: t2),
             UserDictSyncRecord(key: key("あ", "阿"), lastUsedAt: t3),
-        ], dictId: "skk-jisyo.utf8")
+        ])
         XCTAssertEqual(applied.entries["あ"]?.map(\.word), ["阿"], "同じ変換候補はマージしてから反映する")
     }
 
     func testApplyingRemovesEmptyYomi() {
         let dict = MemoryDict(entries: ["あ": [Word("阿")]], readonly: false)
-        let applied = dict.applying([.delete(yomi: "あ", word: Word("阿"), at: t1)], dictId: "skk-jisyo.utf8")
+        let applied = dict.applying([.delete(yomi: "あ", word: Word("阿"), at: t1)])
         XCTAssertNil(applied.entries["あ"])
         XCTAssertEqual(applied.okuriNashiYomis, [])
     }
@@ -141,7 +141,7 @@ final class UserDictSyncRecordTests: XCTestCase {
             .use(yomi: "う", word: Word("鵜"), at: t1),
             .delete(yomi: "い", word: Word("伊"), at: t1),
         ]
-        let new = old.applying(records, dictId: "skk-jisyo.utf8")
+        let new = old.applying(records)
         let changes = old.candidateChanges(to: new, receiving: records)
         XCTAssertEqual(changes.added.map { $0.serialize() }, ["う /鵜/"])
         XCTAssertEqual(changes.updated.map { $0.serialize() }, ["あ /亜/"], "既にある変換候補を受け取ったら更新として数える")

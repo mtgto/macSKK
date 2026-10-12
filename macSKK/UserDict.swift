@@ -268,7 +268,7 @@ enum UserDictAddSource {
     @discardableResult
     @MainActor func applySyncRecords(_ records: [UserDictSyncRecord]) -> MemoryDict.CandidateChanges {
         guard let dict = userDict as? FileDict, dict.isLoaded, !records.isEmpty else { return MemoryDict.CandidateChanges() }
-        let applied = dict.dict.applying(records, dictId: dict.id)
+        let applied = dict.dict.applying(records)
         if applied.entries == dict.dict.entries
             && applied.okuriAriYomis == dict.dict.okuriAriYomis
             && applied.okuriNashiYomis == dict.dict.okuriNashiYomis {

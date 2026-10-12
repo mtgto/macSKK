@@ -20,7 +20,6 @@ final class UserDictSyncRecordCloudKitTests: XCTestCase {
 
     func testWriteAndRead() {
         let syncRecord = UserDictSyncRecord(key: UserDictSyncKey(yomi: "いt", word: "行", okuri: "った"),
-                                            annotation: "注釈",
                                             lastUsedAt: Date(milliseconds: 1_700_000_000_123),
                                             deletedAt: Date(milliseconds: -1))
         let record = CKRecord(recordType: UserDictSyncRecord.recordType,
@@ -30,10 +29,21 @@ final class UserDictSyncRecordCloudKitTests: XCTestCase {
 
         // フィールドを消せる
         var updated = syncRecord
-        updated.annotation = nil
         updated.deletedAt = nil
         updated.write(to: record)
         XCTAssertEqual(UserDictSyncRecord(record: record), updated)
+    }
+
+    func testWriteDoesNotTouchAnnotation() {
+        // 将来の版が保存した注釈を消さないように、注釈のフィールドには触れない
+        let record = CKRecord(recordType: UserDictSyncRecord.recordType)
+        record.encryptedValues["annotation"] = "注釈"
+        UserDictSyncRecord(key: UserDictSyncKey(yomi: "あ", word: "阿", okuri: nil), lastUsedAt: Date(milliseconds: 1)).write(to: record)
+        XCTAssertEqual(record.encryptedValues["annotation"] as? String, "注釈")
+
+        let fresh = CKRecord(recordType: UserDictSyncRecord.recordType)
+        UserDictSyncRecord(key: UserDictSyncKey(yomi: "あ", word: "阿", okuri: nil), lastUsedAt: Date(milliseconds: 1)).write(to: fresh)
+        XCTAssertFalse(fresh.changedKeys().contains("annotation"))
     }
 
     func testReadInvalidRecord() {
