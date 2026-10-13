@@ -3032,6 +3032,29 @@ final class StateMachineTests: XCTestCase {
         XCTAssertEqual(textInput.caret, 2)
     }
 
+    /// ▽の途中にカーソルを移動して確定した文字列を確定アンドゥして読みまで戻ったとき、カーソルより右の読みは含めない
+    @MainActor func testKakuteiUndoAfterFixWithCursorCancel() {
+        Global.dictionary.setEntries(["え": [Word("絵"), Word("柄")]])
+
+        let textInput = MockTextInput()
+        let ctx = StateMachineTestContext(verifying: [], textInput: textInput)
+        ctx.step(printableKeyEventAction(character: "e", withShift: true))
+        ctx.step(printableKeyEventAction(character: "i"))
+        ctx.step(leftKeyAction)
+        ctx.step(printableKeyEventAction(character: " "))
+        ctx.step(enterAction)
+        ctx.step(enterAction)
+        XCTAssertEqual(textInput.text, "絵い")
+        ctx.step(kakuteiUndoAction)
+        XCTAssertEqual(textInput.text, "▼絵い")
+        ctx.step(cancelAction)
+        XCTAssertEqual(textInput.text, "▽えい", "カーソルより右だった「い」はすでに入力済みなので読みに含めない")
+        XCTAssertEqual(textInput.markedText, "▽え")
+        ctx.step(cancelAction)
+        XCTAssertEqual(textInput.text, "絵い", "読みからキャンセルすると元の確定文字列に戻る")
+        XCTAssertEqual(textInput.caret, 1)
+    }
+
     /// 接辞変換で確定した文字列も確定アンドゥできる
     @MainActor func testKakuteiUndoAfterFixWithAffix() {
         Global.dictionary.setEntries(["と": [Word("戸"), Word("都")], "あ": [Word("阿"), Word("亜")]])

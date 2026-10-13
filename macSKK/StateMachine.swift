@@ -563,7 +563,9 @@ final class StateMachine {
         } else {
             location = nil
         }
-        lastFix = LastFix(selecting: selecting, location: location, text: fixedText)
+        // ▽の途中にカーソルを移動して確定した場合、カーソルより右の読みはすでに入力済みなので覚えない。
+        // 覚えると確定アンドゥして確定し直したときやキャンセルしたときに、同じ読みが二重に入る
+        lastFix = LastFix(selecting: selecting.dropRemain(), location: location, text: fixedText)
     }
 
     /**
@@ -689,9 +691,7 @@ final class StateMachine {
             yomi: lastFix.selecting.yomi,
             candidates: lastFix.selecting.candidates,
             candidateIndex: lastFix.selecting.candidateIndex,
-            // ▽の途中にカーソルを移動して確定した場合、カーソルより右の読みはすでに入力済みなので引き継がない。
-            // 引き継ぐと確定し直したときに再び▽が始まり、同じ読みが二重に入る
-            remain: nil,
+            remain: lastFix.selecting.remain,
             completion: lastFix.selecting.completion,
         )
         state.inputMethod = .selecting(selecting)
