@@ -264,20 +264,19 @@ enum UserDictAddSource {
      * 他の端末から受け取った同期情報をユーザー辞書に反映して、すぐに保存する。
      *
      * 反映した変更は再取得できないので、保存を遅らせずに行う。
+     * 反映中にこの端末で辞書を編集してもよい。
      *
      * - Returns: 反映した変換候補の追加・更新・削除
      */
     @discardableResult
-    @MainActor func applySyncRecords(_ records: [UserDictSyncRecord]) -> MemoryDict.CandidateChanges {
+    @MainActor func applySyncRecords(_ records: [UserDictSyncRecord]) async -> MemoryDict.CandidateChanges {
         guard var dict = userDict as? FileDict, dict.isLoaded, !records.isEmpty else { return MemoryDict.CandidateChanges() }
         let old = dict.dict
-        dict.apply(records)
-        if dict.dict.entries == old.entries
-            && dict.dict.okuriAriYomis == old.okuriAriYomis
-            && dict.dict.okuriNashiYomis == old.okuriNashiYomis {
-            return MemoryDict.CandidateChanges()
-        }
+        await dict.apply(records)
         let changes = old.candidateChanges(to: dict.dict, receiving: records)
+        if changes.isEmpty {
+            return changes
+        }
         logger.log("ユーザー辞書にiCloud同期の変更を反映しました。追加 \(changes.addedCount) 件、更新 \(changes.updatedCount) 件、削除 \(changes.removedCount) 件")
         for entry in changes.added {
             logger.log("iCloud同期でユーザー辞書に追加しました: \(entry.serialize(), privacy: .public)")

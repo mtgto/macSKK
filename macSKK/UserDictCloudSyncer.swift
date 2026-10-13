@@ -84,6 +84,8 @@ struct UserDictSyncStatus: Equatable {
     private var fetchedRecords: [UserDictSyncRecord] = []
     /// 取得したがまだユーザー辞書に反映していない同期情報に、初回同期や最初からの取得で受け取ったものが含まれるか
     private var fetchedRecordsIncludeInitialFetch = false
+    /// 取得した同期情報をユーザー辞書に反映中かどうか
+    private var isApplying = false
     /// 取得した同期情報をユーザー辞書に反映するまで保存を遅らせている同期状態
     private var deferredState: CKSyncEngine.State.Serialization?
     /// 初回同期の取得中に受け取った同期情報の集計
@@ -311,7 +313,7 @@ struct UserDictSyncStatus: Equatable {
         guard isRunning else { return }
         switch event {
         case .stateUpdate(let update):
-            if isFetching || !fetchedRecords.isEmpty {
+            if isFetching || isApplying || !fetchedRecords.isEmpty {
                 // 取得した変更をユーザー辞書に反映して保存するまで、取得済みとして記録しない
                 deferredState = update.stateSerialization
             } else {
@@ -432,15 +434,25 @@ struct UserDictSyncStatus: Equatable {
 
     /// 取得した変更をユーザー辞書に反映し、遅らせていた同期状態を保存する
     private func applyFetchedRecords() {
-        guard isRunning, !isFetching, userDict.isUserDictLoaded else { return }
+        guard isRunning, !isFetching, !isApplying, userDict.isUserDictLoaded else { return }
         if !fetchedRecords.isEmpty {
-            logger.log("iCloudからユーザー辞書の変換候補 \(self.fetchedRecords.count) 件の変更を受け取りました")
-            let changes = userDict.applySyncRecords(fetchedRecords)
-            if !fetchedRecordsIncludeInitialFetch && !changes.isEmpty {
-                didApplyRemoteChanges?(changes)
-            }
+            // 反映中に取得した変更は、反映が終わってから改めて反映する
+            let records = fetchedRecords
+            let includesInitialFetch = fetchedRecordsIncludeInitialFetch
             fetchedRecords.removeAll()
             fetchedRecordsIncludeInitialFetch = false
+            logger.log("iCloudからユーザー辞書の変換候補 \(records.count) 件の変更を受け取りました")
+            isApplying = true
+            Task {
+                let changes = await userDict.applySyncRecords(records)
+                isApplying = false
+                guard isRunning else { return }
+                if !includesInitialFetch && !changes.isEmpty {
+                    didApplyRemoteChanges?(changes)
+                }
+                applyFetchedRecords()
+            }
+            return
         }
         if let deferredState {
             Self.saveState(deferredState)
@@ -502,7 +514,9 @@ struct UserDictSyncStatus: Equatable {
                 status.lastError = failed.error.localizedDescription
             }
         }
-        userDict.applySyncRecords(conflictedRecords)
+        if !conflictedRecords.isEmpty {
+            Task { await userDict.applySyncRecords(conflictedRecords) }
+        }
         if case .sending = status.activity {
             status.activity = .sending(remaining: pendingRecords.count)
         }

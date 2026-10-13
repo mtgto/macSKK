@@ -144,36 +144,31 @@ extension MemoryDict {
     }
 
     /**
-     * 他の端末から受け取った同期情報を反映したotherとの変換候補の違いを返す。
+     * 他の端末から受け取った同期情報を反映したotherとの変換候補の違いを返す。読みは辞書順、変換候補はそれぞれの辞書での順に並ぶ。
      *
-     * 受け取った同期情報のうち、両方の辞書にある変換候補を更新として扱う。
+     * 受け取った同期情報の変換候補だけを比べる。反映中にこの端末で変換した変換候補などは含まない。
+     * 両方の辞書にある変換候補は更新として扱う。並び順の変化は比べない。
      */
     func candidateChanges(to other: MemoryDict, receiving records: [UserDictSyncRecord]) -> CandidateChanges {
-        var changes = candidateChanges(to: other)
-        func contains(_ dict: MemoryDict, _ key: UserDictSyncKey) -> Bool {
-            dict.entries[key.yomi]?.contains { $0.word == key.word && $0.okuri == key.okuri } ?? false
+        let keys = Set(records.map(\.key))
+        func receivedWords(_ dict: MemoryDict, _ yomi: String) -> [Word] {
+            (dict.entries[yomi] ?? []).filter { keys.contains(UserDictSyncKey(yomi: yomi, word: $0)) }
         }
-        var updatedWords: [String: [Word]] = [:]
-        for key in Set(records.filter(\.isAlive).map(\.key)) where contains(self, key) && contains(other, key) {
-            updatedWords[key.yomi, default: []].append(Word(key.word, okuri: key.okuri))
-        }
-        changes.updated = updatedWords.keys.sorted().map { Entry(yomi: $0, candidates: updatedWords[$0]!) }
-        return changes
-    }
-
-    /// otherとの変換候補の違いを返す。並び順の変化は含まない。読みは辞書順、変換候補はそれぞれの辞書での順に並ぶ
-    func candidateChanges(to other: MemoryDict) -> CandidateChanges {
         func contains(_ words: [Word], _ word: Word) -> Bool {
             words.contains { $0.word == word.word && $0.okuri == word.okuri }
         }
         var changes = CandidateChanges()
-        for yomi in Set(entries.keys).union(other.entries.keys).sorted() {
-            let oldWords = entries[yomi] ?? []
-            let newWords = other.entries[yomi] ?? []
+        for yomi in Set(keys.map(\.yomi)).sorted() {
+            let oldWords = receivedWords(self, yomi)
+            let newWords = receivedWords(other, yomi)
             let added = newWords.filter { !contains(oldWords, $0) }
+            let updated = newWords.filter { contains(oldWords, $0) }
             let removed = oldWords.filter { !contains(newWords, $0) }
             if !added.isEmpty {
                 changes.added.append(Entry(yomi: yomi, candidates: added))
+            }
+            if !updated.isEmpty {
+                changes.updated.append(Entry(yomi: yomi, candidates: updated))
             }
             if !removed.isEmpty {
                 changes.removed.append(Entry(yomi: yomi, candidates: removed))
@@ -193,15 +188,17 @@ extension DictProtocol {
      * 受け取った変換候補は日時の新しい順に先頭に並び、それ以外の変換候補はその後に元の順序で並ぶ。
      * 既にある変換候補の注釈はそのまま残る。
      *
-     * - Parameter records: 他の端末から受け取った同期情報
+     * 大量に受け取ってもメインスレッドを占有しないように、一定の件数ごとに他の処理に譲る。
+     * そのあいだにこの端末で辞書を編集してもよい。
+     *
+     * - Parameters:
+     *   - records: 他の端末から受け取った同期情報
+     *   - yieldInterval: 他の処理に譲る間隔の件数
      */
-    @MainActor mutating func apply(_ records: [UserDictSyncRecord]) {
+    @MainActor mutating func apply(_ records: [UserDictSyncRecord], yieldInterval: Int = 100) async {
         var recordsByKey: [UserDictSyncKey: UserDictSyncRecord] = [:]
         for record in records {
             recordsByKey[record.key] = recordsByKey[record.key].map { $0.merged(with: record) } ?? record
-        }
-        for record in recordsByKey.values where !record.isAlive {
-            _ = delete(yomi: record.key.yomi, word: Word(record.key.word, okuri: record.key.okuri))
         }
         // 日時が同じものはどの端末でも同じ順になるようにキーで並べる
         let alive = recordsByKey.values.filter(\.isAlive).sorted { lhs, rhs in
@@ -210,8 +207,17 @@ extension DictProtocol {
             }
             return (lhs.key.yomi, lhs.key.word, lhs.key.okuri ?? "") < (rhs.key.yomi, rhs.key.word, rhs.key.okuri ?? "")
         }
-        for record in alive {
-            add(yomi: record.key.yomi, word: Word(record.key.word, okuri: record.key.okuri))
+        let dead = recordsByKey.values.filter { !$0.isAlive }
+        for (index, record) in (dead + alive).enumerated() {
+            if index > 0 && index % yieldInterval == 0 {
+                await Task.yield()
+            }
+            let word = Word(record.key.word, okuri: record.key.okuri)
+            if record.isAlive {
+                add(yomi: record.key.yomi, word: word)
+            } else {
+                _ = delete(yomi: record.key.yomi, word: word)
+            }
         }
     }
 }
