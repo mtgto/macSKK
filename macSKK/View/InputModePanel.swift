@@ -39,6 +39,11 @@ class InputModePanel: NSPanel {
         viewModel.privateMode = privateMode
 
         alphaValue = 1.0
+        // フェードアウト中に別の操作スペースへ切り替えると、パネルは前の操作スペースに残っている。
+        // そのまま前面に出しても前の操作スペースに表示されるので、いったんorderOutして今の操作スペースに出し直す
+        if isVisible && !isOnActiveSpace {
+            orderOut(nil)
+        }
         // Note: orderFront(nil) だと "Warning: Window NSWindow 0x13b72dbe0 ordered front from a non-active application
         // and may order beneath the active application's windows." のようなエラーがConsole.appに出力される
         // orderFrontRegardlessだとそのようなログが出ない
