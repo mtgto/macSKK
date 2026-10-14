@@ -9,6 +9,8 @@ import SwiftUI
 class InputModePanel: NSPanel {
     private let viewModel: InputModeViewModel
     private let viewSize: CGSize
+    /// フェードアウト中に再表示されたとき、古いフェードアウトの完了で新しい表示を消さないための世代
+    private var showGeneration: UInt = 0
 
     init() {
         viewSize = CGSize(width: 33, height: 24)
@@ -18,9 +20,6 @@ class InputModePanel: NSPanel {
         isOpaque = false
         ignoresMouseEvents = true
         hasShadow = false
-        // フェードアウトしてもorderOutしないため、最初に表示した操作スペースにパネルが残り続ける。
-        // 他の操作スペースやフルスクリーンのアプリの上でも表示されるようにする。
-        collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         let hostingController = NSHostingController(rootView: InputModeView(viewModel: viewModel))
         contentViewController = hostingController
         setContentSize(viewSize)
@@ -44,11 +43,19 @@ class InputModePanel: NSPanel {
         // and may order beneath the active application's windows." のようなエラーがConsole.appに出力される
         // orderFrontRegardlessだとそのようなログが出ない
         orderFrontRegardless()
-        // フェードアウト
+        // フェードアウトしたらorderOutする。
+        // 残しておくと最初に表示した操作スペースに居続け、別の操作スペースで前面に出しても表示されない
+        showGeneration &+= 1
+        let generation = showGeneration
         NSAnimationContext.runAnimationGroup { context in
             context.duration = 2.0
             context.timingFunction = CAMediaTimingFunction(name: .easeIn)
             self.animator().alphaValue = 0.0
+        } completionHandler: { [weak self] in
+            MainActor.assumeIsolated {
+                guard let self, self.showGeneration == generation else { return }
+                self.orderOut(nil)
+            }
         }
     }
 }
