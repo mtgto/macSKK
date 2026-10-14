@@ -3,6 +3,7 @@
 
 import Cocoa
 import Combine
+import InputMethodKit
 
 /// ActionによってIMEに関する状態が変更するイベントの列挙
 enum InputMethodEvent: Equatable {
@@ -12,6 +13,12 @@ enum InputMethodEvent: Equatable {
     ///
     /// 登録モード時は "[登録：あああ]ほげ" のように長くなる
     case markedText(MarkedText)
+    /// すでにクライアントに送った確定文字列を下線付きの未確定文字列で置き換える。確定アンドゥで使う。
+    ///
+    /// replacementRangeはクライアントのドキュメント先頭からの範囲。
+    /// ChromiumのWebコンテンツやターミナルのように範囲指定を無視するクライアントでは
+    /// キャレット位置に未確定文字列が置かれてしまうため、送ったあとに置けたかを確認すること。
+    case undoFixedText(MarkedText, replacementRange: NSRange)
     /// qやlなどにより入力モードを変更する
     case modeChanged(InputMode)
 }
@@ -56,6 +63,20 @@ final class StateMachine {
     /// 1文字で確定するローマ字やq/lなどのモード変更などで未確定文字列を一度表示するワークグラウンドが有効かどうか
     /// xterm.jsを利用しているVSCodeのターミナルやHyperなどaiueoで直接入力されてしまう環境向け
     var enableMarkedTextWorkaround: Bool
+    /// 直前に変換候補選択から確定した内容。確定アンドゥ (``KeyBinding/Action/kakuteiUndo``) で使う。
+    /// 確定したあとに続きを入力しても捨てない (``addFixedText(_:)`` を参照)。
+    private var lastFix: LastFix?
+
+    /// 直前に変換候補選択から確定した内容
+    private struct LastFix {
+        /// 確定したときの変換候補選択状態
+        let selecting: SelectingState
+        /// クライアント上で確定文字列が始まる位置。
+        /// 確定した直後にキャレット位置から求める。取得できないクライアントではnil
+        let location: Int?
+        /// クライアントに送った確定文字列
+        let text: String
+    }
 
     init(initialState: IMEState = IMEState(), inlineCandidateCount: Int = 3, enableMarkedTextWorkaround: Bool = false) {
         state = initialState
@@ -472,6 +493,14 @@ final class StateMachine {
                 }
             }
             return true
+        case .kakuteiUndo:
+            // 取り消せない場合も、割り当てられたキーはアプリに渡さずなにもせずに握り潰す。
+            // Ctrl-BackspaceやCtrl-uのように、アプリに渡るとターミナルなどで直前の単語や
+            // 行が削除されてしまうキーを割り当てられるため
+            // (ターミナルによっては握り潰してもターミナル側で処理されてしまう)。
+            // 文字キーを割り当てた場合も、取り消せないときにその文字が入力されるよりは何も起きないほうがよい
+            _ = kakuteiUndo(action: action)
+            return true
         case .eisu:
             // 何もしない (OSがIMEの切り替えはしてくれる)
             return true
@@ -510,6 +539,172 @@ final class StateMachine {
         } else {
             return handleNormalPrintable(input: input, action: action, specialState: specialState)
         }
+    }
+
+    /**
+     * 確定アンドゥのために、変換候補選択から確定した内容を覚えておく。
+     *
+     * 確定した文字列をクライアントに送った直後に呼ぶこと。
+     * 単語登録中はクライアントに文字列を送らない (登録中の文字列に追加される) ので対象外。
+     *
+     * - Parameter selecting: 確定したときの変換候補選択状態。補完候補から確定したときは組み立てて渡す。
+     */
+    @MainActor private func rememberLastFix(selecting: SelectingState, textInput: (any IMKTextInput)?) {
+        let fixedText = selecting.fixedText(dropLast: false)
+        guard state.specialState == nil, !fixedText.isEmpty else {
+            lastFix = nil
+            return
+        }
+        // 確定した文字列が始まる位置を覚えておく。
+        // あとから読み取ってもキャレットが動いていると分からなくなるので、確定した直後に求める
+        let location: Int?
+        if let selectedRange = textInput?.selectedRange(), selectedRange.location != NSNotFound {
+            let start = selectedRange.location - (fixedText as NSString).length
+            location = start >= 0 ? start : nil
+        } else {
+            location = nil
+        }
+        // ▽の途中にカーソルを移動して確定した場合、カーソルより右の読みはすでに入力済みなので覚えない。
+        // 覚えると確定アンドゥして確定し直したときやキャンセルしたときに、同じ読みが二重に入る
+        lastFix = LastFix(selecting: selecting.dropRemain(), location: location, text: fixedText)
+    }
+
+    /**
+     * 直前の確定を取り消して変換候補選択に戻る (確定アンドゥ)。
+     *
+     * ddskkの確定アンドゥ (skk-undo-kakutei) と同じく、確定した文字列を未確定文字列 (▼) に戻す。
+     * 確定したときの変換候補が選択された状態で戻るので、そこからスペースで次の変換候補、
+     * 前候補キーを続ければ読み (▽) まで戻れる。辞書は引き直さないので、
+     * 確定時の学習で変換候補の順序が変わっていても戻したときの表示は確定前と同じになる。
+     *
+     * 確定した文字列がクライアントに残っているときのみ有効。後ろに続きを入力していてもよい。
+     *
+     * 読み (▽) まで戻ってからキャンセルすると、選択テキストの再変換 (reconvert) と同じく元の確定文字列に戻る。
+     *
+     * 確定済み文字列はsetMarkedTextの範囲指定で未確定文字列に置き換える。範囲指定を無視するクライアントでは
+     * キャレット位置に未確定文字列が置かれてしまうが、置けたかどうかは判定しない。
+     * ChromiumのWebコンテンツはキー処理が終わるまで書き込みを読み取りに反映しないため、
+     * 書き込んだあとに読み直すと置けていても置けていないことになる。
+     *
+     * - Returns: 取り消した場合はtrue、取り消さなかった場合はfalse。
+     */
+    @MainActor private func kakuteiUndo(action: Action) -> Bool {
+        // 単語登録中の確定はクライアントに文字列を送っていないので対象外
+        guard state.specialState == nil, case .normal = state.inputMethod,
+              let lastFix, let textInput = action.textInput else {
+            return false
+        }
+        switch state.inputMode {
+        case .hiragana, .katakana, .hankaku:
+            break
+        case .direct, .eisu:
+            return false
+        }
+        let selectedRange = textInput.selectedRange()
+        // 選択範囲があるときは再変換 (reconvert) の対象なので確定アンドゥはしない
+        guard selectedRange.location != NSNotFound, selectedRange.length == 0 else {
+            return false
+        }
+        guard let range = fixedTextRange(lastFix: lastFix, caret: selectedRange.location, textInput: textInput) else {
+            return false
+        }
+        undoToSelecting(lastFix: lastFix, range: range)
+        return true
+    }
+
+    /**
+     * クライアント上で ``LastFix/text`` が占めている範囲を返す。見つからないときはnilを返す。
+     *
+     * 確定した直後に覚えた位置を優先し、そこに無ければキャレットの直前を見る。
+     * 確定した位置より前を編集されていると覚えた位置はずれるが、その場合は何もしない
+     * (ddskkが確定した位置を追い続けられるのはEmacsのマーカーがあるからで、入力メソッドからは追えない)。
+     *
+     * setMarkedTextの範囲指定を扱えないクライアントでは、範囲指定が無視されて画面に▼が出ないまま
+     * 変換候補選択の状態になり、続けて確定すると確定文字列が二重に入ってしまう。
+     * そのようなクライアントでは ``ReplacementRangeSupport`` に従って探す範囲を絞るか、見つからないことにする。
+     */
+    @MainActor private func fixedTextRange(lastFix: LastFix, caret: Int, textInput: any IMKTextInput) -> NSRange? {
+        let length = (lastFix.text as NSString).length
+        let locations: [Int?]
+        switch ReplacementRangeSupport(bundleIdentifier: textInput.bundleIdentifier()) {
+        case .full:
+            locations = [lastFix.location, caret - length]
+        case .beforeCaretOnly:
+            locations = [caret - length]
+        case .unsupported:
+            return nil
+        }
+        for location in locations {
+            guard let location, location >= 0 else {
+                continue
+            }
+            let range = NSRange(location: location, length: length)
+            if textInput.attributedSubstring(from: range)?.string == lastFix.text {
+                return range
+            }
+        }
+        return nil
+    }
+
+    /// クライアントがsetMarkedTextの範囲指定をどこまで扱えるか
+    private enum ReplacementRangeSupport {
+        /// どの範囲でも置き換えられる
+        case full
+        /// キャレットの直前で終わる範囲だけ置き換えられる。
+        /// Terminal.appはそれ以外の範囲を指定したsetMarkedTextを無視する
+        case beforeCaretOnly
+        /// 範囲指定を使わない。
+        /// iTerm2は未確定文字列を常にカーソル位置に描く。位置を画面のセルで数えるので全角の確定文字列は見つからないが、
+        /// 半角だけの確定文字列は見つかってしまう
+        case unsupported
+
+        init(bundleIdentifier: String?) {
+            switch bundleIdentifier {
+            case "com.apple.Terminal":
+                self = .beforeCaretOnly
+            case "com.googlecode.iterm2":
+                self = .unsupported
+            default:
+                self = .full
+            }
+        }
+    }
+
+    /**
+     * 確定済み文字列を未確定文字列で置き換えて変換候補選択の状態に戻す。
+     *
+     * - Parameter range: クライアント上で確定済み文字列が占めている範囲。
+     */
+    @MainActor private func undoToSelecting(lastFix: LastFix, range: NSRange) {
+        // 読みまで戻ってキャンセルしたときに元の確定文字列に戻せるよう、再変換と同じく確定文字列を持たせる
+        let composing = lastFix.selecting.prev.composing.with(reconvertText: lastFix.text)
+        // ddskkと同じく、確定したあとにqなどで入力モードを変えていても、ひらがな・カタカナ・半角カナは切り替えずに今のモードのまま戻す。
+        // 変換候補選択からキャンセルするとprev.modeに戻るので、prev.modeも今のモードにしておく。
+        // Abbrevから確定した場合はAbbrevの変換候補選択に戻し、変換を終えたら今のモードに戻るようにする
+        let prev: SelectingState.PrevState
+        if lastFix.selecting.prev.mode == .direct {
+            prev = SelectingState.PrevState(mode: .direct, composing: composing.with(prevMode: state.inputMode))
+        } else {
+            prev = SelectingState.PrevState(mode: state.inputMode, composing: composing)
+        }
+        let selecting = SelectingState(
+            prev: prev,
+            yomi: lastFix.selecting.yomi,
+            candidates: lastFix.selecting.candidates,
+            candidateIndex: lastFix.selecting.candidateIndex,
+            remain: lastFix.selecting.remain,
+            completion: lastFix.selecting.completion,
+        )
+        state.inputMethod = .selecting(selecting)
+        // .modeChangedを受けたInputControllerは空文字挿入のワークアラウンドでsetMarkedTextを呼ぶことがあり、
+        // undoFixedTextの後に送ると戻した未確定文字列が上書きされるので、先に送る
+        if state.inputMode != prev.mode {
+            state.inputMode = prev.mode
+            inputMethodEventSubject.send(.modeChanged(prev.mode))
+        }
+        inputMethodEventSubject.send(.undoFixedText(state.displayText(), replacementRange: range))
+        self.lastFix = nil
+        updateCandidates(selecting: selecting)
     }
 
     /**
@@ -622,11 +817,25 @@ final class StateMachine {
             return true
         } else if let input, !event.modifierFlags.contains(.control) {
             if case .candidates(let candidateWords) = completion, let candidate = candidateWords.first, let original = candidate.original {
+                /// 補完候補から確定したときに確定アンドゥで戻る変換候補選択状態。Tabキーで補完候補を選択したときと同じ状態にする
+                func completionSelecting(candidateIndex: Int) -> SelectingState {
+                    let trimmedComposing = composing.trim(kanaRule: Global.kanaRule)
+                    return SelectingState(
+                        prev: SelectingState.PrevState(mode: state.inputMode, composing: trimmedComposing),
+                        yomi: trimmedComposing.yomi(for: state.inputMode, kanaRule: Global.kanaRule),
+                        candidates: candidateWords,
+                        candidateIndex: candidateIndex,
+                        remain: nil,
+                        completion: true,
+                    )
+                }
                 // 補完候補が変換候補であり、fixedCompletionByPeriodが有効で、ピリオドキーが入力された場合先頭の補完候補で確定する
                 if input == "." && !event.modifierFlags.contains(.shift) && Global.fixedCompletionByPeriod {
+                    let selecting = completionSelecting(candidateIndex: 0)
                     addWordToUserDict(yomi: original.midashi,  okuri: nil, candidate: candidate)
                     state.inputMethod = .normal
                     addFixedText(candidate.word)
+                    rememberLastFix(selecting: selecting, textInput: action.textInput)
                     return true
                 }
                 // 補完候補が表示されてから一定時間経過後に確定キーが押された場合は補完候補で確定する
@@ -635,12 +844,14 @@ final class StateMachine {
                    let first = input.lowercased().first,
                    let index = Global.selectCandidateKeys.firstIndex(of: first), index < candidateWords.count, index < Global.displayCandidateCount {
                     let candidate = candidateWords[index]
+                    let selecting = completionSelecting(candidateIndex: index)
                     if let original = candidate.original {
                         addWordToUserDict(yomi: original.midashi, okuri: nil, candidate: candidate)
                     }
                     completion = nil
                     state.inputMethod = .normal
                     addFixedText(candidate.word)
+                    rememberLastFix(selecting: selecting, textInput: action.textInput)
                     return true
                 }
             }
@@ -1074,7 +1285,7 @@ final class StateMachine {
             }
         case .up, .down, .registerPaste, .eisu, .kana, .toggleKana, .reconvert:
             return true
-        case .abbrev, .directAbbrev, .unregister, .backwardCandidate, .none:
+        case .abbrev, .directAbbrev, .unregister, .backwardCandidate, .kakuteiUndo, .none:
             break
         }
 
@@ -1355,14 +1566,25 @@ final class StateMachine {
             if !fixedText.isEmpty {
                 addWordToUserDict(yomi: yomi, okuri: okuri, candidate: selecting.candidates[selecting.candidateIndex])
             }
+            func rememberFix() {
+                // バックスペースで末尾を削って確定した場合は変換候補と確定文字列が一致しないので確定アンドゥの対象外
+                if dropLast {
+                    lastFix = nil
+                } else {
+                    rememberLastFix(selecting: selecting, textInput: action.textInput)
+                }
+            }
             updateCandidates(selecting: nil)
             if let remain = selecting.remain {
                 addFixedText(fixedText)
+                // 残りの読みを未確定文字列として書き込むとキャレットがその後ろに移るので、先に確定した位置を覚える
+                rememberFix()
                 state.inputMethod = .composing(ComposingState(isShift: true, text: remain, romaji: ""))
                 updateMarkedText()
             } else {
                 state.inputMethod = .normal
                 addFixedText(fixedText)
+                rememberFix()
                 if let prevMode = selecting.prev.composing.prevMode {
                     state.inputMode = prevMode
                     inputMethodEventSubject.send(.modeChanged(prevMode))
@@ -1511,6 +1733,9 @@ final class StateMachine {
             addWordToUserDict(yomi: selecting.yomi, okuri: selecting.okuri, candidate: selecting.candidates[selecting.candidateIndex])
             updateCandidates(selecting: nil)
             addFixedText(selecting.fixedText(dropLast: false))
+            // 接尾辞の入力をやめたときにも確定アンドゥできるようにする。
+            // 接尾辞や残りの読みを未確定文字列として書き込むとキャレットがその後ろに移るので、先に確定した位置を覚える
+            rememberLastFix(selecting: selecting, textInput: action.textInput)
             if let remain = selecting.remain {
                 state.inputMethod = .composing(ComposingState(isShift: true, text: remain, romaji: ""))
                 updateMarkedText()
@@ -1520,7 +1745,7 @@ final class StateMachine {
             return handle(action)
         case .registerPaste, .delete, .eisu, .kana, .reconvert:
             return true
-        case .toggleKana, .toggleAndFixKana, .direct, .toggleDirect, .zenkaku, .abbrev, .directAbbrev, .japanese:
+        case .toggleKana, .toggleAndFixKana, .direct, .toggleDirect, .zenkaku, .abbrev, .directAbbrev, .japanese, .kakuteiUndo:
             break
         case nil:
             break
@@ -1674,6 +1899,9 @@ final class StateMachine {
     }
 
     private func addFixedText(_ text: String) {
+        // 確定アンドゥは続きを入力したあとでも使えるようにしたいので、ここではlastFixを捨てない。
+        // 変換候補選択や補完候補から確定したときはrememberLastFixで設定し直す。
+        // 確定した文字列がクライアントに残っているかどうかは確定アンドゥの実行時に確かめる
         if let specialState = state.specialState {
             // state.markedTextを更新してinputMethodEventSubjectにstate.displayText()をsendする
             state.specialState = specialState.appendText(text)
@@ -1784,7 +2012,11 @@ final class StateMachine {
     /// StateMachine外で選択されている変換候補が更新されたときに通知される
     func didSelectCandidate(_ candidate: Candidate) {
         if case .selecting(var selecting) = state.inputMethod {
-            if let candidateIndex = selecting.candidates.firstIndex(of: candidate) {
+            // 自分で変換候補パネルに反映したときも通知されるので、選択中の変換候補と同じときはなにもしない。
+            // ChromiumのWebコンテンツはキー処理中に受けたsetMarkedTextのうち最後の1回しか反映しないため、
+            // 確定アンドゥで範囲を指定して書き込んだ直後に範囲なしで書き込むと範囲指定が失われる
+            if let candidateIndex = selecting.candidates.firstIndex(of: candidate),
+               candidateIndex != selecting.candidateIndex {
                 selecting.candidateIndex = candidateIndex
                 state.inputMethod = .selecting(selecting)
                 updateMarkedText()
@@ -1793,12 +2025,19 @@ final class StateMachine {
     }
 
     /// StateMachine外で選択されている変換候補が二回選択されたときに通知される
-    @MainActor func didDoubleSelectCandidate(_ candidate: Candidate) {
+    @MainActor func didDoubleSelectCandidate(_ candidate: Candidate, textInput: (any IMKTextInput)? = nil) {
         if case .selecting(let selecting) = state.inputMethod {
             addWordToUserDict(yomi: selecting.yomi, okuri: selecting.okuri, candidate: candidate)
             updateCandidates(selecting: nil)
             state.inputMethod = .normal
             addFixedText(candidate.word)
+            if let candidateIndex = selecting.candidates.firstIndex(of: candidate) {
+                var selecting = selecting
+                selecting.candidateIndex = candidateIndex
+                rememberLastFix(selecting: selecting, textInput: textInput)
+            } else {
+                lastFix = nil
+            }
         }
     }
 }

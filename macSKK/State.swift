@@ -248,6 +248,22 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
         return ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: "", cursor: cursor, prevMode: prevMode)
     }
 
+    func with(reconvertText: String?) -> Self {
+        return ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: romaji, cursor: cursor, prevMode: prevMode,
+                              reconvertText: reconvertText, fixedWorkaroundText: fixedWorkaroundText)
+    }
+
+    func with(prevMode: InputMode?) -> Self {
+        return ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: romaji, cursor: cursor, prevMode: prevMode,
+                              reconvertText: reconvertText, fixedWorkaroundText: fixedWorkaroundText)
+    }
+
+    /// カーソルより右の部分を取り除く
+    func dropRemain() -> Self {
+        return ComposingState(isShift: isShift, text: subText(), okuri: okuri, romaji: romaji, cursor: nil, prevMode: prevMode,
+                              reconvertText: reconvertText, fixedWorkaroundText: fixedWorkaroundText)
+    }
+
     /**
      * カーソルより左のtext部分を返す。
      * ``trim(kanaRule:)`` と違い、未確定のローマ字部分の変換 ("n" を "ん" にするなど) は行わない。
@@ -301,7 +317,8 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
                                   okuri: nil,
                                   romaji: "",
                                   cursor: newCursor,
-                                  prevMode: newState.prevMode)
+                                  prevMode: newState.prevMode,
+                                  reconvertText: reconvertText)
         } else {
             return self
         }
@@ -436,6 +453,18 @@ struct SelectingState: Equatable, MarkedTextProtocol {
             candidates: candidates,
             candidateIndex: candidateIndex + diff,
             remain: remain,
+            completion: completion,
+        )
+    }
+
+    /// カーソルより右の読みを取り除く
+    func dropRemain() -> Self {
+        return SelectingState(
+            prev: PrevState(mode: prev.mode, composing: prev.composing.dropRemain()),
+            yomi: yomi,
+            candidates: candidates,
+            candidateIndex: candidateIndex,
+            remain: nil,
             completion: completion,
         )
     }
