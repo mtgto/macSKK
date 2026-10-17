@@ -27,6 +27,11 @@ final class UserDictSyncRecordCloudKitTests: XCTestCase {
                               recordID: CKRecord.ID(recordName: syncRecord.key.recordName))
         syncRecord.write(to: record)
         XCTAssertEqual(UserDictSyncRecord(record: record), syncRecord)
+        XCTAssertTrue(record.encryptedValues[UserDictSyncRecord.FieldKey.lastUsedAt] is Date, "日時はTIMESTAMP型で保存する")
+
+        // CloudKitを経由して誤差が出てもミリ秒に丸めて同じ値として読み込む
+        record.encryptedValues[UserDictSyncRecord.FieldKey.lastUsedAt] = Date(timeIntervalSince1970: 1_700_000_000.1230001) as NSDate
+        XCTAssertEqual(UserDictSyncRecord(record: record), syncRecord)
 
         // フィールドを消せる
         var updated = syncRecord

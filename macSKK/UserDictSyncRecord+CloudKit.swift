@@ -40,8 +40,8 @@ extension UserDictSyncRecord {
             return nil
         }
         self.init(key: UserDictSyncKey(yomi: yomi, word: word, okuri: values[FieldKey.okuri] as? String),
-                  lastUsedAt: (values[FieldKey.lastUsedAt] as? Int64).map(Date.init(milliseconds:)),
-                  deletedAt: (values[FieldKey.deletedAt] as? Int64).map(Date.init(milliseconds:)))
+                  lastUsedAt: values[FieldKey.lastUsedAt] as? Date,
+                  deletedAt: values[FieldKey.deletedAt] as? Date)
     }
 
     /**
@@ -49,14 +49,15 @@ extension UserDictSyncRecord {
      *
      * ユーザーの入力履歴そのものなので、すべてのフィールドを暗号化して保存する。
      * 注釈のフィールドは将来のために空けておき、書き込まない (``UserDictSyncRecord`` を参照)。
-     * 日時はミリ秒の整数で保存する。
+     * 日時はミリ秒に丸めた値を保存する。CloudKitの日時 (TIMESTAMP) はミリ秒で表現されるので、読み込んだときに同じ値に戻る。
+     * https://developer.apple.com/library/archive/documentation/DataManagement/Conceptual/CloudKitWebServicesReference/Types.html
      */
     func write(to record: CKRecord) {
         let values = record.encryptedValues
         values[FieldKey.yomi] = key.yomi
         values[FieldKey.word] = key.word
         values[FieldKey.okuri] = key.okuri
-        values[FieldKey.lastUsedAt] = lastUsedAt?.milliseconds
-        values[FieldKey.deletedAt] = deletedAt?.milliseconds
+        values[FieldKey.lastUsedAt] = lastUsedAt as NSDate?
+        values[FieldKey.deletedAt] = deletedAt as NSDate?
     }
 }
