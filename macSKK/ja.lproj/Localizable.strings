@@ -236,7 +236,7 @@
 "Sync all words" = "すべて同期";
 "UserDictSyncFetching" = "iCloudから変更を取得中…";
 "UserDictSyncFetchingCount" = "iCloudから変更を取得中… (%lld件)";
-"UserDictSyncApplying" = "iCloudから受け取った変更を反映中… (%lld / %lld件)";
+"UserDictSyncApplying" = "iCloudから受け取った変更を反映中… (%lld件)";
 "UserDictSyncSending" = "iCloudに送信中… (残り%lld件)";
 "UserDictLastSyncedAt" = "最終同期: %@";
 "UserDictNotSyncedYet" = "まだ同期していません";

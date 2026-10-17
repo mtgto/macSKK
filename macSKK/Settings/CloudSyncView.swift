@@ -107,9 +107,9 @@ struct CloudSyncView: View {
                 } else {
                     Text("UserDictSyncFetching")
                 }
-            case .applying(let done, let total):
+            case .applying(let done):
                 ProgressView().controlSize(.small)
-                Text(String(format: String(localized: "UserDictSyncApplying"), done, total))
+                Text(String(format: String(localized: "UserDictSyncApplying"), done))
             case .sending(let remaining):
                 ProgressView().controlSize(.small)
                 Text(String(format: String(localized: "UserDictSyncSending"), remaining))

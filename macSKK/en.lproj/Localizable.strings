@@ -236,7 +236,7 @@
 "Sync all words" = "Sync all words";
 "UserDictSyncFetching" = "Fetching changes from iCloud…";
 "UserDictSyncFetchingCount" = "Fetching changes from iCloud… (%lld received)";
-"UserDictSyncApplying" = "Applying changes from iCloud… (%lld / %lld)";
+"UserDictSyncApplying" = "Applying changes from iCloud… (%lld applied)";
 "UserDictSyncSending" = "Sending to iCloud… (%lld remaining)";
 "UserDictLastSyncedAt" = "Last synced: %@";
 "UserDictNotSyncedYet" = "Not synced yet";
