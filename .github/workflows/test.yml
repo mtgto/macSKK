@@ -1,20 +1,28 @@
 name: test
 
+# テストに関係するファイルが変更されたときだけ実行する。
+# ターゲットを追加したときはそのディレクトリをpathsに追加すること。
 on:
   push:
     branches: [main]
-    paths-ignore:
-      - '*.md'
-      - '.github/workflows/update.yml'
-      - '.github/workflows/docs.yml'
-      - 'docs/**'
+    paths:
+      - 'macSKK/**'
+      - 'macSKKTests/**'
+      - 'SKKServClient/**'
+      - 'SKKServClientTests/**'
+      - 'FetchUpdateService/**'
+      - 'macSKK.xcodeproj/**'
+      - '.github/workflows/test.yml'
   pull_request:
     branches: [main]
-    paths-ignore:
-      - '*.md'
-      - '.github/workflows/update.yml'
-      - '.github/workflows/docs.yml'
-      - 'docs/**'
+    paths:
+      - 'macSKK/**'
+      - 'macSKKTests/**'
+      - 'SKKServClient/**'
+      - 'SKKServClientTests/**'
+      - 'FetchUpdateService/**'
+      - 'macSKK.xcodeproj/**'
+      - '.github/workflows/test.yml'
 
 # bashを使うようにしてpipefailを有効にする
 # https://docs.github.com/ja/actions/writing-workflows/workflow-syntax-for-github-actions#defaultsrunshell
