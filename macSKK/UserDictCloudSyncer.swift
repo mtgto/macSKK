@@ -139,7 +139,8 @@ struct UserDictSyncStatus: Equatable {
         self.userDict = userDict
         self.initialSyncMode = initialSyncMode
         status = UserDictSyncStatus(lastSyncedAt: UserDefaults.app.object(forKey: UserDefaultsKeys.userDictLastSyncedAt) as? Date)
-        let stateSerialization = Self.loadState()
+        // 初回同期はiCloudにあるものをすべて取得する前提なので、途中で終了していたら保存した同期状態を使わずに最初から取得し直す
+        let stateSerialization = initialSyncMode == nil ? Self.loadState() : nil
         var configuration = CKSyncEngine.Configuration(database: database, stateSerialization: stateSerialization, delegate: self)
         configuration.automaticallySync = true
         syncEngine = CKSyncEngine(configuration)
