@@ -97,8 +97,15 @@ struct UserDictSyncStatus: Equatable {
         /// 受け取った最も古い変換日時
         var oldestDate: Date?
     }
-    /// 初回同期の取得中ならその集計
-    private var initialFetch: InitialFetch?
+    /// 初回同期の段階
+    private enum InitialSyncPhase {
+        /// iCloudにあるものをすべて取得中
+        case fetching(InitialFetch)
+        /// 「すべて同期」で取得が終わり、同期開始前からある変換候補を送信するためにユーザー辞書の読み込みを待っている
+        case awaitingLoad(InitialFetch)
+    }
+    /// 初回同期中ならその段階
+    private var initialSyncPhase: InitialSyncPhase?
     /// 同期開始前からある変換候補を送信中なら、送信が完了していないもののレコード名
     private var existingCandidatesToSend: Set<String>?
     private var fetchTask: Task<Void, Never>?
@@ -115,7 +122,7 @@ struct UserDictSyncStatus: Equatable {
     var didApplyRemoteChanges: ((MemoryDict.CandidateChanges) -> Void)?
     /// 同期の状態が変わったときに呼ばれる
     var didChangeStatus: ((UserDictSyncStatus) -> Void)?
-    private(set) var status: UserDictSyncStatus {
+    private var status: UserDictSyncStatus {
         didSet {
             if status != oldValue {
                 didChangeStatus?(status)
@@ -163,6 +170,7 @@ struct UserDictSyncStatus: Equatable {
             guard let event = notification.object as? DictLoadEvent, event.trigger == .load, case .loaded = event.status else { return }
             MainActor.assumeIsolated {
                 self?.applyFetchedRecords()
+                self?.sendExistingCandidatesIfReady()
             }
         }
         if let initialSyncMode {
@@ -263,25 +271,27 @@ struct UserDictSyncStatus: Equatable {
      * 失敗した場合や、同期開始前からある変換候補の送信が終わる前に終了した場合は、次回の起動時にやり直す。
      */
     private func performInitialSync(mode: UserDictInitialSyncMode) async {
-        initialFetch = InitialFetch()
-        defer {
-            initialFetch = nil
+        initialSyncPhase = .fetching(InitialFetch())
+        guard await fetchChanges(), case .fetching(let fetch) = initialSyncPhase else {
+            initialSyncPhase = nil
+            return
         }
-        guard await fetchChanges() else { return }
         guard mode == .all else {
+            initialSyncPhase = nil
             completeInitialSync()
             return
         }
-        while !userDict.isUserDictLoaded {
-            guard isRunning else { return }
-            try? await Task.sleep(for: .milliseconds(100))
-        }
-        guard isRunning, let dict = userDict.userDict as? FileDict else { return }
-        var ceiling = UserDictSyncRecord.syntheticTimestampCeiling
-        if let oldest = initialFetch?.oldestDate, oldest < ceiling {
-            ceiling = oldest
-        }
-        let excludedKeys = (initialFetch?.keys ?? []).union(pendingRecords.values.map(\.key))
+        initialSyncPhase = .awaitingLoad(fetch)
+        sendExistingCandidatesIfReady()
+    }
+
+    /// 「すべて同期」の初回同期の取得が終わっていて、ユーザー辞書を読み込み済みなら、同期開始前からある変換候補を送信する
+    private func sendExistingCandidatesIfReady() {
+        guard isRunning, case .awaitingLoad(let fetch) = initialSyncPhase, userDict.isUserDictLoaded,
+              let dict = userDict.userDict as? FileDict else { return }
+        initialSyncPhase = nil
+        let ceiling = min(fetch.oldestDate ?? UserDictSyncRecord.syntheticTimestampCeiling, UserDictSyncRecord.syntheticTimestampCeiling)
+        let excludedKeys = fetch.keys.union(pendingRecords.values.map(\.key))
         let records = UserDictSyncRecord.syntheticRecords(from: dict.dict, excluding: excludedKeys, before: ceiling)
         logger.log("同期開始前からあるユーザー辞書の変換候補 \(records.count) 件をiCloudに送信します")
         guard !records.isEmpty else {
@@ -404,18 +414,21 @@ struct UserDictSyncStatus: Equatable {
     private func receive(_ remoteRecords: [UserDictSyncRecord]) {
         for remote in remoteRecords {
             let recordName = remote.key.recordName
-            if initialFetch != nil {
-                initialFetch?.keys.insert(remote.key)
-                if let lastUsedAt = remote.lastUsedAt, lastUsedAt < (initialFetch?.oldestDate ?? .distantFuture) {
-                    initialFetch?.oldestDate = lastUsedAt
+            var isInitialFetch = false
+            if case .fetching(var fetch) = initialSyncPhase {
+                isInitialFetch = true
+                fetch.keys.insert(remote.key)
+                if let lastUsedAt = remote.lastUsedAt {
+                    fetch.oldestDate = min(fetch.oldestDate ?? lastUsedAt, lastUsedAt)
                 }
+                initialSyncPhase = .fetching(fetch)
             }
             // 自分が送信した変更がそのまま返ってきたものは反映しない
             if sentRecords[recordName] == remote {
                 continue
             }
             fetchedRecords.append(mergeWithPending(remote))
-            if initialFetch != nil || isFetchingFromScratch {
+            if isInitialFetch || isFetchingFromScratch {
                 // ユーザー自身が同期を有効にしたことによる取り込みなので知らせない
                 fetchedRecordsIncludeInitialFetch = true
             }
