@@ -487,7 +487,11 @@ struct UserDictSyncStatus: Equatable {
             }
         }
         if sentCount > 0 {
-            logger.log("iCloudにユーザー辞書の変換候補を \(sentCount) 件送信しました。未送信は残り \(self.pendingRecords.count) 件です")
+            if pendingRecords.isEmpty {
+                logger.log("iCloudにユーザー辞書の変換候補を \(sentCount) 件送信しました")
+            } else {
+                logger.log("iCloudにユーザー辞書の変換候補を \(sentCount) 件送信しました。未送信は残り \(self.pendingRecords.count) 件です")
+            }
             if changes.failedRecordSaves.isEmpty {
                 status.lastError = nil
             }
