@@ -237,6 +237,7 @@ struct CloudSyncView: View {
                         if let lastError = settingsViewModel.userDictSyncStatus.lastError {
                             Text(String(format: String(localized: "UserDictSyncError"), lastError))
                                 .foregroundStyle(.red)
+                                .textSelection(.enabled)
                         }
                     }
                     if let notice = settingsViewModel.userDictSyncNotice {
