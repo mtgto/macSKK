@@ -100,9 +100,16 @@ struct CloudSyncView: View {
         let status = settingsViewModel.userDictSyncStatus
         return HStack {
             switch status.activity {
-            case .fetching:
+            case .fetching(let received):
                 ProgressView().controlSize(.small)
-                Text("UserDictSyncFetching")
+                if received > 0 {
+                    Text(String(format: String(localized: "UserDictSyncFetchingCount"), received))
+                } else {
+                    Text("UserDictSyncFetching")
+                }
+            case .applying(let done, let total):
+                ProgressView().controlSize(.small)
+                Text(String(format: String(localized: "UserDictSyncApplying"), done, total))
             case .sending(let remaining):
                 ProgressView().controlSize(.small)
                 Text(String(format: String(localized: "UserDictSyncSending"), remaining))

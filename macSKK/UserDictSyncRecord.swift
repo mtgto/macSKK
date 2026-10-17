@@ -194,8 +194,11 @@ extension DictProtocol {
      * - Parameters:
      *   - records: 他の端末から受け取った同期情報
      *   - yieldInterval: 他の処理に譲る間隔の件数
+     *   - progress: 他の処理に譲るたびに、反映した件数と全体の件数を受け取る
      */
-    @MainActor mutating func apply(_ records: [UserDictSyncRecord], yieldInterval: Int = 100) async {
+    @MainActor mutating func apply(_ records: [UserDictSyncRecord],
+                                   yieldInterval: Int = 100,
+                                   progress: ((_ done: Int, _ total: Int) -> Void)? = nil) async {
         var recordsByKey: [UserDictSyncKey: UserDictSyncRecord] = [:]
         for record in records {
             recordsByKey[record.key] = recordsByKey[record.key].map { $0.merged(with: record) } ?? record
@@ -208,8 +211,10 @@ extension DictProtocol {
             return (lhs.key.yomi, lhs.key.word, lhs.key.okuri ?? "") < (rhs.key.yomi, rhs.key.word, rhs.key.okuri ?? "")
         }
         let dead = recordsByKey.values.filter { !$0.isAlive }
-        for (index, record) in (dead + alive).enumerated() {
+        let all = dead + alive
+        for (index, record) in all.enumerated() {
             if index > 0 && index % yieldInterval == 0 {
+                progress?(index, all.count)
                 await Task.yield()
             }
             let word = Word(record.key.word, okuri: record.key.okuri)

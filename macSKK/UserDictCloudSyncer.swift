@@ -24,8 +24,10 @@ struct UserDictSyncStatus: Equatable {
     enum Activity: Equatable {
         /// 待機中
         case idle
-        /// iCloudから変更を取得中
-        case fetching
+        /// iCloudから変更を取得中。receivedは受け取った変換候補の数。全体の数はCloudKitからはわからない
+        case fetching(received: Int)
+        /// iCloudから受け取った変更をユーザー辞書に反映中。doneは反映した数、totalは全体の数
+        case applying(done: Int, total: Int)
         /// iCloudに送信中。remainingは未送信の変換候補の数
         case sending(remaining: Int)
     }
@@ -348,7 +350,7 @@ struct UserDictSyncStatus: Equatable {
             handleSentRecordZoneChanges(changes)
         case .willFetchChanges:
             isFetching = true
-            status.activity = .fetching
+            status.activity = .fetching(received: 0)
         case .didFetchRecordZoneChanges(let event):
             if let error = event.error {
                 logger.error("iCloudからユーザー辞書の変更の取得に失敗しました: \(error)")
@@ -417,6 +419,9 @@ struct UserDictSyncStatus: Equatable {
                 fetchedRecordsIncludeInitialFetch = true
             }
         }
+        if case .fetching(let received) = status.activity {
+            status.activity = .fetching(received: received + remoteRecords.count)
+        }
     }
 
     /// 未送信の変更があればマージした結果を返す。サーバーのほうが新しければ未送信の変更は不要になる
@@ -444,9 +449,14 @@ struct UserDictSyncStatus: Equatable {
             logger.log("iCloudからユーザー辞書の変換候補 \(records.count) 件の変更を受け取りました")
             isApplying = true
             Task {
-                let changes = await userDict.applySyncRecords(records)
+                let changes = await userDict.applySyncRecords(records) { [weak self] done, total in
+                    self?.status.activity = .applying(done: done, total: total)
+                }
                 isApplying = false
                 guard isRunning else { return }
+                if case .applying = status.activity {
+                    completeActivity()
+                }
                 if !includesInitialFetch && !changes.isEmpty {
                     didApplyRemoteChanges?(changes)
                 }

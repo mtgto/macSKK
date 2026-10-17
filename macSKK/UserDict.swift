@@ -266,13 +266,17 @@ enum UserDictAddSource {
      * 反映した変更は再取得できないので、保存を遅らせずに行う。
      * 反映中にこの端末で辞書を編集してもよい。
      *
+     * - Parameters:
+     *   - records: 他の端末から受け取った同期情報
+     *   - progress: 反映した件数と全体の件数を途中で受け取る
      * - Returns: 反映した変換候補の追加・更新・削除
      */
     @discardableResult
-    @MainActor func applySyncRecords(_ records: [UserDictSyncRecord]) async -> MemoryDict.CandidateChanges {
+    @MainActor func applySyncRecords(_ records: [UserDictSyncRecord],
+                                     progress: ((_ done: Int, _ total: Int) -> Void)? = nil) async -> MemoryDict.CandidateChanges {
         guard var dict = userDict as? FileDict, dict.isLoaded, !records.isEmpty else { return MemoryDict.CandidateChanges() }
         let old = dict.dict
-        await dict.apply(records)
+        await dict.apply(records, progress: progress)
         let changes = old.candidateChanges(to: dict.dict, receiving: records)
         if changes.isEmpty {
             return changes

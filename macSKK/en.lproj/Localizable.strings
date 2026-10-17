@@ -235,6 +235,8 @@
 "Sync only conversions from now on" = "Sync only conversions from now on";
 "Sync all words" = "Sync all words";
 "UserDictSyncFetching" = "Fetching changes from iCloud…";
+"UserDictSyncFetchingCount" = "Fetching changes from iCloud… (%lld received)";
+"UserDictSyncApplying" = "Applying changes from iCloud… (%lld / %lld)";
 "UserDictSyncSending" = "Sending to iCloud… (%lld remaining)";
 "UserDictLastSyncedAt" = "Last synced: %@";
 "UserDictNotSyncedYet" = "Not synced yet";

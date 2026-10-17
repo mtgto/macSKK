@@ -136,8 +136,12 @@ final class UserDictSyncRecordTests: XCTestCase {
             entryCountWhileApplying = dict.entryCount
             dict.add(yomi: "い", word: Word("井"))
         }
-        await dict.apply(records, yieldInterval: 100)
+        var progress: [[Int]] = []
+        await dict.apply(records, yieldInterval: 100) { done, total in
+            progress.append([done, total])
+        }
         await edit.value
+        XCTAssertEqual(progress, [[100, 300], [200, 300]], "他の処理に譲るたびに進み具合を知らせる")
         XCTAssertEqual(entryCountWhileApplying, 100, "反映の途中で他の処理に譲る")
         XCTAssertEqual(dict.entryCount, 301, "反映中の編集も残る")
         XCTAssertEqual(dict.refer("い", option: nil), [Word("井")])
