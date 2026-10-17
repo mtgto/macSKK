@@ -160,7 +160,7 @@ enum FileDictType: Equatable {
             logger.log("辞書 \(self.id, privacy: .public) から \(self.dict.entries.count) エントリ読み込みました")
             NotificationCenter.default.post(name: notificationNameDictLoad,
                                             object: DictLoadEvent(id: self.id,
-                                                                  status: .loaded(success: dict.entryCount, failure: dict.failedEntryCount),
+                                                                  status: .loaded(success: dict.entryCount, failures: dict.readFailures),
                                                                   trigger: .load))
         case .failure(let error):
             logger.error("辞書 \(self.id, privacy: .public) の読み込みでエラーが発生しました: \(error)")
@@ -300,7 +300,7 @@ enum FileDictType: Equatable {
         dict.add(yomi: yomi, word: word)
         NotificationCenter.default.post(name: notificationNameDictLoad,
                                         object: DictLoadEvent(id: self.id,
-                                                              status: .loaded(success: dict.entryCount, failure: dict.failedEntryCount),
+                                                              status: .loaded(success: dict.entryCount, failures: dict.readFailures),
                                                               trigger: .edit))
         hasUnsavedChanges = true
     }
@@ -310,7 +310,7 @@ enum FileDictType: Equatable {
             hasUnsavedChanges = true
             NotificationCenter.default.post(name: notificationNameDictLoad,
                                             object: DictLoadEvent(id: self.id,
-                                                                  status: .loaded(success: dict.entryCount, failure: dict.failedEntryCount),
+                                                                  status: .loaded(success: dict.entryCount, failures: dict.readFailures),
                                                                   trigger: .edit))
             return true
         }

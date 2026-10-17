@@ -27,14 +27,34 @@ struct Entry: Sendable {
             // コメント行
             return nil
         }
-        let words = line.split(separator: " /", maxSplits: 1)
-        if words.count != 2 || words[0].contains(" ") {
+        guard case .success(let entry) = Self.parse(line: line, dictId: dictId) else {
             return nil
         }
-        yomi = String(words[0]).replacing("う゛", with: "ゔ")
-        guard let candidates = Self.parseWords(words[1], dictId: dictId) else { return nil }
+        self = entry
+    }
+
+    /**
+     * SKK辞書の一行をパースする。
+     *
+     * 読みの「う゛」は「ゔ」に変換して返す。
+     * 空文字列の変換候補を含む場合、現状の実装では除外して返す。
+     * コメント行は呼び出し側で除く。ここが失敗するのは区切りがない、読みに空白がある、
+     * 変換候補がスラッシュで終わっていない、の3つ。
+     */
+    static func parse(line: String, dictId: FileDict.ID) -> Result<Entry, DictReadFailure.Reason> {
+        let words = line.split(separator: " /", maxSplits: 1)
+        if words.count != 2 {
+            return .failure(.missingSeparator)
+        }
+        if words[0].contains(" ") {
+            return .failure(.spaceInYomi)
+        }
+        let yomi = String(words[0]).replacing("う゛", with: "ゔ")
+        guard let candidates = parseWords(words[1], dictId: dictId) else {
+            return .failure(.unterminatedCandidates)
+        }
         // TODO: いまは空の変換候補をスキップしているが扱えるようにしたい
-        self.candidates = candidates.filter { !$0.word.isEmpty }
+        return .success(Entry(yomi: yomi, candidates: candidates.filter { !$0.word.isEmpty }))
     }
 
     init(yomi: String, candidates: [Word]) {
