@@ -90,6 +90,13 @@ struct UserDictSyncStatus: Equatable {
     private var isApplying = false
     /// 取得した同期情報をユーザー辞書に反映するまで保存を遅らせている同期状態
     private var deferredState: CKSyncEngine.State.Serialization?
+    /**
+     * 同期情報を受け取ってからユーザー辞書に反映し終わるまでの間に、この端末で変換・単語登録・削除した変換候補。
+     *
+     * 受け取ったときに未送信の変更とはマージ済みなので、それより後の編集はどの同期情報よりも新しい。
+     * 反映すると古い同期情報で上書きしてしまうので反映しない。反映し終わったら空にする。
+     */
+    private var keysEditedAfterReceiving: Set<UserDictSyncKey> = []
     /// 初回同期の取得中に受け取った同期情報の集計
     private struct InitialFetch {
         /// 受け取った変換候補。「すべて同期」で合成日時を割り当てる対象から除く
@@ -163,7 +170,7 @@ struct UserDictSyncStatus: Equatable {
         isRunning = true
         didChangeStatus?(status)
         userDict.syncChangeHandler = { [weak self] record in
-            self?.addPending([record])
+            self?.handleLocalChange(record)
         }
         // ユーザー辞書の読み込みが終わる前に取得した変更は、読み込みが終わってから反映する
         loadObserver = NotificationCenter.default.addObserver(forName: notificationNameDictLoad, object: nil, queue: .main) { [weak self] notification in
@@ -220,6 +227,7 @@ struct UserDictSyncStatus: Equatable {
             self.loadObserver = nil
         }
         userDict.syncChangeHandler = nil
+        keysEditedAfterReceiving.removeAll()
         await syncEngine.cancelOperations()
     }
 
@@ -326,7 +334,7 @@ struct UserDictSyncStatus: Equatable {
         guard isRunning else { return }
         switch event {
         case .stateUpdate(let update):
-            if isFetching || isApplying || !fetchedRecords.isEmpty {
+            if hasUnappliedFetch {
                 // 取得した変更をユーザー辞書に反映して保存するまで、取得済みとして記録しない
                 deferredState = update.stateSerialization
             } else {
@@ -381,6 +389,19 @@ struct UserDictSyncStatus: Equatable {
         }
     }
 
+    /// 取得中か、取得した同期情報をまだユーザー辞書に反映し終わっていないか
+    private var hasUnappliedFetch: Bool {
+        isFetching || isApplying || !fetchedRecords.isEmpty
+    }
+
+    /// この端末で変換・単語登録・削除したときに呼ばれる
+    private func handleLocalChange(_ record: UserDictSyncRecord) {
+        if hasUnappliedFetch {
+            keysEditedAfterReceiving.insert(record.key)
+        }
+        addPending([record])
+    }
+
     /// 取得・送信が終わったときに状態を更新する
     private func completeActivity() {
         let now = Date()
@@ -423,6 +444,8 @@ struct UserDictSyncStatus: Equatable {
                 }
                 initialSyncPhase = .fetching(fetch)
             }
+            // ここで未送信の変更とマージするか、送信済みの変更を含むサーバーの版を受け取るので、それより前の編集は除外しなくてよい
+            keysEditedAfterReceiving.remove(remote.key)
             // 自分が送信した変更がそのまま返ってきたものは反映しない
             if sentRecords[recordName] == remote {
                 continue
@@ -463,9 +486,9 @@ struct UserDictSyncStatus: Equatable {
             logger.log("iCloudからユーザー辞書の変換候補 \(records.count) 件の変更を受け取りました")
             isApplying = true
             Task {
-                let changes = await userDict.applySyncRecords(records) { done, _ in
+                let changes = await userDict.applySyncRecords(records, progress: { done, _ in
                     self.status.activity = .applying(done: done)
-                }
+                }, skipping: { self.keysEditedAfterReceiving.contains($0) })
                 isApplying = false
                 guard isRunning else { return }
                 if case .applying = status.activity {
@@ -478,6 +501,7 @@ struct UserDictSyncStatus: Equatable {
             }
             return
         }
+        keysEditedAfterReceiving.removeAll()
         if let deferredState {
             Self.saveState(deferredState)
             self.deferredState = nil

@@ -73,6 +73,35 @@ final class UserDictTests: XCTestCase {
         wait(for: [deleteExpectation], timeout: 1.0)
     }
 
+    @MainActor func testApplySyncRecordsSkipping() async throws {
+        let userDict = try UserDict(dicts: [],
+                                    userDictEntries: [:],
+                                    privateMode: CurrentValueSubject<Bool, Never>(false),
+                                    ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
+                                    dateYomis: [],
+                                    dateConversions: [])
+        let fileURL = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "empty", withExtension: "txt"))
+        let fileDict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: false, saveToUserDict: true)
+        await fileDict.load()
+        userDict.userDict = fileDict
+        userDict.add(yomi: "あ", word: Word("亜"), source: .conversion)
+        let t1 = Date(timeIntervalSince1970: 1_000_000)
+        // 他の処理に譲るまでに反映が「あ」に到達しないよう、「あ」を最も新しい日時にして最後に反映させる
+        let records = (0..<150).map { UserDictSyncRecord.use(yomi: "い\($0)", word: Word("胃"), at: t1) }
+            + [.use(yomi: "あ", word: Word("亜"), at: t1.addingTimeInterval(1))]
+        var editedKeys: Set<UserDictSyncKey> = []
+        let changes = await userDict.applySyncRecords(records, progress: { _, _ in
+            // 反映中にこの端末で削除する
+            XCTAssertTrue(userDict.delete(yomi: "あ", word: Word("亜")))
+            editedKeys.insert(UserDictSyncKey(yomi: "あ", word: Word("亜")))
+        }, skipping: { editedKeys.contains($0) })
+        XCTAssertEqual(fileDict.dict.refer("あ", option: nil), [])
+        XCTAssertEqual(fileDict.dict.refer("い0", option: nil), [Word("胃")])
+        // 反映しなかった変換候補は変更に含めない
+        XCTAssertFalse((changes.added + changes.updated + changes.removed).contains { $0.yomi == "あ" })
+        XCTAssertEqual(changes.addedCount, 150)
+    }
+
     @MainActor func testHandleSKKServErrorDisablesSkkservDict() throws {
         let mock = MockSKKServDict(wordsPerYomi: [:], shouldFail: true)
         Global.skkservDict = mock

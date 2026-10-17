@@ -264,20 +264,22 @@ enum UserDictAddSource {
      * 他の端末から受け取った同期情報をユーザー辞書に反映して、すぐに保存する。
      *
      * 反映した変更は再取得できないので、保存を遅らせずに行う。
-     * 反映中にこの端末で辞書を編集してもよい。
+     * 反映中にこの端末で辞書を編集してもよいが、受け取った同期情報より後に編集した変換候補はisSkippedで反映から除くこと。
      *
      * - Parameters:
      *   - records: 他の端末から受け取った同期情報
      *   - progress: 反映した件数と全体の件数を途中で受け取る
+     *   - isSkipped: 反映しない変換候補かどうか。反映する直前に判定する
      * - Returns: 反映した変換候補の追加・更新・削除
      */
     @discardableResult
     @MainActor func applySyncRecords(_ records: [UserDictSyncRecord],
-                                     progress: ((_ done: Int, _ total: Int) -> Void)? = nil) async -> MemoryDict.CandidateChanges {
+                                     progress: ((_ done: Int, _ total: Int) -> Void)? = nil,
+                                     skipping isSkipped: (UserDictSyncKey) -> Bool = { _ in false }) async -> MemoryDict.CandidateChanges {
         guard var dict = userDict as? FileDict, dict.isLoaded, !records.isEmpty else { return MemoryDict.CandidateChanges() }
         let old = dict.dict
-        await dict.apply(records, progress: progress)
-        let changes = old.candidateChanges(to: dict.dict, receiving: records)
+        await dict.apply(records, progress: progress, skipping: isSkipped)
+        let changes = old.candidateChanges(to: dict.dict, receiving: records.filter { !isSkipped($0.key) })
         if changes.isEmpty {
             return changes
         }

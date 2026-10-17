@@ -189,16 +189,18 @@ extension DictProtocol {
      * 既にある変換候補の注釈はそのまま残る。
      *
      * 大量に受け取ってもメインスレッドを占有しないように、一定の件数ごとに他の処理に譲る。
-     * そのあいだにこの端末で辞書を編集してもよい。
+     * そのあいだにこの端末で辞書を編集してもよいが、受け取った同期情報より後に編集した変換候補はisSkippedで反映から除くこと。
      *
      * - Parameters:
      *   - records: 他の端末から受け取った同期情報
      *   - yieldInterval: 他の処理に譲る間隔の件数
      *   - progress: 他の処理に譲るたびに、反映した件数と全体の件数を受け取る
+     *   - isSkipped: 反映しない変換候補かどうか。反映する直前に判定する
      */
     @MainActor mutating func apply(_ records: [UserDictSyncRecord],
                                    yieldInterval: Int = 100,
-                                   progress: ((_ done: Int, _ total: Int) -> Void)? = nil) async {
+                                   progress: ((_ done: Int, _ total: Int) -> Void)? = nil,
+                                   skipping isSkipped: (UserDictSyncKey) -> Bool = { _ in false }) async {
         var recordsByKey: [UserDictSyncKey: UserDictSyncRecord] = [:]
         for record in records {
             recordsByKey[record.key] = recordsByKey[record.key].map { $0.merged(with: record) } ?? record
@@ -216,6 +218,9 @@ extension DictProtocol {
             if index > 0 && index % yieldInterval == 0 {
                 progress?(index, all.count)
                 await Task.yield()
+            }
+            if isSkipped(record.key) {
+                continue
             }
             let word = Word(record.key.word, okuri: record.key.okuri)
             if record.isAlive {
