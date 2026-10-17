@@ -941,6 +941,7 @@ final class SettingsViewModel: ObservableObject {
         guard #available(macOS 14, *), UserDictCloudSyncer.isAvailable, !isDeletingUserDictFromiCloud else { return }
         isDeletingUserDictFromiCloud = true
         let syncer = userDictCloudSyncer as? UserDictCloudSyncer
+        logger.log("iCloudからユーザー辞書の削除を開始します")
         Task {
             defer { isDeletingUserDictFromiCloud = false }
             do {
@@ -952,6 +953,7 @@ final class SettingsViewModel: ObservableObject {
                 }
                 userDictCloudSyncer = nil
                 setSyncUserDictWithiCloud(false)
+                logger.log("iCloudからユーザー辞書の削除が完了し、このMacのユーザー辞書の同期を無効にしました")
                 userDictSyncNotice = String(localized: "UserDictDeletedFromiCloud")
             } catch {
                 logger.error("iCloudからユーザー辞書を削除できませんでした: \(error)")
