@@ -450,8 +450,8 @@ struct UserDictSyncStatus: Equatable {
             logger.log("iCloudからユーザー辞書の変換候補 \(records.count) 件の変更を受け取りました")
             isApplying = true
             Task {
-                let changes = await userDict.applySyncRecords(records) { [weak self] done, _ in
-                    self?.status.activity = .applying(done: done)
+                let changes = await userDict.applySyncRecords(records) { done, _ in
+                    self.status.activity = .applying(done: done)
                 }
                 isApplying = false
                 guard isRunning else { return }

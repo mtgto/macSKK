@@ -56,9 +56,10 @@ final class UserDictTests: XCTestCase {
         let fileURL = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "empty", withExtension: "txt"))
         let fileDict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: true, saveToUserDict: true)
         userDict.userDict = fileDict
+        let dictId = fileDict.id
         func editExpectation(_ entryCount: Int) -> XCTestExpectation {
             expectation(forNotification: notificationNameDictLoad, object: nil) { notification in
-                guard let loadEvent = notification.object as? DictLoadEvent, loadEvent.id == fileDict.id else { return false }
+                guard let loadEvent = notification.object as? DictLoadEvent, loadEvent.id == dictId else { return false }
                 XCTAssertEqual(loadEvent.trigger, .edit)
                 guard case .loaded(let success, _) = loadEvent.status else { return false }
                 return success == entryCount
