@@ -36,6 +36,14 @@ final class KeyBindingTests: XCTestCase {
         XCTAssertEqual(input4?.optionalModifierFlags.rawValue, 0)
     }
 
+    func testInputLocalized() {
+        XCTAssertEqual(KeyBinding.Input(key: .character("j"), modifierFlags: .control).localized, "⌃J")
+        XCTAssertEqual(KeyBinding.Input(key: .character("q"), modifierFlags: .function).localized, "🌐︎Q")
+        XCTAssertEqual(KeyBinding.Input(key: .character("q"), modifierFlags: [.function, .control, .option, .shift]).localized, "🌐︎⌃⌥⇧Q")
+        XCTAssertEqual(KeyBinding.Input(key: .code(0x7b), modifierFlags: .function).localized, "←", "矢印キーはfunctionを表示しない")
+        XCTAssertEqual(KeyBinding.Input(key: .code(0x7b), modifierFlags: [.function, .shift]).localized, "⇧←")
+    }
+
     func testEncodeAndDecode() {
         let binding1 = KeyBinding(.abbrev, [KeyBinding.Input(key: .character("/"), modifierFlags: [])])
         let binding2 = KeyBinding(dict: binding1.encode())
