@@ -201,6 +201,11 @@ struct KeyBinding: Identifiable, Hashable {
 
         var localized: String {
             var result: [String] = []
+            // 矢印キーなどはfnを押さなくてもmacOSが自動でfunctionを付与するので表示しない
+            if modifierFlags.contains(.function) && !key.isFunctionImplied {
+                // システム設定に合わせて地球儀 (U+1F310) をテキスト表示 (U+FE0E) にして単色で表示する
+                result.append("🌐︎")
+            }
             if modifierFlags.contains(.control) {
                 result.append("⌃")
             }
@@ -317,35 +322,35 @@ struct KeyBinding: Identifiable, Hashable {
             case .stickyShift:
                 return KeyBinding(action, [Input(key: .character(";"), modifierFlags: [])])
             case .enter:
-                return KeyBinding(action, [Input(key: .code(0x24), modifierFlags: [], optionalModifierFlags: [.shift, .option])])
+                return KeyBinding(action, [Input(key: .code(KeyCode.return), modifierFlags: [], optionalModifierFlags: [.shift, .option])])
             case .space:
-                return KeyBinding(action, [Input(key: .code(0x31), modifierFlags: [])])
+                return KeyBinding(action, [Input(key: .code(KeyCode.space), modifierFlags: [])])
             case .shiftSpace:
-                return KeyBinding(action, [Input(key: .code(0x31), modifierFlags: [.shift])])
+                return KeyBinding(action, [Input(key: .code(KeyCode.space), modifierFlags: [.shift])])
             case .backwardCandidate:
                 return KeyBinding(action, [Input(key: .character("x"), modifierFlags: [])])
             case .tab:
-                return KeyBinding(action, [Input(key: .code(0x30), modifierFlags: [], optionalModifierFlags: .shift)])
+                return KeyBinding(action, [Input(key: .code(KeyCode.tab), modifierFlags: [], optionalModifierFlags: .shift)])
             case .backspace:
-                return KeyBinding(action, [Input(key: .code(0x33), modifierFlags: [], optionalModifierFlags: [.shift, .option]),
+                return KeyBinding(action, [Input(key: .code(KeyCode.delete), modifierFlags: [], optionalModifierFlags: [.shift, .option]),
                                            Input(key: .character("h"), modifierFlags: .control)])
             case .delete:
-                return KeyBinding(action, [Input(key: .code(0x75), modifierFlags: .function),
+                return KeyBinding(action, [Input(key: .code(KeyCode.forwardDelete), modifierFlags: .function),
                                            Input(key: .character("d"), modifierFlags: .control)])
             case .cancel:
-                return KeyBinding(action, [Input(key: .code(0x35), modifierFlags: []),
+                return KeyBinding(action, [Input(key: .code(KeyCode.escape), modifierFlags: []),
                                            Input(key: .character("g"), modifierFlags: .control)])
             case .left:
-                return KeyBinding(action, [Input(key: .code(0x7b), modifierFlags: .function, optionalModifierFlags: [.shift, .option]),
+                return KeyBinding(action, [Input(key: .code(KeyCode.leftArrow), modifierFlags: .function, optionalModifierFlags: [.shift, .option]),
                                            Input(key: .character("b"), modifierFlags: .control)])
             case .right:
-                return KeyBinding(action, [Input(key: .code(0x7c), modifierFlags: .function, optionalModifierFlags: [.shift, .option]),
+                return KeyBinding(action, [Input(key: .code(KeyCode.rightArrow), modifierFlags: .function, optionalModifierFlags: [.shift, .option]),
                                            Input(key: .character("f"), modifierFlags: .control)])
             case .down:
-                return KeyBinding(action, [Input(key: .code(0x7d), modifierFlags: .function, optionalModifierFlags: [.shift]),
+                return KeyBinding(action, [Input(key: .code(KeyCode.downArrow), modifierFlags: .function, optionalModifierFlags: [.shift]),
                                            Input(key: .character("n"), modifierFlags: .control)])
             case .up:
-                return KeyBinding(action, [Input(key: .code(0x7e), modifierFlags: .function, optionalModifierFlags: [.shift]),
+                return KeyBinding(action, [Input(key: .code(KeyCode.upArrow), modifierFlags: .function, optionalModifierFlags: [.shift]),
                                            Input(key: .character("p"), modifierFlags: .control)])
             case .startOfLine:
                 return KeyBinding(action, [Input(key: .character("a"), modifierFlags: .control)])
@@ -368,9 +373,9 @@ struct KeyBinding: Identifiable, Hashable {
             case .affix:
                 return KeyBinding(action, [Input(key: .character("."), modifierFlags: .shift)])
             case .eisu:
-                return KeyBinding(action, [Input(key: .code(0x66), modifierFlags: [])])
+                return KeyBinding(action, [Input(key: .code(KeyCode.jisEisu), modifierFlags: [])])
             case .kana:
-                return KeyBinding(action, [Input(key: .code(0x68), modifierFlags: [])])
+                return KeyBinding(action, [Input(key: .code(KeyCode.jisKana), modifierFlags: [])])
             }
         }
     }
