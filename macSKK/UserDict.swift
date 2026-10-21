@@ -50,6 +50,8 @@ enum UserDictAddSource {
     private let ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>
     private var cancellables: Set<AnyCancellable> = []
     private(set) var recentRegisteredCandidates: [RecentRegisteredCandidate] = []
+    /// ユーザー辞書を変換・単語登録・削除したときに、その同期情報を受け取る。iCloud同期が無効のときはnil。
+    var syncChangeHandler: ((UserDictSyncRecord) -> Void)?
     private let maxRecentRegisteredCandidateCount = 3
 
     // MARK: NSFilePresenter
@@ -210,6 +212,8 @@ enum UserDictAddSource {
         if !privateMode.value {
             if let dict = userDict as? FileDict {
                 dict.add(yomi: yomi, word: word)
+                postEditEvent(dict)
+                syncChangeHandler?(.use(yomi: yomi, word: word))
                 if source == .registering {
                     addRecentRegisteredCandidate(yomi: yomi, word: word)
                 }
@@ -240,6 +244,8 @@ enum UserDictAddSource {
             return true
         } else if let dict = userDict as? FileDict {
             if dict.delete(yomi: yomi, word: word) {
+                postEditEvent(dict)
+                syncChangeHandler?(.delete(yomi: yomi, word: word))
                 logger.log("ユーザー辞書からエントリ \(Entry(yomi: yomi, candidates: [word]).serialize(), privacy: .public) を削除しました")
                 recentRegisteredCandidates.removeAll { $0.yomi == yomi && $0.word == word }
                 scheduleSave()
@@ -247,6 +253,62 @@ enum UserDictAddSource {
             }
         }
         return false
+    }
+
+    /// ユーザー辞書をファイルから読み込み済みかどうか
+    var isUserDictLoaded: Bool {
+        (userDict as? FileDict)?.isLoaded ?? false
+    }
+
+    /**
+     * 他の端末から受け取った同期情報をユーザー辞書に反映して、すぐに保存する。
+     *
+     * 反映した変更は再取得できないので、保存を遅らせずに行う。
+     * 反映中にこの端末で辞書を編集してもよいが、受け取った同期情報より後に編集した変換候補はisSkippedで反映から除くこと。
+     *
+     * - Parameters:
+     *   - records: 他の端末から受け取った同期情報
+     *   - progress: 反映した件数と全体の件数を途中で受け取る
+     *   - isSkipped: 反映しない変換候補かどうか。反映する直前に判定する
+     * - Returns: 反映した変換候補の追加・更新・削除
+     */
+    @discardableResult
+    @MainActor func applySyncRecords(_ records: [UserDictSyncRecord],
+                                     progress: ((_ done: Int, _ total: Int) -> Void)? = nil,
+                                     skipping isSkipped: (UserDictSyncKey) -> Bool = { _ in false }) async -> MemoryDict.CandidateChanges {
+        guard var dict = userDict as? FileDict, dict.isLoaded, !records.isEmpty else { return MemoryDict.CandidateChanges() }
+        let old = dict.dict
+        await dict.apply(records, progress: progress, skipping: isSkipped)
+        let changes = old.candidateChanges(to: dict.dict, receiving: records.filter { !isSkipped($0.key) })
+        if changes.isEmpty {
+            return changes
+        }
+        logger.log("ユーザー辞書にiCloud同期の変更を反映しました。追加 \(changes.addedCount) 件、更新 \(changes.updatedCount) 件、削除 \(changes.removedCount) 件")
+        for entry in changes.added {
+            logger.log("iCloud同期でユーザー辞書に追加しました: \(entry.serialize(), privacy: .public)")
+        }
+        for entry in changes.updated {
+            logger.log("iCloud同期でユーザー辞書を更新しました: \(entry.serialize(), privacy: .public)")
+        }
+        for entry in changes.removed {
+            logger.log("iCloud同期でユーザー辞書から削除しました: \(entry.serialize(), privacy: .public)")
+        }
+        postEditEvent(dict)
+        // 他の端末で削除された候補は直近の辞書登録履歴からも取り除く
+        recentRegisteredCandidates.removeAll { candidate in
+            !dict.dict.refer(candidate.yomi, option: nil).contains { $0.word == candidate.word.word && $0.okuri == candidate.word.okuri }
+        }
+        saveTask?.cancel()
+        save()
+        return changes
+    }
+
+    /// ユーザー辞書を編集したことを通知する
+    @MainActor private func postEditEvent(_ dict: FileDict) {
+        NotificationCenter.default.post(name: notificationNameDictLoad,
+                                        object: DictLoadEvent(id: dict.id,
+                                                              status: .loaded(success: dict.entryCount, failure: dict.failedEntryCount),
+                                                              trigger: .edit))
     }
 
     /// ユーザー辞書の永続化を予約する

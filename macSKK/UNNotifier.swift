@@ -8,6 +8,8 @@ import Foundation
 struct UNNotifier {
     // ユーザー辞書の読み込みエラーの通知センター用通知のID
     static let userNotificationReadErrorIdentifier = "net.mtgto.inputmethod.macSKK.userNotification.userDictReadError"
+    // 他のMacからユーザー辞書の変更を取り込んだことの通知センター用通知のID
+    static let userNotificationUserDictSyncedIdentifier = "net.mtgto.inputmethod.macSKK.userNotification.userDictSynced"
     // ユーザー辞書の書き込みエラーの通知センター用通知のID
     static let userNotificationWriteErrorIdentifier = "net.mtgto.inputmethod.macSKK.userNotification.userDictWriteError"
     // skkservの自動無効化の通知センター用通知のID
@@ -60,6 +62,24 @@ struct UNNotifier {
         content.body = String(localized: "UNUserDictWriteErrorBody", comment: "ユーザー辞書の永続化に失敗しました")
 
         let request = UNNotificationRequest(identifier: Self.userNotificationWriteErrorIdentifier, content: content, trigger: nil)
+        sendUserNotification(request: request)
+    }
+
+    static func sendNotificationForUserDictSynced(changes: MemoryDict.CandidateChanges) {
+        let content = UNMutableNotificationContent()
+        content.title = String(localized: "UNUserDictSyncedTitle", comment: "ユーザー辞書がiCloudと同期されました")
+        // 0件の項目は省く
+        let counts = [
+            (changes.addedCount, "UNUserDictSyncedAdded"),
+            (changes.updatedCount, "UNUserDictSyncedUpdated"),
+            (changes.removedCount, "UNUserDictSyncedRemoved"),
+        ].filter { $0.0 > 0 }.map { count, key in
+            String(format: String(localized: LocalizedStringResource(stringLiteral: key)), count)
+        }
+        content.body = String(format: String(localized: "UNUserDictSyncedBody", comment: "他のMacで変更されたユーザー辞書を取り込みました (%@)"),
+                              ListFormatter.localizedString(byJoining: counts))
+
+        let request = UNNotificationRequest(identifier: Self.userNotificationUserDictSyncedIdentifier, content: content, trigger: nil)
         sendUserNotification(request: request)
     }
 
