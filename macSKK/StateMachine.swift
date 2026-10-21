@@ -656,13 +656,14 @@ final class StateMachine {
         /// 範囲指定を使わない。
         /// iTerm2は未確定文字列を常にカーソル位置に描く。位置を画面のセルで数えるので全角の確定文字列は見つからないが、
         /// 半角だけの確定文字列は見つかってしまう
+        /// Hyperは未確定文字列をカーソル位置に表示まではできるが、確定しても入力されない
         case unsupported
 
         init(bundleIdentifier: String?) {
             switch bundleIdentifier {
             case "com.apple.Terminal":
                 self = .beforeCaretOnly
-            case "com.googlecode.iterm2":
+            case "com.googlecode.iterm2", "co.zeit.hyper":
                 self = .unsupported
             default:
                 self = .full
