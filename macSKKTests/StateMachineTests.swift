@@ -1516,6 +1516,21 @@ final class StateMachineTests: XCTestCase {
         ctx.step(printableKeyEventAction(character: "2"), [.composing("あ2")])
     }
 
+    @MainActor func testHandleComposingSelectCompletionByShiftedKey() {
+        let ctx = StateMachineTestContext()
+
+        let candidates: Completion = .candidates([
+            Candidate("朝", original: Candidate.Original(midashi: "あさ", word: "朝")),
+            Candidate("麻", original: Candidate.Original(midashi: "あさ", word: "麻")),
+        ])
+
+        // 規定時間以上経っていても、Shift-1 は補完候補の選択に使わず "!" として入力する
+        ctx.step(printableKeyEventAction(character: "a", withShift: true), [.composing("あ")])
+        ctx.stateMachine.completion = candidates
+        ctx.stateMachine.completionSetAt = Date(timeIntervalSinceNow: -(Global.completionConfirmationTimeLimit + 0.1))
+        ctx.step(printableKeyEventAction(character: "!", characterIgnoringModifier: "1", withShift: true), [.composing("あ!")])
+    }
+
     @MainActor func testHandleComposingPeriod() {
         let ctx = StateMachineTestContext()
         Global.fixedCompletionByPeriod = true
@@ -2576,6 +2591,34 @@ final class StateMachineTests: XCTestCase {
         ctx.step(printableKeyEventAction(character: " "), [.selecting("4")])
         // 5番目で決定
         ctx.step(printableKeyEventAction(character: "g"), [.fixedText("8")])
+    }
+
+    @MainActor func testHandleSelectingByShiftedKey() {
+        Global.dictionary.setEntries(["あ": "123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".map { Word(String($0)) }])
+        let ctx = StateMachineTestContext()
+
+        ctx.step(printableKeyEventAction(character: "a", withShift: true), [.composing("あ")])
+        ctx.step(printableKeyEventAction(character: " "), [.selecting("1")])
+        ctx.step(printableKeyEventAction(character: " "), [.selecting("2")])
+        ctx.step(printableKeyEventAction(character: " "), [.selecting("3")])
+        ctx.step(printableKeyEventAction(character: " "), [.selecting("4")])
+        // Shift-1 は charactersIgnoringModifiers が "1" でも選択キーとして扱わず、選択中の候補で確定して "!" を入力する
+        ctx.step(printableKeyEventAction(character: "!", characterIgnoringModifier: "1", withShift: true),
+                 [.fixedText("4"), .fixedText("!")])
+    }
+
+    @MainActor func testHandleSelectingByShiftedAlphabet() {
+        Global.dictionary.setEntries(["あ": "123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".map { Word(String($0)) }])
+        Global.selectCandidateKeys = "asdfghjkl".map { $0 }
+        let ctx = StateMachineTestContext()
+
+        ctx.step(printableKeyEventAction(character: "a", withShift: true), [.composing("あ")])
+        ctx.step(printableKeyEventAction(character: " "), [.selecting("1")])
+        ctx.step(printableKeyEventAction(character: " "), [.selecting("2")])
+        ctx.step(printableKeyEventAction(character: " "), [.selecting("3")])
+        ctx.step(printableKeyEventAction(character: " "), [.selecting("4")])
+        // Shift-A は選択キーとして扱わず、選択中の候補で確定して次の変換を始める
+        ctx.step(printableKeyEventAction(character: "a", withShift: true), [.fixedText("4"), .composing("あ")])
     }
 
     @MainActor func testHandleSelectingUnregister() {

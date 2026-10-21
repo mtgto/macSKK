@@ -839,8 +839,10 @@ final class StateMachine {
                     return true
                 }
                 // 補完候補が表示されてから一定時間経過後に確定キーが押された場合は補完候補で確定する
+                // 変換候補の選択と同じく、Shiftを押しながらの入力 (Shift-1の"!"や送り仮名の開始) は選択に使わない
                 if let displayedAt = completionSetAt,
                    displayedAt.timeIntervalSinceNow <= -Global.completionConfirmationTimeLimit,
+                   !event.modifierFlags.contains(.shift),
                    let first = input.lowercased().first,
                    let index = Global.selectCandidateKeys.firstIndex(of: first), index < candidateWords.count, index < Global.displayCandidateCount {
                     let candidate = candidateWords[index]
@@ -1751,7 +1753,10 @@ final class StateMachine {
             break
         }
 
-        if let input = action.event.charactersIgnoringModifiers {
+        // Shiftを押しながらの入力は変換候補の選択に使わない。
+        // charactersIgnoringModifiersはShift-1でも"1"を返すので、"!"を入力したつもりで候補を選んでしまう。
+        // またアルファベットの選択キーでも、Shift-Aは選択中の候補を確定して次の変換を始めるのに使いたい
+        if let input = action.event.charactersIgnoringModifiers, !action.shiftIsPressed() {
             if selecting.candidateIndex >= inlineCandidateCount {
                 if let first = input.lowercased().first, let index = Global.selectCandidateKeys.firstIndex(of: first), index < Global.displayCandidateCount {
                     let diff = index - (selecting.candidateIndex - inlineCandidateCount) % Global.displayCandidateCount
