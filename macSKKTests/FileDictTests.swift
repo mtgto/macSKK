@@ -19,14 +19,14 @@ import XCTest
         let fileURL = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "SKK-JISYO.test", withExtension: "json"))
         let dict = try FileDict(contentsOf: fileURL, type: .json, readonly: true, saveToUserDict: true)
         let dictId = dict.id
-        let loadingExpectation = expectation(forNotification: notificationNameDictLoad, object: nil) { notification in
-            guard let loadEvent = notification.object as? DictLoadEvent, loadEvent.id == dictId,
+        let loadingExpectation = expectation(forNotification: notificationNameFileDictStatus, object: nil) { notification in
+            guard let loadEvent = notification.object as? FileDict.StatusEvent, loadEvent.id == dictId,
                   case .loading = loadEvent.status else { return false }
             XCTAssertEqual(loadEvent.trigger, .load, "ファイル読み込みの通知はすべて .load であるべき")
             return true
         }
-        let loadedExpectation = expectation(forNotification: notificationNameDictLoad, object: nil) { notification in
-            guard let loadEvent = notification.object as? DictLoadEvent, loadEvent.id == dictId,
+        let loadedExpectation = expectation(forNotification: notificationNameFileDictStatus, object: nil) { notification in
+            guard let loadEvent = notification.object as? FileDict.StatusEvent, loadEvent.id == dictId,
                   case .loaded(let loadCount, let failureCount) = loadEvent.status else { return false }
             XCTAssertEqual(loadCount, 3)
             XCTAssertEqual(failureCount, 0)
@@ -43,14 +43,14 @@ import XCTest
         let fileURL = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "SKK-JISYO.broken", withExtension: "json"))
         let dict = try FileDict(contentsOf: fileURL, type: .json, readonly: true, saveToUserDict: true)
         let dictId = dict.id
-        let loadingExpectation = expectation(forNotification: notificationNameDictLoad, object: nil) { notification in
-            guard let loadEvent = notification.object as? DictLoadEvent, loadEvent.id == dictId,
+        let loadingExpectation = expectation(forNotification: notificationNameFileDictStatus, object: nil) { notification in
+            guard let loadEvent = notification.object as? FileDict.StatusEvent, loadEvent.id == dictId,
                   case .loading = loadEvent.status else { return false }
             XCTAssertEqual(loadEvent.trigger, .load, "ファイル読み込みの通知はすべて .load であるべき")
             return true
         }
-        let failExpectation = expectation(forNotification: notificationNameDictLoad, object: nil) { notification in
-            guard let loadEvent = notification.object as? DictLoadEvent, loadEvent.id == dictId,
+        let failExpectation = expectation(forNotification: notificationNameFileDictStatus, object: nil) { notification in
+            guard let loadEvent = notification.object as? FileDict.StatusEvent, loadEvent.id == dictId,
                   case .fail = loadEvent.status else { return false }
             XCTAssertEqual(loadEvent.trigger, .load, "ファイル読み込みの通知はすべて .load であるべき")
             return true
@@ -63,14 +63,14 @@ import XCTest
         let fileURL = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "SKK-JISYO.test", withExtension: "utf8.gz"))
         let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: true, saveToUserDict: true)
         let dictId = dict.id
-        let loadingExpectation = expectation(forNotification: notificationNameDictLoad, object: nil) { notification in
-            guard let loadEvent = notification.object as? DictLoadEvent, loadEvent.id == dictId,
+        let loadingExpectation = expectation(forNotification: notificationNameFileDictStatus, object: nil) { notification in
+            guard let loadEvent = notification.object as? FileDict.StatusEvent, loadEvent.id == dictId,
                   case .loading = loadEvent.status else { return false }
             XCTAssertEqual(loadEvent.trigger, .load, "ファイル読み込みの通知はすべて .load であるべき")
             return true
         }
-        let loadedExpectation = expectation(forNotification: notificationNameDictLoad, object: nil) { notification in
-            guard let loadEvent = notification.object as? DictLoadEvent, loadEvent.id == dictId,
+        let loadedExpectation = expectation(forNotification: notificationNameFileDictStatus, object: nil) { notification in
+            guard let loadEvent = notification.object as? FileDict.StatusEvent, loadEvent.id == dictId,
                   case .loaded(let loadCount, let failureCount) = loadEvent.status else { return false }
             XCTAssertEqual(loadCount, 1)
             XCTAssertEqual(failureCount, 0)
@@ -86,14 +86,14 @@ import XCTest
         let fileURL = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "SKK-JISYO.test", withExtension: "json.gz"))
         let dict = try FileDict(contentsOf: fileURL, type: .json, readonly: true, saveToUserDict: true)
         let dictId = dict.id
-        let loadingExpectation = expectation(forNotification: notificationNameDictLoad, object: nil) { notification in
-            guard let loadEvent = notification.object as? DictLoadEvent, loadEvent.id == dictId,
+        let loadingExpectation = expectation(forNotification: notificationNameFileDictStatus, object: nil) { notification in
+            guard let loadEvent = notification.object as? FileDict.StatusEvent, loadEvent.id == dictId,
                   case .loading = loadEvent.status else { return false }
             XCTAssertEqual(loadEvent.trigger, .load, "ファイル読み込みの通知はすべて .load であるべき")
             return true
         }
-        let loadedExpectation = expectation(forNotification: notificationNameDictLoad, object: nil) { notification in
-            guard let loadEvent = notification.object as? DictLoadEvent, loadEvent.id == dictId,
+        let loadedExpectation = expectation(forNotification: notificationNameFileDictStatus, object: nil) { notification in
+            guard let loadEvent = notification.object as? FileDict.StatusEvent, loadEvent.id == dictId,
                   case .loaded(let loadCount, let failureCount) = loadEvent.status else { return false }
             XCTAssertEqual(loadCount, 3)
             XCTAssertEqual(failureCount, 0)
@@ -112,14 +112,14 @@ import XCTest
         XCTAssertFalse(dict.saveToUserDict)
         XCTAssertFalse(dict.saveToUserDict)
         let dictId = dict.id
-        let loadingExpectation = expectation(forNotification: notificationNameDictLoad, object: nil) { notification in
-            guard let loadEvent = notification.object as? DictLoadEvent, loadEvent.id == dictId,
+        let loadingExpectation = expectation(forNotification: notificationNameFileDictStatus, object: nil) { notification in
+            guard let loadEvent = notification.object as? FileDict.StatusEvent, loadEvent.id == dictId,
                   case .loading = loadEvent.status else { return false }
             XCTAssertEqual(loadEvent.trigger, .load, "ファイル読み込みの通知はすべて .load であるべき")
             return true
         }
-        let loadedExpectation = expectation(forNotification: notificationNameDictLoad, object: nil) { notification in
-            guard let loadEvent = notification.object as? DictLoadEvent, loadEvent.id == dictId,
+        let loadedExpectation = expectation(forNotification: notificationNameFileDictStatus, object: nil) { notification in
+            guard let loadEvent = notification.object as? FileDict.StatusEvent, loadEvent.id == dictId,
                   case .loaded(let loadCount, let failureCount) = loadEvent.status else { return false }
             XCTAssertEqual(loadCount, 1)
             XCTAssertEqual(failureCount, 0)
@@ -134,37 +134,21 @@ import XCTest
 
     func testAdd() throws {
         let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: false, saveToUserDict: true)
-        let dictId = dict.id
-        let expectation = expectation(forNotification: notificationNameDictLoad, object: nil) { notification in
-            guard let loadEvent = notification.object as? DictLoadEvent, loadEvent.id == dictId,
-                  case .loaded = loadEvent.status else { return false }
-            XCTAssertEqual(loadEvent.trigger, .edit, "addによる通知は .edit であるべき")
-            return true
-        }
         XCTAssertEqual(dict.entryCount, 0)
         let word = Word("井")
         XCTAssertFalse(dict.hasUnsavedChanges)
         dict.add(yomi: "い", word: word)
         XCTAssertEqual(dict.refer("い", option: nil), [word])
         XCTAssertTrue(dict.hasUnsavedChanges)
-        wait(for: [expectation], timeout: 1.0)
     }
 
     func testDelete() throws {
         let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: false, saveToUserDict: true)
-        let dictId = dict.id
-        let expectation = expectation(forNotification: notificationNameDictLoad, object: nil) { notification in
-            guard let loadEvent = notification.object as? DictLoadEvent, loadEvent.id == dictId,
-                  case .loaded = loadEvent.status else { return false }
-            XCTAssertEqual(loadEvent.trigger, .edit, "deleteによる通知は .edit であるべき")
-            return true
-        }
         dict.setEntries(["あr": [Word("有"), Word("在")]], readonly: false)
         XCTAssertFalse(dict.delete(yomi: "あr", word: Word("或")))
         XCTAssertFalse(dict.hasUnsavedChanges)
         XCTAssertTrue(dict.delete(yomi: "あr", word: Word("在")))
         XCTAssertTrue(dict.hasUnsavedChanges)
-        wait(for: [expectation], timeout: 1.0)
     }
 
     // MARK: ファイルの監視

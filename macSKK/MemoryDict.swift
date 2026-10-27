@@ -181,6 +181,31 @@ struct MemoryDict: SearchableDict, DictProtocol, Sendable {
     }
 
     /**
+     * 辞書に最も古く変換したものとしてエントリを追加する。既にある変換候補は動かさない。
+     *
+     * 同じ読みがあれば変換候補の末尾に追加し、なければ読みを最も古く変換したものとして追加する。
+     * 他の端末で「すべて同期」したときに受け取る、変換した日時がわからない変換候補を反映するのに使う。
+     *
+     * - Parameters:
+     *   - yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
+     *   - word: SKK辞書の変換候補。
+     */
+    @MainActor mutating func addAsOldest(yomi: String, word: Word) {
+        guard !yomi.isEmpty else { return }
+        if let words = entries[yomi] {
+            guard !words.contains(where: { $0.word == word.word && $0.okuri == word.okuri }) else { return }
+            entries[yomi] = words + [word]
+        } else {
+            entries[yomi] = [word]
+            if yomi.isOkuriAri {
+                okuriAriYomis.insert(yomi, at: 0)
+            } else {
+                okuriNashiYomis.insert(yomi, at: 0)
+            }
+        }
+    }
+
+    /**
      * 辞書からエントリを削除する。
      *
      * 送り仮名ブロックつきの同じ変換候補がある場合も、okuri が一致する候補だけを削除する。

@@ -117,7 +117,7 @@ struct DictionariesView: View {
         }
     }
 
-    private func loadingStatus(of status: DictLoadStatus) -> String {
+    private func loadingStatus(of status: FileDict.Status) -> String {
         switch status {
         case .loaded(success: let entryCount, failure: let failureCount):
             if failureCount == 0 {

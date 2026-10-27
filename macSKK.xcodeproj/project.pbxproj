@@ -73,6 +73,10 @@
 		CE3926503096F044005C00D5 /* SearchableDict.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE39264F3096F044005C00D5 /* SearchableDict.swift */; };
 		CE3926543096F05E005C00D5 /* ReadonlyMemoryDict.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE3926533096F05E005C00D5 /* ReadonlyMemoryDict.swift */; };
 		CE39265A309793BF005C00D5 /* SearchableDictTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE392659309793BF005C00D5 /* SearchableDictTests.swift */; };
+		CE3926303094D54B005C00D5 /* UserDictSyncRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE39262F3094D54B005C00D5 /* UserDictSyncRecord.swift */; };
+		CE3926323094D54E005C00D5 /* UserDictSyncRecord+CloudKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE3926313094D54E005C00D5 /* UserDictSyncRecord+CloudKit.swift */; };
+		CE3926343094D550005C00D5 /* UserDictSyncRecordTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE3926333094D550005C00D5 /* UserDictSyncRecordTests.swift */; };
+		CE3926363094D553005C00D5 /* UserDictSyncRecordCloudKitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE3926353094D553005C00D5 /* UserDictSyncRecordCloudKitTests.swift */; };
 		CE39DB212A8DFD8F00BC619F /* MarkedText.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE39DB202A8DFD8F00BC619F /* MarkedText.swift */; };
 		CE39FA952BEB942B00E293F0 /* Character+KeyCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE39FA942BEB942B00E293F0 /* Character+KeyCode.swift */; };
 		CE39FA972BF0813E00E293F0 /* KeyBindingSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE39FA962BF0813E00E293F0 /* KeyBindingSet.swift */; };
@@ -164,6 +168,7 @@
 		CEB52CC62E080B030025542F /* DateConversionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEB52CC32E080B030025542F /* DateConversionsView.swift */; };
 		CEB52CC82E0C10F20025542F /* DateConversion.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEB52CC72E0974AF0025542F /* DateConversion.swift */; };
 		CEB52CCA2E0D64B10025542F /* DateConversionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEB52CC92E0D64B10025542F /* DateConversionView.swift */; };
+		CEBCA67C3094D525006FA951 /* UserDictSyncTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEBCA67B3094D525006FA951 /* UserDictSyncTypes.swift */; };
 		CEBEE7872D97D25800C73B6D /* NSEvent+CoreService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEBEE7862D97D25800C73B6D /* NSEvent+CoreService.swift */; };
 		CEC061C82ABB0A0100A11614 /* CompletionPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEC061C72ABB0A0100A11614 /* CompletionPanel.swift */; };
 		CEC061CA2ABB0A7900A11614 /* CompletionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEC061C92ABB0A7900A11614 /* CompletionViewModel.swift */; };
@@ -300,6 +305,10 @@
 		CE39264F3096F044005C00D5 /* SearchableDict.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchableDict.swift; sourceTree = "<group>"; };
 		CE3926533096F05E005C00D5 /* ReadonlyMemoryDict.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadonlyMemoryDict.swift; sourceTree = "<group>"; };
 		CE392659309793BF005C00D5 /* SearchableDictTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchableDictTests.swift; sourceTree = "<group>"; };
+		CE39262F3094D54B005C00D5 /* UserDictSyncRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDictSyncRecord.swift; sourceTree = "<group>"; };
+		CE3926313094D54E005C00D5 /* UserDictSyncRecord+CloudKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UserDictSyncRecord+CloudKit.swift"; sourceTree = "<group>"; };
+		CE3926333094D550005C00D5 /* UserDictSyncRecordTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDictSyncRecordTests.swift; sourceTree = "<group>"; };
+		CE3926353094D553005C00D5 /* UserDictSyncRecordCloudKitTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDictSyncRecordCloudKitTests.swift; sourceTree = "<group>"; };
 		CE39DB202A8DFD8F00BC619F /* MarkedText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkedText.swift; sourceTree = "<group>"; };
 		CE39FA942BEB942B00E293F0 /* Character+KeyCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Character+KeyCode.swift"; sourceTree = "<group>"; };
 		CE39FA962BF0813E00E293F0 /* KeyBindingSet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyBindingSet.swift; sourceTree = "<group>"; };
@@ -397,6 +406,7 @@
 		CEB52CC32E080B030025542F /* DateConversionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateConversionsView.swift; sourceTree = "<group>"; };
 		CEB52CC72E0974AF0025542F /* DateConversion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateConversion.swift; sourceTree = "<group>"; };
 		CEB52CC92E0D64B10025542F /* DateConversionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateConversionView.swift; sourceTree = "<group>"; };
+		CEBCA67B3094D525006FA951 /* UserDictSyncTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDictSyncTypes.swift; sourceTree = "<group>"; };
 		CEBEE7862D97D25800C73B6D /* NSEvent+CoreService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSEvent+CoreService.swift"; sourceTree = "<group>"; };
 		CEC061C72ABB0A0100A11614 /* CompletionPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletionPanel.swift; sourceTree = "<group>"; };
 		CEC061C92ABB0A7900A11614 /* CompletionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletionViewModel.swift; sourceTree = "<group>"; };
@@ -586,6 +596,7 @@
 				CE1B00542BA3DDEB00C830FD /* SKKServDict.swift */,
 				CEA78FAF2964209B00B67E25 /* UserDict.swift */,
 				CED6B4342FFA88860027EB92 /* UserDict+Snapshot.swift */,
+				CEBCA6793094D520006FA951 /* CloudKit */,
 				CEADA44A2B025A0F0026E2BD /* Entry.swift */,
 				CE4CB5CB2AD557D90046FA34 /* NumberEntry.swift */,
 				CE84A3E6295DA4DA009394C4 /* Romaji.swift */,
@@ -667,6 +678,7 @@
 				CEA78FB129646CA100B67E25 /* UserDictTests.swift */,
 				CE00C0DE0000000000000004 /* CompletionPresenterTests.swift */,
 				CED6B4362FFA88920027EB92 /* UserDict+SnapshotTests.swift */,
+				CEBCA67A3094D520006FA951 /* CloudKit */,
 				CED1CA1D2BAFBE0600C32AE3 /* SKKServDictTests.swift */,
 				CEADA44C2B025A8A0026E2BD /* EntryTests.swift */,
 				CE84A3E8295DA504009394C4 /* RomajiTests.swift */,
@@ -727,6 +739,25 @@
 				CE0EDA2F2E10C77E00F96F9A /* DateYomiView.swift */,
 			);
 			path = DateConversion;
+			sourceTree = "<group>";
+		};
+		CEBCA6793094D520006FA951 /* CloudKit */ = {
+			isa = PBXGroup;
+			children = (
+				CEBCA67B3094D525006FA951 /* UserDictSyncTypes.swift */,
+				CE39262F3094D54B005C00D5 /* UserDictSyncRecord.swift */,
+				CE3926313094D54E005C00D5 /* UserDictSyncRecord+CloudKit.swift */,
+			);
+			path = CloudKit;
+			sourceTree = "<group>";
+		};
+		CEBCA67A3094D520006FA951 /* CloudKit */ = {
+			isa = PBXGroup;
+			children = (
+				CE3926333094D550005C00D5 /* UserDictSyncRecordTests.swift */,
+				CE3926353094D553005C00D5 /* UserDictSyncRecordCloudKitTests.swift */,
+			);
+			path = CloudKit;
 			sourceTree = "<group>";
 		};
 		CEC376E929651DE000D9C432 /* Settings */ = {
@@ -1102,6 +1133,7 @@
 				CEA602AC2F02CFB000E605F2 /* OptionalBackgroundModifier.swift in Sources */,
 				CE40D9A12A6D0C2F00D44799 /* SystemDictView.swift in Sources */,
 				CEADA4512B1358D40026E2BD /* InputSource.swift in Sources */,
+				CE3926323094D54E005C00D5 /* UserDictSyncRecord+CloudKit.swift in Sources */,
 				CE84A3E7295DA4DA009394C4 /* Romaji.swift in Sources */,
 				CE2573CF2F9E547C00533A05 /* Data+Gzip.swift in Sources */,
 				CEA253E62E2E852000618E64 /* UserDefaults+App.swift in Sources */,
@@ -1153,8 +1185,10 @@
 				CEA602B02F264FC600E605F2 /* KanaRuleView.swift in Sources */,
 				CEA602AE2F03795D00E605F2 /* ColorEncoding.swift in Sources */,
 				CE49A27A2C245F6400D53CFE /* KeyBindingSetView.swift in Sources */,
+				CEBCA67C3094D525006FA951 /* UserDictSyncTypes.swift in Sources */,
 				CE39DB212A8DFD8F00BC619F /* MarkedText.swift in Sources */,
 				CEB52CCA2E0D64B10025542F /* DateConversionView.swift in Sources */,
+				CE3926303094D54B005C00D5 /* UserDictSyncRecord.swift in Sources */,
 				CE40D9A32A6D0C3900D44799 /* SystemDict.swift in Sources */,
 				CE821DF92F3C557C004814DE /* InputModeViewModel.swift in Sources */,
 				CE49A27C2C26F61700D53CFE /* KeyBindingInputsView.swift in Sources */,
@@ -1208,10 +1242,12 @@
 				CE39264E3096F022005C00D5 /* ReadonlyMemoryDictTests.swift in Sources */,
 				CED1CA1E2BAFBE0600C32AE3 /* SKKServDictTests.swift in Sources */,
 				CE6DBA912A846C1700F5A227 /* ReleaseVersionTests.swift in Sources */,
+				CE3926343094D550005C00D5 /* UserDictSyncRecordTests.swift in Sources */,
 				CE39FA952BEB942B00E293F0 /* Character+KeyCode.swift in Sources */,
 				CE39265A309793BF005C00D5 /* SearchableDictTests.swift in Sources */,
 				CEA78FAE2961BA1D00B67E25 /* String+TransformTests.swift in Sources */,
 				CE2573D12F9E557800533A05 /* Data+GzipTests.swift in Sources */,
+				CE3926363094D553005C00D5 /* UserDictSyncRecordCloudKitTests.swift in Sources */,
 				B3C350D6E32E35775AE1FF56 /* DateConversionYomiTests.swift in Sources */,
 				5ED234BA230E39DFF095D272 /* DateConversionTests.swift in Sources */,
 			);

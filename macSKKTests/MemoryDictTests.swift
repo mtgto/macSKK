@@ -120,6 +120,31 @@ class MemoryDictTests: XCTestCase {
         XCTAssertEqual(dict.refer("いt", option: nil), [Word("行", okuri: "った"), Word("行")])
     }
 
+    @MainActor func testAddAsOldest() throws {
+        var dict = MemoryDict(entries: [:])
+        dict.add(yomi: "い", word: Word("井"))
+        dict.add(yomi: "う", word: Word("宇"))
+        dict.addAsOldest(yomi: "い", word: Word("伊"))
+        XCTAssertEqual(dict.refer("い", option: nil), [Word("井"), Word("伊")], "同じ読みがあれば変換候補の末尾に足す")
+        XCTAssertEqual(dict.okuriNashiYomis, ["い", "う"], "既にある読みは動かさない")
+        dict.addAsOldest(yomi: "あ", word: Word("亜"))
+        XCTAssertEqual(dict.okuriNashiYomis, ["あ", "い", "う"], "ない読みは最も古く変換したものとして足す")
+        dict.addAsOldest(yomi: "あr", word: Word("有"))
+        XCTAssertEqual(dict.okuriAriYomis, ["あr"])
+        // 既にある変換候補は動かさず、注釈も変えない
+        let annotation = Annotation(dictId: "test", text: "宇の注釈")
+        dict.add(yomi: "う", word: Word("宇", annotation: annotation))
+        dict.add(yomi: "う", word: Word("卯"))
+        dict.addAsOldest(yomi: "う", word: Word("宇"))
+        XCTAssertEqual(dict.refer("う", option: nil), [Word("卯"), Word("宇", annotation: annotation)])
+        // 送り仮名ブロックありとなしは別の変換候補として扱う
+        dict.addAsOldest(yomi: "いt", word: Word("行"))
+        dict.addAsOldest(yomi: "いt", word: Word("行", okuri: "った"))
+        XCTAssertEqual(dict.refer("いt", option: nil), [Word("行"), Word("行", okuri: "った")])
+        dict.addAsOldest(yomi: "", word: Word("＞"))
+        XCTAssertEqual(dict.refer("", option: nil), [], "空の見出しは登録しない")
+    }
+
     @MainActor func testAddEmptyYomiIsIgnored() throws {
         // 空の見出しはSKK辞書エントリとして不正なので登録しない (シリアライズすると
         // " /候補/" のような壊れた行になり次回読み込みで失敗するため)

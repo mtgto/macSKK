@@ -54,6 +54,12 @@
 "Encoding" = "Encoding";
 "UNNewVersionTitle" = "A new version is available";
 "UNNewVersionBody" = "macSKK %@ is now available.";
+"UNUserDictSyncedTitle" = "User dictionary synced with iCloud";
+"UNUserDictSyncedBody" = "Imported changes to the user dictionary made on another Mac (%@).";
+"UNUserDictSyncedAdded" = "%lld added";
+"UNUserDictSyncedUpdated" = "%lld updated";
+"UNUserDictSyncedRemoved" = "%lld removed";
+"UNUserDictSyncStoppedTitle" = "Stopped syncing user dictionary with iCloud";
 "UNUserDictReadErrorTitle" = "Error";
 "UNUserDictReadErrorBody" = "Failed to load the user dictionary";
 "UNUserDictReadFailureEntryTitle" = "Error";
@@ -207,7 +213,7 @@
 "InputModeEisu" = "Zenkaku";
 
 "Sync settings with iCloud" = "Sync settings with iCloud";
-"SyncSettingsWithiCloudDescription" = "Sync settings with macSKK on other Macs signed in with the same Apple Account. Syncing dictionaries, keyboard layout, skkserv settings and the selected romaji-kana rule is not supported.";
+"SyncSettingsWithiCloudDescription" = "Sync settings with macSKK on other Macs signed in with the same Apple Account. Syncing keyboard layout, skkserv settings and the selected romaji-kana rule is not supported.";
 "SyncSettingsWithiCloudUnavailable" = "This build of macSKK does not support syncing settings with iCloud.";
 "SyncSettingsWithiCloudConflictMessage" = "These settings differ between iCloud and this Mac:\n\n%@\n\nWhich settings do you want to use?";
 "SyncCategoryConflictMessage" = "%lld settings in this group differ between iCloud and this Mac. Which settings do you want to use?";
@@ -222,3 +228,25 @@
 "Remove all settings from iCloud" = "Remove Settings from iCloud";
 "RemoveAllSettingsFromiCloudDescription" = "Settings stored in iCloud are kept even after you stop syncing them; use this button to remove them. This removes all macSKK settings stored in iCloud and turns off syncing. They will also disappear from other Macs signed in with the same Apple Account. The settings on this Mac are not removed.";
 "RemoveAllSettingsFromiCloudConfirmation" = "All macSKK settings stored in iCloud will be removed. They will also disappear from other Macs signed in with the same Apple Account, and this cannot be undone. The settings on this Mac are kept.";
+"Sync user dictionary with iCloud" = "Sync user dictionary with iCloud";
+"SyncUserDictWithiCloudDescription" = "Sync the user dictionary with macSKK on other Macs signed in with the same Apple Account. Changes on other Macs are applied within a few minutes. Turning off syncing removes the sync information on this Mac, but does not remove the data in iCloud or your user dictionary.";
+"SyncUserDictWithiCloudRequiresMacOS14" = "Syncing the user dictionary requires macOS 14 or later.";
+"SyncUserDictWithiCloudUnavailable" = "This build of macSKK does not support syncing the user dictionary with iCloud.";
+"SyncUserDictWithiCloudInitialSyncMessage" = "How do you want to handle the words already in the user dictionary on this Mac?\n\n\"Sync only conversions from now on\" syncs only words you convert, register or delete after syncing starts. Existing words are synced once you convert them again.\n\n\"Sync all words\" sends all existing words to iCloud. On the second and later Macs, the candidate order of the Mac that started syncing first takes precedence.";
+"Sync only conversions from now on" = "Sync only conversions from now on";
+"Sync all words" = "Sync all words";
+"UserDictSyncFetching" = "Fetching changes from iCloud…";
+"UserDictSyncFetchingCount" = "Fetching changes from iCloud… (%lld received)";
+"UserDictSyncApplying" = "Applying changes from iCloud… (%lld applied)";
+"UserDictSyncSending" = "Sending to iCloud… (%lld remaining)";
+"UserDictLastSyncedAt" = "Last synced: %@";
+"UserDictNotSyncedYet" = "Not synced yet";
+"UserDictSyncFetchError" = "Fetch error: %@";
+"UserDictSyncSendError" = "Send error: %@";
+"Sync Now" = "Sync Now";
+"Remove user dictionary from iCloud" = "Remove User Dictionary from iCloud";
+"RemoveUserDictFromiCloudConfirmation" = "This removes the user dictionary stored in iCloud and turns off syncing on this Mac. This cannot be undone. Other Macs syncing the user dictionary also stop syncing. The user dictionary on each Mac is not removed; if you want to remove a word, delete it from the user dictionary on each Mac as well.";
+"UserDictDeletedFromiCloud" = "Removed the user dictionary from iCloud.";
+"UserDictDeleteFromiCloudFailed" = "Could not remove the user dictionary from iCloud: %@";
+"UserDictSyncStoppedByAccountChange" = "Stopped syncing because the iCloud account was changed.";
+"UserDictSyncStoppedByDeletion" = "Stopped syncing because the user dictionary in iCloud was removed on another Mac.";

@@ -127,9 +127,9 @@ final class SettingsViewModel: ObservableObject {
     /// すべての利用可能なSKK辞書の設定
     @Published var dictSettings: [DictSetting] = []
     /// ユーザー辞書の読み込み状況
-    @Published var userDictLoadingStatus: DictLoadStatus = .loading
+    @Published var userDictLoadingStatus: FileDict.Status = .loading
     /// 利用可能なユーザー辞書以外の辞書の読み込み状態
-    @Published var dictLoadingStatuses: [DictSetting.ID: DictLoadStatus] = [:]
+    @Published var dictLoadingStatuses: [DictSetting.ID: FileDict.Status] = [:]
     /// 直接入力するアプリケーションのBundle Identifier
     @Published var directModeApplications: [DirectModeApplication] = []
     /// 選択可能なキー配列
@@ -822,8 +822,8 @@ final class SettingsViewModel: ObservableObject {
             self?.settingsSync?.setCategories(categories)
         }.store(in: &cancellables)
 
-        NotificationCenter.default.publisher(for: notificationNameDictLoad).receive(on: RunLoop.main).sink { [weak self] notification in
-            if let loadEvent = notification.object as? DictLoadEvent, let self {
+        NotificationCenter.default.publisher(for: notificationNameFileDictStatus).receive(on: RunLoop.main).sink { [weak self] notification in
+            if let loadEvent = notification.object as? FileDict.StatusEvent, let self {
                 if let userDict = Global.dictionary.userDict as? FileDict, userDict.id == loadEvent.id {
                     self.userDictLoadingStatus = loadEvent.status
                     // 読み込み失敗通知はファイル読み込み (.load) のときだけ出す。

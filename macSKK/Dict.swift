@@ -13,35 +13,6 @@ enum DictReferringOption {
     case okuri(String)
 }
 
-/// 辞書の読み込み状態
-enum DictLoadStatus {
-    /// 正常に読み込み済み。引数は読み込めたエントリ数と読み込みできなかった行数
-    case loaded(success: Int, failure: Int)
-    case loading
-    /// 無効に設定されている
-    case disabled
-    case fail(any Error)
-}
-
-/// 辞書の読み込み状態の通知オブジェクト
-struct DictLoadEvent {
-    /// この通知を発生させた契機。
-    enum Trigger {
-        /// ファイルからの読み込み (`FileDict.load`)。読み込み失敗通知はこの契機のときだけ出す。
-        case load
-        /// 変換・確定にともなう学習 (`FileDict.add`/`delete`)。
-        ///
-        /// 学習でも読み込み状態 (エントリ数) は更新されるが、失敗行数は読み込み時に一度決まる値なので、
-        /// これを `.load` と区別しないと失敗通知が変換のたびに繰り返し出てしまう。
-        case edit
-    }
-
-    let id: FileDict.ID
-    let status: DictLoadStatus
-    /// この通知を発生させた契機。
-    let trigger: Trigger
-}
-
 protocol DictProtocol {
     /**
      * 辞書を引き変換候補順に返す
@@ -67,6 +38,18 @@ protocol DictProtocol {
      *   - word: SKK辞書の変換候補。
      */
     @MainActor mutating func add(yomi: String, word: Word)
+
+    /**
+     * 辞書に最も古く変換したものとしてエントリを追加する。既にある変換候補は動かさない。
+     *
+     * 同じ読みがあれば変換候補の末尾に追加し、なければ読みを最も古く変換したものとして追加する。
+     * 他の端末で「すべて同期」したときに受け取る、変換した日時がわからない変換候補を反映するのに使う。
+     *
+     * - Parameters:
+     *   - yomi: SKK辞書の見出し。複数のひらがな、もしくは複数のひらがな + ローマ字からなる文字列
+     *   - word: SKK辞書の変換候補。
+     */
+    @MainActor mutating func addAsOldest(yomi: String, word: Word)
 
     /**
      * 辞書からエントリを削除する。
