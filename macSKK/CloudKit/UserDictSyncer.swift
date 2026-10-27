@@ -94,7 +94,12 @@ import Foundation
         status = UserDictSyncStatus(lastSyncedAt: defaults.object(forKey: UserDefaultsKeys.userDictLastSyncedAt) as? Date)
     }
 
-    /// 同期を開始する。同期中なら何もしない
+    /**
+     * 同期を開始する。同期中なら何もしない
+     *
+     * 停止してから再開するときは、`stop()`が終わってから呼ぶ。`stop()`を待っている間に呼ぶと、
+     * 止まりきっていない古いセッションと新しいセッションが同じユーザー辞書を同時に扱ってしまう。
+     */
     func start() {
         guard session == nil else { return }
         let session = UserDictSyncSession(userDict: userDict,
@@ -123,6 +128,37 @@ import Foundation
         guard let session else { return }
         logger.log("ユーザー辞書をiCloudと今すぐ同期します")
         await session.syncNow()
+    }
+
+    /// 同期を停止して、同期状態を破棄する
+    func reset() async {
+        await stop()
+        Self.removeState(from: defaults)
+    }
+
+    /**
+     * iCloudに保存したユーザー辞書 (このインスタンスのゾーン) をすべて削除して、このMacの同期状態も破棄する。
+     *
+     * 削除に失敗した場合は、同期していたなら新しいセッションで同期を再開してからエラーを投げる。
+     */
+    func deleteAllFromiCloud() async throws {
+        let wasSyncing = session != nil
+        await stop()
+        do {
+            try await Self.deleteZone(from: CKContainer(identifier: Self.containerIdentifier).privateCloudDatabase, zoneID: zoneID)
+            Self.removeState(from: defaults)
+        } catch {
+            if wasSyncing {
+                start()
+            }
+            throw error
+        }
+    }
+
+    /// 同期していないときに、iCloudに保存したユーザー辞書 (既定のゾーン) をすべて削除して、このMacの同期状態も破棄する
+    nonisolated static func deleteAllFromiCloud(database: CKDatabase) async throws {
+        try await deleteZone(from: database, zoneID: defaultZoneID)
+        removeState()
     }
 
     /// iCloudからユーザー辞書のゾーンを削除する。ゾーンがなければ何もしない
@@ -159,5 +195,14 @@ extension UserDictSyncer: UserDictSyncSessionDelegate {
     func syncSession(_ session: UserDictSyncSession, didApplyRemoteChanges changes: MemoryDict.CandidateChanges) {
         guard session === self.session else { return }
         delegate?.userDictSyncer(self, didApplyRemoteChanges: changes)
+    }
+
+    func syncSession(_ session: UserDictSyncSession, didStopBecause reason: UserDictSyncResetReason) {
+        // stop()で捨てたセッションが止まる途中で届いたものは知らせない
+        guard session === self.session else { return }
+        self.session = nil
+        status.activity = .idle
+        Self.removeState(from: defaults)
+        delegate?.userDictSyncer(self, didResetBecause: reason)
     }
 }

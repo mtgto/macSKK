@@ -11,6 +11,8 @@ import Foundation
     func syncSessionDidCompleteInitialSync(_ session: UserDictSyncSession)
     /// 他の端末の変更をユーザー辞書に反映した。最初からの取得による反映では呼ばれない
     func syncSession(_ session: UserDictSyncSession, didApplyRemoteChanges changes: MemoryDict.CandidateChanges)
+    /// アカウントの変更や他の端末でのゾーンの削除で、セッションが自分で停止した。`stop()`で停止したときは呼ばれない
+    func syncSession(_ session: UserDictSyncSession, didStopBecause reason: UserDictSyncResetReason)
 }
 
 /**
@@ -57,6 +59,10 @@ import Foundation
     }
     /// 停止したかどうか。停止したら届いたイベントを無視し、状態を書き換えない
     private(set) var isStopped = false
+    /// 同期を止める印、または停止したか。``runIteration()``の冒頭と、取得・反映・送信の後にこれを見て、周を打ち切る
+    private var shouldStop: Bool {
+        isStopped || pendingResetReason != nil
+    }
 
     /// 1周の依頼。実行中に来た依頼は1つにまとまる (バッファは1つ)
     private let requests: AsyncStream<Void>
@@ -77,8 +83,15 @@ import Foundation
     private var sentResults: [(saved: [CKRecord], failed: [(record: CKRecord, error: CKError)])] = []
     /// ゾーンの作成の失敗
     private var failedZoneSaves: [CKError] = []
-    /// 同期を止める印。ゾーンがなくなったときにつく。止める処理はTask 6で足す
+    /**
+     * 同期を止めるフラグ。止める理由を入れて立てる。アカウントの変更、他の端末でのゾーンの削除、送信時のzoneNotFoundで立つ。
+     *
+     * イベントのコールバックの中ではフラグを立てるだけにして、止まるのは``runIteration()``が取得・反映・送信の後に見たとき。
+     * コールバックの中から止めると、CKSyncEngineを呼ぶ (cancelOperations()) ことになりクラッシュするため。
+     */
     private(set) var pendingResetReason: UserDictSyncResetReason?
+    /// 暗号化されたデータのリセットでゾーンが削除されたので、ゾーンを作り直すフラグ。``runIteration()``で取得の後に作り直す
+    private var needsZoneRecreation = false
     /// 最後に届いた同期状態。ユーザー辞書への反映が終わってから保存する
     private var stateToSave: CKSyncEngine.State.Serialization?
 
@@ -137,6 +150,12 @@ import Foundation
                     await self.waitForUserDictLoad(statuses)
                 }
                 await self.runIteration()
+                if let reason = self.pendingResetReason {
+                    // 同期を止める出来事があった。ループの中なのでstop()は呼べない (自分自身の終わりを待ってしまう)
+                    await self.stopBecause(reason)
+                    waiters.forEach { $0.resume() }
+                    return
+                }
                 waiters.forEach { $0.resume() }
             }
         }
@@ -170,21 +189,40 @@ import Foundation
      * 停止する。ループ・定期の依頼・送信の予約を止め、実行中の取得・送信を取り消して、ループが終わるのを待つ。
      *
      * ユーザー辞書への反映中に停止したときは、反映が終わるのを待つ (受け取った変更そのものなので、反映は途中でやめない)。
+     * 同期を止める出来事で自分から停止している途中なら、それが終わるのを待つ (デリゲートには知らせない)。
      *
      * ループの中から呼んではいけない。ループのTaskが終わるのを待つので、自分自身を待って止まらなくなる。
      */
     func stop() async {
-        guard !isStopped else { return }
+        if markStopped() {
+            loopTask?.cancel()
+            await engine.cancelOperations()
+        }
+        await loopTask?.value
+    }
+
+    /// 同期を止める出来事で、ループの中から停止してデリゲートに知らせる。先にstop()されていたら何もしない
+    private func stopBecause(_ reason: UserDictSyncResetReason) async {
+        guard markStopped() else { return }
+        await engine.cancelOperations()
+        delegate?.syncSession(self, didStopBecause: reason)
+    }
+
+    /**
+     * 停止したことにして、ローカルの変更の受け取り・定期の依頼・送信の予約・依頼の受け付けを止める。
+     *
+     * stop()と``stopBecause(_:)``のどちらが先に呼ばれても後始末が1回だけになるように、初めて呼ばれたときだけtrueを返す。
+     */
+    private func markStopped() -> Bool {
+        guard !isStopped else { return false }
         isStopped = true
         userDict.syncChangeHandler = nil
         periodicTask?.cancel()
         scheduledSendTask?.cancel()
-        loopTask?.cancel()
         requestContinuation.finish()
         waitersForNextIteration.forEach { $0.resume() }
         waitersForNextIteration = []
-        await engine.cancelOperations()
-        await loopTask?.value
+        return true
     }
 
     /// 最初の1周の前に、ユーザー辞書の読み込みが終わるのを待つ。取得した変更はユーザー辞書を読み込んでからでないと反映できない
@@ -205,7 +243,7 @@ import Foundation
      * 失敗した周で行わないのは、送信と、`lastSyncedAt`と最初からの取得が完了したことの保存と、エラー表示の消去だけ。
      */
     private func runIteration() async {
-        guard !isStopped else { return }
+        guard !shouldStop else { return }
         // 取得
         status.activity = .fetching(received: 0)
         var fetchError: (any Error)?
@@ -214,14 +252,15 @@ import Foundation
         } catch {
             fetchError = error
         }
-        guard !isStopped else { return }
+        guard !shouldStop else { return }
+        recreateZoneIfNeeded()
         fetchError = fetchError ?? fetchZoneError
         fetchZoneError = nil
         // ユーザー辞書への反映
         let records = fetchedRecords
         fetchedRecords = [:]
         await apply(records, notifies: !needsFetchFromScratch)
-        guard !isStopped else { return }
+        guard !shouldStop else { return }
         // ユーザー辞書に反映し終わってから同期状態を保存する。反映前に保存すると、反映前に終了したとき変更を取り直せなくなる
         saveStateIfNeeded()
         if let fetchError {
@@ -255,11 +294,11 @@ import Foundation
                 logger.error("iCloudへのユーザー辞書の送信に失敗しました: \(error)")
                 sendError = .send(error.localizedDescription)
             }
-            guard !isStopped else { return }
+            guard !shouldStop else { return }
             if let error = await handleSendResults() {
                 sendError = error
             }
-            guard !isStopped else { return }
+            guard !shouldStop else { return }
             saveStateIfNeeded()
         }
         // 初回同期の完了は周の終わりのここだけで判定する。「すべて同期」で既存の変換候補の送り残しがあれば、次の周で送る
@@ -289,6 +328,23 @@ import Foundation
         engine.add(pendingRecordZoneChanges: changes)
     }
 
+    /**
+     * 高度なデータ保護の鍵のリセットで暗号化されたデータが失われ、ゾーンが削除されたときに、ゾーンを作り直す。
+     *
+     * ローカルには同期用のデータがないので、同期は止めずにゾーンを作り直して、以降の変更だけ同期する。
+     * 古いゾーンのシステムフィールドは使えないので捨てる。
+     */
+    private func recreateZoneIfNeeded() {
+        guard needsZoneRecreation else { return }
+        needsZoneRecreation = false
+        logger.log("iCloudの暗号化されたデータがリセットされたため、ユーザー辞書のゾーンを作り直します")
+        outbox.removeAllSystemFields()
+        engine.add(pendingDatabaseChanges: [.saveZone(CKRecordZone(zoneID: zoneID))])
+        // 取得に失敗した周では送信しないので、もう1周依頼してゾーンを作り直す
+        request()
+    }
+
+    /// 周を終える。状態を待機中に戻し、この周のエラーを表示する (nilなら前の周のエラーを消す)
     private func finishIteration(error: UserDictSyncStatus.SyncError?) {
         // エラーなしで終わった周で、前の周のエラーを消す
         status.error = error
@@ -385,9 +441,9 @@ import Foundation
                     conflictedRecords.append(merged)
                 case .zoneNotFound:
                     // ゾーンは送信より先に作成するので、ここでゾーンがないのは他の端末で削除されたとき。
-                    // 作り直すと削除したデータが復活してしまうので、同期を止める印をつける (止める処理はTask 6)
-                    logger.log("iCloudのユーザー辞書のゾーンが見つかりません")
-                    pendingResetReason = .deletedFromiCloud
+                    // 作り直すと削除したデータが復活してしまうので、同期を止めるフラグを立てる
+                    logger.log("iCloudのユーザー辞書のゾーンが見つからないため、同期を停止します")
+                    pendingResetReason = pendingResetReason ?? .deletedFromiCloud
                     reRegisters = false
                 case .unknownItem:
                     outbox.removeSystemFields(for: recordName)
@@ -436,11 +492,26 @@ import Foundation
         case .stateUpdate(let stateSerialization):
             stateToSave = stateSerialization
         case .accountChange(let change):
-            // TODO: 同期の停止はTask 6で足す
-            logger.log("iCloudアカウントの変更を受け取りました: \(String(describing: change), privacy: .public)")
+            switch change {
+            case .signIn:
+                break
+            case .signOut, .switchAccounts:
+                logger.log("iCloudアカウントが変更されたため、ユーザー辞書の同期を停止します")
+                pendingResetReason = pendingResetReason ?? .accountChanged
+                // 取得の外で届いたときに、次の定期の依頼まで待たずに止まるよう1周依頼する (``runIteration()``の冒頭でフラグを見て止まる)
+                request()
+            }
         case .zoneDeleted(let reason):
-            // TODO: 同期の停止とゾーンの作り直しはTask 6で足す
-            logger.log("iCloudのユーザー辞書のゾーンの削除を受け取りました: \(String(describing: reason), privacy: .public)")
+            if needsFetchFromScratch {
+                logger.log("過去にiCloudのユーザー辞書が削除された履歴を受け取りましたが、最初からの同期なので無視します")
+            } else if reason == .encryptedDataReset {
+                // ゾーンの作り直しはエンジンを呼ぶので、取得の後にループで行う
+                needsZoneRecreation = true
+            } else {
+                // ゾーンを作り直すと他の端末で削除したデータが復活してしまうので、同期を止めるフラグを立てる
+                logger.log("他の端末でiCloudのユーザー辞書が削除されたため、同期を停止します")
+                pendingResetReason = pendingResetReason ?? .deletedFromiCloud
+            }
         case .fetchedRecords(let records):
             let remoteRecords = records.compactMap(Self.syncRecord(from:))
             // 初回同期の取得なら、自分が送った変更かにかかわらず、iCloudにあるものとして集計する

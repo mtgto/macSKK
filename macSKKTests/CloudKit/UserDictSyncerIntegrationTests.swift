@@ -60,6 +60,8 @@ import XCTest
         var sendingRemainings: [Int] = []
         /// デリゲートに届いた、同期の停止と同期状態の破棄の理由
         var resetReasons: [UserDictSyncResetReason] = []
+        /// 取得を始めた回数。デリゲートに届いた状態から数える
+        var fetchStartCount = 0
 
         init(syncer: UserDictSyncer, userDict: UserDict, defaults: UserDefaults, defaultsName: String, fileURL: URL) {
             self.syncer = syncer
@@ -74,6 +76,10 @@ import XCTest
                 didCompleteInitialSync = true
             }
             spy.didChangeStatus = { [unowned self] status in
+                if case .fetching = status.activity {
+                    // 取得中は受け取った数が変わるたびに届くので、取得中でなかったときだけ数える
+                    if case .fetching? = lastStatus?.activity {} else { fetchStartCount += 1 }
+                }
                 lastStatus = status
                 if case .sending(let remaining) = status.activity {
                     sendingRemainings.append(remaining)
@@ -212,11 +218,13 @@ import XCTest
      *   - initialSyncMode: 初回同期で、同期を始める前からある変換候補も送るか
      *   - userDictContents: 同期を始める前のユーザー辞書の内容 (SKK辞書の形式)。nilなら空にする
      *   - loadsBeforeStart: ユーザー辞書を読み込んでから同期を始めるか。falseなら同期を始めてから読み込む
+     *   - waitsForInitialSync: 初回同期の完了を待つか。falseなら同期を始めてすぐに返す
      */
     func makeDevice(zoneID: CKRecordZone.ID,
                     initialSyncMode: UserDictInitialSyncMode = .fromNow,
                     userDictContents: String? = nil,
                     loadsBeforeStart: Bool = true,
+                    waitsForInitialSync: Bool = true,
                     file: StaticString = #filePath,
                     line: UInt = #line) async throws -> Device {
         let defaultsName = "UserDictSyncerIntegrationTests-\(UUID().uuidString)"
@@ -256,6 +264,7 @@ import XCTest
             XCTAssertFalse(device.didCompleteInitialSync, file: file, line: line)
             await fileDict.load()
         }
+        guard waitsForInitialSync else { return device }
         // 初回同期の取得が終わる前に他の端末の変更が届くと、同期を有効にしたことによる取り込みとして扱われて知らされない。
         // 「すべて同期」では、同期を始める前からある変換候補を送り終えるまで待つ
         await waitUntil(timeout: .seconds(60), file: file, line: line) { device.didCompleteInitialSync }
@@ -350,6 +359,115 @@ import XCTest
         XCTAssertNil(try XCTUnwrap(deviceC.lastStatus).error)
         XCTAssertFalse(deviceC.contains(yomi: "てすと", word: "試験"))
         XCTAssertTrue(deviceC.appliedChanges.isEmpty)
+    }
+
+    func testOtherZoneDeletionIsIgnored() async throws {
+        let zoneID = makeZoneID()
+        let otherZoneID = makeZoneID()
+        let deviceA = try await makeDevice(zoneID: otherZoneID)
+        let deviceC = try await makeDevice(zoneID: zoneID)
+        let deviceD = try await makeDevice(zoneID: zoneID)
+
+        // 送信でそれぞれのゾーンが作られる
+        deviceA.userDict.add(yomi: "てすと", word: Word("試験"), source: .conversion)
+        await deviceA.syncer.syncNow()
+        XCTAssertNil(try XCTUnwrap(deviceA.lastStatus).error)
+        deviceC.userDict.add(yomi: "かくにん", word: Word("確認"), source: .conversion)
+        await deviceC.syncer.syncNow()
+        XCTAssertNil(try XCTUnwrap(deviceC.lastStatus).error)
+
+        // 他の端末でiCloudのユーザー辞書を削除したときと同じように、Aのゾーンをサーバーから消す
+        try await UserDictSyncer.deleteZone(from: XCTUnwrap(database), zoneID: otherZoneID)
+        try await waitUntilZoneIsDeleted(otherZoneID)
+
+        // 別のゾーンの削除は、同じデータベースの変更として取得しても同期を止めない。
+        // 削除がいつデータベースの変更として届くかは分からないので、ゾーンが消えたのを確かめてから何度か取得する
+        for _ in 0..<3 {
+            await deviceC.syncer.syncNow()
+            try? await Task.sleep(for: .milliseconds(500))
+        }
+        XCTAssertTrue(deviceC.resetReasons.isEmpty)
+        XCTAssertNil(try XCTUnwrap(deviceC.lastStatus).error)
+
+        // 同期を続けていて、同じゾーンの端末に変更が届く
+        deviceC.userDict.add(yomi: "けいぞく", word: Word("継続"), source: .conversion)
+        await deviceC.syncer.syncNow()
+        XCTAssertNil(try XCTUnwrap(deviceC.lastStatus).error)
+        await syncUntil(deviceD) { deviceD.contains(yomi: "けいぞく", word: "継続") }
+        XCTAssertTrue(deviceC.resetReasons.isEmpty)
+    }
+
+    func testDeletionOnAStopsB() async throws {
+        // Aが消すのはこのテストの使い捨てのゾーン (UserDictSyncerのzoneID)。本物の"UserDict"ゾーンではない
+        let zoneID = makeZoneID()
+        XCTAssertTrue(zoneID.zoneName.hasPrefix(Self.testZonePrefix))
+        let deviceA = try await makeDevice(zoneID: zoneID)
+        let deviceB = try await makeDevice(zoneID: zoneID)
+        deviceA.userDict.add(yomi: "てすと", word: Word("試験"), source: .conversion)
+        await deviceA.syncer.syncNow()
+        XCTAssertNil(try XCTUnwrap(deviceA.lastStatus).error)
+        await syncUntil(deviceB) { deviceB.contains(yomi: "てすと", word: "試験") }
+
+        try await deviceA.syncer.deleteAllFromiCloud()
+        XCTAssertNil(deviceA.defaults.data(forKey: UserDefaultsKeys.userDictSyncEngineState))
+        try await waitUntilZoneIsDeleted(zoneID)
+
+        // Bは他の端末でのゾーンの削除を取得して同期を止め、同期状態を破棄する。止まった後のsyncNow()はすぐに返る
+        await syncUntil(deviceB) { !deviceB.resetReasons.isEmpty }
+        XCTAssertEqual(deviceB.resetReasons, [.deletedFromiCloud])
+        XCTAssertEqual(deviceB.lastStatus?.activity, .idle)
+        XCTAssertNil(deviceB.defaults.data(forKey: UserDefaultsKeys.userDictSyncEngineState))
+        XCTAssertFalse(deviceB.defaults.bool(forKey: UserDefaultsKeys.userDictSyncCompletedFetch))
+        // 自分で削除したAには、同期の停止は知らされない
+        XCTAssertTrue(deviceA.resetReasons.isEmpty)
+        // 止まったBは、ゾーンを作り直さない
+        await deviceB.syncer.syncNow()
+        let zones = try await XCTUnwrap(database).allRecordZones()
+        XCTAssertFalse(zones.contains { $0.zoneID.zoneName == zoneID.zoneName })
+        XCTAssertEqual(deviceB.resetReasons, [.deletedFromiCloud])
+    }
+
+    func testRestartAfterStopKeepsSyncing() async throws {
+        let zoneID = makeZoneID()
+        let deviceA = try await makeDevice(zoneID: zoneID)
+        let deviceB = try await makeDevice(zoneID: zoneID)
+
+        // Bの取得の途中で停止して、すぐに再開する。前のセッションの取り消された取得が、新しいセッションに影響しない
+        let fetchStartCount = deviceB.fetchStartCount
+        let inFlight = Task { await deviceB.syncer.syncNow() }
+        await waitUntil(timeout: .seconds(30)) { deviceB.fetchStartCount > fetchStartCount }
+        await deviceB.syncer.stop()
+        await inFlight.value
+        deviceB.syncer.start()
+
+        deviceA.userDict.add(yomi: "てすと", word: Word("試験"), source: .conversion)
+        await deviceA.syncer.syncNow()
+        XCTAssertNil(try XCTUnwrap(deviceA.lastStatus).error)
+        await syncUntil(deviceB) { deviceB.contains(yomi: "てすと", word: "試験") }
+        XCTAssertTrue(deviceB.resetReasons.isEmpty)
+        let status = try XCTUnwrap(deviceB.lastStatus)
+        XCTAssertEqual(status.activity, .idle)
+        XCTAssertNil(status.error)
+    }
+
+    func testInitialSyncAllRedoneAfterRestart() async throws {
+        let zoneID = makeZoneID()
+        let deviceB = try await makeDevice(zoneID: zoneID)
+        // 「すべて同期」のAを、初回同期の取得を始めたところで停止して、すぐに再開する
+        let deviceA = try await makeDevice(zoneID: zoneID,
+                                           initialSyncMode: .all,
+                                           userDictContents: ";; okuri-ari entries.\n;; okuri-nasi entries.\nてすと /試験/\n",
+                                           waitsForInitialSync: false)
+        await waitUntil(timeout: .seconds(30)) { deviceA.fetchStartCount > 0 }
+        await deviceA.syncer.stop()
+        XCTAssertFalse(deviceA.didCompleteInitialSync)
+        deviceA.syncer.start()
+
+        // 再開したセッションで初回同期を取得からやり直し、既存の変換候補を送り終えて完了する
+        await waitUntil(timeout: .seconds(60)) { deviceA.didCompleteInitialSync }
+        XCTAssertNil(try XCTUnwrap(deviceA.lastStatus).error)
+        await syncUntil(deviceB) { deviceB.contains(yomi: "てすと", word: "試験") }
+        XCTAssertEqual(deviceB.appliedChanges.flatMap(\.added).flatMap(\.candidates).map(\.word), ["試験"])
     }
 
     func testDeleteOnAReachesB() async throws {
