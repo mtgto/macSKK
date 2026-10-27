@@ -27,7 +27,7 @@
   "testTargets" : [
     {
       "selectedTests" : [
-        "macSKKTests/UserDictSyncerIntegrationTests"
+        "UserDictSyncerIntegrationTests"
       ],
       "target" : {
         "containerPath" : "container:macSKK.xcodeproj",

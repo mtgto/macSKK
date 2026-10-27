@@ -41,7 +41,11 @@ struct UserDictSyncStatus: Equatable {
     }
 
     var activity: Activity = .idle
-    /// 最後に同期が成功した日時
+    /**
+     * 最後に取得に成功した日時。
+     *
+     * 他の端末の変更をいつまで取り込んだかがわかるように、取得に成功した日時を記録する。送信の成否では変わらない。
+     */
     var lastSyncedAt: Date?
     enum SyncError: Equatable { case fetch(String), send(String) }
     /// 最後の周のエラー。エラーなしで終わった周で消える
