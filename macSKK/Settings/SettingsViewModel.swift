@@ -238,6 +238,8 @@ final class SettingsViewModel: ObservableObject {
     @Published private(set) var isDeletingUserDictFromiCloud = false
     /// ユーザー辞書のiCloud同期 (``UserDictSyncer``)。macOS 14未満やentitlementがないビルドでは常にnil
     private var userDictSyncer: AnyObject? = nil
+    /// 無効化で止めている途中の前のsyncerのreset()。再度有効にするときはこれが終わってから新しいsyncerをstart()する
+    private var userDictSyncerStopTask: Task<Void, Never>? = nil
     @available(macOS 14, *)
     private var currentUserDictSyncer: UserDictSyncer? {
         userDictSyncer as? UserDictSyncer
@@ -924,7 +926,12 @@ final class SettingsViewModel: ObservableObject {
         logger.log("ユーザー辞書のiCloud同期を無効にしました")
         if #available(macOS 14, *) {
             if let syncer = currentUserDictSyncer {
-                Task { await syncer.reset() }
+                // 直後に有効化されても、止め終わってから新しいsyncerを始められるように覚えておく
+                let previousStopTask = userDictSyncerStopTask
+                userDictSyncerStopTask = Task {
+                    await previousStopTask?.value
+                    await syncer.reset()
+                }
             } else {
                 UserDictSyncer.removeState(from: .app)
             }
@@ -990,7 +997,15 @@ final class SettingsViewModel: ObservableObject {
         syncer.delegate = self
         // start()の中で状態を知らせるので、先に今のsyncerにしておく
         userDictSyncer = syncer
-        syncer.start()
+        // 前のsyncerのreset()が終わる前にstart()すると、同じユーザー辞書に2つのセッションが動き、
+        // resetが消す同期状態が新しいセッションのものを巻き込むので、止め終わるのを待ってから始める
+        let stopTask = userDictSyncerStopTask
+        Task { [weak self] in
+            await stopTask?.value
+            guard let self, self.syncUserDictWithiCloud, self.userDictSyncer === syncer else { return }
+            if self.userDictSyncerStopTask == stopTask { self.userDictSyncerStopTask = nil }
+            syncer.start()
+        }
     }
 
     /// 設定のiCloud同期を有効にする。
