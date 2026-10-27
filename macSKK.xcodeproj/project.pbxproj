@@ -77,6 +77,8 @@
 		CE3926323094D54E005C00D5 /* UserDictSyncRecord+CloudKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE3926313094D54E005C00D5 /* UserDictSyncRecord+CloudKit.swift */; };
 		CE3926343094D550005C00D5 /* UserDictSyncRecordTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE3926333094D550005C00D5 /* UserDictSyncRecordTests.swift */; };
 		CE3926363094D553005C00D5 /* UserDictSyncRecordCloudKitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE3926353094D553005C00D5 /* UserDictSyncRecordCloudKitTests.swift */; };
+		CE3926383094D56B005C00D5 /* UserDictSyncOutbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE3926373094D56B005C00D5 /* UserDictSyncOutbox.swift */; };
+		CE39263A3094D56D005C00D5 /* UserDictSyncOutboxTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE3926393094D56D005C00D5 /* UserDictSyncOutboxTests.swift */; };
 		CE39DB212A8DFD8F00BC619F /* MarkedText.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE39DB202A8DFD8F00BC619F /* MarkedText.swift */; };
 		CE39FA952BEB942B00E293F0 /* Character+KeyCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE39FA942BEB942B00E293F0 /* Character+KeyCode.swift */; };
 		CE39FA972BF0813E00E293F0 /* KeyBindingSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE39FA962BF0813E00E293F0 /* KeyBindingSet.swift */; };
@@ -309,6 +311,8 @@
 		CE3926313094D54E005C00D5 /* UserDictSyncRecord+CloudKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UserDictSyncRecord+CloudKit.swift"; sourceTree = "<group>"; };
 		CE3926333094D550005C00D5 /* UserDictSyncRecordTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDictSyncRecordTests.swift; sourceTree = "<group>"; };
 		CE3926353094D553005C00D5 /* UserDictSyncRecordCloudKitTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDictSyncRecordCloudKitTests.swift; sourceTree = "<group>"; };
+		CE3926373094D56B005C00D5 /* UserDictSyncOutbox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDictSyncOutbox.swift; sourceTree = "<group>"; };
+		CE3926393094D56D005C00D5 /* UserDictSyncOutboxTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDictSyncOutboxTests.swift; sourceTree = "<group>"; };
 		CE39DB202A8DFD8F00BC619F /* MarkedText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkedText.swift; sourceTree = "<group>"; };
 		CE39FA942BEB942B00E293F0 /* Character+KeyCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Character+KeyCode.swift"; sourceTree = "<group>"; };
 		CE39FA962BF0813E00E293F0 /* KeyBindingSet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyBindingSet.swift; sourceTree = "<group>"; };
@@ -747,6 +751,7 @@
 				CEBCA67B3094D525006FA951 /* UserDictSyncTypes.swift */,
 				CE39262F3094D54B005C00D5 /* UserDictSyncRecord.swift */,
 				CE3926313094D54E005C00D5 /* UserDictSyncRecord+CloudKit.swift */,
+				CE3926373094D56B005C00D5 /* UserDictSyncOutbox.swift */,
 			);
 			path = CloudKit;
 			sourceTree = "<group>";
@@ -756,6 +761,7 @@
 			children = (
 				CE3926333094D550005C00D5 /* UserDictSyncRecordTests.swift */,
 				CE3926353094D553005C00D5 /* UserDictSyncRecordCloudKitTests.swift */,
+				CE3926393094D56D005C00D5 /* UserDictSyncOutboxTests.swift */,
 			);
 			path = CloudKit;
 			sourceTree = "<group>";
@@ -1129,6 +1135,7 @@
 				CE485A8A2A8FA5C6008271EF /* UserNotificationDelegate.swift in Sources */,
 				CE8871322E574CC900E20BFB /* CompletionSettingsView.swift in Sources */,
 				CE84A3EB295DA715009394C4 /* Dict.swift in Sources */,
+				CE3926383094D56B005C00D5 /* UserDictSyncOutbox.swift in Sources */,
 				CED6B4352FFA888A0027EB92 /* UserDict+Snapshot.swift in Sources */,
 				CEA602AC2F02CFB000E605F2 /* OptionalBackgroundModifier.swift in Sources */,
 				CE40D9A12A6D0C2F00D44799 /* SystemDictView.swift in Sources */,
@@ -1211,6 +1218,7 @@
 			files = (
 				CEE748822FA6388A00818B33 /* MarkedTextTests.swift in Sources */,
 				CED6B4372FFA88970027EB92 /* UserDict+SnapshotTests.swift in Sources */,
+				CE39263A3094D56D005C00D5 /* UserDictSyncOutboxTests.swift in Sources */,
 				CE118EE52CE0B4DE00A7C300 /* KeyTests.swift in Sources */,
 				CEE9FA66309A0CE900267A6D /* FileCoordinator+Utilities.swift in Sources */,
 				4B8E87D82CE068A0004E7461 /* CurrentInputTests.swift in Sources */,
