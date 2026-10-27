@@ -77,6 +77,8 @@ import Foundation
     private var sentResults: [(saved: [CKRecord], failed: [(record: CKRecord, error: CKError)])] = []
     /// ゾーンの作成の失敗
     private var failedZoneSaves: [CKError] = []
+    /// 同期を止める印。ゾーンがなくなったときにつく。止める処理はTask 6で足す
+    private(set) var pendingResetReason: UserDictSyncResetReason?
     /// 最後に届いた同期状態。ユーザー辞書への反映が終わってから保存する
     private var stateToSave: CKSyncEngine.State.Serialization?
 
@@ -246,7 +248,10 @@ import Foundation
                 sendError = .send(error.localizedDescription)
             }
             guard !isStopped else { return }
-            handleSendResults()
+            if let error = await handleSendResults() {
+                sendError = error
+            }
+            guard !isStopped else { return }
             saveStateIfNeeded()
         }
         // 初回同期の完了は周の終わりのここだけで判定する。「これ以降のみ」は取得が成功したら完了
@@ -265,28 +270,44 @@ import Foundation
 
     /// 取得した同期情報をユーザー辞書に反映する
     private func apply(_ records: [UserDictSyncKey: UserDictSyncRecord], notifies: Bool) async {
+        await apply(Array(records.values), notifies: notifies, savesImmediately: true)
+    }
+
+    private func apply(_ records: [UserDictSyncRecord], notifies: Bool, savesImmediately: Bool) async {
         guard !records.isEmpty else { return }
+        let recordsByKey = Dictionary(records.map { ($0.key, $0) }, uniquingKeysWith: { $0.merged(with: $1) })
         logger.log("iCloudからユーザー辞書の変換候補 \(records.count) 件の変更を受け取りました")
         status.activity = .applying(done: 0)
-        let changes = await userDict.applySyncRecords(Array(records.values), progress: { [weak self] done, _ in
+        let changes = await userDict.applySyncRecords(records, progress: { [weak self] done, _ in
             self?.status.activity = .applying(done: done)
         }, skipping: { key in
             // 受け取った後にこのMacで編集された変換候補は、受け取った古い同期情報で上書きしない。
             // 編集されていなければ、未送信の変更は受け取ったものとマージ済みなのでユーザー辞書に反映してよい
             guard let pending = outbox.pendingRecord(for: key) else { return false }
-            return pending != records[key]
-        })
+            return pending != recordsByKey[key]
+        }, savesImmediately: savesImmediately)
         if notifies && !changes.isEmpty && !isStopped {
             delegate?.syncSession(self, didApplyRemoteChanges: changes)
         }
     }
 
-    /// 送信の結果を処理する
-    private func handleSendResults() {
+    /**
+     * 送信の結果を処理する。この周のエラーを返す。
+     *
+     * - 保存できた変換候補は未送信の変更から消す。送信中に編集されていたら登録し直す
+     * - 競合した変換候補はサーバーのレコードとマージして、ユーザー辞書に反映する。ローカルのほうが新しければ登録し直す
+     * - ゾーンがなければ、同期を止めるフラグを立てる
+     * - ゾーンの作成に失敗したら、ゾーンの作成を登録し直す
+     * - 登録し直してすぐ送るものがあれば、次の1周を依頼する
+     */
+    private func handleSendResults() async -> UserDictSyncStatus.SyncError? {
         let results = sentResults
         sentResults = []
         var sentCount = 0
         var needsResend = false
+        var sendError: UserDictSyncStatus.SyncError?
+        // 競合でサーバーから受け取った同期情報。まとめてユーザー辞書に反映する
+        var conflictedRecords: [UserDictSyncRecord] = []
         for (saved, failed) in results {
             for record in saved {
                 let recordName = record.recordID.recordName
@@ -300,21 +321,58 @@ import Foundation
                 }
             }
             for (record, error) in failed {
-                // TODO: 失敗の種類ごとの扱い (競合のマージ、送り直しなど) はTask 4で足す
-                outbox.didFail(recordName: record.recordID.recordName)
-                logger.error("iCloudへのユーザー辞書の変換候補の送信に失敗しました: \(error)")
+                let recordID = record.recordID
+                let recordName = recordID.recordName
+                outbox.didFail(recordName: recordName)
+                switch error.code {
+                case .serverRecordChanged:
+                    // 他の端末が先に保存していた。サーバーのレコードとマージして、ローカルのほうが新しければ送り直す
+                    guard let serverRecord = error.serverRecord else { break }
+                    outbox.setSystemFields(Self.encodeSystemFields(of: serverRecord), for: recordName)
+                    guard let remote = Self.syncRecord(from: serverRecord) else { break }
+                    let merged = outbox.merge(remote)
+                    if merged != remote {
+                        // 同じsendChanges()の中では送り直されないので、登録し直して次の周で送る
+                        engine.add(pendingRecordZoneChanges: [.saveRecord(recordID)])
+                        needsResend = true
+                    } else {
+                        engine.remove(pendingRecordZoneChanges: [.saveRecord(recordID)])
+                    }
+                    conflictedRecords.append(merged)
+                case .zoneNotFound:
+                    // ゾーンは送信より先に作成するので、ここでゾーンがないのは他の端末で削除されたとき。
+                    // 作り直すと削除したデータが復活してしまうので、同期を止める印をつける (止める処理はTask 6)
+                    logger.log("iCloudのユーザー辞書のゾーンが見つかりません")
+                    pendingResetReason = .deletedFromiCloud
+                case .unknownItem:
+                    outbox.removeSystemFields(for: recordName)
+                    engine.add(pendingRecordZoneChanges: [.saveRecord(recordID)])
+                    needsResend = true
+                case .networkFailure, .networkUnavailable, .zoneBusy, .serviceUnavailable, .notAuthenticated, .operationCancelled, .requestRateLimited:
+                    // 変更は未送信のまま残し、次の周で送る。オフラインで回り続けないよう、ここでは次の周を依頼しない
+                    break
+                default:
+                    logger.error("iCloudへのユーザー辞書の変換候補の送信に失敗しました: \(error)")
+                    sendError = .send(error.localizedDescription)
+                }
             }
         }
         for error in failedZoneSaves {
             logger.error("iCloudにユーザー辞書のゾーンを作成できませんでした: \(error)")
+            sendError = sendError ?? .send(error.localizedDescription)
         }
         failedZoneSaves = []
         if sentCount > 0 {
             logger.log("iCloudにユーザー辞書の変換候補を \(sentCount) 件送信しました。未送信は残り \(self.outbox.pendingCount) 件です")
         }
+        if !conflictedRecords.isEmpty {
+            // 起動後に初めて送信する変換候補は変更タグがないので必ず競合する。そのたびに辞書全体を保存しないように保存を予約する
+            await apply(conflictedRecords, notifies: false, savesImmediately: false)
+        }
         if needsResend {
             request()
         }
+        return sendError
     }
 
     // MARK: - CKSyncEngineから

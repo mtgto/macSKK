@@ -366,6 +366,42 @@ import XCTest
         XCTAssertEqual(removed.flatMap(\.candidates).map(\.word), ["試験"])
     }
 
+    func testConflictKeepsNewer() async throws {
+        let zoneID = makeZoneID()
+        let deviceA = try await makeDevice(zoneID: zoneID)
+        let deviceB = try await makeDevice(zoneID: zoneID)
+
+        // 最終変換日時は公開APIから見えないので、同じ読みの別の変換候補「テスト」との順序で確かめる。
+        // A「試験」 < B「テスト」 < B「試験」の順に変換する。日時はミリ秒に丸めるので、同じ日時にならないよう間を空ける
+        deviceA.userDict.add(yomi: "てすと", word: Word("試験"), source: .conversion)
+        try await Task.sleep(for: .milliseconds(10))
+        deviceB.userDict.add(yomi: "てすと", word: Word("テスト"), source: .conversion)
+        try await Task.sleep(for: .milliseconds(10))
+        deviceB.userDict.add(yomi: "てすと", word: Word("試験"), source: .conversion)
+
+        // Aが先に「試験」を保存する。Bは起動して最初に送る変換候補にシステムフィールドがないので、必ずserverRecordChangedで競合する。
+        // Bのほうが新しいので、マージして送り直す
+        await deviceA.syncer.syncNow()
+        XCTAssertNil(try XCTUnwrap(deviceA.lastStatus).error)
+        await deviceB.syncer.syncNow()
+
+        // Aの「試験」の日時のままなら、Aは「テスト」だけを受け取って「テスト」が先頭になる。
+        // Bの日時になれば、Aは「テスト」より新しい「試験」を受け取って「試験」が先頭になる
+        await syncUntil(deviceB, deviceA) { deviceA.words(yomi: "てすと") == ["試験", "テスト"] }
+        XCTAssertNil(try XCTUnwrap(deviceB.lastStatus).error)
+
+        // 取得し直しても、両方ともBの日時の順序のまま変わらない
+        await deviceB.syncer.syncNow()
+        await deviceA.syncer.syncNow()
+        XCTAssertEqual(deviceA.words(yomi: "てすと"), ["試験", "テスト"])
+        XCTAssertEqual(deviceB.words(yomi: "てすと"), ["試験", "テスト"])
+
+        // サーバーの日時を、何も持っていない端末の初回同期で確かめる。受け取った変換候補は日時の新しい順に並ぶ
+        let deviceC = try await makeDevice(zoneID: zoneID)
+        XCTAssertEqual(deviceC.words(yomi: "てすと"), ["試験", "テスト"])
+        XCTAssertNil(try XCTUnwrap(deviceC.lastStatus).error)
+    }
+
     func testOwnChangesAreNotAppliedBack() async throws {
         let zoneID = makeZoneID()
         let deviceA = try await makeDevice(zoneID: zoneID)
