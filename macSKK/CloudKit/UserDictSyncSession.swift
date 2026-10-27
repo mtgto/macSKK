@@ -270,13 +270,25 @@ import Foundation
 
     /// 取得した同期情報をユーザー辞書に反映する
     private func apply(_ records: [UserDictSyncKey: UserDictSyncRecord], notifies: Bool) async {
-        await apply(Array(records.values), notifies: notifies, savesImmediately: true)
+        await apply(Array(records.values), notifies: notifies, savesImmediately: true, isConflict: false)
     }
 
-    private func apply(_ records: [UserDictSyncRecord], notifies: Bool, savesImmediately: Bool) async {
+    /**
+     * 取得または送信の競合で受け取った同期情報をユーザー辞書に反映する。
+     *
+     * - Parameters:
+     *   - notifies: 他の端末の変更としてデリゲートに知らせるかどうか
+     *   - savesImmediately: すぐに保存するかどうか。falseなら保存を予約する
+     *   - isConflict: 送信の競合で受け取ったものかどうか。ログの文言だけが変わる
+     */
+    private func apply(_ records: [UserDictSyncRecord], notifies: Bool, savesImmediately: Bool, isConflict: Bool) async {
         guard !records.isEmpty else { return }
         let recordsByKey = Dictionary(records.map { ($0.key, $0) }, uniquingKeysWith: { $0.merged(with: $1) })
-        logger.log("iCloudからユーザー辞書の変換候補 \(records.count) 件の変更を受け取りました")
+        if isConflict {
+            logger.log("iCloudへの送信の競合で、ユーザー辞書の変換候補 \(records.count) 件をサーバーの内容とマージして反映します")
+        } else {
+            logger.log("iCloudからユーザー辞書の変換候補 \(records.count) 件の変更を受け取りました")
+        }
         status.activity = .applying(done: 0)
         let changes = await userDict.applySyncRecords(records, progress: { [weak self] done, _ in
             self?.status.activity = .applying(done: done)
@@ -324,6 +336,10 @@ import Foundation
                 let recordID = record.recordID
                 let recordName = recordID.recordName
                 outbox.didFail(recordName: recordName)
+                // 送信に失敗した変更はCKSyncEngineの未送信から消えていることがある。未送信の変更に残っているのに送られなくなり、
+                // 次の周がエラーなしで終わってエラー表示が消えるのを避けるため、登録し直す (次の定期の周で送る)。
+                // ゾーンがない場合と、サーバーの内容が勝った競合は、送り直す必要がない
+                var reRegisters = true
                 switch error.code {
                 case .serverRecordChanged:
                     // 他の端末が先に保存していた。サーバーのレコードとマージして、ローカルのほうが新しければ送り直す
@@ -337,6 +353,7 @@ import Foundation
                         needsResend = true
                     } else {
                         engine.remove(pendingRecordZoneChanges: [.saveRecord(recordID)])
+                        reRegisters = false
                     }
                     conflictedRecords.append(merged)
                 case .zoneNotFound:
@@ -344,6 +361,7 @@ import Foundation
                     // 作り直すと削除したデータが復活してしまうので、同期を止める印をつける (止める処理はTask 6)
                     logger.log("iCloudのユーザー辞書のゾーンが見つかりません")
                     pendingResetReason = .deletedFromiCloud
+                    reRegisters = false
                 case .unknownItem:
                     outbox.removeSystemFields(for: recordName)
                     engine.add(pendingRecordZoneChanges: [.saveRecord(recordID)])
@@ -355,19 +373,26 @@ import Foundation
                     logger.error("iCloudへのユーザー辞書の変換候補の送信に失敗しました: \(error)")
                     sendError = .send(error.localizedDescription)
                 }
+                if reRegisters {
+                    engine.add(pendingRecordZoneChanges: [.saveRecord(recordID)])
+                }
             }
         }
         for error in failedZoneSaves {
             logger.error("iCloudにユーザー辞書のゾーンを作成できませんでした: \(error)")
             sendError = sendError ?? .send(error.localizedDescription)
         }
+        if !failedZoneSaves.isEmpty {
+            // 送信に失敗した変換候補と同じく、CKSyncEngineの未送信から消えていることがあるので、ゾーンの作成も登録し直す。ゾーンがないまま変換候補を送ってzoneNotFoundになるのを避ける
+            engine.add(pendingDatabaseChanges: [.saveZone(CKRecordZone(zoneID: zoneID))])
+        }
         failedZoneSaves = []
         if sentCount > 0 {
             logger.log("iCloudにユーザー辞書の変換候補を \(sentCount) 件送信しました。未送信は残り \(self.outbox.pendingCount) 件です")
         }
         if !conflictedRecords.isEmpty {
-            // 起動後に初めて送信する変換候補は変更タグがないので必ず競合する。そのたびに辞書全体を保存しないように保存を予約する
-            await apply(conflictedRecords, notifies: false, savesImmediately: false)
+            // 既にiCloudにある変換候補を起動後に初めて送ると、システムフィールド (変更タグ) がないので必ず競合する。そのたびに辞書全体を保存しないように保存を予約する
+            await apply(conflictedRecords, notifies: false, savesImmediately: false, isConflict: true)
         }
         if needsResend {
             request()
