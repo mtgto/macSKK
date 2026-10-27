@@ -168,6 +168,8 @@ import Foundation
      * 停止する。ループ・定期の依頼・送信の予約を止め、実行中の取得・送信を取り消して、ループが終わるのを待つ。
      *
      * ユーザー辞書への反映中に停止したときは、反映が終わるのを待つ (受け取った変更そのものなので、反映は途中でやめない)。
+     *
+     * ループの中から呼んではいけない。ループのTaskが終わるのを待つので、自分自身を待って止まらなくなる。
      */
     func stop() async {
         guard !isStopped else { return }
@@ -367,6 +369,13 @@ import Foundation
         return record
     }
 
+    /// 届いた同期状態があれば保存する
+    private func saveStateIfNeeded() {
+        guard let stateToSave else { return }
+        self.stateToSave = nil
+        Self.saveState(stateToSave, to: defaults)
+    }
+
     // MARK: - ローカルの変更
 
     /// この端末で変換・単語登録・削除したときに呼ばれる。未送信の変更に加えて、少し待ってから1周を依頼する
@@ -390,51 +399,5 @@ import Foundation
             self.scheduledSendTask = nil
             self.request()
         }
-    }
-
-    // MARK: - 変換
-
-    /// iCloudのレコードを同期情報として解釈する。解釈できなければログに残してnilを返す
-    private static func syncRecord(from record: CKRecord) -> UserDictSyncRecord? {
-        guard let syncRecord = UserDictSyncRecord(record: record) else {
-            // 値は入力履歴なのでログに出さない
-            logger.error("iCloudのレコード \(record.recordID.recordName, privacy: .public) (\(record.recordType, privacy: .public)) をユーザー辞書の同期情報として解釈できないため無視します")
-            return nil
-        }
-        return syncRecord
-    }
-
-    private func saveStateIfNeeded() {
-        guard let stateToSave else { return }
-        self.stateToSave = nil
-        do {
-            defaults.set(try JSONEncoder().encode(stateToSave), forKey: UserDefaultsKeys.userDictSyncEngineState)
-        } catch {
-            logger.error("ユーザー辞書のiCloud同期状態の保存に失敗しました: \(error)")
-        }
-    }
-
-    private static func loadState(from defaults: UserDefaults) -> CKSyncEngine.State.Serialization? {
-        guard let data = defaults.data(forKey: UserDefaultsKeys.userDictSyncEngineState) else { return nil }
-        do {
-            return try JSONDecoder().decode(CKSyncEngine.State.Serialization.self, from: data)
-        } catch {
-            logger.error("ユーザー辞書のiCloud同期状態の読み込みに失敗したため、最初から同期します: \(error)")
-            return nil
-        }
-    }
-
-    private static func encodeSystemFields(of record: CKRecord) -> Data {
-        let coder = NSKeyedArchiver(requiringSecureCoding: true)
-        record.encodeSystemFields(with: coder)
-        coder.finishEncoding()
-        return coder.encodedData
-    }
-
-    private static func decodeRecord(systemFields: Data) -> CKRecord? {
-        guard let coder = try? NSKeyedUnarchiver(forReadingFrom: systemFields) else { return nil }
-        coder.requiresSecureCoding = true
-        defer { coder.finishDecoding() }
-        return CKRecord(coder: coder)
     }
 }
