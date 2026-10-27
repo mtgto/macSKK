@@ -85,6 +85,8 @@
 		CE3926423094D587005C00D5 /* UserDictSyncEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE3926413094D587005C00D5 /* UserDictSyncEngineTests.swift */; };
 		CE3926443094D58A005C00D5 /* UserDictSyncerIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE3926433094D58A005C00D5 /* UserDictSyncerIntegrationTests.swift */; };
 		CE3926463094D596005C00D5 /* UserDictSyncSession+Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE3926453094D596005C00D5 /* UserDictSyncSession+Persistence.swift */; };
+		CE3926483094D5A2005C00D5 /* UserDictInitialSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE3926473094D5A2005C00D5 /* UserDictInitialSync.swift */; };
+		CE39264A3094D5A6005C00D5 /* UserDictInitialSyncTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE3926493094D5A6005C00D5 /* UserDictInitialSyncTests.swift */; };
 		CE39DB212A8DFD8F00BC619F /* MarkedText.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE39DB202A8DFD8F00BC619F /* MarkedText.swift */; };
 		CE39FA952BEB942B00E293F0 /* Character+KeyCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE39FA942BEB942B00E293F0 /* Character+KeyCode.swift */; };
 		CE39FA972BF0813E00E293F0 /* KeyBindingSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE39FA962BF0813E00E293F0 /* KeyBindingSet.swift */; };
@@ -325,6 +327,8 @@
 		CE3926413094D587005C00D5 /* UserDictSyncEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDictSyncEngineTests.swift; sourceTree = "<group>"; };
 		CE3926433094D58A005C00D5 /* UserDictSyncerIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDictSyncerIntegrationTests.swift; sourceTree = "<group>"; };
 		CE3926453094D596005C00D5 /* UserDictSyncSession+Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UserDictSyncSession+Persistence.swift"; sourceTree = "<group>"; };
+		CE3926473094D5A2005C00D5 /* UserDictInitialSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDictInitialSync.swift; sourceTree = "<group>"; };
+		CE3926493094D5A6005C00D5 /* UserDictInitialSyncTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDictInitialSyncTests.swift; sourceTree = "<group>"; };
 		CE39DB202A8DFD8F00BC619F /* MarkedText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkedText.swift; sourceTree = "<group>"; };
 		CE39FA942BEB942B00E293F0 /* Character+KeyCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Character+KeyCode.swift"; sourceTree = "<group>"; };
 		CE39FA962BF0813E00E293F0 /* KeyBindingSet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyBindingSet.swift; sourceTree = "<group>"; };
@@ -768,6 +772,7 @@
 				CE39263D3094D581005C00D5 /* UserDictSyncSession.swift */,
 				CE39263F3094D583005C00D5 /* UserDictSyncer.swift */,
 				CE3926453094D596005C00D5 /* UserDictSyncSession+Persistence.swift */,
+				CE3926473094D5A2005C00D5 /* UserDictInitialSync.swift */,
 			);
 			path = CloudKit;
 			sourceTree = "<group>";
@@ -780,6 +785,7 @@
 				CE3926393094D56D005C00D5 /* UserDictSyncOutboxTests.swift */,
 				CE3926413094D587005C00D5 /* UserDictSyncEngineTests.swift */,
 				CE3926433094D58A005C00D5 /* UserDictSyncerIntegrationTests.swift */,
+				CE3926493094D5A6005C00D5 /* UserDictInitialSyncTests.swift */,
 			);
 			path = CloudKit;
 			sourceTree = "<group>";
@@ -1127,6 +1133,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CE3926483094D5A2005C00D5 /* UserDictInitialSync.swift in Sources */,
 				CEB141722A87D16C005E7252 /* DictionaryView.swift in Sources */,
 				CEE2D9772A99FE1B00A4CD76 /* Word.swift in Sources */,
 				CEB52CBC2E0795CB0025542F /* ListFooterControls.swift in Sources */,
@@ -1245,6 +1252,7 @@
 				CEE9FA66309A0CE900267A6D /* FileCoordinator+Utilities.swift in Sources */,
 				4B8E87D82CE068A0004E7461 /* CurrentInputTests.swift in Sources */,
 				CEA2539A2E23DA9000618E64 /* DictSettingTests.swift in Sources */,
+				CE39264A3094D5A6005C00D5 /* UserDictInitialSyncTests.swift in Sources */,
 				CE25D7DB307A95290080B25E /* MockTextInput.swift in Sources */,
 				CE420WAT2F00000100000002 /* WorkaroundApplicationTests.swift in Sources */,
 				CE420SYNC2F00000100000004 /* SettingsSyncTests.swift in Sources */,

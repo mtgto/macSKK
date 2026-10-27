@@ -40,8 +40,8 @@ import Foundation
     private var engine: UserDictSyncEngine!
     /// iCloudに送る変更の台帳
     private var outbox = UserDictSyncOutbox()
-    /// 初回同期のモード。nilなら初回同期は完了している
-    private var initialSyncMode: UserDictInitialSyncMode?
+    /// 初回同期の段階。nilなら初回同期は完了している
+    private var initialSync: UserDictInitialSync?
     /**
      * 同期状態なしから始めた最初の取得に、まだ成功していないかどうか。取得に成功するまで保たれ、起動をまたいでも保存される。
      *
@@ -90,7 +90,7 @@ import Foundation
          sendDelay: Duration,
          zoneID: CKRecordZone.ID) {
         self.userDict = userDict
-        self.initialSyncMode = initialSyncMode
+        initialSync = initialSyncMode.map { .fetching($0, UserDictInitialSync.InitialFetch()) }
         self.status = status
         self.defaults = defaults
         self.fetchInterval = fetchInterval
@@ -234,6 +234,14 @@ import Foundation
         status.lastSyncedAt = now
         needsFetchFromScratch = false
         defaults.set(true, forKey: UserDefaultsKeys.userDictSyncCompletedFetch)
+        if case .fetching(let mode, let fetch) = initialSync {
+            // iCloudにあるもの・削除済みのものを全部受け取ってユーザー辞書に反映してから送らないと、送るべきでないものを送ってしまう。
+            // そのため既存の変換候補は、取得が成功してユーザー辞書に反映し終わったこの周の送信の前に未送信の変更に足す
+            if mode == .all {
+                addExistingCandidates(excluding: fetch)
+            }
+            initialSync = .sendingExisting
+        }
         // 送信
         var sendError: UserDictSyncStatus.SyncError?
         if !engine.pendingRecordZoneChanges.isEmpty || engine.hasPendingDatabaseChanges {
@@ -254,12 +262,31 @@ import Foundation
             guard !isStopped else { return }
             saveStateIfNeeded()
         }
-        // 初回同期の完了は周の終わりのここだけで判定する。「これ以降のみ」は取得が成功したら完了
-        if initialSyncMode == .fromNow {
-            initialSyncMode = nil
+        // 初回同期の完了は周の終わりのここだけで判定する。「すべて同期」で既存の変換候補の送り残しがあれば、次の周で送る
+        if let initialSync, UserDictInitialSync.isCompleted(initialSync, hasPendingPlaceholder: outbox.hasPendingPlaceholder) {
+            self.initialSync = nil
+            logger.log("ユーザー辞書のiCloud同期の初回同期が完了しました")
             delegate?.syncSessionDidCompleteInitialSync(self)
         }
         finishIteration(error: sendError)
+    }
+
+    /**
+     * 「すべて同期」で、iCloudにない既存の変換候補に仮の日時を割り当てて未送信の変更に足す。
+     *
+     * iCloudから受け取った変換候補 (削除済みを含む) と、未送信の変更がある変換候補には割り当てない。
+     * 仮の日時は、iCloudで最も古い変換日時より前にする。先に「すべて同期」した端末の並び順を優先するため。
+     */
+    private func addExistingCandidates(excluding fetch: UserDictInitialSync.InitialFetch) {
+        guard let dict = (userDict.userDict as? FileDict)?.writableDict else { return }
+        let ceiling = min(fetch.oldestDate ?? UserDictSyncRecord.placeholderDateCeiling, UserDictSyncRecord.placeholderDateCeiling)
+        let excludedKeys = fetch.keys.union(outbox.pendingKeys)
+        let records = UserDictSyncRecord.placeholderRecords(from: dict, excluding: excludedKeys, before: ceiling)
+        logger.log("同期開始前からあるユーザー辞書の変換候補 \(records.count) 件をiCloudに送信します")
+        let changes: [CKSyncEngine.PendingRecordZoneChange] = outbox.add(records).map { recordName in
+            .saveRecord(CKRecord.ID(recordName: recordName, zoneID: zoneID))
+        }
+        engine.add(pendingRecordZoneChanges: changes)
     }
 
     private func finishIteration(error: UserDictSyncStatus.SyncError?) {
@@ -415,7 +442,10 @@ import Foundation
             // TODO: 同期の停止とゾーンの作り直しはTask 6で足す
             logger.log("iCloudのユーザー辞書のゾーンの削除を受け取りました: \(String(describing: reason), privacy: .public)")
         case .fetchedRecords(let records):
-            for remote in records.compactMap(Self.syncRecord(from:)) {
+            let remoteRecords = records.compactMap(Self.syncRecord(from:))
+            // 初回同期の取得なら、自分が送った変更かにかかわらず、iCloudにあるものとして集計する
+            initialSync?.didFetch(remoteRecords)
+            for remote in remoteRecords {
                 // 自分が送信した変更がそのまま返ってきたものはユーザー辞書に反映しない
                 guard let merged = outbox.receive(remote) else { continue }
                 fetchedRecords[merged.key] = fetchedRecords[merged.key].map { $0.merged(with: merged) } ?? merged

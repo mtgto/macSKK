@@ -56,6 +56,8 @@ import XCTest
         var didCompleteInitialSync = false
         /// デリゲートに届いた最新の同期の状態
         var lastStatus: UserDictSyncStatus?
+        /// 送信を始めたときの未送信の変更の数。デリゲートに届いた順
+        var sendingRemainings: [Int] = []
         /// デリゲートに届いた、同期の停止と同期状態の破棄の理由
         var resetReasons: [UserDictSyncResetReason] = []
 
@@ -73,6 +75,9 @@ import XCTest
             }
             spy.didChangeStatus = { [unowned self] status in
                 lastStatus = status
+                if case .sending(let remaining) = status.activity {
+                    sendingRemainings.append(remaining)
+                }
             }
             spy.didReset = { [unowned self] reason in
                 resetReasons.append(reason)
@@ -432,5 +437,113 @@ import XCTest
         await deviceB.syncer.syncNow()
         XCTAssertNil(try XCTUnwrap(deviceB.lastStatus).error)
         await syncUntil(deviceB) { deviceB.contains(yomi: "てすと", word: "試験") }
+    }
+
+    func testInitialSyncAllSendsExistingCandidates() async throws {
+        let zoneID = makeZoneID()
+        let deviceB = try await makeDevice(zoneID: zoneID)
+        // makeDeviceは初回同期の完了 (同期を始める前からある変換候補を送り終えたこと) がデリゲートに届くまで待つ
+        let deviceA = try await makeDevice(zoneID: zoneID,
+                                           initialSyncMode: .all,
+                                           userDictContents: ";; okuri-ari entries.\n;; okuri-nasi entries.\nてすと /試験/\n")
+        XCTAssertTrue(deviceA.didCompleteInitialSync)
+        XCTAssertNil(try XCTUnwrap(deviceA.lastStatus).error)
+
+        await syncUntil(deviceB) { deviceB.contains(yomi: "てすと", word: "試験") }
+        let added = deviceB.appliedChanges.flatMap(\.added)
+        XCTAssertEqual(added.map(\.yomi), ["てすと"])
+        XCTAssertEqual(added.flatMap(\.candidates).map(\.word), ["試験"])
+    }
+
+    func testInitialSyncAllKeepsBothWhenSameYomi() async throws {
+        let zoneID = makeZoneID()
+        let deviceB = try await makeDevice(zoneID: zoneID)
+        deviceB.userDict.add(yomi: "てすと", word: Word("テスト"), source: .conversion)
+        await deviceB.syncer.syncNow()
+        XCTAssertNil(try XCTUnwrap(deviceB.lastStatus).error)
+
+        // Aにだけある「試験」は、同じ読みの別の変換候補「テスト」がiCloudにあっても送る
+        let deviceA = try await makeDevice(zoneID: zoneID,
+                                           initialSyncMode: .all,
+                                           userDictContents: ";; okuri-ari entries.\n;; okuri-nasi entries.\nてすと /試験/\n")
+        XCTAssertNil(try XCTUnwrap(deviceA.lastStatus).error)
+        // Aでは、実際に変換した「テスト」が前に並ぶ。初回同期の取り込みなので知らせない
+        XCTAssertEqual(deviceA.words(yomi: "てすと"), ["テスト", "試験"])
+        XCTAssertTrue(deviceA.appliedChanges.isEmpty)
+
+        // Bでは、仮の日時の「試験」は並び順を変えずに後ろに加わる
+        await syncUntil(deviceB) { deviceB.contains(yomi: "てすと", word: "試験") }
+        XCTAssertEqual(deviceB.words(yomi: "てすと"), ["テスト", "試験"])
+    }
+
+    func testInitialSyncAllAddsRemoteOnly() async throws {
+        let zoneID = makeZoneID()
+        // Bは実際に変換した「テスト」を、Cは「すべて同期」で仮の日時の「試行」を送る
+        let deviceB = try await makeDevice(zoneID: zoneID)
+        deviceB.userDict.add(yomi: "てすと", word: Word("テスト"), source: .conversion)
+        await deviceB.syncer.syncNow()
+        XCTAssertNil(try XCTUnwrap(deviceB.lastStatus).error)
+        _ = try await makeDevice(zoneID: zoneID,
+                                 initialSyncMode: .all,
+                                 userDictContents: ";; okuri-ari entries.\n;; okuri-nasi entries.\nてすと /試行/\n")
+
+        let deviceA = try await makeDevice(zoneID: zoneID,
+                                           initialSyncMode: .all,
+                                           userDictContents: ";; okuri-ari entries.\n;; okuri-nasi entries.\nてすと /試験/\n")
+        XCTAssertNil(try XCTUnwrap(deviceA.lastStatus).error)
+        // iCloudにだけあるものを追加する。実際に変換したものは前に、仮の日時のものは後ろに加わる
+        XCTAssertEqual(deviceA.words(yomi: "てすと"), ["テスト", "試験", "試行"])
+        XCTAssertTrue(deviceA.appliedChanges.isEmpty)
+    }
+
+    func testInitialSyncAllDeletesTombstoned() async throws {
+        let zoneID = makeZoneID()
+        let deviceB = try await makeDevice(zoneID: zoneID)
+        deviceB.userDict.add(yomi: "てすと", word: Word("試験"), source: .conversion)
+        await deviceB.syncer.syncNow()
+        XCTAssertNil(try XCTUnwrap(deviceB.lastStatus).error)
+        XCTAssertTrue(deviceB.userDict.delete(yomi: "てすと", word: Word("試験")))
+        await deviceB.syncer.syncNow()
+        XCTAssertNil(try XCTUnwrap(deviceB.lastStatus).error)
+
+        // iCloudで削除済みの変換候補は、このMacからも消える
+        let deviceA = try await makeDevice(zoneID: zoneID,
+                                           initialSyncMode: .all,
+                                           userDictContents: ";; okuri-ari entries.\n;; okuri-nasi entries.\nてすと /試験/テスト/\n")
+        XCTAssertNil(try XCTUnwrap(deviceA.lastStatus).error)
+        XCTAssertEqual(deviceA.words(yomi: "てすと"), ["テスト"])
+
+        // 削除済みの変換候補は送り直さない。Bには「テスト」だけが届く
+        await syncUntil(deviceB) { deviceB.contains(yomi: "てすと", word: "テスト") }
+        XCTAssertEqual(deviceB.words(yomi: "てすと"), ["テスト"])
+    }
+
+    func testInitialSyncAllDoesNotResendExisting() async throws {
+        let zoneID = makeZoneID()
+        // Aは「すべて同期」で両方を仮の日時で送ってから、「テスト」を実際に変換する
+        let deviceA = try await makeDevice(zoneID: zoneID,
+                                           initialSyncMode: .all,
+                                           userDictContents: ";; okuri-ari entries.\n;; okuri-nasi entries.\nてすと /試験/テスト/\n")
+        deviceA.userDict.add(yomi: "てすと", word: Word("テスト"), source: .conversion)
+        await deviceA.syncer.syncNow()
+        XCTAssertNil(try XCTUnwrap(deviceA.lastStatus).error)
+        XCTAssertEqual(deviceA.words(yomi: "てすと"), ["テスト", "試験"])
+
+        // Bの変換候補はどれもiCloudにあるので送らない。送っても競合でサーバーの版が勝つのでiCloudの内容は変わらないため、
+        // 送信を始めたときに未送信の変更がなかったことで確かめる (ゾーンの作成だけは送る)
+        let deviceB = try await makeDevice(zoneID: zoneID,
+                                           initialSyncMode: .all,
+                                           userDictContents: ";; okuri-ari entries.\n;; okuri-nasi entries.\nてすと /試験/テスト/\n")
+        XCTAssertNil(try XCTUnwrap(deviceB.lastStatus).error)
+        XCTAssertEqual(deviceB.sendingRemainings.filter { $0 > 0 }, [])
+        // Bでは、実際に変換した「テスト」が前に並ぶ。仮の日時の「試験」は並び順を変えない
+        XCTAssertEqual(deviceB.words(yomi: "てすと"), ["テスト", "試験"])
+
+        // Aには何も届かず、並び順もそのまま
+        await deviceA.syncer.syncNow()
+        await deviceA.syncer.syncNow()
+        XCTAssertNil(try XCTUnwrap(deviceA.lastStatus).error)
+        XCTAssertEqual(deviceA.words(yomi: "てすと"), ["テスト", "試験"])
+        XCTAssertTrue(deviceA.appliedChanges.isEmpty)
     }
 }
