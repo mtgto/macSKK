@@ -23,10 +23,10 @@ struct UserDictSyncOutbox {
     /// 未送信の変更の変換候補
     var pendingKeys: [UserDictSyncKey] { pendingRecords.values.map(\.key) }
 
-    /// 変換候補に未送信の変更があるか。受け取った同期情報の反映から除くかの判定に使う。
-    /// 受け取った同期情報は`receive(_:)`でマージ済みなので、マージ後も未送信に残るのはローカルのほうが新しいものか反映の途中で変換されたもので、ローカルの辞書がすでに正しい
-    func hasPending(_ key: UserDictSyncKey) -> Bool {
-        pendingRecords[key.recordName] != nil
+    /// 変換候補の未送信の変更。受け取った同期情報のユーザー辞書への反映から除くかの判定に使う。
+    /// `receive(_:)`が返したマージ済みの同期情報と異なれば、受け取った後にこのMacで編集されている
+    func pendingRecord(for key: UserDictSyncKey) -> UserDictSyncRecord? {
+        pendingRecords[key.recordName]
     }
 
     /// 未送信に仮の日時 (`isPlaceholder`) の変更が残っているか。「すべて同期」の完了判定に使う

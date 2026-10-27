@@ -122,29 +122,40 @@ final class UserDictSyncOutboxTests: XCTestCase {
         XCTAssertNil(outbox.beginSending(recordName: otherName)?.systemFields)
     }
 
-    func testHasPendingAfterReceivingOlderRemote() {
+    func testReceiveOlderRemoteReturnsLocalAndKeepsPending() {
         var outbox = UserDictSyncOutbox()
         let local = record(lastUsedAt: t2)
         _ = outbox.add([local])
-        _ = outbox.receive(record(lastUsedAt: t1))
-        // ローカルが新しいので反映から除く
-        XCTAssertTrue(outbox.hasPending(local.key))
+        let merged = outbox.receive(record(lastUsedAt: t1))
+        XCTAssertEqual(merged, local)
+        // 受け取った後に編集されていないので反映から除かない
+        XCTAssertEqual(outbox.pendingRecord(for: local.key), merged)
     }
 
-    func testHasPendingIsFalseAfterReceivingNewerRemote() {
+    func testReceiveNewerDeleteReturnsDeleted() {
+        var outbox = UserDictSyncOutbox()
+        let local = record(lastUsedAt: t2)
+        _ = outbox.add([local])
+        let merged = outbox.receive(record(lastUsedAt: t1, deletedAt: t3))
+        XCTAssertEqual(merged?.isAlive, false)
+        // 未送信に残っていても戻り値と等しいので反映から除かれず、削除が反映される
+        let pending = outbox.pendingRecord(for: local.key)
+        XCTAssertTrue(pending == nil || pending == merged)
+    }
+
+    func testEditAfterReceiveChangesPendingRecord() {
         var outbox = UserDictSyncOutbox()
         let local = record(lastUsedAt: t1)
         _ = outbox.add([local])
-        XCTAssertTrue(outbox.hasPending(local.key))
-        // サーバーの同期情報がローカルの内容を含んで新しいので、未送信は不要になる
-        _ = outbox.receive(record(lastUsedAt: t1, deletedAt: t2))
-        // 受け取った削除を反映する
-        XCTAssertFalse(outbox.hasPending(local.key))
+        let merged = outbox.receive(record(lastUsedAt: t2))
+        _ = outbox.add([record(lastUsedAt: t3)])
+        // 受け取った後に編集されたので反映から除く
+        XCTAssertNotNil(outbox.pendingRecord(for: local.key))
+        XCTAssertNotEqual(outbox.pendingRecord(for: local.key), merged)
     }
 
-    func testHasPendingUnknownKey() {
-        let outbox = UserDictSyncOutbox()
-        XCTAssertFalse(outbox.hasPending(record().key))
+    func testPendingRecordUnknownKey() {
+        XCTAssertNil(UserDictSyncOutbox().pendingRecord(for: record().key))
     }
 
     func testHasPendingPlaceholder() {
