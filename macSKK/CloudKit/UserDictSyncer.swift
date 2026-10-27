@@ -140,6 +140,9 @@ import Foundation
      * iCloudに保存したユーザー辞書 (このインスタンスのゾーン) をすべて削除して、このMacの同期状態も破棄する。
      *
      * 削除に失敗した場合は、同期していたなら新しいセッションで同期を再開してからエラーを投げる。
+     *
+     * 既知の制限: 削除の依頼中はstop()によりsyncChangeHandlerがnilになっている。そのため、その間にこのMacで変換した変更は、
+     * 削除に失敗して同期を再開したあとも送られない (その後の変更や再起動後の同期にも含まれない)。
      */
     func deleteAllFromiCloud() async throws {
         let wasSyncing = session != nil

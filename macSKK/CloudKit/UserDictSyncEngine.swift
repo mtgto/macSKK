@@ -104,8 +104,9 @@ import Foundation
         }
     }
 
+    /// 停止済み、または同期を止めるフラグが立ったセッションには送信するバッチを渡さない
     private var isSessionRunning: Bool {
-        session?.isStopped == false
+        session?.shouldStop == false
     }
 
     private func handle(_ event: CKSyncEngine.Event) {

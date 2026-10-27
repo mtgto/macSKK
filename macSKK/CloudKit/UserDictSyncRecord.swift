@@ -109,8 +109,8 @@ struct UserDictSyncRecord: Equatable, Sendable {
      *     先に同期した端末では、受け取った変換候補のうちその端末にないものだけが末尾に加わり、並び順は変わらない
      */
     static func placeholderRecords(from dict: MemoryDict,
-                                 excluding excludedKeys: Set<UserDictSyncKey>,
-                                 before ceiling: Date = placeholderDateCeiling) -> [Self] {
+                                   excluding excludedKeys: Set<UserDictSyncKey>,
+                                   before ceiling: Date = placeholderDateCeiling) -> [Self] {
         var records: [Self] = []
         for yomis in [dict.okuriAriYomis, dict.okuriNashiYomis] {
             // 古いものから順に並べる。yomisは最近変換したものが後に登場する

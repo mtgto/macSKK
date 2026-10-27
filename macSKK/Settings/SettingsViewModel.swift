@@ -960,6 +960,7 @@ final class SettingsViewModel: ObservableObject {
         guard #available(macOS 14, *), UserDictSyncer.isAvailable, !isDeletingUserDictFromiCloud else { return }
         isDeletingUserDictFromiCloud = true
         let syncer = currentUserDictSyncer
+        let stopTask = userDictSyncerStopTask
         logger.log("iCloudからユーザー辞書の削除を開始します")
         Task {
             defer { isDeletingUserDictFromiCloud = false }
@@ -967,6 +968,8 @@ final class SettingsViewModel: ObservableObject {
                 if let syncer {
                     try await syncer.deleteAllFromiCloud()
                 } else {
+                    // 無効化直後だと前のsyncerがまだ止まり切っていないので、止め終わるのを待ってから消す
+                    await stopTask?.value
                     try await UserDictSyncer.deleteAllFromiCloud(
                         database: CKContainer(identifier: UserDictSyncer.containerIdentifier).privateCloudDatabase)
                 }
@@ -1522,7 +1525,9 @@ final class SettingsViewModel: ObservableObject {
 
 @available(macOS 14, *)
 extension SettingsViewModel: UserDictSyncerDelegate {
+    // 前のsyncerの完了通知が、新しく有効化したときに書いたuserDictInitialSyncModeを消さないよう、今のsyncerから届いたものだけを扱う
     func userDictSyncerDidCompleteInitialSync(_ syncer: UserDictSyncer) {
+        guard userDictSyncer === syncer else { return }
         UserDefaults.app.removeObject(forKey: UserDefaultsKeys.userDictInitialSyncMode)
     }
 

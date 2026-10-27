@@ -59,8 +59,8 @@ import Foundation
     }
     /// 停止したかどうか。停止したら届いたイベントを無視し、状態を書き換えない
     private(set) var isStopped = false
-    /// 同期を止める印、または停止したか。``runIteration()``の冒頭と、取得・反映・送信の後にこれを見て、周を打ち切る
-    private var shouldStop: Bool {
+    /// 同期を止めるフラグが立っているか、停止したか。``runIteration()``の冒頭と、取得・反映・送信の後にこれを見て、周を打ち切る
+    var shouldStop: Bool {
         isStopped || pendingResetReason != nil
     }
 
@@ -299,6 +299,7 @@ import Foundation
                 sendError = error
             }
             guard !shouldStop else { return }
+            // sendChanges()の間はfetchのイベントが届かない (automaticallySync = false) 前提で、送信直後に状態を保存する
             saveStateIfNeeded()
         }
         // 初回同期の完了は周の終わりのここだけで判定する。「すべて同期」で既存の変換候補の送り残しがあれば、次の周で送る
