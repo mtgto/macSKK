@@ -128,6 +128,13 @@ import Foundation
         guard let session else { return }
         logger.log("ユーザー辞書をiCloudと今すぐ同期します")
         await session.syncNow()
+        if session.isStopped {
+            logger.log("ユーザー辞書のiCloudとの今すぐ同期は、同期が停止したため中断しました")
+        } else if session.status.error != nil {
+            logger.log("ユーザー辞書のiCloudとの今すぐ同期がエラーで終わりました")
+        } else {
+            logger.log("ユーザー辞書のiCloudとの今すぐ同期が完了しました")
+        }
     }
 
     /// 同期を停止して、同期状態を破棄する
