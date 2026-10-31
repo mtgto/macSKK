@@ -27,18 +27,18 @@ jobs:
     runs-on: ubuntu-slim
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v6.5.0
         with:
           node-version: 24
           cache: npm
           cache-dependency-path: docs/package-lock.json
       - run: npm ci
         working-directory: docs
-      - uses: actions/configure-pages@v6
+      - uses: actions/configure-pages@v6.0.0
       - run: npm run build
         working-directory: docs
-      - uses: actions/upload-pages-artifact@v5
+      - uses: actions/upload-pages-artifact@v5.0.0
         with:
           path: docs/.vitepress/dist
 
@@ -51,4 +51,4 @@ jobs:
     timeout-minutes: 10
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v5
+        uses: actions/deploy-pages@v5.0.1
