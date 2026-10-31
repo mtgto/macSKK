@@ -26,17 +26,13 @@ final class UserDictSyncRecordCloudKitTests: XCTestCase {
 
     func testWriteAndRead() {
         let syncRecord = UserDictSyncRecord(key: UserDictSyncKey(yomi: "いt", word: "行", okuri: "った"),
-                                            lastUsedAt: Date(milliseconds: 1_700_000_000_123),
-                                            deletedAt: Date(milliseconds: -1))
+                                            lastUsedAt: Date(timeIntervalSince1970: 1_700_000_000.123456),
+                                            deletedAt: Date(timeIntervalSince1970: -0.001))
         let record = CKRecord(recordType: UserDictSyncRecord.recordType,
                               recordID: CKRecord.ID(recordName: syncRecord.key.recordName))
         syncRecord.write(to: record)
         XCTAssertEqual(UserDictSyncRecord(record: record), syncRecord)
         XCTAssertTrue(record.encryptedValues[UserDictSyncRecord.FieldKey.lastUsedAt] is Date, "日時はTIMESTAMP型で保存する")
-
-        // CloudKitを経由して誤差が出てもミリ秒に丸めて同じ値として読み込む
-        record.encryptedValues[UserDictSyncRecord.FieldKey.lastUsedAt] = Date(timeIntervalSince1970: 1_700_000_000.1230001) as NSDate
-        XCTAssertEqual(UserDictSyncRecord(record: record), syncRecord)
 
         // フィールドを消せる
         var updated = syncRecord
@@ -49,17 +45,17 @@ final class UserDictSyncRecordCloudKitTests: XCTestCase {
         // 将来の版が保存した注釈を消さないように、注釈のフィールドには触れない
         let record = CKRecord(recordType: UserDictSyncRecord.recordType)
         record.encryptedValues["annotation"] = "注釈"
-        UserDictSyncRecord(key: UserDictSyncKey(yomi: "あ", word: "阿", okuri: nil), lastUsedAt: Date(milliseconds: 1)).write(to: record)
+        UserDictSyncRecord(key: UserDictSyncKey(yomi: "あ", word: "阿", okuri: nil), lastUsedAt: Date(timeIntervalSince1970: 0.001)).write(to: record)
         XCTAssertEqual(record.encryptedValues["annotation"] as? String, "注釈")
 
         let fresh = CKRecord(recordType: UserDictSyncRecord.recordType)
-        UserDictSyncRecord(key: UserDictSyncKey(yomi: "あ", word: "阿", okuri: nil), lastUsedAt: Date(milliseconds: 1)).write(to: fresh)
+        UserDictSyncRecord(key: UserDictSyncKey(yomi: "あ", word: "阿", okuri: nil), lastUsedAt: Date(timeIntervalSince1970: 0.001)).write(to: fresh)
         XCTAssertFalse(fresh.changedKeys().contains("annotation"))
     }
 
     func testReadInvalidRecord() {
         // 必須のフィールドが揃っていてもレコード型が違えば読み込まない
-        let syncRecord = UserDictSyncRecord(key: UserDictSyncKey(yomi: "あ", word: "阿", okuri: nil), lastUsedAt: Date(milliseconds: 1))
+        let syncRecord = UserDictSyncRecord(key: UserDictSyncKey(yomi: "あ", word: "阿", okuri: nil), lastUsedAt: Date(timeIntervalSince1970: 0.001))
         let other = CKRecord(recordType: "Other")
         syncRecord.write(to: other)
         XCTAssertNil(UserDictSyncRecord(record: other), "変換候補以外のレコードは読み込まない")

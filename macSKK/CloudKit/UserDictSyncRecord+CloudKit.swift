@@ -51,8 +51,7 @@ extension UserDictSyncRecord {
      *
      * ユーザーの入力履歴そのものなので、すべてのフィールドを暗号化して保存する。
      * 注釈のフィールドは将来のために空けておき、書き込まない (``UserDictSyncRecord`` を参照)。
-     * 日時はミリ秒に丸めた値を保存する。CloudKitの日時 (TIMESTAMP) はミリ秒で表現されるので、読み込んだときに同じ値に戻る。
-     * https://developer.apple.com/library/archive/documentation/DataManagement/Conceptual/CloudKitWebServicesReference/Types.html
+     * 日時はDateのまま保存する。暗号化したフィールドの日時は、iCloudを経由しても同じ値に戻る (結合テストで確認済)。
      */
     func write(to record: CKRecord) {
         let values = record.encryptedValues

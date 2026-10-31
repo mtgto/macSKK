@@ -495,7 +495,7 @@ import XCTest
         let deviceB = try await makeDevice(zoneID: zoneID)
 
         // 最終変換日時は公開APIから見えないので、同じ読みの別の変換候補「テスト」との順序で確かめる。
-        // A「試験」 < B「テスト」 < B「試験」の順に変換する。日時はミリ秒に丸めるので、同じ日時にならないよう間を空ける
+        // A「試験」 < B「テスト」 < B「試験」の順に変換する。同じ日時にならないよう間を空ける
         deviceA.userDict.add(yomi: "てすと", word: Word("試験"), source: .conversion)
         try await Task.sleep(for: .milliseconds(10))
         deviceB.userDict.add(yomi: "てすと", word: Word("テスト"), source: .conversion)
@@ -663,5 +663,29 @@ import XCTest
         XCTAssertNil(try XCTUnwrap(deviceA.lastStatus).error)
         XCTAssertEqual(deviceA.words(yomi: "てすと"), ["テスト", "試験"])
         XCTAssertTrue(deviceA.appliedChanges.isEmpty)
+    }
+
+    func testDatesRoundTripWithoutLoss() async throws {
+        // 暗号化したフィールドに保存した日時 (Date) が、丸められずに同じ値でiCloudから返ってくる
+        let database = try XCTUnwrap(database)
+        let zoneID = makeZoneID()
+        _ = try await database.save(CKRecordZone(zoneID: zoneID))
+        let dates = [
+            Date(timeIntervalSince1970: 1_700_000_000.123456789),
+            Date(timeIntervalSince1970: 1_700_000_000.9996),
+            Date(timeIntervalSince1970: -12.3456789),
+            Date(),
+        ]
+        for (index, date) in dates.enumerated() {
+            let syncRecord = UserDictSyncRecord(key: UserDictSyncKey(yomi: "せいど", word: "精度\(index)", okuri: nil),
+                                                lastUsedAt: date,
+                                                deletedAt: date.addingTimeInterval(-0.0001))
+            let record = CKRecord(recordType: UserDictSyncRecord.recordType,
+                                  recordID: CKRecord.ID(recordName: syncRecord.key.recordName, zoneID: zoneID))
+            syncRecord.write(to: record)
+            _ = try await database.save(record)
+            let fetched = try await database.record(for: record.recordID)
+            XCTAssertEqual(UserDictSyncRecord(record: fetched), syncRecord, String(format: "%.9f", date.timeIntervalSince1970))
+        }
     }
 }

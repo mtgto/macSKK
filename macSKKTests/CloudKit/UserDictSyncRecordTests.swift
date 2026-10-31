@@ -41,17 +41,6 @@ final class UserDictSyncRecordTests: XCTestCase {
         XCTAssertEqual(delete, UserDictSyncRecord(key: key("いt", "行"), deletedAt: t2))
     }
 
-    func testRoundsDates() {
-        let record = UserDictSyncRecord.use(yomi: "い", word: Word("井"), at: Date(timeIntervalSince1970: 1.23456))
-        XCTAssertEqual(record.lastUsedAt?.milliseconds, 1235)
-        XCTAssertEqual(record.lastUsedAt, Date(milliseconds: 1235), "CloudKitを経由しても同じ値になる")
-        for date in [Date(), Date(timeIntervalSince1970: 0.0015), Date(timeIntervalSince1970: -0.0025), Date(milliseconds: 1_700_000_000_001)] {
-            let rounded = UserDictSyncRecord.rounded(date)
-            XCTAssertEqual(Date(milliseconds: rounded.milliseconds), rounded)
-            XCTAssertEqual(UserDictSyncRecord.rounded(rounded), rounded)
-        }
-    }
-
     func testPlaceholderRecords() {
         // 読みは最近変換したものが後に、変換候補は最近変換したものが前に並ぶ
         let dict = MemoryDict(entries: ["あ": [Word("亜"), Word("阿")], "い": [Word("井")], "かk": [Word("書")]],
@@ -170,7 +159,7 @@ final class UserDictSyncRecordTests: XCTestCase {
     @MainActor func testApplyYieldsToOtherTasks() async throws {
         let fileURL = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "empty", withExtension: "txt"))
         var dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: false, saveToUserDict: true)
-        let records = (0..<300).map { UserDictSyncRecord.use(yomi: "あ\($0)", word: Word("亜"), at: Date(milliseconds: Int64($0))) }
+        let records = (0..<300).map { UserDictSyncRecord.use(yomi: "あ\($0)", word: Word("亜"), at: Date(timeIntervalSince1970: Double($0))) }
         var entryCountWhileApplying: Int?
         let edit = Task { @MainActor [dict] in
             entryCountWhileApplying = dict.entryCount

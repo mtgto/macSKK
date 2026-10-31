@@ -52,8 +52,8 @@ struct UserDictSyncRecord: Equatable, Sendable {
 
     init(key: UserDictSyncKey, lastUsedAt: Date? = nil, deletedAt: Date? = nil) {
         self.key = key
-        self.lastUsedAt = lastUsedAt.map(Self.rounded)
-        self.deletedAt = deletedAt.map(Self.rounded)
+        self.lastUsedAt = lastUsedAt
+        self.deletedAt = deletedAt
     }
 
     /// 変換・単語登録したことを表す同期情報
@@ -64,16 +64,6 @@ struct UserDictSyncRecord: Equatable, Sendable {
     /// 削除したことを表す同期情報
     static func delete(yomi: String, word: Word, at date: Date = Date()) -> Self {
         Self(key: UserDictSyncKey(yomi, word), deletedAt: date)
-    }
-
-    /**
-     * 日時をミリ秒単位に丸める。
-     *
-     * CloudKitに保存できる精度に合わせておかないと、サーバーを経由した自分の更新を
-     * 別の更新と判定してしまう。
-     */
-    static func rounded(_ date: Date) -> Date {
-        Date(milliseconds: date.milliseconds)
     }
 
     /// ユーザー辞書に存在するべきかどうか。削除より後に変換・単語登録していれば存在する。
@@ -125,17 +115,6 @@ struct UserDictSyncRecord: Equatable, Sendable {
             }
         }
         return records
-    }
-}
-
-extension Date {
-    /// 1970年1月1日からのミリ秒
-    var milliseconds: Int64 {
-        Int64((timeIntervalSince1970 * 1000).rounded())
-    }
-
-    init(milliseconds: Int64) {
-        self.init(timeIntervalSince1970: Double(milliseconds) / 1000)
     }
 }
 
