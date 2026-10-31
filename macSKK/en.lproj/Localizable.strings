@@ -38,6 +38,12 @@
 "LoadingStatusError %@" = "Error: %@";
 "LoadingStatusDisabled" = "Disabled";
 "LoadingStatusUnknown" = "Unknown";
+"DictReadFailureShow" = "Show unread lines";
+"DictReadFailureTitle" = "Unread lines";
+"DictReadFailureLine %lld" = "Line %lld";
+"DictReadFailureReasonMissingSeparator" = "No separator between the reading and candidates";
+"DictReadFailureReasonSpaceInYomi" = "The reading contains a space";
+"DictReadFailureReasonUnterminatedCandidates" = "Candidates are not terminated with a slash";
 "SKKServDictTitle" = "SKKServ Dictionary Setting";
 "SKKServDictTesting" = "Testing to connect to skkserv…";
 "SKKServDictReferTestTitle" = "SKKServ Dictionary Referring Test";
