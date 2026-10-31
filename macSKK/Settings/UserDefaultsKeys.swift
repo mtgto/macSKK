@@ -90,4 +90,14 @@ struct UserDefaultsKeys {
     // iCloudで同期する設定のカテゴリ (SettingsSync.Category) のrawValueの配列。
     // Macごとに選べるようこの設定自体は同期しない。
     static let syncedSettingsCategories = "syncedSettingsCategories"
+    // ユーザー辞書をiCloud (CloudKit) で他のMacと同期するかどうか。
+    // この設定自体は同期しない。
+    static let syncUserDictWithiCloud = "syncUserDictWithiCloud"
+    // ユーザー辞書のiCloud同期で、初回同期が完了していない場合のモード (UserDictInitialSyncMode) のrawValue。
+    // 初回同期が完了したら削除する。
+    static let userDictInitialSyncMode = "userDictInitialSyncMode"
+    // ユーザー辞書のiCloud同期で最後に取得・送信が完了した日時。
+    static let userDictLastSyncedAt = "userDictLastSyncedAt"
+    // ユーザー辞書のiCloud同期で使うCKSyncEngineの同期状態 (CKSyncEngine.State.SerializationをJSONにしたData)。
+    static let userDictSyncEngineState = "userDictSyncEngineState"
 }

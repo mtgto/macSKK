@@ -39,6 +39,8 @@ struct CloudSyncView: View {
     @State private var isShowingInitialSyncDialog = false
     @State private var isShowingCategoryConflictDialog = false
     @State private var isShowingRemoveAllDialog = false
+    @State private var isShowingUserDictInitialSyncDialog = false
+    @State private var isShowingDeleteUserDictDialog = false
     #if DEBUG
     /// デバッグ用に表示するiCloudの値
     @State private var remoteValuesJSON: String = ""
@@ -73,6 +75,59 @@ struct CloudSyncView: View {
                 }
             }
         )
+    }
+
+    /**
+     * ユーザー辞書のiCloud同期のトグル。
+     *
+     * 有効化するときは、同期開始前からあるユーザー辞書の変換候補をどう扱うか確認する。
+     */
+    private var syncUserDictWithiCloud: Binding<Bool> {
+        Binding(
+            get: { settingsViewModel.syncUserDictWithiCloud },
+            set: { enabled in
+                if enabled {
+                    isShowingUserDictInitialSyncDialog = true
+                } else {
+                    settingsViewModel.disableSyncUserDictWithiCloud()
+                }
+            }
+        )
+    }
+
+    /// ユーザー辞書の同期状態と今すぐ同期するボタン
+    private var userDictSyncStatusRow: some View {
+        let status = settingsViewModel.userDictSyncStatus
+        return HStack {
+            switch status.activity {
+            case .fetching(let received):
+                ProgressView().controlSize(.small)
+                if received > 0 {
+                    Text(String(format: String(localized: "UserDictSyncFetchingCount"), received))
+                } else {
+                    Text("UserDictSyncFetching")
+                }
+            case .applying(let done):
+                ProgressView().controlSize(.small)
+                Text(String(format: String(localized: "UserDictSyncApplying"), done))
+            case .sending(let remaining):
+                ProgressView().controlSize(.small)
+                Text(String(format: String(localized: "UserDictSyncSending"), remaining))
+            case .idle:
+                if let lastSyncedAt = status.lastSyncedAt {
+                    Text(String(format: String(localized: "UserDictLastSyncedAt"),
+                                lastSyncedAt.formatted(date: .abbreviated, time: .standard)))
+                } else {
+                    Text("UserDictNotSyncedYet")
+                }
+            }
+            Spacer()
+            Button("Sync Now") {
+                settingsViewModel.syncUserDictWithiCloudNow()
+            }
+            .disabled(status.activity != .idle)
+        }
+        .foregroundStyle(.secondary)
     }
 
     /// 同期する設定のカテゴリのトグル。
@@ -172,6 +227,47 @@ struct CloudSyncView: View {
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
+                Section {
+                    Toggle(isOn: syncUserDictWithiCloud, label: {
+                        Text("Sync user dictionary with iCloud")
+                    })
+                    .disabled(!SettingsViewModel.isUserDictCloudSyncAvailable)
+                    if settingsViewModel.syncUserDictWithiCloud {
+                        userDictSyncStatusRow
+                        if let lastError = settingsViewModel.userDictSyncStatus.lastError {
+                            Text(String(format: String(localized: "UserDictSyncError"), lastError))
+                                .foregroundStyle(.red)
+                                .textSelection(.enabled)
+                        }
+                    }
+                    if let notice = settingsViewModel.userDictSyncNotice {
+                        Text(notice)
+                            .foregroundStyle(.secondary)
+                    }
+                    HStack {
+                        Button("Remove user dictionary from iCloud", role: .destructive) {
+                            isShowingDeleteUserDictDialog = true
+                        }
+                        .disabled(!SettingsViewModel.isUserDictCloudSyncAvailable || settingsViewModel.isDeletingUserDictFromiCloud)
+                        if settingsViewModel.isDeletingUserDictFromiCloud {
+                            ProgressView().controlSize(.small)
+                        }
+                    }
+                } header: {
+                    Text("User Dictionary")
+                } footer: {
+                    Group {
+                        if #unavailable(macOS 14) {
+                            Text("SyncUserDictWithiCloudRequiresMacOS14")
+                        } else if SettingsViewModel.isUserDictCloudSyncAvailable {
+                            Text("SyncUserDictWithiCloudDescription")
+                        } else {
+                            Text("SyncUserDictWithiCloudUnavailable")
+                        }
+                    }
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                }
                 #if DEBUG
                 Section {
                     Button("現在のiCloudの値を表示") {
@@ -215,6 +311,25 @@ struct CloudSyncView: View {
             }
         } message: {
             Text(conflictMessage)
+        }
+        .confirmationDialog("Sync user dictionary with iCloud", isPresented: $isShowingUserDictInitialSyncDialog) {
+            Button("Sync only conversions from now on") {
+                settingsViewModel.enableSyncUserDictWithiCloud(initialSyncMode: .fromNow)
+            }
+            Button("Sync all words") {
+                settingsViewModel.enableSyncUserDictWithiCloud(initialSyncMode: .all)
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("SyncUserDictWithiCloudInitialSyncMessage")
+        }
+        .confirmationDialog("Remove user dictionary from iCloud", isPresented: $isShowingDeleteUserDictDialog) {
+            Button("Delete", role: .destructive) {
+                settingsViewModel.deleteUserDictFromiCloud()
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("RemoveUserDictFromiCloudConfirmation")
         }
         .confirmationDialog("Remove all settings from iCloud", isPresented: $isShowingRemoveAllDialog) {
             Button("Delete", role: .destructive) {
