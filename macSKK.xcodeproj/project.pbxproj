@@ -125,6 +125,7 @@
 		CE84A3E9295DA504009394C4 /* RomajiTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE84A3E8295DA504009394C4 /* RomajiTests.swift */; };
 		CE84A3EB295DA715009394C4 /* Dict.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE84A3EA295DA715009394C4 /* Dict.swift */; };
 		CE84A3ED295DA818009394C4 /* MemoryDictTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE84A3EC295DA818009394C4 /* MemoryDictTests.swift */; };
+		7A1B2C3D4E5F60718293A001 /* MemoryDictMemoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A1B2C3D4E5F60718293A002 /* MemoryDictMemoryTests.swift */; };
 		CE8871322E574CC900E20BFB /* CompletionSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE8871312E574CC900E20BFB /* CompletionSettingsView.swift */; };
 		CE8871462E63ECB700E20BFB /* kana-rule-azik-us.conf in Resources */ = {isa = PBXBuildFile; fileRef = CE8871452E63ECB700E20BFB /* kana-rule-azik-us.conf */; };
 		CE8DFE092CBEAA2900A24230 /* Character+AdditionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE8DFE082CBEAA1F00A24230 /* Character+AdditionsTests.swift */; };
@@ -350,6 +351,7 @@
 		CE84A3E8295DA504009394C4 /* RomajiTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RomajiTests.swift; sourceTree = "<group>"; };
 		CE84A3EA295DA715009394C4 /* Dict.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dict.swift; sourceTree = "<group>"; };
 		CE84A3EC295DA818009394C4 /* MemoryDictTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryDictTests.swift; sourceTree = "<group>"; };
+		7A1B2C3D4E5F60718293A002 /* MemoryDictMemoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryDictMemoryTests.swift; sourceTree = "<group>"; };
 		CE8871312E574CC900E20BFB /* CompletionSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletionSettingsView.swift; sourceTree = "<group>"; };
 		CE8871452E63ECB700E20BFB /* kana-rule-azik-us.conf */ = {isa = PBXFileReference; lastKnownFileType = text; path = "kana-rule-azik-us.conf"; sourceTree = "<group>"; };
 		CE8DFE082CBEAA1F00A24230 /* Character+AdditionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Character+AdditionsTests.swift"; sourceTree = "<group>"; };
@@ -646,6 +648,8 @@
 				CEE2D9782A99FEC700A4CD76 /* CandidateTest.swift */,
 				CE4CB5CD2AD55DF90046FA34 /* NumberEntryTests.swift */,
 				CE84A3EC295DA818009394C4 /* MemoryDictTests.swift */,
+				CE39264D3096F022005C00D5 /* ReadonlyMemoryDictTests.swift */,
+				7A1B2C3D4E5F60718293A002 /* ReadonlyMemoryDictMemoryTests.swift */,
 				CE06CA292AAC171B00E80E5E /* FileDictTests.swift */,
 				CEA78FB129646CA100B67E25 /* UserDictTests.swift */,
 				CE00C0DE0000000000000004 /* CompletionPresenterTests.swift */,
@@ -1164,6 +1168,7 @@
 				CE420WAT2F00000100000002 /* WorkaroundApplicationTests.swift in Sources */,
 				CE420SYNC2F00000100000004 /* SettingsSyncTests.swift in Sources */,
 				CE84A3ED295DA818009394C4 /* MemoryDictTests.swift in Sources */,
+				7A1B2C3D4E5F60718293A001 /* ReadonlyMemoryDictMemoryTests.swift in Sources */,
 				CE06CA342AAC199500E80E5E /* UserDict+Utilities.swift in Sources */,
 				CE84A3E9295DA504009394C4 /* RomajiTests.swift in Sources */,
 				CE4CB5CE2AD55DF90046FA34 /* NumberEntryTests.swift in Sources */,
