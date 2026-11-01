@@ -67,11 +67,7 @@ struct MemoryDict: SearchableDict, DictProtocol, Sendable {
         self.entries = entries
         self.saveToUserDict = saveToUserDict
         failedEntryCount = 0
-        // ユニットテスト用に読みをソートしておく。
-        // 本来は空の辞書を作るときにしか使わず、読みの順序に意味はない。
-        // しかしDictionaryの順序は不定で補完の返却順がテストごとにぶれるため、
-        // 最近変換した順 (配列の末尾から) に辿ったときに辞書順になるよう辞書順の逆順に並べる。
-        for yomi in entries.keys.sorted(by: >) {
+        for yomi in entries.keys {
             if yomi.isOkuriAri {
                 okuriAriYomis.append(yomi)
             } else {

@@ -70,16 +70,13 @@ final class CompletionPresenterTests: XCTestCase {
     }
 
     @MainActor private func makeUserDict(entries: [String: [Word]]) throws -> UserDict {
-        // userDictEntriesを渡すとuserDictがMemoryDictになり、FileDict前提の`setEntries`が
-        // 他テストで機能しなくなる。StateMachineTestsと同じくuserDictはFileDictのままにして
-        // エントリはsetEntriesで流し込む。
-        let dict = try UserDict(dicts: [],
-                                privateMode: CurrentValueSubject<Bool, Never>(false),
-                                ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
-                                dateYomis: [],
-                                dateConversions: [])
-        dict.setEntries(entries)
-        return dict
+        // userDictEntriesを渡すとuserDictがReadonlyMemoryDictになり、補完の返却順が読みの辞書順で決まる
+        try UserDict(dicts: [],
+                     userDictEntries: entries,
+                     privateMode: CurrentValueSubject<Bool, Never>(false),
+                     ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
+                     dateYomis: [],
+                     dateConversions: [])
     }
 
     // MARK: - handle()
