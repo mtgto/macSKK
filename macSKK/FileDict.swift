@@ -100,6 +100,14 @@ enum FileDictType: Equatable {
         let license: String
         let okuriAri: [String: [String]]
         let okuriNasi: [String: [String]]
+
+        /// セクションと読みの形 (`String.isOkuriAri`) が一致しない読みの件数と例 (最大3件、okuri_ari、okuri_nasiの順) を返す。
+        ///
+        /// 検索・補完は読みの形で判断するため、ずれは辞書側の問題として警告ログに出すために使う。
+        var sectionMismatch: (count: Int, examples: [String]) {
+            let mismatches = okuriAri.keys.filter { !$0.isOkuriAri } + okuriNasi.keys.filter { $0.isOkuriAri }
+            return (count: mismatches.count, examples: Array(mismatches.prefix(3)))
+        }
     }
 
     // MARK: NSFilePresenter
@@ -171,7 +179,7 @@ enum FileDictType: Equatable {
                         }
                         let okuriAriEntries = jisyo.okuriAri.mapValues { $0.map { Word($0) } }
                         let okuriNashiEntries = jisyo.okuriNasi.mapValues { $0.map { Word($0) } }
-                        let mismatch = ReadonlyMemoryDict.sectionMismatch(okuriAriYomis: okuriAriEntries.keys, okuriNashiYomis: okuriNashiEntries.keys)
+                        let mismatch = jisyo.sectionMismatch
                         if mismatch.count > 0 {
                             logger.warning("JSON辞書 \(id, privacy: .public) にセクションと読みの形が一致しない読みが \(mismatch.count)件あります (例: \(mismatch.examples.joined(separator: ", ")))")
                         }

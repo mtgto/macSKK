@@ -213,4 +213,22 @@ import XCTest
         ].joined(separator: "\n")
         XCTAssertEqual(dict.serialize(), expected)
     }
+
+    // MARK: JsonJisyo
+    func testJsonJisyoSectionMismatch() {
+        func jisyo(okuriAri: [String: [String]], okuriNasi: [String: [String]]) -> FileDict.JsonJisyo {
+            FileDict.JsonJisyo(version: "0.0.0", copyright: "", license: "", okuriAri: okuriAri, okuriNasi: okuriNasi)
+        }
+        let mismatch = jisyo(okuriAri: ["あr": ["有"], "かな": ["仮名"]], okuriNasi: ["あb": ["A棟"], "ああ": ["嗚呼"]]).sectionMismatch
+        XCTAssertEqual(mismatch.count, 2)
+        XCTAssertEqual(mismatch.examples, ["かな", "あb"], "okuri_ari、okuri_nasiの順")
+
+        let many = jisyo(okuriAri: ["あ": ["亜"], "い": ["伊"], "う": ["宇"], "え": ["絵"], "あr": ["有"]], okuriNasi: [:]).sectionMismatch
+        XCTAssertEqual(many.count, 4)
+        XCTAssertEqual(many.examples.count, 3, "例は最大3件")
+
+        let none = jisyo(okuriAri: ["あr": ["有"], "いk": ["行"]], okuriNasi: ["あ": ["亜"], "い": ["伊"]]).sectionMismatch
+        XCTAssertEqual(none.count, 0)
+        XCTAssertEqual(none.examples, [])
+    }
 }
