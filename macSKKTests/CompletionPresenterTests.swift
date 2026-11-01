@@ -45,7 +45,11 @@ import XCTest
 }
 
 final class CompletionPresenterTests: XCTestCase {
+    /// テスト中にGlobal.dictionaryを差し替えるので、他のテスト (StateMachineTestsなど) に影響しないよう元に戻す
+    private var originalDictionary: UserDict!
+
     override func setUp() async throws {
+        originalDictionary = await MainActor.run { Global.dictionary }
         await MainActor.run {
             Global.showCompletion = true
             Global.showCandidateForCompletion = true
@@ -57,6 +61,13 @@ final class CompletionPresenterTests: XCTestCase {
             Global.displayCandidateCount = 9
             Global.kanaRule = Romaji.defaultKanaRule
             Global.privateMode.send(false)
+        }
+    }
+
+    override func tearDown() async throws {
+        let dictionary = originalDictionary
+        await MainActor.run {
+            Global.dictionary = dictionary
         }
     }
 

@@ -7,7 +7,11 @@ import XCTest
 @testable import macSKK
 
 final class StateMachineTests: XCTestCase {
+    /// テスト中にGlobal.dictionaryを差し替えるテストがあるので、他のテストに影響しないよう元に戻す
+    private var originalDictionary: UserDict!
+
     override func setUp() async throws {
+        originalDictionary = await MainActor.run { Global.dictionary }
         await MainActor.run {
             Global.dictionary.setEntries([:])
             Global.privateMode.send(false)
@@ -24,6 +28,13 @@ final class StateMachineTests: XCTestCase {
             Global.backToSelectingFromRegistering = false
             Global.yomiCompletionByTabInRegistering = false
             Global.displayCandidateCount = 9
+        }
+    }
+
+    override func tearDown() async throws {
+        let dictionary = originalDictionary
+        await MainActor.run {
+            Global.dictionary = dictionary
         }
     }
 
