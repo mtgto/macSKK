@@ -6,6 +6,11 @@ import XCTest
 @testable import macSKK
 
 final class EntryTests: XCTestCase {
+    // CIの失敗ログ確認用。確認後にリバートする
+    func testIntentionalFailureForCILog() {
+        XCTAssertEqual("CIの失敗理由が見えるか", "見えない")
+    }
+
     func testInit() throws {
         let entry = Entry(line: "あg /挙/揚/上/", dictId: "")
         XCTAssertEqual(entry?.yomi, "あg")
