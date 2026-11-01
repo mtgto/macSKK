@@ -261,7 +261,12 @@ enum FileDictType: Equatable {
             logger.log("辞書 \(self.id, privacy: .public) は変更されていないため保存は行いません")
             return
         }
-        guard let data = serialize().data(using: type.encoding) else {
+        // 読み込み専用の辞書は変更されないため hasUnsavedChanges が立たず、ここには到達しない
+        guard case .writable(let dict) = content else {
+            assertionFailure("読み込み専用の辞書 \(id) を保存しようとしました")
+            return
+        }
+        guard let data = dict.serialize().data(using: type.encoding) else {
             fatalError("辞書 \(self.id) のシリアライズに失敗しました")
         }
         var coordinationError: NSError?
@@ -309,27 +314,6 @@ enum FileDictType: Equatable {
     deinit {
         logger.log("辞書 \(self.id, privacy: .public) がプロセスから削除されます")
         NSFileCoordinator.removeFilePresenter(self)
-    }
-
-    /// ユーザー辞書をSKK辞書形式に変換する。読み込み専用の辞書はシリアライズできない。
-    func serialize() -> String {
-        guard case .writable(let dict) = content else {
-            fatalError("読み込み専用の辞書 \(id) はシリアライズできません")
-        }
-        var result: [String] = Self.headers + [Self.okuriAriHeader]
-        for yomi in dict.okuriAriYomis.reversed() {
-            if let words = dict.entries[yomi] {
-                result.append(Entry(yomi: yomi, candidates: words).serialize())
-            }
-        }
-        result.append(Self.okuriNashiHeader)
-        for yomi in dict.okuriNashiYomis.reversed() {
-            if let words = dict.entries[yomi] {
-                result.append(Entry(yomi: yomi, candidates: words).serialize())
-            }
-        }
-        result.append("")
-        return result.joined(separator: "\n")
     }
 
     /**

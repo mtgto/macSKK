@@ -108,6 +108,24 @@ struct MemoryDict: SearchableDict, DictProtocol, Sendable {
         )
     }
 
+    /// SKK辞書形式に変換する。
+    @MainActor func serialize() -> String {
+        var result: [String] = FileDict.headers + [FileDict.okuriAriHeader]
+        for yomi in okuriAriYomis.reversed() {
+            if let words = entries[yomi] {
+                result.append(Entry(yomi: yomi, candidates: words).serialize())
+            }
+        }
+        result.append(FileDict.okuriNashiHeader)
+        for yomi in okuriNashiYomis.reversed() {
+            if let words = entries[yomi] {
+                result.append(Entry(yomi: yomi, candidates: words).serialize())
+            }
+        }
+        result.append("")
+        return result.joined(separator: "\n")
+    }
+
     // MARK: DictProtocol
     nonisolated func refer(_ yomi: String, option: DictReferringOption?) -> [Word] {
         if let option {
