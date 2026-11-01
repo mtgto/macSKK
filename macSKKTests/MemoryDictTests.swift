@@ -190,22 +190,6 @@ class MemoryDictTests: XCTestCase {
         XCTAssertEqual(dict.findCompletions(prefix: "だい"), [], "数値変換の読みは補完候補とはしない")
     }
 
-    @MainActor func testReferWithOption() {
-        let dict = MemoryDict(entries: ["あき>": [Word("空き")],
-                                        "あき": [Word("秋")],
-                                        ">し": [Word("氏")],
-                                        "し": [Word("詩")],
-                                        "いt": [Word("言"), Word("行", okuri: "った")]])
-        XCTAssertEqual(dict.refer("あき", option: nil), [Word("秋")])
-        XCTAssertEqual(dict.refer("あき", option: .prefix), [Word("空き")])
-        XCTAssertEqual(dict.refer("あき", option: .suffix), [])
-        XCTAssertEqual(dict.refer("し", option: nil), [Word("詩")])
-        XCTAssertEqual(dict.refer("し", option: .suffix), [Word("氏")])
-        XCTAssertEqual(dict.refer("し", option: .prefix), [])
-        XCTAssertEqual(dict.refer("いt", option: nil), [Word("言"), Word("行", okuri: "った")])
-        XCTAssertEqual(dict.refer("いt", option: .okuri("った")), [Word("行", okuri: "った"), Word("言")])
-    }
-
     @MainActor func testReverseRefer() {
         let dict = MemoryDict(entries: ["あr": [Word("有"), Word("在")], "え": [Word("絵"), Word("柄")]])
         XCTAssertEqual(dict.reverseRefer("絵"), "え")

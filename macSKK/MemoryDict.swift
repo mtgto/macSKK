@@ -122,28 +122,12 @@ struct MemoryDict: SearchableDict, DictProtocol, Sendable {
         return result.joined(separator: "\n")
     }
 
-    // MARK: DictProtocol
-    nonisolated func refer(_ yomi: String, option: DictReferringOption?) -> [Word] {
-        if let option {
-            switch option {
-            case .prefix:
-                return refer(yomi + ">", option: nil)
-            case .suffix:
-                return refer(">" + yomi, option: nil)
-            case .okuri(let okuri):
-                if let candidates = entries[yomi] {
-                    // 送り仮名が合致するもの → 送り仮名が設定されてないものの順に返す。
-                    // 送り仮名ブロックありなしの違い以外同じ変換結果となる文字列を複数返す (呼び出し元で重複をフィルタする)
-                    return candidates.filter({ $0.okuri == okuri }) + candidates.filter({ $0.okuri == nil })
-                } else {
-                    return []
-                }
-            }
-        } else {
-            return entries[yomi] ?? []
-        }
+    // MARK: SearchableDict
+    nonisolated func words(of yomi: String) -> [Word]? {
+        entries[yomi]
     }
 
+    // MARK: DictProtocol
     nonisolated func reverseRefer(_ word: String) -> String? {
         // 全探索
         for (yomi, candidates) in entries {
