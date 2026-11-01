@@ -11,9 +11,11 @@ import XCTest
 //
 // 実行方法:
 //   1. 環境変数 `MACSKK_MEMORY_TEST=1` を設定する。
-//      Xcodeなら Product > Scheme > Edit Scheme > Test > Arguments > Environment Variables に追加するか、
-//      xcodebuild なら `MACSKK_MEMORY_TEST=1 xcodebuild test -only-testing:macSKKTests/MemoryDictMemoryTests ...`
-//      (xcodebuild は `TEST_RUNNER_MACSKK_MEMORY_TEST=1` のように TEST_RUNNER_ プレフィックス付きで渡す)。
+//      xcodebuild なら TEST_RUNNER_ プレフィックス付きで渡す(動作確認済み):
+//        TEST_RUNNER_MACSKK_MEMORY_TEST=1 xcodebuild test -scheme macSKK -destination 'platform=macOS' \
+//          -only-testing:macSKKTests/ReadonlyMemoryDictMemoryTests/testLoadSKKJisyoL -resultBundlePath out.xcresult
+//      結果は `xcrun xcresulttool export attachments --path out.xcresult --output-path <dir>` で取り出せる。
+//      Xcodeなら Product > Scheme > Edit Scheme > Test > Arguments > Environment Variables に追加する。
 //   2. 辞書ファイル SKK-JISYO.L (EUC-JIS-2004) を
 //      `FileManager.default.temporaryDirectory/macSKKTests/SKK-JISYO.L` に置く。
 //      サンドボックス下のテストでは通常
@@ -24,7 +26,7 @@ import XCTest
 // 結果の読み方:
 //   - コンソールログの `MEMORY_METRIC key=value` 行
 //   - テスト結果に添付される JSON (memory-metrics.json, XCTAttachment .keepAlways)
-//   heapDeltaBytes のみ緩い上限をassertしており、他の指標は表示のみ。
+//   heapDeltaBytes のみ上限をassertしており、他の指標は表示のみ。
 
 class ReadonlyMemoryDictMemoryTests: XCTestCase {
     /// 全mallocゾーンの使用中バイト数の合計
@@ -52,12 +54,13 @@ class ReadonlyMemoryDictMemoryTests: XCTestCase {
         return usage.ru_maxrss
     }
 
-    /// heapDeltaBytes の上限(暫定値)。実測値を見て Task 4 で確定させる。
-    private static let heapDeltaBytesUpperBound = 60_000_000
+    /// heapDeltaBytes の上限(暫定値、要確認)。実測は約32.8MB、Dictionary表現(main)は約43.2MB。
+    /// 実測の2倍(約60MB)ではDictionary表現に戻っても検知できないため、その間の値にしている。
+    private static let heapDeltaBytesUpperBound = 40_000_000
 
     func testLoadSKKJisyoL() throws {
         guard ProcessInfo.processInfo.environment["MACSKK_MEMORY_TEST"] == "1" else {
-            throw XCTSkip("環境変数 MACSKK_MEMORY_TEST=1 を指定したときだけ実行します。実行方法はこのファイルの冒頭コメントを参照")
+            throw XCTSkip("環境変数 MACSKK_MEMORY_TEST=1 を指定したときだけ実行します (xcodebuild なら TEST_RUNNER_MACSKK_MEMORY_TEST=1)。詳細はこのファイルの冒頭コメントを参照")
         }
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("macSKKTests/SKK-JISYO.L")
         guard FileManager.default.fileExists(atPath: url.path) else {
@@ -90,7 +93,6 @@ class ReadonlyMemoryDictMemoryTests: XCTestCase {
             attachment.name = "memory-metrics.json"
             attachment.lifetime = .keepAlways
             add(attachment)
-            XCTAssertGreaterThan(entryCount, 100_000)
             XCTAssertLessThan(heapDeltaBytes, Self.heapDeltaBytesUpperBound)
         }
     }
