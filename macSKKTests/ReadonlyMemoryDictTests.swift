@@ -141,6 +141,21 @@ final class ReadonlyMemoryDictTests: XCTestCase {
         XCTAssertTrue(dict.saveToUserDict)
     }
 
+    func testSectionMismatch() {
+        let mismatch = ReadonlyMemoryDict.sectionMismatch(okuriAriYomis: ["あr", "かな"],
+                                                          okuriNashiYomis: ["あb", "ああ"])
+        XCTAssertEqual(mismatch.count, 2)
+        XCTAssertEqual(mismatch.examples, ["かな", "あb"], "okuri_ari、okuri_nasiの順")
+
+        let many = ReadonlyMemoryDict.sectionMismatch(okuriAriYomis: ["あ", "い", "う", "え", "あr"], okuriNashiYomis: [])
+        XCTAssertEqual(many.count, 4)
+        XCTAssertEqual(many.examples.count, 3, "例は最大3件")
+
+        let none = ReadonlyMemoryDict.sectionMismatch(okuriAriYomis: ["あr", "いk"], okuriNashiYomis: ["あ", "い"])
+        XCTAssertEqual(none.count, 0)
+        XCTAssertEqual(none.examples, [])
+    }
+
     func testInitWithOkuriAriNashiEntriesMismatchedSection() {
         // JSON辞書ではセクションと読みの形 (isOkuriAri) が一致しないことがある
         let dict = ReadonlyMemoryDict(okuriAriEntries: ["かな": [Word("仮名")]],

@@ -11,7 +11,7 @@ import XCTest
 //
 // 実行方法:
 //   1. 環境変数 `MACSKK_MEMORY_TEST=1` を設定する。
-//      xcodebuild なら TEST_RUNNER_ プレフィックス付きで渡す(動作確認済み):
+//      xcodebuild なら TEST_RUNNER_ プレフィックス付きで渡す:
 //        TEST_RUNNER_MACSKK_MEMORY_TEST=1 xcodebuild test -scheme macSKK -destination 'platform=macOS' \
 //          -only-testing:macSKKTests/ReadonlyMemoryDictMemoryTests/testLoadSKKJisyoL -resultBundlePath out.xcresult
 //      結果は `xcrun xcresulttool export attachments --path out.xcresult --output-path <dir>` で取り出せる。
@@ -54,8 +54,8 @@ class ReadonlyMemoryDictMemoryTests: XCTestCase {
         return usage.ru_maxrss
     }
 
-    /// heapDeltaBytes の上限(暫定値、要確認)。実測は約32.8MB、Dictionary表現(main)は約43.2MB。
-    /// 実測の2倍(約60MB)ではDictionary表現に戻っても検知できないため、その間の値にしている。
+    /// heapDeltaBytes の上限。実測は約30.2MBでその約1.3倍に余裕を持たせている。
+    /// 分割前のDictionary表現は約43.2MBなので、この上限ならDictionary表現への回帰を検知できる。
     private static let heapDeltaBytesUpperBound = 40_000_000
 
     func testLoadSKKJisyoL() throws {
@@ -64,7 +64,7 @@ class ReadonlyMemoryDictMemoryTests: XCTestCase {
         }
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("macSKKTests/SKK-JISYO.L")
         guard FileManager.default.fileExists(atPath: url.path) else {
-            throw XCTSkip("\(url.path) に SKK-JISYO.L (EUC-JIS-2004) を置いてください")
+            throw XCTSkip("\(url.path) に SKK-JISYO.L を置いてください")
         }
         let source = try Data(contentsOf: url).eucJis2004String()
         let before = heapInUse()

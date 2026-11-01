@@ -84,6 +84,28 @@ struct ReadonlyMemoryDict: SearchableDict, DictProtocol, Sendable {
                   saveToUserDict: saveToUserDict)
     }
 
+    /// JSON辞書のセクションと読みの形 (`String.isOkuriAri`) が一致しない読みの件数と例 (最大3件) を返す。
+    ///
+    /// 例は okuri_ari、okuri_nasi の順。検索・補完は読みの形で判断するため、ずれは辞書側の問題として警告ログに出すために使う。
+    nonisolated static func sectionMismatch<S1: Sequence, S2: Sequence>(okuriAriYomis: S1, okuriNashiYomis: S2) -> (count: Int, examples: [String])
+    where S1.Element == String, S2.Element == String {
+        var count = 0
+        var examples: [String] = []
+        func record(_ yomi: String) {
+            count += 1
+            if examples.count < 3 {
+                examples.append(yomi)
+            }
+        }
+        for yomi in okuriAriYomis where !yomi.isOkuriAri {
+            record(yomi)
+        }
+        for yomi in okuriNashiYomis where yomi.isOkuriAri {
+            record(yomi)
+        }
+        return (count: count, examples: examples)
+    }
+
     private init(keys: [String], starts: [UInt32], words: [Word], failedEntryCount: Int, saveToUserDict: Bool) {
         self.keys = keys
         self.starts = starts
