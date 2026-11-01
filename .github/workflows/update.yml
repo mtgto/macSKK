@@ -12,22 +12,52 @@ defaults:
 
 jobs:
   update:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
+    timeout-minutes: 10
     steps:
       - name: calculate sha256
         id: sha256
+        env:
+          ASSETS: ${{ toJSON(github.event.release.assets) }}
         run: |
-          browser_download_url=$(echo '${{ toJSON(github.event.release.assets) }}' | jq -r '.[] | select(.name | endswith(".dmg")) | .browser_download_url')
+          browser_download_url=$(echo "${ASSETS}" | jq -r '.[] | select(.name | endswith(".dmg")) | .browser_download_url')
           SHA256=$(curl --fail -L "${browser_download_url}" | sha256sum | cut -d ' ' -f 1)
           echo "sha256=${SHA256}" >> "$GITHUB_OUTPUT"
-      - name: dispatch
+      - name: generate token
+        id: app-token
+        uses: actions/create-github-app-token@v3.3.0
+        with:
+          app-id: ${{ secrets.HOMEBREW_MACSKK_APP_ID }}
+          private-key: ${{ secrets.HOMEBREW_MACSKK_APP_PRIVATE_KEY }}
+          owner: mtgto
+          repositories: homebrew-macSKK
+          permission-contents: write
+      - uses: actions/checkout@v7.0.1
+        with:
+          repository: mtgto/homebrew-macSKK
+          token: ${{ steps.app-token.outputs.token }}
+          sparse-checkout: Casks
+          path: homebrew-macSKK
+      - name: Modify a Cask
+        working-directory: homebrew-macSKK
         env:
-          GITHUB_TOKEN: ${{ secrets.HOMEBREW_MACSKK_TOKEN }}
+          VERSION: ${{ github.event.release.tag_name }}
+          SHA256: ${{ steps.sha256.outputs.sha256 }}
         run: |
-          curl \
-          --fail \
-          -H "Authorization: token $GITHUB_TOKEN" \
-          -H "Accept: application/vnd.github.v3+json" \
-          -H "Content-Type: application/json" \
-          https://api.github.com/repos/mtgto/homebrew-macSKK/dispatches \
-          -d '{"event_type":"update","client_payload":{"version":"${{ github.event.release.tag_name }}","sha256":"${{ steps.sha256.outputs.sha256 }}"}}'
+          sed --in-place --regexp-extended "s/version \"[0-9]+\.[0-9]+\.[0-9]+\"/version \"${VERSION}\"/; s/sha256 \"[0-9a-f]{64}\"/sha256 \"${SHA256}\"/" Casks/macskk.rb
+      - name: Commit & Push
+        working-directory: homebrew-macSKK
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
+          VERSION: ${{ github.event.release.tag_name }}
+        run: |
+          if [ -n "$(git diff --name-only Casks/macskk.rb)" ]; then
+            # https://github.com/actions/create-github-app-token#configure-git-cli-for-an-apps-bot-user
+            user_id=$(gh api "/users/${APP_SLUG}[bot]" --jq .id)
+            git config user.name "${APP_SLUG}[bot]"
+            git config user.email "${user_id}+${APP_SLUG}[bot]@users.noreply.github.com"
+            git add --update
+            git commit -m "Update Cask for version ${VERSION}"
+            git push
+          fi
