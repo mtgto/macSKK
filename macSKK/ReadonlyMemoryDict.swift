@@ -68,8 +68,14 @@ struct ReadonlyMemoryDict: SearchableDict, DictProtocol, Sendable {
                   saveToUserDict: saveToUserDict)
     }
 
+    /// JSON形式の辞書用。セクションどおりにテーブルへ格納する。
+    ///
+    /// JSON辞書ではセクションと読みの形 (`String.isOkuriAri`) が一致しないことがあるため、
+    /// ``words(of:)`` は主テーブルになければもう一方のテーブルも引く。
+    /// 両セクションに同じ読みがある場合は送りありセクションの変換候補を優先する。
+    /// その読みは補完候補にするため送りなしテーブルにも残し、変換候補は送りありセクションのものに揃える。
     nonisolated init(okuriAriEntries: [String: [Word]], okuriNashiEntries: [String: [Word]], saveToUserDict: Bool = true) {
-        self.init(okuriNashi: CompactTable(entries: okuriNashiEntries.map { (yomi: $0.key, words: $0.value) }),
+        self.init(okuriNashi: CompactTable(entries: okuriNashiEntries.map { (yomi: $0.key, words: okuriAriEntries[$0.key] ?? $0.value) }),
                   okuriAri: CompactTable(entries: okuriAriEntries.map { (yomi: $0.key, words: $0.value) }),
                   failedEntryCount: 0,
                   saveToUserDict: saveToUserDict)
@@ -112,9 +118,13 @@ struct ReadonlyMemoryDict: SearchableDict, DictProtocol, Sendable {
                            saveToUserDict: saveToUserDict)
     }
 
-    /// 読みに対応する変換候補を返す。読み込み時と同じ判定で送りなし・送りありのテーブルを選ぶ。
+    /// 読みに対応する変換候補を返す。
+    ///
+    /// 読み込み時と同じ判定で送りなし・送りありのテーブルを選び、見つからなければもう一方のテーブルも引く。
+    /// (JSON辞書ではセクションと読みの形が一致しないことがあるため)
     private nonisolated func words(of yomi: String) -> [Word]? {
-        (yomi.isOkuriAri ? okuriAri : okuriNashi).words(of: yomi)
+        let (primary, secondary) = yomi.isOkuriAri ? (okuriAri, okuriNashi) : (okuriNashi, okuriAri)
+        return primary.words(of: yomi) ?? secondary.words(of: yomi)
     }
 
     // MARK: DictProtocol

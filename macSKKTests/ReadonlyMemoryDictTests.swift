@@ -115,6 +115,26 @@ final class ReadonlyMemoryDictTests: XCTestCase {
         XCTAssertTrue(dict.saveToUserDict)
     }
 
+    func testInitWithOkuriAriNashiEntriesMismatchedSection() {
+        // JSON辞書ではセクションと読みの形 (isOkuriAri) が一致しないことがある
+        let dict = ReadonlyMemoryDict(okuriAriEntries: ["かな": [Word("仮名")]],
+                                      okuriNashiEntries: ["あb": [Word("A棟")]])
+        XCTAssertEqual(dict.refer("あb", option: nil), [Word("A棟")], "okuri_nasiセクションにある送りあり形の読みも引ける")
+        XCTAssertEqual(dict.refer("あb", option: .okuri("る")), [Word("A棟")])
+        XCTAssertEqual(dict.refer("かな", option: nil), [Word("仮名")], "okuri_ariセクションにある送りなし形の読みも引ける")
+        XCTAssertEqual(dict.findCompletions(prefix: "あ"), ["あb"], "okuri_nasiセクション全体が補完の対象")
+        XCTAssertEqual(dict.refer("なし", option: nil), [])
+        XCTAssertEqual(dict.refer("なしk", option: nil), [])
+    }
+
+    func testInitWithOkuriAriNashiEntriesDuplicatedKeyPrefersOkuriAri() {
+        // 両セクションに同じ読みがある場合は送りありセクションを優先する
+        let dict = ReadonlyMemoryDict(okuriAriEntries: ["あb": [Word("浴")], "かな": [Word("仮名")]],
+                                      okuriNashiEntries: ["あb": [Word("A棟")], "かな": [Word("カナ")]])
+        XCTAssertEqual(dict.refer("あb", option: nil), [Word("浴")])
+        XCTAssertEqual(dict.refer("かな", option: nil), [Word("仮名")])
+    }
+
     func testWithSaveToUserDict() {
         let dict = ReadonlyMemoryDict(entries: ["あ": [Word("亜")]])
         XCTAssertTrue(dict.saveToUserDict)
