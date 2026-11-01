@@ -888,7 +888,7 @@ final class StateMachineTests: XCTestCase {
 
     @MainActor func testHandleComposingNumber() {
         let entries = ["だい#": [Word("第#1"), Word("第#0"), Word("第#2"), Word("第#3")], "だい2": [Word("第2")]]
-        Global.dictionary.dicts.append(MemoryDict(entries: entries, readonly: true))
+        Global.dictionary.dicts.append(ReadonlyMemoryDict(entries: entries))
 
         let ctx = StateMachineTestContext()
         ctx.step(printableKeyEventAction(character: "d", withShift: true), [.composing("d")])
@@ -2165,7 +2165,7 @@ final class StateMachineTests: XCTestCase {
 
     @MainActor func testHandleSelectingBackspaceCancel() throws {
         Global.selectingBackspace = .cancel
-        let dict = MemoryDict(entries: ["あu": [Word("会"), Word("合")]], readonly: true)
+        let dict = ReadonlyMemoryDict(entries: ["あu": [Word("会"), Word("合")]])
         Global.dictionary = try UserDict(dicts: [dict],
                                          privateMode: CurrentValueSubject<Bool, Never>(false),
                                          ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
@@ -2181,7 +2181,7 @@ final class StateMachineTests: XCTestCase {
 
     @MainActor func testHandleSelectingBackspaceDropLastInlineOnly() throws {
         Global.selectingBackspace = .dropLastInlineOnly
-        let dict = MemoryDict(entries: ["あu": [Word("会"), Word("合")]], readonly: true)
+        let dict = ReadonlyMemoryDict(entries: ["あu": [Word("会"), Word("合")]])
         Global.dictionary = try UserDict(dicts: [dict],
                                          privateMode: CurrentValueSubject<Bool, Never>(false),
                                          ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
@@ -2200,7 +2200,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testHandleSelectingBackspaceDropLastAlways() throws {
         // この行以外 testHandleSelectingBackspaceDropLastInlineOnly と全く同じ
         Global.selectingBackspace = .dropLastAlways
-        let dict = MemoryDict(entries: ["あu": [Word("会"), Word("合")]], readonly: true)
+        let dict = ReadonlyMemoryDict(entries: ["あu": [Word("会"), Word("合")]])
         Global.dictionary = try UserDict(dicts: [dict],
                                          privateMode: CurrentValueSubject<Bool, Never>(false),
                                          ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
@@ -2218,7 +2218,7 @@ final class StateMachineTests: XCTestCase {
 
     @MainActor func testHandleSelectingBackspaceBackwardCandidate() throws {
         Global.selectingBackspace = .backwardCandidate
-        let dict = MemoryDict(entries: ["あu": [Word("会"), Word("合")]], readonly: true)
+        let dict = ReadonlyMemoryDict(entries: ["あu": [Word("会"), Word("合")]])
         Global.dictionary = try UserDict(dicts: [dict],
                                          privateMode: CurrentValueSubject<Bool, Never>(false),
                                          ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
@@ -2245,7 +2245,7 @@ final class StateMachineTests: XCTestCase {
     // 補完候補で変換結果を表示しているときのタブ操作。selectingBackspaceがcancelのとき。
     @MainActor func testHandleSelectingBackspaceCancelCompletion() throws {
         Global.selectingBackspace = .cancel
-        let dict = MemoryDict(entries: ["あいず": [Word("合図")], "あえん": [Word("亜鉛")]], readonly: true)
+        let dict = ReadonlyMemoryDict(entries: ["あいず": [Word("合図")], "あえん": [Word("亜鉛")]])
         Global.dictionary = try UserDict(dicts: [dict],
                                          privateMode: CurrentValueSubject<Bool, Never>(false),
                                          ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
@@ -2269,7 +2269,7 @@ final class StateMachineTests: XCTestCase {
     // 補完候補で変換結果を表示しているときのタブ操作。selectingBackspaceがdropLastInlineOnlyのとき。
     @MainActor func testHandleSelectingBackspaceDropLastInlineOnlyCompletion() throws {
         Global.selectingBackspace = .dropLastInlineOnly
-        let dict = MemoryDict(entries: ["あいず": [Word("合図")], "あえん": [Word("亜鉛")]], readonly: true)
+        let dict = ReadonlyMemoryDict(entries: ["あいず": [Word("合図")], "あえん": [Word("亜鉛")]])
         Global.dictionary = try UserDict(dicts: [dict],
                                          privateMode: CurrentValueSubject<Bool, Never>(false),
                                          ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
@@ -2764,9 +2764,9 @@ final class StateMachineTests: XCTestCase {
         let annotation1 = Annotation(dictId: "dict1", text: "dict1")
         let annotation2 = Annotation(dictId: "dict2", text: "dict2")
         let annotation3 = Annotation(dictId: "dict3", text: "dict2")
-        let dict1 = MemoryDict(entries: ["う": [Word("雨", annotation: annotation1)]], readonly: true)
-        let dict2 = MemoryDict(entries: ["う": [Word("雨", annotation: annotation2)]], readonly: true)
-        let dict3 = MemoryDict(entries: ["う": [Word("雨", annotation: annotation3)]], readonly: true)
+        let dict1 = ReadonlyMemoryDict(entries: ["う": [Word("雨", annotation: annotation1)]])
+        let dict2 = ReadonlyMemoryDict(entries: ["う": [Word("雨", annotation: annotation2)]])
+        let dict3 = ReadonlyMemoryDict(entries: ["う": [Word("雨", annotation: annotation3)]])
         Global.dictionary.dicts = [dict1, dict2, dict3]
 
         let ctx = StateMachineTestContext(verifying: [.inputMethod, .candidate])
@@ -2791,7 +2791,7 @@ final class StateMachineTests: XCTestCase {
     @MainActor func testPrivateMode() throws {
         let privateMode = CurrentValueSubject<Bool, Never>(false)
         // プライベートモードが有効ならユーザー辞書を参照はするが保存はしない
-        let dict = MemoryDict(entries: ["と": [Word("都")]], readonly: true)
+        let dict = ReadonlyMemoryDict(entries: ["と": [Word("都")]])
         Global.dictionary = try UserDict(dicts: [dict],
                                          userDictEntries: [:],
                                          privateMode: privateMode,

@@ -4,10 +4,10 @@ import Foundation
 
 extension UserDict {
     /// バックグラウンドスレッドからの辞書検索用スナップショット。
-    /// MemoryDictはstruct+SendableかつCOWのため、値コピーのコストはほぼゼロ。
+    /// MemoryDict・ReadonlyMemoryDictはstruct+SendableかつCOWのため、値コピーのコストはほぼゼロ。
     struct Snapshot: Sendable {
-        let userDict: MemoryDict?
-        let dicts: [MemoryDict]
+        let userDict: (any SearchableDict)?
+        let dicts: [any SearchableDict]
         let dateYomis: [DateConversion.Yomi]
         let dateConversions: [DateConversion]
         let privateMode: Bool

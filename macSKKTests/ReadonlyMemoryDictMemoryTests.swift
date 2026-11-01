@@ -47,15 +47,15 @@ class ReadonlyMemoryDictMemoryTests: XCTestCase {
         }()
         let before = heapInUse()
         let clock = ContinuousClock()
-        var dict: MemoryDict?
+        var dict: ReadonlyMemoryDict?
         let elapsed = clock.measure {
-            dict = MemoryDict(dictId: "SKK-JISYO.L", source: source, readonly: true)
+            dict = ReadonlyMemoryDict(dictId: "SKK-JISYO.L", source: source)
         }
         let dictHeap = heapInUse()
         withExtendedLifetime(source) {}
         try withExtendedLifetime(dict) {
             let loaded = try XCTUnwrap(dict)
-            let entryCount = loaded.entries.count
+            let entryCount = loaded.entryCount
             let yomisBefore = heapInUse()
             var copied = loaded.okuriNashiYomis
             // COWによる配列バッファの複製を強制する (Stringの実体は共有される)

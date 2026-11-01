@@ -6,12 +6,6 @@ import Foundation
 /// 実ファイルをもたないSKK辞書
 struct MemoryDict: SearchableDict, DictProtocol, Sendable {
     /**
-     * 読み込み専用で保存しないかどうか
-     *
-     * okuriNashiYomisを辞書順にソートしておくかの管理するのに使います。
-     */
-    private let readonly: Bool
-    /**
      * 辞書のエントリ一覧。キーは読み、値は変換候補 (優先度の高い順)
      */
     private(set) var entries: [String: [Word]]
@@ -20,29 +14,24 @@ struct MemoryDict: SearchableDict, DictProtocol, Sendable {
      */
     private(set) var failedEntryCount: Int
     /**
-     * 重複を含まない送りなしの読みの配列。
-     * 読み込み専用の場合は辞書順、そうでないときは最近変換したものが後に登場する。
+     * 重複を含まない送りなしの読みの配列。最近変換したものが後に登場する。
      *
-     * 読み込み専用でない場合、シリアライズするときはddskkに合わせて最近変換したものが前に登場するようにする。
+     * シリアライズするときはddskkに合わせて最近変換したものが前に登場するようにする。
      * ユーザー辞書だと更新されるのでNSOrderedSetにしたほうが先頭への追加が早いかも?
      */
     private(set) var okuriNashiYomis: [String] = []
-    /// 送りありの読みの配列。
-    /// ユーザー辞書の場合は最近変換したものが後に登場する。
+    /// 送りありの読みの配列。最近変換したものが後に登場する。
     private(set) var okuriAriYomis: [String] = []
     /// この辞書から返した変換候補をユーザー辞書に保存するかどうか
     let saveToUserDict: Bool
 
-    init(dictId: FileDict.ID, source: String, readonly: Bool, saveToUserDict: Bool = true) {
-        self.readonly = readonly
+    init(dictId: FileDict.ID, source: String, saveToUserDict: Bool = true) {
         self.saveToUserDict = saveToUserDict
         var dict: [String: [Word]] = [:]
         var okuriNashiYomis: [String] = []
         var okuriAriYomis: [String] = []
         var lineNumber = 0
         var failedEntryCount = 0
-        // readonlyのときはokuriAriYomisがソート済みかどうかを判定する
-        var okuriNashiSorted = readonly
 
         source.enumerateLines { line, stop in
             lineNumber += 1
@@ -60,9 +49,6 @@ struct MemoryDict: SearchableDict, DictProtocol, Sendable {
                     if entry.yomi.isOkuriAri {
                         okuriAriYomis.append(entry.yomi)
                     } else {
-                        if readonly && okuriNashiSorted && !okuriNashiYomis.isEmpty {
-                            okuriNashiSorted = okuriNashiYomis.last! < entry.yomi
-                        }
                         okuriNashiYomis.append(entry.yomi)
                     }
                 }
@@ -73,37 +59,28 @@ struct MemoryDict: SearchableDict, DictProtocol, Sendable {
         }
         entries = dict
         self.failedEntryCount = failedEntryCount
-        self.okuriNashiYomis = if readonly {
-            if okuriNashiSorted {
-                okuriNashiYomis
-            } else {
-                okuriNashiYomis.sorted()
-            }
-        } else {
-            okuriNashiYomis.reversed()
-        }
+        self.okuriNashiYomis = okuriNashiYomis.reversed()
         self.okuriAriYomis = okuriAriYomis.reversed()
     }
 
-    init(entries: [String: [Word]], readonly: Bool, saveToUserDict: Bool = true) {
-        self.readonly = readonly
+    init(entries: [String: [Word]], saveToUserDict: Bool = true) {
         self.entries = entries
         self.saveToUserDict = saveToUserDict
         failedEntryCount = 0
-        for yomi in entries.keys {
+        // ユニットテスト用に読みをソートしておく。
+        // 本来は空の辞書を作るときにしか使わず、読みの順序に意味はない。
+        // しかしDictionaryの順序は不定で補完の返却順がテストごとにぶれるため、
+        // 最近変換した順 (配列の末尾から) に辿ったときに辞書順になるよう辞書順の逆順に並べる。
+        for yomi in entries.keys.sorted(by: >) {
             if yomi.isOkuriAri {
                 okuriAriYomis.append(yomi)
             } else {
                 okuriNashiYomis.append(yomi)
             }
         }
-        if readonly {
-            okuriNashiYomis = okuriNashiYomis.sorted()
-        }
     }
 
-    init(okuriAriEntries: [String: [Word]], okuriNashiEntries: [String: [Word]], readonly: Bool, saveToUserDict: Bool = true) {
-        self.readonly = readonly
+    init(okuriAriEntries: [String: [Word]], okuriNashiEntries: [String: [Word]], saveToUserDict: Bool = true) {
         self.entries = okuriAriEntries.merging(okuriNashiEntries) { current, _  in current }
         failedEntryCount = 0
         okuriAriYomis = Array(okuriAriEntries.keys)
@@ -111,8 +88,7 @@ struct MemoryDict: SearchableDict, DictProtocol, Sendable {
         self.saveToUserDict = saveToUserDict
     }
 
-    init(readonly: Bool, entries: [String: [Word]], failedEntryCount: Int, okuriNashiYomis: [String], okuriAriYomis: [String], saveToUserDict: Bool) {
-        self.readonly = readonly
+    init(entries: [String: [Word]], failedEntryCount: Int, okuriNashiYomis: [String], okuriAriYomis: [String], saveToUserDict: Bool) {
         self.entries = entries
         self.failedEntryCount = failedEntryCount
         self.okuriNashiYomis = okuriNashiYomis
@@ -124,7 +100,6 @@ struct MemoryDict: SearchableDict, DictProtocol, Sendable {
 
     nonisolated func with(saveToUserDict: Bool) -> MemoryDict {
         MemoryDict(
-            readonly: readonly,
             entries: entries,
             failedEntryCount: failedEntryCount,
             okuriNashiYomis: okuriNashiYomis,
@@ -188,26 +163,22 @@ struct MemoryDict: SearchableDict, DictProtocol, Sendable {
                 removed = nil
             }
             entries[yomi] = [Word(word.word, okuri: word.okuri, annotation: word.annotation ?? removed?.annotation)] + words
-            if !readonly {
-                if yomi.isOkuriAri {
-                    if let index = okuriAriYomis.firstIndex(of: yomi) {
-                        okuriAriYomis.remove(at: index)
-                    }
-                } else {
-                    if let index = okuriNashiYomis.firstIndex(of: yomi) {
-                        okuriNashiYomis.remove(at: index)
-                    }
+            if yomi.isOkuriAri {
+                if let index = okuriAriYomis.firstIndex(of: yomi) {
+                    okuriAriYomis.remove(at: index)
+                }
+            } else {
+                if let index = okuriNashiYomis.firstIndex(of: yomi) {
+                    okuriNashiYomis.remove(at: index)
                 }
             }
         } else {
             entries[yomi] = [word]
         }
-        if !readonly {
-            if yomi.isOkuriAri {
-                okuriAriYomis.append(yomi)
-            } else {
-                okuriNashiYomis.append(yomi)
-            }
+        if yomi.isOkuriAri {
+            okuriAriYomis.append(yomi)
+        } else {
+            okuriNashiYomis.append(yomi)
         }
     }
 
@@ -261,36 +232,9 @@ struct MemoryDict: SearchableDict, DictProtocol, Sendable {
             return []
         }
         var results: [String] = []
-        if readonly {
-            // 二分探索で始点と終点を見つける
-            var low = 0
-            var high = okuriNashiYomis.count
-            while low < high {
-                let mid = low + (high - low) / 2
-                if okuriNashiYomis[mid] <= prefix {
-                    low = mid + 1
-                } else {
-                    high = mid
-                }
-            }
-
-            var upperBound = okuriNashiYomis.count
-            var lowerBound = low
-            while lowerBound < upperBound {
-                let mid = lowerBound + (upperBound - lowerBound) / 2
-                if okuriNashiYomis[mid].hasPrefix(prefix) {
-                    lowerBound = mid + 1
-                } else {
-                    upperBound = mid
-                }
-            }
-
-            results.append(contentsOf: okuriNashiYomis[low..<upperBound].filter({ !$0.contains("#") }))
-        } else {
-            for yomi in okuriNashiYomis.reversed() {
-                if yomi.count > prefix.count && yomi.hasPrefix(prefix) && !yomi.contains("#") {
-                    results.append(yomi)
-                }
+        for yomi in okuriNashiYomis.reversed() {
+            if yomi.count > prefix.count && yomi.hasPrefix(prefix) && !yomi.contains("#") {
+                results.append(yomi)
             }
         }
         return results

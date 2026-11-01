@@ -16,8 +16,8 @@ final class UserDictTests: XCTestCase {
     }
 
     @MainActor func testRefer() throws {
-        let dict1 = MemoryDict(entries: ["い": [Word("胃"), Word("伊"), Word("位")]], readonly: true, saveToUserDict: false)
-        let dict2 = MemoryDict(entries: ["い": [Word("胃"), Word("意")]], readonly: true, saveToUserDict: true)
+        let dict1 = ReadonlyMemoryDict(entries: ["い": [Word("胃"), Word("伊"), Word("位")]], saveToUserDict: false)
+        let dict2 = ReadonlyMemoryDict(entries: ["い": [Word("胃"), Word("意")]], saveToUserDict: true)
         let userDict = try UserDict(dicts: [dict1, dict2],
                                     userDictEntries: ["い": [Word("井"), Word("伊")]],
                                     privateMode: CurrentValueSubject<Bool, Never>(false),

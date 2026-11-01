@@ -12,7 +12,7 @@ import XCTest
         let fileURL = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "utf8-bom", withExtension: "txt"))
         let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: true, saveToUserDict: true)
         await dict.load()
-        XCTAssertEqual(dict.dict.entries, ["ゆにこーど": [Word("ユニコード")]])
+        XCTAssertEqual(dict.entries, ["ゆにこーど": [Word("ユニコード")]])
     }
 
     func testLoadJson() async throws {
@@ -34,8 +34,8 @@ import XCTest
             return true
         }
         await dict.load()
-        XCTAssertEqual(dict.dict.refer("い", option: nil).map({ $0.word }).sorted(), ["伊", "胃"])
-        XCTAssertEqual(dict.dict.refer("あr", option: nil).map({ $0.word }).sorted(), ["在;注釈として解釈されない", "有"])
+        XCTAssertEqual(dict.refer("い", option: nil).map({ $0.word }).sorted(), ["伊", "胃"])
+        XCTAssertEqual(dict.refer("あr", option: nil).map({ $0.word }).sorted(), ["在;注釈として解釈されない", "有"])
         await fulfillment(of: [loadingExpectation, loadedExpectation], timeout: 1.0, enforceOrder: true)
     }
 
@@ -78,7 +78,7 @@ import XCTest
             return true
         }
         await dict.load()
-        XCTAssertEqual(dict.dict.refer("じてん", option: nil).map({ $0.word }), ["辞典", "事典", "字典"])
+        XCTAssertEqual(dict.refer("じてん", option: nil).map({ $0.word }), ["辞典", "事典", "字典"])
         await fulfillment(of: [loadingExpectation, loadedExpectation], timeout: 1.0, enforceOrder: true)
     }
 
@@ -101,7 +101,7 @@ import XCTest
             return true
         }
         await dict.load()
-        XCTAssertEqual(dict.dict.refer("い", option: nil).map({ $0.word }).sorted(), ["伊", "胃"])
+        XCTAssertEqual(dict.refer("い", option: nil).map({ $0.word }).sorted(), ["伊", "胃"])
         await fulfillment(of: [loadingExpectation, loadedExpectation], timeout: 1.0, enforceOrder: true)
     }
 
@@ -110,7 +110,7 @@ import XCTest
         // saveToUserDict = false
         let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: true, saveToUserDict: false)
         XCTAssertFalse(dict.saveToUserDict)
-        XCTAssertFalse(dict.dict.saveToUserDict)
+        XCTAssertFalse(dict.saveToUserDict)
         let dictId = dict.id
         let loadingExpectation = expectation(forNotification: notificationNameDictLoad, object: nil) { notification in
             guard let loadEvent = notification.object as? DictLoadEvent, loadEvent.id == dictId,
@@ -129,11 +129,11 @@ import XCTest
         await dict.load()
         await fulfillment(of: [loadingExpectation, loadedExpectation], timeout: 1.0, enforceOrder: true)
         XCTAssertFalse(dict.saveToUserDict)
-        XCTAssertFalse(dict.dict.saveToUserDict)
+        XCTAssertFalse(dict.saveToUserDict)
     }
 
     func testAdd() throws {
-        let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: true, saveToUserDict: true)
+        let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: false, saveToUserDict: true)
         let dictId = dict.id
         let expectation = expectation(forNotification: notificationNameDictLoad, object: nil) { notification in
             guard let loadEvent = notification.object as? DictLoadEvent, loadEvent.id == dictId,
@@ -151,7 +151,7 @@ import XCTest
     }
 
     func testDelete() throws {
-        let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: true, saveToUserDict: true)
+        let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: false, saveToUserDict: true)
         let dictId = dict.id
         let expectation = expectation(forNotification: notificationNameDictLoad, object: nil) { notification in
             guard let loadEvent = notification.object as? DictLoadEvent, loadEvent.id == dictId,
@@ -159,7 +159,7 @@ import XCTest
             XCTAssertEqual(loadEvent.trigger, .edit, "deleteによる通知は .edit であるべき")
             return true
         }
-        dict.setEntries(["あr": [Word("有"), Word("在")]], readonly: true)
+        dict.setEntries(["あr": [Word("有"), Word("在")]], readonly: false)
         XCTAssertFalse(dict.delete(yomi: "あr", word: Word("或")))
         XCTAssertFalse(dict.hasUnsavedChanges)
         XCTAssertTrue(dict.delete(yomi: "あr", word: Word("在")))
