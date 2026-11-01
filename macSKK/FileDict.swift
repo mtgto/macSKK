@@ -303,16 +303,10 @@ enum FileDictType: Equatable {
         NSFileCoordinator.removeFilePresenter(self)
     }
 
-    /// ユーザー辞書をSKK辞書形式に変換する
+    /// ユーザー辞書をSKK辞書形式に変換する。読み込み専用の辞書はシリアライズできない。
     func serialize() -> String {
-        let dict: MemoryDict
-        switch content {
-        case .readonly(let readonlyDict):
-            return readonlyDict.entries.map { entry in
-                Entry(yomi: entry.key, candidates: entry.value).serialize()
-            }.joined(separator: "\n")
-        case .writable(let writableDict):
-            dict = writableDict
+        guard case .writable(let dict) = content else {
+            fatalError("読み込み専用の辞書 \(id) はシリアライズできません")
         }
         var result: [String] = Self.headers + [Self.okuriAriHeader]
         for yomi in dict.okuriAriYomis.reversed() {
@@ -361,12 +355,11 @@ enum FileDictType: Equatable {
     }
 
     @MainActor func add(yomi: String, word: Word) {
-        switch content {
-        case .writable:
-            modifyWritable { $0.add(yomi: yomi, word: word) }
-        case .readonly(var dict):
-            dict.add(yomi: yomi, word: word)
+        guard case .writable = content else {
+            assertionFailure("読み込み専用の辞書 \(id) にエントリを追加しようとしました")
+            return
         }
+        modifyWritable { $0.add(yomi: yomi, word: word) }
         NotificationCenter.default.post(name: notificationNameDictLoad,
                                         object: DictLoadEvent(id: self.id,
                                                               status: .loaded(success: entryCount, failure: failedEntryCount),
@@ -375,13 +368,11 @@ enum FileDictType: Equatable {
     }
 
     @MainActor func delete(yomi: String, word: Word) -> Bool {
-        let deleted: Bool
-        switch content {
-        case .writable:
-            deleted = modifyWritable { $0.delete(yomi: yomi, word: word) } ?? false
-        case .readonly(var dict):
-            deleted = dict.delete(yomi: yomi, word: word)
+        guard case .writable = content else {
+            assertionFailure("読み込み専用の辞書 \(id) からエントリを削除しようとしました")
+            return false
         }
+        let deleted = modifyWritable { $0.delete(yomi: yomi, word: word) } ?? false
         if deleted {
             hasUnsavedChanges = true
             NotificationCenter.default.post(name: notificationNameDictLoad,
