@@ -69,10 +69,8 @@
 		CE25D7DB307A95290080B25E /* MockTextInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE25D7DA307A95290080B25E /* MockTextInput.swift */; };
 		CE2F3B132C030C9A00CE342B /* KeyBindingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE2F3B122C030C9A00CE342B /* KeyBindingTests.swift */; };
 		CE313A1F2AF5213700A49142 /* Candidate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE313A1E2AF5213700A49142 /* Candidate.swift */; };
-		CE39264C3096EFF7005C00D5 /* CompactTableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE39264B3096EFF7005C00D5 /* CompactTableTests.swift */; };
 		CE39264E3096F022005C00D5 /* ReadonlyMemoryDictTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE39264D3096F022005C00D5 /* ReadonlyMemoryDictTests.swift */; };
 		CE3926503096F044005C00D5 /* SearchableDict.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE39264F3096F044005C00D5 /* SearchableDict.swift */; };
-		CE3926523096F044005C00D5 /* CompactTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE3926513096F044005C00D5 /* CompactTable.swift */; };
 		CE3926543096F05E005C00D5 /* ReadonlyMemoryDict.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE3926533096F05E005C00D5 /* ReadonlyMemoryDict.swift */; };
 		CE39DB212A8DFD8F00BC619F /* MarkedText.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE39DB202A8DFD8F00BC619F /* MarkedText.swift */; };
 		CE39FA952BEB942B00E293F0 /* Character+KeyCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE39FA942BEB942B00E293F0 /* Character+KeyCode.swift */; };
@@ -296,10 +294,8 @@
 		CE25D7DA307A95290080B25E /* MockTextInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockTextInput.swift; sourceTree = "<group>"; };
 		CE2F3B122C030C9A00CE342B /* KeyBindingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyBindingTests.swift; sourceTree = "<group>"; };
 		CE313A1E2AF5213700A49142 /* Candidate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Candidate.swift; sourceTree = "<group>"; };
-		CE39264B3096EFF7005C00D5 /* CompactTableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompactTableTests.swift; sourceTree = "<group>"; };
 		CE39264D3096F022005C00D5 /* ReadonlyMemoryDictTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadonlyMemoryDictTests.swift; sourceTree = "<group>"; };
 		CE39264F3096F044005C00D5 /* SearchableDict.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchableDict.swift; sourceTree = "<group>"; };
-		CE3926513096F044005C00D5 /* CompactTable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompactTable.swift; sourceTree = "<group>"; };
 		CE3926533096F05E005C00D5 /* ReadonlyMemoryDict.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadonlyMemoryDict.swift; sourceTree = "<group>"; };
 		CE39DB202A8DFD8F00BC619F /* MarkedText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkedText.swift; sourceTree = "<group>"; };
 		CE39FA942BEB942B00E293F0 /* Character+KeyCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Character+KeyCode.swift"; sourceTree = "<group>"; };
@@ -638,7 +634,6 @@
 				CE77E31C30012E8E0076EFE0 /* kana-rule-act.conf */,
 				CE0AC09000000000000A0901 /* kana-rule-act09.conf */,
 				CE5ECF3B2957034D00E7BE7D /* Preview Content */,
-				CE3926513096F044005C00D5 /* CompactTable.swift */,
 			);
 			path = macSKK;
 			sourceTree = "<group>";
@@ -693,7 +688,6 @@
 				CED7CA572A83BFE9004EF988 /* fixture */,
 				CE1E7BAA2E406B6700C2E410 /* URL+AdditionsTests.swift */,
 				CE25D7DA307A95290080B25E /* MockTextInput.swift */,
-				CE39264B3096EFF7005C00D5 /* CompactTableTests.swift */,
 			);
 			path = macSKKTests;
 			sourceTree = "<group>";
@@ -1133,7 +1127,6 @@
 				CEAC95572CF34E7700CD6D55 /* Punctuation.swift in Sources */,
 				CEA78FB02964209B00B67E25 /* UserDict.swift in Sources */,
 				CEF08257296D8CBD00646366 /* CandidatesPanel.swift in Sources */,
-				CE3926523096F044005C00D5 /* CompactTable.swift in Sources */,
 				CEADA44B2B025A0F0026E2BD /* Entry.swift in Sources */,
 				CE1B00552BA3DDEB00C830FD /* SKKServDict.swift in Sources */,
 				CE97887B2A9B93EB00F9B196 /* DirectModeView.swift in Sources */,
@@ -1195,7 +1188,6 @@
 				CEADA44D2B025A8A0026E2BD /* EntryTests.swift in Sources */,
 				CEA78FAA295EBCAC00B67E25 /* StateMachineTests.swift in Sources */,
 				CE496C952B440BBD001C623C /* Data+EucJis2004Tests.swift in Sources */,
-				CE39264C3096EFF7005C00D5 /* CompactTableTests.swift in Sources */,
 				CEE2D9792A99FEC700A4CD76 /* CandidateTest.swift in Sources */,
 				CE1E7BAB2E406B6700C2E410 /* URL+AdditionsTests.swift in Sources */,
 				CEF0823629685C0800646366 /* StateTests.swift in Sources */,

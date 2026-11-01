@@ -82,6 +82,32 @@ final class ReadonlyMemoryDictTests: XCTestCase {
         XCTAssertEqual(dict.entryCount, 2)
     }
 
+    func testParseDuplicatedYomiInSortedInput() {
+        let source = """
+            あ /亜/
+            あ /阿/
+            い /胃/
+
+            """
+        let dict = ReadonlyMemoryDict(dictId: "testDict", source: source)
+        XCTAssertEqual(dict.refer("あ", option: nil).map(\.word), ["亜", "阿"])
+        XCTAssertEqual(dict.okuriNashiYomis, ["あ", "い"])
+        XCTAssertEqual(dict.entryCount, 2)
+    }
+
+    func testParseUnsortedInputIsSorted() {
+        let yomis = ["う", "あr", "い", "あ", "Greek", "cyrillic", "おおk"]
+        let source = yomis.map { "\($0) /\($0)!/" }.joined(separator: "\n")
+        let dict = ReadonlyMemoryDict(dictId: "testDict", source: source)
+        XCTAssertEqual(dict.okuriNashiYomis, ["Greek", "cyrillic", "あ", "い", "う"])
+        XCTAssertEqual(dict.okuriAriYomis, ["あr", "おおk"])
+        for yomi in yomis {
+            XCTAssertEqual(dict.refer(yomi, option: nil).map(\.word), [yomi + "!"])
+        }
+        XCTAssertEqual(dict.entries, Dictionary(uniqueKeysWithValues: yomis.map { ($0, [Word($0 + "!")]) }))
+        XCTAssertEqual(dict.entryCount, yomis.count)
+    }
+
     func testEntries() {
         let source = """
             あb /浴/
@@ -122,7 +148,11 @@ final class ReadonlyMemoryDictTests: XCTestCase {
         XCTAssertEqual(dict.refer("あb", option: nil), [Word("A棟")], "okuri_nasiセクションにある送りあり形の読みも引ける")
         XCTAssertEqual(dict.refer("あb", option: .okuri("る")), [Word("A棟")])
         XCTAssertEqual(dict.refer("かな", option: nil), [Word("仮名")], "okuri_ariセクションにある送りなし形の読みも引ける")
-        XCTAssertEqual(dict.findCompletions(prefix: "あ"), ["あb"], "okuri_nasiセクション全体が補完の対象")
+        XCTAssertEqual(dict.findCompletions(prefix: "あ"), [], "送りあり形の読みはokuri_nasiセクションにあっても補完しない")
+        XCTAssertEqual(dict.findCompletions(prefix: "か"), ["かな"], "送りなし形の読みはokuri_ariセクションにあっても補完する")
+        XCTAssertEqual(dict.okuriNashiYomis, ["かな"], "セクションではなく読みの形で分ける")
+        XCTAssertEqual(dict.okuriAriYomis, ["あb"], "セクションではなく読みの形で分ける")
+        XCTAssertEqual(dict.entryCount, 2)
         XCTAssertEqual(dict.refer("なし", option: nil), [])
         XCTAssertEqual(dict.refer("なしk", option: nil), [])
     }
@@ -133,6 +163,57 @@ final class ReadonlyMemoryDictTests: XCTestCase {
                                       okuriNashiEntries: ["あb": [Word("A棟")], "かな": [Word("カナ")]])
         XCTAssertEqual(dict.refer("あb", option: nil), [Word("浴")])
         XCTAssertEqual(dict.refer("かな", option: nil), [Word("仮名")])
+        XCTAssertEqual(dict.entries, ["あb": [Word("浴")], "かな": [Word("仮名")]])
+        XCTAssertEqual(dict.entryCount, 2, "同じ読みを二重に数えない")
+        XCTAssertEqual(dict.okuriNashiYomis, ["かな"])
+        XCTAssertEqual(dict.okuriAriYomis, ["あb"])
+    }
+
+    func testCanonicallyEquivalentYomis() {
+        // "が" のNFC (U+304C) とNFD (U+304B U+3099) はStringとしては等しいので同じ読みとして扱う
+        let nfc = "\u{304C}"
+        let nfd = "\u{304B}\u{3099}"
+        let source = """
+            \(nfc) /蛾/
+            あ /亜/
+            \(nfd) /我/
+            \(nfd)k /書/
+
+            """
+        let dict = ReadonlyMemoryDict(dictId: "testDict", source: source)
+        XCTAssertEqual(dict.entryCount, 3)
+        XCTAssertEqual(dict.refer(nfc, option: nil).map(\.word), ["蛾", "我"])
+        XCTAssertEqual(dict.refer(nfd, option: nil).map(\.word), ["蛾", "我"])
+        XCTAssertEqual(dict.refer("\(nfc)k", option: nil).map(\.word), ["書"])
+    }
+
+    func testReferMissingYomi() {
+        let dict = ReadonlyMemoryDict(entries: ["あ": [Word("阿")], "い": [Word("胃")], "あr": [Word("有")]])
+        XCTAssertEqual(dict.refer("う", option: nil), [])
+        XCTAssertEqual(dict.refer("", option: nil), [])
+        XCTAssertEqual(dict.refer("あk", option: nil), [])
+        XCTAssertEqual(dict.refer("う", option: .okuri("る")), [])
+        XCTAssertEqual(ReadonlyMemoryDict(entries: [:]).refer("あ", option: nil), [])
+        XCTAssertEqual(ReadonlyMemoryDict(entries: [:]).entryCount, 0)
+    }
+
+    func testFindCompletionsExcludesOkuriAriYomis() {
+        let source = """
+            ;; okuri-ari entries.
+            あいうk /合/
+            あいb /浴/
+            ;; okuri-nasi entries.
+            あい /愛/
+            あいう /アイウ/
+            あいうえ /アイウエ/
+
+            """
+        let dict = ReadonlyMemoryDict(dictId: "testDict", source: source)
+        XCTAssertEqual(dict.findCompletions(prefix: "あい"), ["あいう", "あいうえ"], "SKK形式の送りありの読みは補完しない")
+        XCTAssertEqual(dict.findCompletions(prefix: "あいう"), ["あいうえ"])
+        let json = ReadonlyMemoryDict(okuriAriEntries: ["あいうk": [Word("合")], "あいb": [Word("浴")]],
+                                      okuriNashiEntries: ["あい": [Word("愛")], "あいう": [Word("アイウ")], "あいうえ": [Word("アイウエ")]])
+        XCTAssertEqual(json.findCompletions(prefix: "あい"), ["あいう", "あいうえ"], "JSON形式の送りありの読みは補完しない")
     }
 
     func testWithSaveToUserDict() {
