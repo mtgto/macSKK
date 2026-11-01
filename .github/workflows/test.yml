@@ -41,5 +41,5 @@ jobs:
     - uses: actions/checkout@v7.0.1
     - name: test
       run: |
-        xcodebuild -target macSKKTests -scheme macSKK DEVELOPMENT_TEAM= test | xcbeautify
-        xcodebuild -target SKKServClientTests -scheme SKKServClient DEVELOPMENT_TEAM= test | xcbeautify
+        xcodebuild -target macSKKTests -scheme macSKK DEVELOPMENT_TEAM= test | xcbeautify --renderer github-actions
+        xcodebuild -target SKKServClientTests -scheme SKKServClient DEVELOPMENT_TEAM= test | xcbeautify --renderer github-actions
