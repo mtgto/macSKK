@@ -5,10 +5,27 @@ import XCTest
 
 @testable import macSKK
 
-/// MemoryDictのメモリ使用量を計測するテスト。
-///
-/// `FileManager.default.temporaryDirectory/macSKKTests/SKK-JISYO.L` が無ければスキップする。
-/// peakResidentBytes (ru_maxrss) はプロセス内の累積最大値なので、このテスト単体で実行すること。
+// ReadonlyMemoryDict(読み込み専用辞書) のロード時のメモリ使用量を計測するテスト。
+//
+// 通常のテスト実行ではスキップされる。計測したいときだけ次のようにして実行すること。
+//
+// 実行方法:
+//   1. 環境変数 `MACSKK_MEMORY_TEST=1` を設定する。
+//      Xcodeなら Product > Scheme > Edit Scheme > Test > Arguments > Environment Variables に追加するか、
+//      xcodebuild なら `MACSKK_MEMORY_TEST=1 xcodebuild test -only-testing:macSKKTests/MemoryDictMemoryTests ...`
+//      (xcodebuild は `TEST_RUNNER_MACSKK_MEMORY_TEST=1` のように TEST_RUNNER_ プレフィックス付きで渡す)。
+//   2. 辞書ファイル SKK-JISYO.L (EUC-JIS-2004) を
+//      `FileManager.default.temporaryDirectory/macSKKTests/SKK-JISYO.L` に置く。
+//      サンドボックス下のテストでは通常
+//      `~/Library/Containers/net.mtgto.inputmethod.macSKK/Data/tmp/macSKKTests/SKK-JISYO.L`
+//   3. このテストクラスだけを単体で実行する。peakResidentBytes (ru_maxrss) はプロセス内の累積最大値なので、
+//      他のテストと一緒に走らせると正しい値にならない。
+//
+// 結果の読み方:
+//   - コンソールログの `MEMORY_METRIC key=value` 行
+//   - テスト結果に添付される JSON (memory-metrics.json, XCTAttachment .keepAlways)
+//   heapDeltaBytes のみ緩い上限をassertしており、他の指標は表示のみ。
+
 class ReadonlyMemoryDictMemoryTests: XCTestCase {
     /// 全mallocゾーンの使用中バイト数の合計
     private func heapInUse() -> Int {
@@ -35,40 +52,46 @@ class ReadonlyMemoryDictMemoryTests: XCTestCase {
         return usage.ru_maxrss
     }
 
+    /// heapDeltaBytes の上限(暫定値)。実測値を見て Task 4 で確定させる。
+    private static let heapDeltaBytesUpperBound = 60_000_000
+
     func testLoadSKKJisyoL() throws {
+        guard ProcessInfo.processInfo.environment["MACSKK_MEMORY_TEST"] == "1" else {
+            throw XCTSkip("環境変数 MACSKK_MEMORY_TEST=1 を指定したときだけ実行します。実行方法はこのファイルの冒頭コメントを参照")
+        }
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("macSKKTests/SKK-JISYO.L")
         guard FileManager.default.fileExists(atPath: url.path) else {
-            throw XCTSkip("\(url.path) がありません")
+            throw XCTSkip("\(url.path) に SKK-JISYO.L (EUC-JIS-2004) を置いてください")
         }
-        let source: String = {
-            // swift-format-ignore
-            let data = try! Data(contentsOf: url)
-            return try! data.eucJis2004String()
-        }()
+        let source = try Data(contentsOf: url).eucJis2004String()
         let before = heapInUse()
         let clock = ContinuousClock()
         var dict: ReadonlyMemoryDict?
         let elapsed = clock.measure {
             dict = ReadonlyMemoryDict(dictId: "SKK-JISYO.L", source: source)
         }
-        let dictHeap = heapInUse()
+        let heapDeltaBytes = heapInUse() - before
         withExtendedLifetime(source) {}
         try withExtendedLifetime(dict) {
             let loaded = try XCTUnwrap(dict)
             let entryCount = loaded.entryCount
-            let yomisBefore = heapInUse()
-            var copied = loaded.okuriNashiYomis
-            // COWによる配列バッファの複製を強制する (Stringの実体は共有される)
-            copied.withUnsafeMutableBufferPointer { _ in }
-            let yomisArrayBytes = heapInUse() - yomisBefore
-            withExtendedLifetime(copied) {}
-            let ms = elapsed.components.seconds * 1000 + elapsed.components.attoseconds / 1_000_000_000_000_000
-            print("MEMORY_METRIC heapDeltaBytes=\(dictHeap - before)")
-            print("MEMORY_METRIC entryCount=\(entryCount)")
-            print("MEMORY_METRIC loadMillis=\(ms)")
-            print("MEMORY_METRIC peakResidentBytes=\(peakResidentSize())")
-            print("MEMORY_METRIC yomisArrayBytes=\(yomisArrayBytes)")
+            let loadMillis = elapsed.components.seconds * 1000 + elapsed.components.attoseconds / 1_000_000_000_000_000
+            let metrics: [String: Int64] = [
+                "heapDeltaBytes": Int64(heapDeltaBytes),
+                "entryCount": Int64(entryCount),
+                "loadMillis": Int64(loadMillis),
+                "peakResidentBytes": Int64(peakResidentSize()),
+            ]
+            for key in metrics.keys.sorted() {
+                print("MEMORY_METRIC \(key)=\(metrics[key]!)")
+            }
+            let attachment = XCTAttachment(data: try JSONSerialization.data(withJSONObject: metrics, options: [.sortedKeys, .prettyPrinted]),
+                                           uniformTypeIdentifier: "public.json")
+            attachment.name = "memory-metrics.json"
+            attachment.lifetime = .keepAlways
+            add(attachment)
             XCTAssertGreaterThan(entryCount, 100_000)
+            XCTAssertLessThan(heapDeltaBytes, Self.heapDeltaBytesUpperBound)
         }
     }
 }
