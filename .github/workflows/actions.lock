@@ -11,6 +11,7 @@ workflows:
         - 'actions/upload-pages-artifact@v5.0.0'
     '.github/workflows/test.yml':
         - 'actions/checkout@v7.0.1'
+        - 'mtgto/xcresult-summary@v1.0.2'
     '.github/workflows/update.yml': []
     '.github/workflows/verify-lockfile.yml':
         - 'actions/checkout@v7.0.1'
@@ -47,3 +48,8 @@ dependencies:
         repo_id: 496012378
         uses:
             - 'actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f'
+    'mtgto/xcresult-summary@v1.0.2':
+        ref: 'v1.0.2'
+        commit: 'sha1-448d55a3c361439c9f8db94616350446c071e846'
+        owner_id: 1213991
+        repo_id: 1442500189

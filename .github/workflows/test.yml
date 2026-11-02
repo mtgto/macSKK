@@ -39,7 +39,18 @@ jobs:
     - name: Select Xcode version
       run: sudo xcode-select -s '/Applications/Xcode_27.1.app/Contents/Developer'
     - uses: actions/checkout@v7.0.1
+    # 結果は.xcresultに残し、xcresult-summaryで失敗理由をジョブのサマリーとアノテーションに出す。
+    # xcbeautifyだけでは並列テスト時に失敗の詳細(XCTAssertEqual failed: ...)が出ない。
     - name: test
       run: |
-        xcodebuild -target macSKKTests -scheme macSKK DEVELOPMENT_TEAM= test | xcbeautify
-        xcodebuild -target SKKServClientTests -scheme SKKServClient DEVELOPMENT_TEAM= test | xcbeautify
+        xcodebuild -target macSKKTests -scheme macSKK DEVELOPMENT_TEAM= -resultBundlePath macSKKTests.xcresult test | xcbeautify
+    - name: test SKKServClient
+      if: ${{ !cancelled() }}
+      run: |
+        xcodebuild -target SKKServClientTests -scheme SKKServClient DEVELOPMENT_TEAM= -resultBundlePath SKKServClientTests.xcresult test | xcbeautify
+    - uses: mtgto/xcresult-summary@v1.0.2
+      if: ${{ !cancelled() }}
+      with:
+        path: |
+          macSKKTests.xcresult
+          SKKServClientTests.xcresult
