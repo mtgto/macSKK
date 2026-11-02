@@ -51,6 +51,16 @@
                ReferencedContainer = "container:macSKK.xcodeproj">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "CE04E8893017BB3000310428"
+               BuildableName = "SKKServClientTests.xctest"
+               ReferencedContainer = "container:macSKK.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction
