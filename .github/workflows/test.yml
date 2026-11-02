@@ -48,7 +48,7 @@ jobs:
       if: ${{ !cancelled() }}
       run: |
         xcodebuild -target SKKServClientTests -scheme SKKServClient DEVELOPMENT_TEAM= -resultBundlePath SKKServClientTests.xcresult test | xcbeautify
-    - uses: mtgto/xcresult-summary@v1.0.0
+    - uses: mtgto/xcresult-summary@v1.0.1
       if: ${{ !cancelled() }}
       with:
         path: |
