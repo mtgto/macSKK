@@ -1,0 +1,12 @@
+version: 2
+updates:
+  # Dependabot also regenerates .github/workflows/actions.lock in the same PR
+  # https://docs.github.com/en/actions/how-tos/secure-your-work/lock-workflow-dependencies
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      github-actions:
+        patterns:
+          - "*"

@@ -190,19 +190,19 @@ struct KeyBindingInputsView: View {
                 Section("Modifier Flags (Required)") {
                     let modifierFlags = selectedInput?.keyWithModifierFlags?.modifierFlags ?? []
                     HStack {
-                        Toggle("Control", isOn: .constant(modifierFlags.contains(.control)))
-                        Toggle("Option", isOn: .constant(modifierFlags.contains(.option)))
-                        Toggle("Shift", isOn: .constant(modifierFlags.contains(.shift)))
-                        Toggle("Function", isOn: .constant(modifierFlags.contains(.function)))
+                        Toggle("Control (⌃)", isOn: .constant(modifierFlags.contains(.control)))
+                        Toggle("Option (⌥)", isOn: .constant(modifierFlags.contains(.option)))
+                        Toggle("Shift (⇧)", isOn: .constant(modifierFlags.contains(.shift)))
+                        Toggle("Function (🌐︎)", isOn: .constant(modifierFlags.contains(.function)))
                     }
                 }
                 .disabled(true)
                 Section("Modifier Flags (Optional)") {
                     HStack {
-                        Toggle("Control", isOn: optionalModifierFlag(.control))
-                        Toggle("Option", isOn: optionalModifierFlag(.option))
-                        Toggle("Shift", isOn: optionalModifierFlag(.shift))
-                        Toggle("Function", isOn: optionalModifierFlag(.function))
+                        Toggle("Control (⌃)", isOn: optionalModifierFlag(.control))
+                        Toggle("Option (⌥)", isOn: optionalModifierFlag(.option))
+                        Toggle("Shift (⇧)", isOn: optionalModifierFlag(.shift))
+                        Toggle("Function (🌐︎)", isOn: optionalModifierFlag(.function))
                     }
                 }
                 .disabled(selectedInput == nil)

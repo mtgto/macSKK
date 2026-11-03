@@ -54,6 +54,7 @@ export default defineConfig({
           { text: "入力メニュー", link: "/features/input-menu" },
           { text: "単語登録", link: "/features/word-registration" },
           { text: "数値変換", link: "/features/numeric" },
+          { text: "確定アンドゥと再変換", link: "/features/reconvert" },
           { text: "プライベートモード", link: "/features/private-mode" },
           { text: "バージョン自動チェック", link: "/features/version-check" },
         ],

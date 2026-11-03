@@ -248,6 +248,22 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
         return ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: "", cursor: cursor, prevMode: prevMode)
     }
 
+    func with(reconvertText: String?) -> Self {
+        return ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: romaji, cursor: cursor, prevMode: prevMode,
+                              reconvertText: reconvertText, fixedWorkaroundText: fixedWorkaroundText)
+    }
+
+    func with(prevMode: InputMode?) -> Self {
+        return ComposingState(isShift: isShift, text: text, okuri: okuri, romaji: romaji, cursor: cursor, prevMode: prevMode,
+                              reconvertText: reconvertText, fixedWorkaroundText: fixedWorkaroundText)
+    }
+
+    /// カーソルより右の部分を取り除く
+    func dropRemain() -> Self {
+        return ComposingState(isShift: isShift, text: subText(), okuri: okuri, romaji: romaji, cursor: nil, prevMode: prevMode,
+                              reconvertText: reconvertText, fixedWorkaroundText: fixedWorkaroundText)
+    }
+
     /**
      * カーソルより左のtext部分を返す。
      * ``trim(kanaRule:)`` と違い、未確定のローマ字部分の変換 ("n" を "ん" にするなど) は行わない。
@@ -301,7 +317,8 @@ struct ComposingState: Equatable, MarkedTextProtocol, CursorProtocol {
                                   okuri: nil,
                                   romaji: "",
                                   cursor: newCursor,
-                                  prevMode: newState.prevMode)
+                                  prevMode: newState.prevMode,
+                                  reconvertText: reconvertText)
         } else {
             return self
         }
@@ -410,13 +427,15 @@ struct SelectingState: Equatable, MarkedTextProtocol {
     let prev: PrevState
 
     /**
-     * 辞書登録する際の読み。ただし数値変換エントリの場合は例外あり。
+     * 辞書登録する際の読み。ただし数値変換エントリと補完候補の場合は例外あり。
      *
      * ひらがなのみ、もしくは `ひらがな + アルファベット` もしくは `":" + アルファベット` (abbrev) のパターンがある。
      * 数値変換の場合は辞書上は "だい#" のように数値が入る部分が "#" になっているが、
      * yomiの場合は "だい5" のように実際のユーザー入力で置換されたものになる。
      * 辞書に読み "だい#" と "だい5" がある場合、変換後にユーザー辞書に変換結果として保存するときは
      * 数値変換したら前者の読み、しなかった場合は後者の読みで登録される。
+     * 補完候補から選択した場合は "いろん" の補完候補を "い" まで入力して選択したときに "い" のように、
+     * 入力したところまでの読みになる。
      */
     let yomi: String
     /// 変換候補
@@ -434,6 +453,18 @@ struct SelectingState: Equatable, MarkedTextProtocol {
             candidates: candidates,
             candidateIndex: candidateIndex + diff,
             remain: remain,
+            completion: completion,
+        )
+    }
+
+    /// カーソルより右の読みを取り除く
+    func dropRemain() -> Self {
+        return SelectingState(
+            prev: PrevState(mode: prev.mode, composing: prev.composing.dropRemain()),
+            yomi: yomi,
+            candidates: candidates,
+            candidateIndex: candidateIndex,
+            remain: nil,
             completion: completion,
         )
     }

@@ -75,6 +75,11 @@ struct KeyBinding: Identifiable, Hashable {
         case registerPaste
         /// 選択した文字列を辞書から逆引きして再変換をする。デフォルトはCtrl-/キー
         case reconvert
+        /// 直前の確定を取り消して変換候補選択に戻る (確定アンドゥ)。デフォルトはCtrl-Shift-rキー
+        ///
+        /// 確定した文字列がクライアントに残っているときのみ有効。
+        /// 確定済み文字列を未確定文字列で置き換えられないクライアントではなにもしない。
+        case kakuteiUndo
         /// 接頭辞・接尾辞の入力。デフォルトは ">" (Shift-.キー)
         case affix
         /// 英数キー
@@ -128,6 +133,17 @@ struct KeyBinding: Identifiable, Hashable {
                     return false
                 } else {
                     return true
+                }
+            // 確定アンドゥはnormalかつ日本語入力モードのときのみ受理
+            case .kakuteiUndo:
+                guard case .normal = inputMethod else {
+                    return false
+                }
+                switch inputMode {
+                case .hiragana, .katakana, .hankaku:
+                    return true
+                case .direct, .eisu:
+                    return false
                 }
             // directAbbrevはinputModeがdirectのときのみ受理
             case .directAbbrev:
@@ -185,6 +201,11 @@ struct KeyBinding: Identifiable, Hashable {
 
         var localized: String {
             var result: [String] = []
+            // 矢印キーなどはfnを押さなくてもmacOSが自動でfunctionを付与するので表示しない
+            if modifierFlags.contains(.function) && !key.isFunctionImplied {
+                // システム設定に合わせて地球儀 (U+1F310) をテキスト表示 (U+FE0E) にして単色で表示する
+                result.append("🌐︎")
+            }
             if modifierFlags.contains(.control) {
                 result.append("⌃")
             }
@@ -301,35 +322,35 @@ struct KeyBinding: Identifiable, Hashable {
             case .stickyShift:
                 return KeyBinding(action, [Input(key: .character(";"), modifierFlags: [])])
             case .enter:
-                return KeyBinding(action, [Input(key: .code(0x24), modifierFlags: [], optionalModifierFlags: [.shift, .option])])
+                return KeyBinding(action, [Input(key: .code(KeyCode.return), modifierFlags: [], optionalModifierFlags: [.shift, .option])])
             case .space:
-                return KeyBinding(action, [Input(key: .code(0x31), modifierFlags: [])])
+                return KeyBinding(action, [Input(key: .code(KeyCode.space), modifierFlags: [])])
             case .shiftSpace:
-                return KeyBinding(action, [Input(key: .code(0x31), modifierFlags: [.shift])])
+                return KeyBinding(action, [Input(key: .code(KeyCode.space), modifierFlags: [.shift])])
             case .backwardCandidate:
                 return KeyBinding(action, [Input(key: .character("x"), modifierFlags: [])])
             case .tab:
-                return KeyBinding(action, [Input(key: .code(0x30), modifierFlags: [], optionalModifierFlags: .shift)])
+                return KeyBinding(action, [Input(key: .code(KeyCode.tab), modifierFlags: [], optionalModifierFlags: .shift)])
             case .backspace:
-                return KeyBinding(action, [Input(key: .code(0x33), modifierFlags: [], optionalModifierFlags: [.shift, .option]),
+                return KeyBinding(action, [Input(key: .code(KeyCode.delete), modifierFlags: [], optionalModifierFlags: [.shift, .option]),
                                            Input(key: .character("h"), modifierFlags: .control)])
             case .delete:
-                return KeyBinding(action, [Input(key: .code(0x75), modifierFlags: .function),
+                return KeyBinding(action, [Input(key: .code(KeyCode.forwardDelete), modifierFlags: .function),
                                            Input(key: .character("d"), modifierFlags: .control)])
             case .cancel:
-                return KeyBinding(action, [Input(key: .code(0x35), modifierFlags: []),
+                return KeyBinding(action, [Input(key: .code(KeyCode.escape), modifierFlags: []),
                                            Input(key: .character("g"), modifierFlags: .control)])
             case .left:
-                return KeyBinding(action, [Input(key: .code(0x7b), modifierFlags: .function, optionalModifierFlags: [.shift, .option]),
+                return KeyBinding(action, [Input(key: .code(KeyCode.leftArrow), modifierFlags: .function, optionalModifierFlags: [.shift, .option]),
                                            Input(key: .character("b"), modifierFlags: .control)])
             case .right:
-                return KeyBinding(action, [Input(key: .code(0x7c), modifierFlags: .function, optionalModifierFlags: [.shift, .option]),
+                return KeyBinding(action, [Input(key: .code(KeyCode.rightArrow), modifierFlags: .function, optionalModifierFlags: [.shift, .option]),
                                            Input(key: .character("f"), modifierFlags: .control)])
             case .down:
-                return KeyBinding(action, [Input(key: .code(0x7d), modifierFlags: .function, optionalModifierFlags: [.shift]),
+                return KeyBinding(action, [Input(key: .code(KeyCode.downArrow), modifierFlags: .function, optionalModifierFlags: [.shift]),
                                            Input(key: .character("n"), modifierFlags: .control)])
             case .up:
-                return KeyBinding(action, [Input(key: .code(0x7e), modifierFlags: .function, optionalModifierFlags: [.shift]),
+                return KeyBinding(action, [Input(key: .code(KeyCode.upArrow), modifierFlags: .function, optionalModifierFlags: [.shift]),
                                            Input(key: .character("p"), modifierFlags: .control)])
             case .startOfLine:
                 return KeyBinding(action, [Input(key: .character("a"), modifierFlags: .control)])
@@ -341,12 +362,20 @@ struct KeyBinding: Identifiable, Hashable {
                 return KeyBinding(action, [Input(key: .character("y"), modifierFlags: .control)])
             case .reconvert:
                 return KeyBinding(action, [Input(key: .character("/"), modifierFlags: [.control])])
+            case .kakuteiUndo:
+                // macOS標準の日本語入力の再変換 (変換済みのテキストの候補を表示する) と同じCtrl-Shift-r。
+                // Ctrl-zはターミナルでジョブの一時停止に使われるため採用しない。
+                // mozc (Google日本語入力) の確定取り消しと同じCtrl-Backspaceも考えられるが、
+                // 取り消せないときにターミナルで単語や一文字が削除されてしまうため採用しない。
+                // Terminal.appとWezTermはCtrl-BackspaceをIMEに渡さず、
+                // KittyとGhosttyはIMEが処理してもターミナル側でも処理するため、macSKKからは防げない
+                return KeyBinding(action, [Input(key: .character("r"), modifierFlags: [.control, .shift])])
             case .affix:
                 return KeyBinding(action, [Input(key: .character("."), modifierFlags: .shift)])
             case .eisu:
-                return KeyBinding(action, [Input(key: .code(0x66), modifierFlags: [])])
+                return KeyBinding(action, [Input(key: .code(KeyCode.jisEisu), modifierFlags: [])])
             case .kana:
-                return KeyBinding(action, [Input(key: .code(0x68), modifierFlags: [])])
+                return KeyBinding(action, [Input(key: .code(KeyCode.jisKana), modifierFlags: [])])
             }
         }
     }

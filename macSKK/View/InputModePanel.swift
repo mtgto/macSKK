@@ -9,6 +9,8 @@ import SwiftUI
 class InputModePanel: NSPanel {
     private let viewModel: InputModeViewModel
     private let viewSize: CGSize
+    /// フェードアウト中に再表示されたとき、古いフェードアウトの完了で新しい表示を消さないための世代
+    private var showGeneration: UInt = 0
 
     init() {
         viewSize = CGSize(width: 33, height: 24)
@@ -37,15 +39,28 @@ class InputModePanel: NSPanel {
         viewModel.privateMode = privateMode
 
         alphaValue = 1.0
+        // フェードアウト中に別の操作スペースへ切り替えると、パネルは前の操作スペースに残っている。
+        // そのまま前面に出しても前の操作スペースに表示されるので、いったんorderOutして今の操作スペースに出し直す
+        if isVisible && !isOnActiveSpace {
+            orderOut(nil)
+        }
         // Note: orderFront(nil) だと "Warning: Window NSWindow 0x13b72dbe0 ordered front from a non-active application
         // and may order beneath the active application's windows." のようなエラーがConsole.appに出力される
         // orderFrontRegardlessだとそのようなログが出ない
         orderFrontRegardless()
-        // フェードアウト
+        // フェードアウトしたらorderOutする。
+        // 残しておくと最初に表示した操作スペースに居続け、別の操作スペースで前面に出しても表示されない
+        showGeneration &+= 1
+        let generation = showGeneration
         NSAnimationContext.runAnimationGroup { context in
             context.duration = 2.0
             context.timingFunction = CAMediaTimingFunction(name: .easeIn)
             self.animator().alphaValue = 0.0
+        } completionHandler: { [weak self] in
+            MainActor.assumeIsolated {
+                guard let self, self.showGeneration == generation else { return }
+                self.orderOut(nil)
+            }
         }
     }
 }

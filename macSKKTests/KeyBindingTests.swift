@@ -36,6 +36,14 @@ final class KeyBindingTests: XCTestCase {
         XCTAssertEqual(input4?.optionalModifierFlags.rawValue, 0)
     }
 
+    func testInputLocalized() {
+        XCTAssertEqual(KeyBinding.Input(key: .character("j"), modifierFlags: .control).localized, "⌃J")
+        XCTAssertEqual(KeyBinding.Input(key: .character("q"), modifierFlags: .function).localized, "🌐︎Q")
+        XCTAssertEqual(KeyBinding.Input(key: .character("q"), modifierFlags: [.function, .control, .option, .shift]).localized, "🌐︎⌃⌥⇧Q")
+        XCTAssertEqual(KeyBinding.Input(key: .code(0x7b), modifierFlags: .function).localized, "←", "矢印キーはfunctionを表示しない")
+        XCTAssertEqual(KeyBinding.Input(key: .code(0x7b), modifierFlags: [.function, .shift]).localized, "⇧←")
+    }
+
     func testEncodeAndDecode() {
         let binding1 = KeyBinding(.abbrev, [KeyBinding.Input(key: .character("/"), modifierFlags: [])])
         let binding2 = KeyBinding(dict: binding1.encode())
@@ -78,6 +86,11 @@ final class KeyBindingTests: XCTestCase {
         XCTAssertTrue(inputEnter.accepts(currentInput: currentInputEnter))
         XCTAssertTrue(inputEnter.accepts(currentInput: currentInputOptionEnter))
         XCTAssertFalse(inputEnter.accepts(currentInput: currentInputLeft))
+        // 修飾キーを2つ要求する場合は、片方だけでは受け付けない
+        let inputControlShiftR = KeyBinding.Input(key: .character("r"), modifierFlags: [.control, .shift])
+        XCTAssertTrue(inputControlShiftR.accepts(currentInput: CurrentInput(key: .character("r"), modifierFlags: [.control, .shift])))
+        XCTAssertFalse(inputControlShiftR.accepts(currentInput: CurrentInput(key: .character("r"), modifierFlags: .control)))
+        XCTAssertFalse(inputControlShiftR.accepts(currentInput: CurrentInput(key: .character("r"), modifierFlags: .shift)))
     }
 
     func testActionAccepts() {
@@ -100,6 +113,13 @@ final class KeyBindingTests: XCTestCase {
                                        remain: [],
                                        completion: false)
         XCTAssertTrue(KeyBinding.Action.abbrev.accepts(inputMode: .direct, inputMethod: .selecting(selecting)))
+        XCTAssertTrue(KeyBinding.Action.kakuteiUndo.accepts(inputMode: .hiragana, inputMethod: .normal))
+        XCTAssertTrue(KeyBinding.Action.kakuteiUndo.accepts(inputMode: .katakana, inputMethod: .normal))
+        XCTAssertTrue(KeyBinding.Action.kakuteiUndo.accepts(inputMode: .hankaku, inputMethod: .normal))
+        XCTAssertFalse(KeyBinding.Action.kakuteiUndo.accepts(inputMode: .direct, inputMethod: .normal))
+        XCTAssertFalse(KeyBinding.Action.kakuteiUndo.accepts(inputMode: .eisu, inputMethod: .normal))
+        XCTAssertFalse(KeyBinding.Action.kakuteiUndo.accepts(inputMode: .hiragana, inputMethod: .composing(composing)))
+        XCTAssertFalse(KeyBinding.Action.kakuteiUndo.accepts(inputMode: .hiragana, inputMethod: .selecting(selecting)))
     }
 
     func testIsDefault() {

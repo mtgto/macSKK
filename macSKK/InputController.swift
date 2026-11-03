@@ -116,6 +116,15 @@ class InputController: IMKInputController {
                                                 replacementRange: Self.notFoundRange)
                     }
                     textInput.setMarkedText(NSAttributedString(attributedText), selectionRange: cursorRange, replacementRange: Self.notFoundRange)
+                case .undoFixedText(let markedText, let replacementRange):
+                    // 確定アンドゥ。すでにクライアントに送った確定文字列を未確定文字列で置き換える。
+                    // 範囲を指定するのは最初の一回だけでよく、以降はその範囲が未確定文字列として扱われる。
+                    // ChromiumのWebコンテンツはキー処理中に受けたsetMarkedTextのうち最後の1回しか反映しないので、
+                    // 同じキー処理の中で範囲を指定しないsetMarkedTextを続けて呼んではいけない
+                    let showMarker = Global.showMarkedTextMarker
+                    textInput.setMarkedText(NSAttributedString(markedText.attributedString(showMarker)),
+                                            selectionRange: markedText.cursorRange(showMarker) ?? Self.notFoundRange,
+                                            replacementRange: replacementRange)
                 case .modeChanged(let inputMode):
                     // KittyやAlacrittyなど、q/lによるモード切り替えでq/lが入力されたり、C-jで改行が入力されるのを回避するワークアラウンド
                     // AquaSKKの空文字列挿入を参考にしています。
@@ -172,7 +181,7 @@ class InputController: IMKInputController {
             self?.selectedWord.send(selected.word)
         }.store(in: &cancellables)
         Global.candidatesPanel.viewModel.$doubleSelected.compactMap { $0 }.sink { [weak self] doubleSelected in
-            self?.stateMachine.didDoubleSelectCandidate(doubleSelected)
+            self?.stateMachine.didDoubleSelectCandidate(doubleSelected, textInput: textInput)
         }.store(in: &cancellables)
         selectedWord.removeDuplicates().compactMap({ $0 }).sink { [weak self] word in
             if UserDefaults.app.bool(forKey: UserDefaultsKeys.showAnnotation) {

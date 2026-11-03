@@ -53,14 +53,27 @@ final class MockSKKServDict: SKKServDictProtocol {
 extension UserDict {
     func setEntries(_ entries: [String: [Word]]) {
         if let dict = userDict as? FileDict {
-            dict.setEntries(entries, readonly: true)
+            dict.setEntries(entries, readonly: false)
         }
     }
 
     func entries() -> [String: [Word]]? {
         if let dict = userDict as? FileDict {
-            return dict.dict.entries
+            return dict.entries
         }
         return nil
+    }
+}
+
+// MARK: - FileDict
+extension FileDict {
+    /// 辞書のエントリ一覧 (テスト用)
+    var entries: [String: [Word]] {
+        switch content {
+        case .writable(let dict):
+            return dict.entries
+        case .readonly(let dict):
+            return dict.entries
+        }
     }
 }

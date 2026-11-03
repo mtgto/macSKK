@@ -23,7 +23,7 @@ class MemoryDictTests: XCTestCase {
             けい /京;10^16/
 
             """
-        let dict = MemoryDict(dictId: "testDict", source: source, readonly: false)
+        let dict = MemoryDict(dictId: "testDict", source: source)
         XCTAssertEqual(dict.entries["あg"]?.map { $0.word }, ["挙", "揚", "上"])
         XCTAssertEqual(dict.entries["あb"]?.map { $0.word }, ["浴"])
         XCTAssertEqual(dict.entries["あ"]?.map { $0.word }, ["阿", "唖", "亜", "娃"])
@@ -41,7 +41,7 @@ class MemoryDictTests: XCTestCase {
             しゅたいんずげーと /(concat "Steins\\073Gate")/
 
             """
-        let dict = MemoryDict(dictId: "testDict", source: source, readonly: false)
+        let dict = MemoryDict(dictId: "testDict", source: source)
         XCTAssertEqual(dict.entries["わi"]?.map { $0.word }, ["湧", "沸", "涌"])
         XCTAssertEqual(dict.entries["ao"]?.map { $0.word }, ["and/or"])
         XCTAssertEqual(dict.entries["GPL"]?.map { $0.annotation?.text }, ["http://www.gnu.org/licenses/gpl.ja.html"])
@@ -54,7 +54,7 @@ class MemoryDictTests: XCTestCase {
             あれきさんどろす /[Alexandros]/
 
             """
-        let dict = MemoryDict(dictId: "testDict", source: source, readonly: false)
+        let dict = MemoryDict(dictId: "testDict", source: source)
         XCTAssertEqual(dict.entries["あれきさんどろす"]?.map { $0.word }, ["[Alexandros]"])
     }
 
@@ -65,7 +65,7 @@ class MemoryDictTests: XCTestCase {
             あお /碧/
 
             """
-        let dict = MemoryDict(dictId: "testDict", source: source, readonly: false)
+        let dict = MemoryDict(dictId: "testDict", source: source)
         XCTAssertEqual(dict.entries["あお"]?.map { $0.word }, ["青", "蒼", "碧"])
     }
 
@@ -75,7 +75,7 @@ class MemoryDictTests: XCTestCase {
             いぬ /犬;*かわいい/
 
             """
-        let dict = MemoryDict(dictId: "testDict", source: source, readonly: false)
+        let dict = MemoryDict(dictId: "testDict", source: source)
         XCTAssertEqual(dict.entries["いぬ"]?.first?.annotation, Annotation(dictId: "testDict", text: "かわいい"))
     }
 
@@ -89,7 +89,7 @@ class MemoryDictTests: XCTestCase {
             い い /行/
             い /胃
             """
-        let dict = MemoryDict(dictId: "testDict", source: source, readonly: false)
+        let dict = MemoryDict(dictId: "testDict", source: source)
         XCTAssertEqual(dict.entries["あ"]?.map { $0.word }, ["亜"])
         XCTAssertNil(dict.entries["から"])
         XCTAssertEqual(dict.failedEntryCount, 3)
@@ -103,7 +103,7 @@ class MemoryDictTests: XCTestCase {
     }
 
     func testEntriesHaveNoReadFailures() {
-        let dict = MemoryDict(entries: ["あ": [Word("亜")]], readonly: true)
+        let dict = MemoryDict(entries: ["あ": [Word("亜")]])
         XCTAssertEqual(dict.readFailures, [])
         XCTAssertEqual(dict.failedEntryCount, 0)
     }
@@ -114,50 +114,12 @@ class MemoryDictTests: XCTestCase {
             から //
 
             """
-        let dict = MemoryDict(dictId: "testDict", source: source, readonly: false)
+        let dict = MemoryDict(dictId: "testDict", source: source)
         XCTAssertNil(dict.entries["から"])
     }
 
-    func testParseReadonly() {
-        // SKK-JISYOは送りありエントリは辞書の逆順、送りなしエントリは辞書順に並ぶ
-        var source = """
-            ;; okuri-ari entries.
-            おおk /大/多/[く/多/]/[き/大/]/
-            いt /[った/行/言/]/
-            あg /挙/揚/上/
-            あb /浴/
-            ;; okuri-nasi entries.
-            Cyrillic /А/Б/В/Г/Д/Е/Ё/Ж/З/И/Й/К/Л/М/Н/О/П/Р/С/Т/У/Ф/Х/Ц/Ч/Ш/Щ/Ъ/Ы/Ь/Э/Ю/Я/
-            Greek /Α/Β/Γ/Δ/Ε/Ζ/Η/Θ/Ι/Κ/Λ/Μ/Ν/Ξ/Ο/Π/Ρ/Σ/Τ/Υ/Φ/Χ/Ψ/Ω/
-            cyrillic /а/б/в/г/д/е/ё/ж/з/и/й/к/л/м/н/о/п/р/с/т/у/ф/х/ц/ч/ш/щ/ъ/ы/ь/э/ю/я/
-            greek /α/β/γ/δ/ε/ζ/η/θ/ι/κ/λ/μ/ν/ξ/ο/π/ρ/σ/τ/υ/φ/χ/ψ/ω/
-            あ /阿/唖/亜/娃/
-            けい /京;10^16/
-
-            """
-        var dict = MemoryDict(dictId: "testDict", source: source, readonly: true)
-        XCTAssertEqual(dict.okuriNashiYomis, ["Cyrillic", "Greek", "cyrillic", "greek", "あ", "けい"])
-        XCTAssertEqual(dict.okuriAriYomis, ["あb", "あg", "いt", "おおk"])
-        // okuri-nashi entriesが辞書順になってなければソートされる
-        source = """
-            Greek /Α/Β/Γ/Δ/Ε/Ζ/Η/Θ/Ι/Κ/Λ/Μ/Ν/Ξ/Ο/Π/Ρ/Σ/Τ/Υ/Φ/Χ/Ψ/Ω/
-            おおk /大/多/[く/多/]/[き/大/]/
-            greek /α/β/γ/δ/ε/ζ/η/θ/ι/κ/λ/μ/ν/ξ/ο/π/ρ/σ/τ/υ/φ/χ/ψ/ω/
-            いt /[った/行/言/]/
-            けい /京;10^16/
-            あg /挙/揚/上/
-            あ /阿/唖/亜/娃/
-            あb /浴/
-            cyrillic /а/б/в/г/д/е/ё/ж/з/и/й/к/л/м/н/о/п/р/с/т/у/ф/х/ц/ч/ш/щ/ъ/ы/ь/э/ю/я/
-            Cyrillic /А/Б/В/Г/Д/Е/Ё/Ж/З/И/Й/К/Л/М/Н/О/П/Р/С/Т/У/Ф/Х/Ц/Ч/Ш/Щ/Ъ/Ы/Ь/Э/Ю/Я/
-            """
-        dict = MemoryDict(dictId: "testDict", source: source, readonly: true)
-        XCTAssertEqual(dict.okuriNashiYomis, ["Cyrillic", "Greek", "cyrillic", "greek", "あ", "けい"])
-        // okuriAriYomisはソートしてない。そのうちするかも
-    }
-
     @MainActor func testAdd() throws {
-        var dict = MemoryDict(entries: [:], readonly: false)
+        var dict = MemoryDict(entries: [:])
         XCTAssertEqual(dict.entryCount, 0)
         let word1 = Word("井")
         let word2 = Word("伊")
@@ -190,7 +152,7 @@ class MemoryDictTests: XCTestCase {
     @MainActor func testAddEmptyYomiIsIgnored() throws {
         // 空の見出しはSKK辞書エントリとして不正なので登録しない (シリアライズすると
         // " /候補/" のような壊れた行になり次回読み込みで失敗するため)
-        var dict = MemoryDict(entries: [:], readonly: false)
+        var dict = MemoryDict(entries: [:])
         dict.add(yomi: "", word: Word("＞"))
         XCTAssertEqual(dict.entryCount, 0)
         XCTAssertEqual(dict.refer("", option: nil), [])
@@ -198,7 +160,7 @@ class MemoryDictTests: XCTestCase {
     }
 
     @MainActor func testDelete() throws {
-        var dict = MemoryDict(entries: ["あr": [Word("有"), Word("在")], "え": [Word("絵"), Word("柄")]], readonly: false)
+        var dict = MemoryDict(entries: ["あr": [Word("有"), Word("在")], "え": [Word("絵"), Word("柄")]])
         XCTAssertFalse(dict.entries.isEmpty)
         XCTAssertEqual(dict.okuriAriYomis, ["あr"])
         XCTAssertEqual(dict.okuriNashiYomis, ["え"])
@@ -223,13 +185,13 @@ class MemoryDictTests: XCTestCase {
     }
 
     @MainActor func testDeleteOkuriBlock() throws {
-        var dict = MemoryDict(entries: ["あr": [Word("有", okuri: "る"), Word("有", okuri: "り"), Word("有")]], readonly: false)
+        var dict = MemoryDict(entries: ["あr": [Word("有", okuri: "る"), Word("有", okuri: "り"), Word("有")]])
         XCTAssertTrue(dict.delete(yomi: "あr", word: Word("有")))
         XCTAssertEqual(dict.refer("あr", option: nil), [Word("有", okuri: "る"), Word("有", okuri: "り")], "送り仮名なしの「有」だけ削除され、送り仮名ありのエントリは残る")
     }
 
     @MainActor func testDeleteExactCandidate() throws {
-        var dict = MemoryDict(entries: ["あr": [Word("有", okuri: "る"), Word("有", okuri: "り"), Word("有")]], readonly: false)
+        var dict = MemoryDict(entries: ["あr": [Word("有", okuri: "る"), Word("有", okuri: "り"), Word("有")]])
         XCTAssertTrue(dict.delete(yomi: "あr", word: Word("有", okuri: "る")))
         XCTAssertEqual(dict.refer("あr", option: nil), [Word("有", okuri: "り"), Word("有")])
         XCTAssertEqual(dict.okuriAriYomis, ["あr"])
@@ -245,7 +207,7 @@ class MemoryDictTests: XCTestCase {
     }
 
     @MainActor func testFindCompletions() {
-        var dict = MemoryDict(entries: [:], readonly: false)
+        var dict = MemoryDict(entries: [:])
         XCTAssertEqual(dict.findCompletions(prefix: ""), [], "辞書が空だと空")
         dict.add(yomi: "あいうえおか", word: Word("アイウエオカ"))
         XCTAssertEqual(dict.findCompletions(prefix: ""), [], "prefixが空だと空")
@@ -257,54 +219,58 @@ class MemoryDictTests: XCTestCase {
         XCTAssertEqual(dict.findCompletions(prefix: "だい"), [], "数値変換の読みは補完候補とはしない")
     }
 
-    @MainActor func testFindCompletionsBinarySearch() {
-        let source = """
-            ;; okuri-ari entries.
-            ;; okuri-nasi entries.
-            あ /亜/
-            いか /以下/
-            いかめし /イカめし/
-            いかめら /胃カメラ/
-            いがい /以外/
-            いきおい /勢い/
-            いきなり /行き成り/
-            いきば /行き場/
-            いく /育/
-            いこい /憩い/
-            うえ /上/
-
-            """
-        let dict = MemoryDict(dictId: "testDict", source: source, readonly: true)
-        XCTAssertEqual(dict.findCompletions(prefix: "い"), ["いか", "いかめし", "いかめら", "いがい", "いきおい", "いきなり", "いきば", "いく", "いこい"])
-        XCTAssertEqual(dict.findCompletions(prefix: "いか"), ["いかめし", "いかめら"])
-        XCTAssertEqual(dict.findCompletions(prefix: "いき"), ["いきおい", "いきなり", "いきば"])
-        XCTAssertEqual(dict.findCompletions(prefix: "う"), ["うえ"])
-        XCTAssertEqual(dict.findCompletions(prefix: "あ"), [])
-        XCTAssertEqual(dict.findCompletions(prefix: "え"), [])
-    }
-
-    @MainActor func testReferWithOption() {
-        let dict = MemoryDict(entries: ["あき>": [Word("空き")],
-                                        "あき": [Word("秋")],
-                                        ">し": [Word("氏")],
-                                        "し": [Word("詩")],
-                                        "いt": [Word("言"), Word("行", okuri: "った")]],
-                              readonly: true)
-        XCTAssertEqual(dict.refer("あき", option: nil), [Word("秋")])
-        XCTAssertEqual(dict.refer("あき", option: .prefix), [Word("空き")])
-        XCTAssertEqual(dict.refer("あき", option: .suffix), [])
-        XCTAssertEqual(dict.refer("し", option: nil), [Word("詩")])
-        XCTAssertEqual(dict.refer("し", option: .suffix), [Word("氏")])
-        XCTAssertEqual(dict.refer("し", option: .prefix), [])
-        XCTAssertEqual(dict.refer("いt", option: nil), [Word("言"), Word("行", okuri: "った")])
-        XCTAssertEqual(dict.refer("いt", option: .okuri("った")), [Word("行", okuri: "った"), Word("言")])
-    }
-
     @MainActor func testReverseRefer() {
-        let dict = MemoryDict(entries: ["あr": [Word("有"), Word("在")], "え": [Word("絵"), Word("柄")]], readonly: false)
+        let dict = MemoryDict(entries: ["あr": [Word("有"), Word("在")], "え": [Word("絵"), Word("柄")]])
         XCTAssertEqual(dict.reverseRefer("絵"), "え")
         XCTAssertEqual(dict.reverseRefer("柄"), "え")
         XCTAssertNil(dict.reverseRefer("江"))
         XCTAssertEqual(dict.reverseRefer("有"), "あr")
+    }
+
+    @MainActor func testSerialize() throws {
+        var dict = MemoryDict(entries: [:])
+        XCTAssertEqual(dict.serialize(),
+                       [FileDict.headers[0], FileDict.okuriAriHeader, FileDict.okuriNashiHeader, ""].joined(separator: "\n"))
+        dict.add(yomi: "あ", word: Word("亜", annotation: Annotation(dictId: "testDict", text: "亜の注釈")))
+        dict.add(yomi: "あ", word: Word("阿", annotation: Annotation(dictId: "testDict", text: "阿の注釈")))
+        dict.add(yomi: "あr", word: Word("有", annotation: Annotation(dictId: "testDict", text: "有の注釈")))
+        dict.add(yomi: "あr", word: Word("在", annotation: Annotation(dictId: "testDict", text: "在の注釈")))
+        var expected = [
+            FileDict.headers[0],
+            FileDict.okuriAriHeader,
+            "あr /在;在の注釈/有;有の注釈/",
+            FileDict.okuriNashiHeader,
+            "あ /阿;阿の注釈/亜;亜の注釈/",
+            "",
+        ].joined(separator: "\n")
+        XCTAssertEqual(dict.serialize(), expected)
+        // 追加したエントリはシリアライズ時は先頭に付く
+        dict.add(yomi: "い", word: Word("伊"))
+        dict.add(yomi: "いr", word: Word("射"))
+        expected = [
+            FileDict.headers[0],
+            FileDict.okuriAriHeader,
+            "いr /射/",
+            "あr /在;在の注釈/有;有の注釈/",
+            FileDict.okuriNashiHeader,
+            "い /伊/",
+            "あ /阿;阿の注釈/亜;亜の注釈/",
+            "",
+        ].joined(separator: "\n")
+        XCTAssertEqual(dict.serialize(), expected)
+        // 追加更新した場合は順序を変更する。削除更新した場合は順序を変更しない
+        XCTAssertTrue(dict.delete(yomi: "あ", word: Word("亜")))
+        dict.add(yomi: "あr", word: Word("或"))
+        expected = [
+            FileDict.headers[0],
+            FileDict.okuriAriHeader,
+            "あr /或/在;在の注釈/有;有の注釈/",
+            "いr /射/",
+            FileDict.okuriNashiHeader,
+            "い /伊/",
+            "あ /阿;阿の注釈/",
+            "",
+        ].joined(separator: "\n")
+        XCTAssertEqual(dict.serialize(), expected)
     }
 }

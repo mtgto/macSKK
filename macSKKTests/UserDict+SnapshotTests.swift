@@ -11,11 +11,11 @@ final class UserDictSnapshotTests: XCTestCase {
         let ignoreUserDictInPrivateMode = CurrentValueSubject<Bool, Never>(false)
         let annotation1 = Annotation(dictId: UserDict.userDictFilename, text: "日本の注釈")
         let annotation2 = Annotation(dictId: "dict2", text: "日本語の注釈")
-        let dict1 = MemoryDict(entries: ["にほん": [Word("日本")], "にほ": [Word("2歩")]], readonly: false)
+        let dict1 = MemoryDict(entries: ["にほん": [Word("日本")], "にほ": [Word("2歩")]])
         let dict2 = MemoryDict(entries: [
             "にほん": [Word("二本")],
             "にほんご": [Word("日本語", annotation: annotation2)],
-            "に": [Word("似")]], readonly: false)
+            "に": [Word("似")]])
         let userDict = try UserDict(
             dicts: [dict1, dict2],
             userDictEntries: ["にふ": [Word("二歩")],
@@ -53,7 +53,7 @@ final class UserDictSnapshotTests: XCTestCase {
         let entries = Dictionary(uniqueKeysWithValues: (1...50).map { i in
             (String(format: "あい%02d", i), [Word("候補A\(i)"), Word("候補B\(i)"), Word("候補C\(i)")])
         })
-        let dict = MemoryDict(entries: entries, readonly: false)
+        let dict = MemoryDict(entries: entries)
         let userDict = try UserDict(
             dicts: [dict],
             userDictEntries: [:],
@@ -69,8 +69,8 @@ final class UserDictSnapshotTests: XCTestCase {
     @MainActor func testSnapshotFindCompletionsDictsPrivateMode() throws {
         let privateMode = CurrentValueSubject<Bool, Never>(true)
         let ignoreUserDictInPrivateMode = CurrentValueSubject<Bool, Never>(false)
-        let dict1 = MemoryDict(entries: ["にほん": [Word("日本")], "にほ": [Word("2歩")]], readonly: false)
-        let dict2 = MemoryDict(entries: ["にほんご": [Word("日本語")]], readonly: false)
+        let dict1 = MemoryDict(entries: ["にほん": [Word("日本")], "にほ": [Word("2歩")]])
+        let dict2 = MemoryDict(entries: ["にほんご": [Word("日本語")]])
         let userDict = try UserDict(dicts: [dict1, dict2],
                                     userDictEntries: ["にふ": [Word("二歩")]],
                                     privateMode: privateMode,
@@ -108,8 +108,8 @@ final class UserDictSnapshotTests: XCTestCase {
     }
 
     @MainActor func testSnapshotReferDicts() throws {
-        let dict1 = MemoryDict(entries: ["い": [Word("胃"), Word("伊"), Word("位")]], readonly: true, saveToUserDict: false)
-        let dict2 = MemoryDict(entries: ["い": [Word("胃"), Word("意")]], readonly: true, saveToUserDict: true)
+        let dict1 = ReadonlyMemoryDict(entries: ["い": [Word("胃"), Word("伊"), Word("位")]], saveToUserDict: false)
+        let dict2 = ReadonlyMemoryDict(entries: ["い": [Word("胃"), Word("意")]], saveToUserDict: true)
         let userDict = try UserDict(dicts: [dict1, dict2],
                                     userDictEntries: ["い": [Word("井"), Word("伊")]],
                                     privateMode: CurrentValueSubject<Bool, Never>(false),
@@ -126,7 +126,7 @@ final class UserDictSnapshotTests: XCTestCase {
     }
 
     @MainActor func testSnapshotReferDictsNumberYomi() throws {
-        let dict = MemoryDict(entries: ["だい#かい": [Word("第#0回")]], readonly: true)
+        let dict = ReadonlyMemoryDict(entries: ["だい#かい": [Word("第#0回")]])
         let userDict = try UserDict(dicts: [dict],
                                     userDictEntries: ["だい#かい": [Word("代#0回")]],
                                     privateMode: CurrentValueSubject<Bool, Never>(false),
@@ -144,7 +144,7 @@ final class UserDictSnapshotTests: XCTestCase {
 
     @MainActor func testSnapshotReferDictsNumberYomiWithOption() throws {
         // 数値変換のフォールバックでも接頭辞・接尾辞の指定は通常の検索と同じように扱う
-        let dict = MemoryDict(entries: ["だい#>": [Word("第#0")], "だい#": [Word("台#0")]], readonly: true)
+        let dict = ReadonlyMemoryDict(entries: ["だい#>": [Word("第#0")], "だい#": [Word("台#0")]])
         let userDict = try UserDict(dicts: [dict],
                                     userDictEntries: ["だい#>": [Word("代#0")]],
                                     privateMode: CurrentValueSubject<Bool, Never>(false),
@@ -159,7 +159,7 @@ final class UserDictSnapshotTests: XCTestCase {
     }
 
     @MainActor func testSnapshotReferDictsSKKServ() throws {
-        let dict = MemoryDict(entries: ["い": [Word("胃")]], readonly: true)
+        let dict = ReadonlyMemoryDict(entries: ["い": [Word("胃")]])
         let mock = MockSKKServDict(wordsPerYomi: ["い": [Word("意")]])
         let userDict = try UserDict(dicts: [dict],
                                     userDictEntries: ["い": [Word("井")]],
@@ -228,8 +228,8 @@ final class UserDictSnapshotTests: XCTestCase {
     }
 
     @MainActor func testSnapshotReferDictsMergeAnnotation() throws {
-        let dict1 = MemoryDict(entries: ["い": [Word("胃", annotation: Annotation(dictId: "dict1", text: "d1ann")), Word("伊")]], readonly: true, saveToUserDict: true)
-        let dict2 = MemoryDict(entries: ["い": [Word("胃", annotation: Annotation(dictId: "dict2", text: "d2ann")), Word("意")]], readonly: true)
+        let dict1 = ReadonlyMemoryDict(entries: ["い": [Word("胃", annotation: Annotation(dictId: "dict1", text: "d1ann")), Word("伊")]], saveToUserDict: true)
+        let dict2 = ReadonlyMemoryDict(entries: ["い": [Word("胃", annotation: Annotation(dictId: "dict2", text: "d2ann")), Word("意")]])
         let userDict = try UserDict(dicts: [dict1, dict2],
                                     userDictEntries: [:],
                                     privateMode: CurrentValueSubject<Bool, Never>(false),
@@ -243,11 +243,10 @@ final class UserDictSnapshotTests: XCTestCase {
     }
 
     @MainActor func testSnapshotReferDictsWithOption() throws {
-        let dict = MemoryDict(entries: ["あき>": [Word("空き")],
-                                        "あき": [Word("秋")],
-                                        ">し": [Word("氏")],
-                                        "し": [Word("詩")]],
-                              readonly: true)
+        let dict = ReadonlyMemoryDict(entries: ["あき>": [Word("空き")],
+                                                "あき": [Word("秋")],
+                                                ">し": [Word("氏")],
+                                                "し": [Word("詩")]])
         let userDict = try UserDict(dicts: [dict],
                                     userDictEntries: ["あき>": [Word("飽き")],
                                                       "あき": [Word("安芸")],
@@ -307,7 +306,7 @@ final class UserDictSnapshotTests: XCTestCase {
     }
 
     @MainActor func testSnapshotSkkservCandidatesForCompletion() throws {
-        let dict = MemoryDict(entries: ["にほん": [Word("日本")], "にほんご": [Word("日本語")]], readonly: false)
+        let dict = MemoryDict(entries: ["にほん": [Word("日本")], "にほんご": [Word("日本語")]])
         let mock = MockSKKServDict(wordsPerYomi: ["にほん": [Word("二本")]])
         let userDict = try UserDict(
             dicts: [dict],
@@ -332,7 +331,7 @@ final class UserDictSnapshotTests: XCTestCase {
     }
 
     @MainActor func testSnapshotSkkservCandidatesForCompletionFindsMidashisFromSkkserv() throws {
-        let dict = MemoryDict(entries: ["にほん": [Word("日本")]], readonly: false)
+        let dict = MemoryDict(entries: ["にほん": [Word("日本")]])
         // "にほんご" はローカル辞書にはなくskkservにだけある見出し
         let mock = MockSKKServDict(wordsPerYomi: ["にほんご": [Word("日本語")]])
         let userDict = try UserDict(
