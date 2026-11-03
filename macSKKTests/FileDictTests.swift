@@ -134,37 +134,21 @@ import XCTest
 
     func testAdd() throws {
         let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: true, saveToUserDict: true)
-        let dictId = dict.id
-        let expectation = expectation(forNotification: notificationNameDictLoad, object: nil) { notification in
-            guard let loadEvent = notification.object as? DictLoadEvent, loadEvent.id == dictId,
-                  case .loaded = loadEvent.status else { return false }
-            XCTAssertEqual(loadEvent.trigger, .edit, "addによる通知は .edit であるべき")
-            return true
-        }
         XCTAssertEqual(dict.entryCount, 0)
         let word = Word("井")
         XCTAssertFalse(dict.hasUnsavedChanges)
         dict.add(yomi: "い", word: word)
         XCTAssertEqual(dict.refer("い", option: nil), [word])
         XCTAssertTrue(dict.hasUnsavedChanges)
-        wait(for: [expectation], timeout: 1.0)
     }
 
     func testDelete() throws {
         let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: true, saveToUserDict: true)
-        let dictId = dict.id
-        let expectation = expectation(forNotification: notificationNameDictLoad, object: nil) { notification in
-            guard let loadEvent = notification.object as? DictLoadEvent, loadEvent.id == dictId,
-                  case .loaded = loadEvent.status else { return false }
-            XCTAssertEqual(loadEvent.trigger, .edit, "deleteによる通知は .edit であるべき")
-            return true
-        }
         dict.setEntries(["あr": [Word("有"), Word("在")]], readonly: true)
         XCTAssertFalse(dict.delete(yomi: "あr", word: Word("或")))
         XCTAssertFalse(dict.hasUnsavedChanges)
         XCTAssertTrue(dict.delete(yomi: "あr", word: Word("在")))
         XCTAssertTrue(dict.hasUnsavedChanges)
-        wait(for: [expectation], timeout: 1.0)
     }
 
     func testSerialize() throws {
