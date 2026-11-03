@@ -51,21 +51,11 @@ struct ReadonlyMemoryDict: SearchableDict, DictProtocol, Sendable {
                 logger.warning("辞書 \(dictId, privacy: .public) の読み込みで \(lineNumber)行目を正常に読み込めなかったためこの行をスキップします")
             }
         }
-        let table = Self.makeTable(entries: entries)
-        self.init(keys: table.keys,
-                  starts: table.starts,
-                  words: table.words,
-                  failedEntryCount: failedEntryCount,
-                  saveToUserDict: saveToUserDict)
+        self.init(table: Self.makeTable(entries: entries), failedEntryCount: failedEntryCount, saveToUserDict: saveToUserDict)
     }
 
     init(entries: [String: [Word]], saveToUserDict: Bool = true) {
-        let table = Self.makeTable(entries: entries.map { (yomi: $0.key, words: $0.value) })
-        self.init(keys: table.keys,
-                  starts: table.starts,
-                  words: table.words,
-                  failedEntryCount: 0,
-                  saveToUserDict: saveToUserDict)
+        self.init(table: Self.makeTable(entries: entries.map { (yomi: $0.key, words: $0.value) }), failedEntryCount: 0, saveToUserDict: saveToUserDict)
     }
 
     /// JSON形式の辞書用。
@@ -76,18 +66,16 @@ struct ReadonlyMemoryDict: SearchableDict, DictProtocol, Sendable {
     init(okuriAriEntries: [String: [Word]], okuriNashiEntries: [String: [Word]], saveToUserDict: Bool = true) {
         let entries = okuriAriEntries.map { (yomi: $0.key, words: $0.value) }
             + okuriNashiEntries.filter { okuriAriEntries[$0.key] == nil }.map { (yomi: $0.key, words: $0.value) }
-        let table = Self.makeTable(entries: entries)
-        self.init(keys: table.keys,
-                  starts: table.starts,
-                  words: table.words,
-                  failedEntryCount: 0,
-                  saveToUserDict: saveToUserDict)
+        self.init(table: Self.makeTable(entries: entries), failedEntryCount: 0, saveToUserDict: saveToUserDict)
     }
 
-    private init(keys: [String], starts: [UInt32], words: [Word], failedEntryCount: Int, saveToUserDict: Bool) {
-        self.keys = keys
-        self.starts = starts
-        self.words = words
+    /// ``keys``, ``starts``, ``words`` の組。
+    private typealias Table = (keys: [String], starts: [UInt32], words: [Word])
+
+    private init(table: Table, failedEntryCount: Int, saveToUserDict: Bool) {
+        self.keys = table.keys
+        self.starts = table.starts
+        self.words = table.words
         self.failedEntryCount = failedEntryCount
         self.saveToUserDict = saveToUserDict
     }
@@ -95,7 +83,7 @@ struct ReadonlyMemoryDict: SearchableDict, DictProtocol, Sendable {
     /// 登場順のエントリからテーブルを組み立てる。
     ///
     /// 読みでソートし (ソート済みならそのまま)、同じ読みが複数あれば候補を登場順に連結する。
-    private static func makeTable(entries: [(yomi: String, words: [Word])]) -> (keys: [String], starts: [UInt32], words: [Word]) {
+    private static func makeTable(entries: [(yomi: String, words: [Word])]) -> Table {
         var isSorted = true
         for i in entries.indices.dropFirst() where entries[i].yomi < entries[i - 1].yomi {
             isSorted = false
@@ -130,9 +118,7 @@ struct ReadonlyMemoryDict: SearchableDict, DictProtocol, Sendable {
     nonisolated var entryCount: Int { keys.count }
 
     nonisolated func with(saveToUserDict: Bool) -> ReadonlyMemoryDict {
-        ReadonlyMemoryDict(keys: keys,
-                           starts: starts,
-                           words: words,
+        ReadonlyMemoryDict(table: (keys: keys, starts: starts, words: words),
                            failedEntryCount: failedEntryCount,
                            saveToUserDict: saveToUserDict)
     }
