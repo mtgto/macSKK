@@ -1,4 +1,15 @@
 # CHANGELOG
+## v2.22.2 (2026-11-07)
+
+- GitHub Workflowで使っているアクションをロックファイルで管理 (#537)
+- Bump actions/setup-node from 6.5.0 to 7.1.0 in the github-actions group (#538)
+- CIのテスト結果をxcresult-summaryでジョブのサマリーに出す (#542)
+- macSKKスキームにSKKServClientTestsを追加し、CIのxcodebuildを1回にまとめる (#543)
+- 読み込み専用辞書のメモリ上のデータを単一配列にしてメモリ使用量を減らす (#540)
+- homebrew-macSKKの更新をGitHub Appのトークンで直接commit & pushする形に変える (#539)
+- ファイル辞書のメモリリークを修正 (#544)
+- accommodatePresentedSubitemDeletionが呼ばれない件のコメントを確かめた挙動に合わせて書き直す (#545)
+
 ## v2.22.1 (2026-10-25)
 
 - Shiftを押しながらの入力を変換候補の選択に使わないようにする (#534) by @delphinus
