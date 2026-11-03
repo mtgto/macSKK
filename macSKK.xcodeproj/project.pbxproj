@@ -11,6 +11,7 @@
 		4B8E87D62CE05D0C004E7461 /* Key.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B8E87D52CE05D0A004E7461 /* Key.swift */; };
 		4B8E87D82CE068A0004E7461 /* CurrentInputTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B8E87D72CE0689D004E7461 /* CurrentInputTests.swift */; };
 		5ED234BA230E39DFF095D272 /* DateConversionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F65BF39CED3AABCF59AA6C58 /* DateConversionTests.swift */; };
+		7A1B2C3D4E5F60718293A001 /* ReadonlyMemoryDictMemoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A1B2C3D4E5F60718293A002 /* ReadonlyMemoryDictMemoryTests.swift */; };
 		94DB63242D329CBF005250B8 /* HorizontalCandidatesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DB63222D329CBF005250B8 /* HorizontalCandidatesView.swift */; };
 		94DB63252D329CBF005250B8 /* VerticalCandidatesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DB63232D329CBF005250B8 /* VerticalCandidatesView.swift */; };
 		B3C350D6E32E35775AE1FF56 /* DateConversionYomiTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 073E79CEC2123C051D8BB83B /* DateConversionYomiTests.swift */; };
@@ -68,6 +69,10 @@
 		CE25D7DB307A95290080B25E /* MockTextInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE25D7DA307A95290080B25E /* MockTextInput.swift */; };
 		CE2F3B132C030C9A00CE342B /* KeyBindingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE2F3B122C030C9A00CE342B /* KeyBindingTests.swift */; };
 		CE313A1F2AF5213700A49142 /* Candidate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE313A1E2AF5213700A49142 /* Candidate.swift */; };
+		CE39264E3096F022005C00D5 /* ReadonlyMemoryDictTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE39264D3096F022005C00D5 /* ReadonlyMemoryDictTests.swift */; };
+		CE3926503096F044005C00D5 /* SearchableDict.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE39264F3096F044005C00D5 /* SearchableDict.swift */; };
+		CE3926543096F05E005C00D5 /* ReadonlyMemoryDict.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE3926533096F05E005C00D5 /* ReadonlyMemoryDict.swift */; };
+		CE39265A309793BF005C00D5 /* SearchableDictTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE392659309793BF005C00D5 /* SearchableDictTests.swift */; };
 		CE39DB212A8DFD8F00BC619F /* MarkedText.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE39DB202A8DFD8F00BC619F /* MarkedText.swift */; };
 		CE39FA952BEB942B00E293F0 /* Character+KeyCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE39FA942BEB942B00E293F0 /* Character+KeyCode.swift */; };
 		CE39FA972BF0813E00E293F0 /* KeyBindingSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE39FA962BF0813E00E293F0 /* KeyBindingSet.swift */; };
@@ -244,6 +249,7 @@
 		4B8E87D32CE05C3F004E7461 /* CurrentInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentInput.swift; sourceTree = "<group>"; };
 		4B8E87D52CE05D0A004E7461 /* Key.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Key.swift; sourceTree = "<group>"; };
 		4B8E87D72CE0689D004E7461 /* CurrentInputTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentInputTests.swift; sourceTree = "<group>"; };
+		7A1B2C3D4E5F60718293A002 /* ReadonlyMemoryDictMemoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadonlyMemoryDictMemoryTests.swift; sourceTree = "<group>"; };
 		94DB63222D329CBF005250B8 /* HorizontalCandidatesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HorizontalCandidatesView.swift; sourceTree = "<group>"; };
 		94DB63232D329CBF005250B8 /* VerticalCandidatesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerticalCandidatesView.swift; sourceTree = "<group>"; };
 		CE00C0DE0000000000000002 /* CompletionPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletionPresenter.swift; sourceTree = "<group>"; };
@@ -289,6 +295,10 @@
 		CE25D7DA307A95290080B25E /* MockTextInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockTextInput.swift; sourceTree = "<group>"; };
 		CE2F3B122C030C9A00CE342B /* KeyBindingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyBindingTests.swift; sourceTree = "<group>"; };
 		CE313A1E2AF5213700A49142 /* Candidate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Candidate.swift; sourceTree = "<group>"; };
+		CE39264D3096F022005C00D5 /* ReadonlyMemoryDictTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadonlyMemoryDictTests.swift; sourceTree = "<group>"; };
+		CE39264F3096F044005C00D5 /* SearchableDict.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchableDict.swift; sourceTree = "<group>"; };
+		CE3926533096F05E005C00D5 /* ReadonlyMemoryDict.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadonlyMemoryDict.swift; sourceTree = "<group>"; };
+		CE392659309793BF005C00D5 /* SearchableDictTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchableDictTests.swift; sourceTree = "<group>"; };
 		CE39DB202A8DFD8F00BC619F /* MarkedText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkedText.swift; sourceTree = "<group>"; };
 		CE39FA942BEB942B00E293F0 /* Character+KeyCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Character+KeyCode.swift"; sourceTree = "<group>"; };
 		CE39FA962BF0813E00E293F0 /* KeyBindingSet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyBindingSet.swift; sourceTree = "<group>"; };
@@ -567,8 +577,10 @@
 				CE313A1E2AF5213700A49142 /* Candidate.swift */,
 				CEFC174A2E53600600037468 /* Completion.swift */,
 				CE84A3EA295DA715009394C4 /* Dict.swift */,
+				CE39264F3096F044005C00D5 /* SearchableDict.swift */,
 				CE5EB6AC2AAC0DE000389B98 /* FileDict.swift */,
 				CE5EB6AE2AAC0DEB00389B98 /* MemoryDict.swift */,
+				CE3926533096F05E005C00D5 /* ReadonlyMemoryDict.swift */,
 				CE1B00542BA3DDEB00C830FD /* SKKServDict.swift */,
 				CEA78FAF2964209B00B67E25 /* UserDict.swift */,
 				CED6B4342FFA88860027EB92 /* UserDict+Snapshot.swift */,
@@ -645,7 +657,10 @@
 				CEA78FA9295EBCAC00B67E25 /* StateMachineTests.swift */,
 				CEE2D9782A99FEC700A4CD76 /* CandidateTest.swift */,
 				CE4CB5CD2AD55DF90046FA34 /* NumberEntryTests.swift */,
+				CE392659309793BF005C00D5 /* SearchableDictTests.swift */,
 				CE84A3EC295DA818009394C4 /* MemoryDictTests.swift */,
+				CE39264D3096F022005C00D5 /* ReadonlyMemoryDictTests.swift */,
+				7A1B2C3D4E5F60718293A002 /* ReadonlyMemoryDictMemoryTests.swift */,
 				CE06CA292AAC171B00E80E5E /* FileDictTests.swift */,
 				CEA78FB129646CA100B67E25 /* UserDictTests.swift */,
 				CE00C0DE0000000000000004 /* CompletionPresenterTests.swift */,
@@ -1087,11 +1102,13 @@
 				CE84A3E7295DA4DA009394C4 /* Romaji.swift in Sources */,
 				CE2573CF2F9E547C00533A05 /* Data+Gzip.swift in Sources */,
 				CEA253E62E2E852000618E64 /* UserDefaults+App.swift in Sources */,
+				CE3926543096F05E005C00D5 /* ReadonlyMemoryDict.swift in Sources */,
 				CE1B006D2BA54DE400C830FD /* SKKServClientProtocol.swift in Sources */,
 				CE1B006A2BA5490E00C830FD /* SKKServDictView.swift in Sources */,
 				CE637EF82F30D702001E1998 /* InputModeView.swift in Sources */,
 				94DB63242D329CBF005250B8 /* HorizontalCandidatesView.swift in Sources */,
 				94DB63252D329CBF005250B8 /* VerticalCandidatesView.swift in Sources */,
+				CE3926503096F044005C00D5 /* SearchableDict.swift in Sources */,
 				CED0984D2B779E4700F2E844 /* UNNotifier.swift in Sources */,
 				4B8E87D42CE05C40004E7461 /* CurrentInput.swift in Sources */,
 				CE7F9AD92AADEBF9001B1877 /* AppDelegate.swift in Sources */,
@@ -1164,6 +1181,7 @@
 				CE420WAT2F00000100000002 /* WorkaroundApplicationTests.swift in Sources */,
 				CE420SYNC2F00000100000004 /* SettingsSyncTests.swift in Sources */,
 				CE84A3ED295DA818009394C4 /* MemoryDictTests.swift in Sources */,
+				7A1B2C3D4E5F60718293A001 /* ReadonlyMemoryDictMemoryTests.swift in Sources */,
 				CE06CA342AAC199500E80E5E /* UserDict+Utilities.swift in Sources */,
 				CE84A3E9295DA504009394C4 /* RomajiTests.swift in Sources */,
 				CE4CB5CE2AD55DF90046FA34 /* NumberEntryTests.swift in Sources */,
@@ -1183,9 +1201,11 @@
 				CEA78FB229646CA100B67E25 /* UserDictTests.swift in Sources */,
 				CE00C0DE0000000000000003 /* CompletionPresenterTests.swift in Sources */,
 				CE06CA2B2AAC171B00E80E5E /* FileDictTests.swift in Sources */,
+				CE39264E3096F022005C00D5 /* ReadonlyMemoryDictTests.swift in Sources */,
 				CED1CA1E2BAFBE0600C32AE3 /* SKKServDictTests.swift in Sources */,
 				CE6DBA912A846C1700F5A227 /* ReleaseVersionTests.swift in Sources */,
 				CE39FA952BEB942B00E293F0 /* Character+KeyCode.swift in Sources */,
+				CE39265A309793BF005C00D5 /* SearchableDictTests.swift in Sources */,
 				CEA78FAE2961BA1D00B67E25 /* String+TransformTests.swift in Sources */,
 				CE2573D12F9E557800533A05 /* Data+GzipTests.swift in Sources */,
 				B3C350D6E32E35775AE1FF56 /* DateConversionYomiTests.swift in Sources */,

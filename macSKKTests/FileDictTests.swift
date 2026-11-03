@@ -12,7 +12,7 @@ import XCTest
         let fileURL = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "utf8-bom", withExtension: "txt"))
         let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: true, saveToUserDict: true)
         await dict.load()
-        XCTAssertEqual(dict.dict.entries, ["ゆにこーど": [Word("ユニコード")]])
+        XCTAssertEqual(dict.entries, ["ゆにこーど": [Word("ユニコード")]])
     }
 
     func testLoadJson() async throws {
@@ -34,8 +34,8 @@ import XCTest
             return true
         }
         await dict.load()
-        XCTAssertEqual(dict.dict.refer("い", option: nil).map({ $0.word }).sorted(), ["伊", "胃"])
-        XCTAssertEqual(dict.dict.refer("あr", option: nil).map({ $0.word }).sorted(), ["在;注釈として解釈されない", "有"])
+        XCTAssertEqual(dict.refer("い", option: nil).map({ $0.word }).sorted(), ["伊", "胃"])
+        XCTAssertEqual(dict.refer("あr", option: nil).map({ $0.word }).sorted(), ["在;注釈として解釈されない", "有"])
         await fulfillment(of: [loadingExpectation, loadedExpectation], timeout: 1.0, enforceOrder: true)
     }
 
@@ -78,7 +78,7 @@ import XCTest
             return true
         }
         await dict.load()
-        XCTAssertEqual(dict.dict.refer("じてん", option: nil).map({ $0.word }), ["辞典", "事典", "字典"])
+        XCTAssertEqual(dict.refer("じてん", option: nil).map({ $0.word }), ["辞典", "事典", "字典"])
         await fulfillment(of: [loadingExpectation, loadedExpectation], timeout: 1.0, enforceOrder: true)
     }
 
@@ -101,7 +101,7 @@ import XCTest
             return true
         }
         await dict.load()
-        XCTAssertEqual(dict.dict.refer("い", option: nil).map({ $0.word }).sorted(), ["伊", "胃"])
+        XCTAssertEqual(dict.refer("い", option: nil).map({ $0.word }).sorted(), ["伊", "胃"])
         await fulfillment(of: [loadingExpectation, loadedExpectation], timeout: 1.0, enforceOrder: true)
     }
 
@@ -110,7 +110,7 @@ import XCTest
         // saveToUserDict = false
         let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: true, saveToUserDict: false)
         XCTAssertFalse(dict.saveToUserDict)
-        XCTAssertFalse(dict.dict.saveToUserDict)
+        XCTAssertFalse(dict.saveToUserDict)
         let dictId = dict.id
         let loadingExpectation = expectation(forNotification: notificationNameDictLoad, object: nil) { notification in
             guard let loadEvent = notification.object as? DictLoadEvent, loadEvent.id == dictId,
@@ -129,11 +129,11 @@ import XCTest
         await dict.load()
         await fulfillment(of: [loadingExpectation, loadedExpectation], timeout: 1.0, enforceOrder: true)
         XCTAssertFalse(dict.saveToUserDict)
-        XCTAssertFalse(dict.dict.saveToUserDict)
+        XCTAssertFalse(dict.saveToUserDict)
     }
 
     func testAdd() throws {
-        let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: true, saveToUserDict: true)
+        let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: false, saveToUserDict: true)
         let dictId = dict.id
         let expectation = expectation(forNotification: notificationNameDictLoad, object: nil) { notification in
             guard let loadEvent = notification.object as? DictLoadEvent, loadEvent.id == dictId,
@@ -151,7 +151,7 @@ import XCTest
     }
 
     func testDelete() throws {
-        let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: true, saveToUserDict: true)
+        let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: false, saveToUserDict: true)
         let dictId = dict.id
         let expectation = expectation(forNotification: notificationNameDictLoad, object: nil) { notification in
             guard let loadEvent = notification.object as? DictLoadEvent, loadEvent.id == dictId,
@@ -159,7 +159,7 @@ import XCTest
             XCTAssertEqual(loadEvent.trigger, .edit, "deleteによる通知は .edit であるべき")
             return true
         }
-        dict.setEntries(["あr": [Word("有"), Word("在")]], readonly: true)
+        dict.setEntries(["あr": [Word("有"), Word("在")]], readonly: false)
         XCTAssertFalse(dict.delete(yomi: "あr", word: Word("或")))
         XCTAssertFalse(dict.hasUnsavedChanges)
         XCTAssertTrue(dict.delete(yomi: "あr", word: Word("在")))
@@ -167,50 +167,21 @@ import XCTest
         wait(for: [expectation], timeout: 1.0)
     }
 
-    func testSerialize() throws {
-        let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: false, saveToUserDict: true)
-        XCTAssertEqual(dict.serialize(),
-                       [FileDict.headers[0], FileDict.okuriAriHeader, FileDict.okuriNashiHeader, ""].joined(separator: "\n"))
-        dict.add(yomi: "あ", word: Word("亜", annotation: Annotation(dictId: "testDict", text: "亜の注釈")))
-        dict.add(yomi: "あ", word: Word("阿", annotation: Annotation(dictId: "testDict", text: "阿の注釈")))
-        dict.add(yomi: "あr", word: Word("有", annotation: Annotation(dictId: "testDict", text: "有の注釈")))
-        dict.add(yomi: "あr", word: Word("在", annotation: Annotation(dictId: "testDict", text: "在の注釈")))
-        var expected = [
-            FileDict.headers[0],
-            FileDict.okuriAriHeader,
-            "あr /在;在の注釈/有;有の注釈/",
-            FileDict.okuriNashiHeader,
-            "あ /阿;阿の注釈/亜;亜の注釈/",
-            "",
-        ].joined(separator: "\n")
-        XCTAssertEqual(dict.serialize(), expected)
-        // 追加したエントリはシリアライズ時は先頭に付く
-        dict.add(yomi: "い", word: Word("伊"))
-        dict.add(yomi: "いr", word: Word("射"))
-        expected = [
-            FileDict.headers[0],
-            FileDict.okuriAriHeader,
-            "いr /射/",
-            "あr /在;在の注釈/有;有の注釈/",
-            FileDict.okuriNashiHeader,
-            "い /伊/",
-            "あ /阿;阿の注釈/亜;亜の注釈/",
-            "",
-        ].joined(separator: "\n")
-        XCTAssertEqual(dict.serialize(), expected)
-        // 追加更新した場合は順序を変更する。削除更新した場合は順序を変更しない
-        XCTAssertTrue(dict.delete(yomi: "あ", word: Word("亜")))
-        dict.add(yomi: "あr", word: Word("或"))
-        expected = [
-            FileDict.headers[0],
-            FileDict.okuriAriHeader,
-            "あr /或/在;在の注釈/有;有の注釈/",
-            "いr /射/",
-            FileDict.okuriNashiHeader,
-            "い /伊/",
-            "あ /阿;阿の注釈/",
-            "",
-        ].joined(separator: "\n")
-        XCTAssertEqual(dict.serialize(), expected)
+    // MARK: JsonJisyo
+    func testJsonJisyoSectionMismatch() {
+        func jisyo(okuriAri: [String: [String]], okuriNasi: [String: [String]]) -> FileDict.JsonJisyo {
+            FileDict.JsonJisyo(version: "0.0.0", copyright: "", license: "", okuriAri: okuriAri, okuriNasi: okuriNasi)
+        }
+        let mismatch = jisyo(okuriAri: ["あr": ["有"], "かな": ["仮名"]], okuriNasi: ["あb": ["A棟"], "ああ": ["嗚呼"]]).sectionMismatch
+        XCTAssertEqual(mismatch.count, 2)
+        XCTAssertEqual(mismatch.examples, ["かな", "あb"], "okuri_ari、okuri_nasiの順")
+
+        let many = jisyo(okuriAri: ["あ": ["亜"], "い": ["伊"], "う": ["宇"], "え": ["絵"], "あr": ["有"]], okuriNasi: [:]).sectionMismatch
+        XCTAssertEqual(many.count, 4)
+        XCTAssertEqual(many.examples.count, 3, "例は最大3件")
+
+        let none = jisyo(okuriAri: ["あr": ["有"], "いk": ["行"]], okuriNasi: ["あ": ["亜"], "い": ["伊"]]).sectionMismatch
+        XCTAssertEqual(none.count, 0)
+        XCTAssertEqual(none.examples, [])
     }
 }

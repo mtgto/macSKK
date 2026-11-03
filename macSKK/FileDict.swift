@@ -40,13 +40,48 @@ enum FileDictType: Equatable {
     private var fileModificationDate: Date?
     /// 保存してない変更があるかどうか (UIDocumentのパクり)
     private(set) var hasUnsavedChanges: Bool = false
-    private(set) var dict: MemoryDict
+    /// 辞書の中身。読み込み専用かどうかで持ち方を変える
+    enum Content: Sendable {
+        /// 書き込み可能な辞書 (ユーザー辞書)
+        case writable(MemoryDict)
+        /// 読み込み専用の辞書
+        case readonly(ReadonlyMemoryDict)
+
+        var searchable: any SearchableDict {
+            switch self {
+            case .writable(let dict):
+                return dict
+            case .readonly(let dict):
+                return dict
+            }
+        }
+
+        nonisolated static func empty(readonly: Bool, saveToUserDict: Bool) -> Content {
+            if readonly {
+                return .readonly(ReadonlyMemoryDict(entries: [:], saveToUserDict: saveToUserDict))
+            } else {
+                return .writable(MemoryDict(entries: [:], saveToUserDict: saveToUserDict))
+            }
+        }
+
+        func with(saveToUserDict: Bool) -> Content {
+            switch self {
+            case .writable(let dict):
+                return .writable(dict.with(saveToUserDict: saveToUserDict))
+            case .readonly(let dict):
+                return .readonly(dict.with(saveToUserDict: saveToUserDict))
+            }
+        }
+    }
+    private(set) var content: Content
     /**
      * 読み込み専用で保存しないかどうか
      */
     private let readonly: Bool
+    /// 検索用の辞書。``UserDict/Snapshot`` に渡す
+    var searchable: any SearchableDict { content.searchable }
     /// この辞書から返した変換候補をユーザー辞書に保存するかどうか
-    var saveToUserDict: Bool { dict.saveToUserDict }
+    var saveToUserDict: Bool { searchable.saveToUserDict }
 
     /// シリアライズ時に先頭に付ける
     static let headers = [";; -*- mode: fundamental; coding: utf-8 -*-"]
@@ -65,6 +100,14 @@ enum FileDictType: Equatable {
         let license: String
         let okuriAri: [String: [String]]
         let okuriNasi: [String: [String]]
+
+        /// セクションと読みの形 (`String.isOkuriAri`) が一致しない読みの件数と例 (最大3件、okuri_ari、okuri_nasiの順) を返す。
+        ///
+        /// 検索・補完は読みの形で判断するため、ずれは辞書側の問題として警告ログに出すために使う。
+        var sectionMismatch: (count: Int, examples: [String]) {
+            let mismatches = okuriAri.keys.filter { !$0.isOkuriAri } + okuriNasi.keys.filter { $0.isOkuriAri }
+            return (count: mismatches.count, examples: Array(mismatches.prefix(3)))
+        }
     }
 
     // MARK: NSFilePresenter
@@ -80,18 +123,18 @@ enum FileDictType: Equatable {
         self.id = fileURL.lastPathComponent
         self.fileURL = fileURL
         self.type = type
-        self.dict = MemoryDict(entries: [:], readonly: readonly, saveToUserDict: saveToUserDict)
+        self.content = .empty(readonly: readonly, saveToUserDict: saveToUserDict)
         self.readonly = readonly
         self.fileModificationDate = try fileURL.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate
         super.init()
         NSFileCoordinator.addFilePresenter(self)
     }
 
-    private init(id: String, fileURL: URL, type: FileDictType, dict: MemoryDict, readonly: Bool, hasUnsavedChanges: Bool) {
+    private init(id: String, fileURL: URL, type: FileDictType, content: Content, readonly: Bool, hasUnsavedChanges: Bool) {
         self.id = id
         self.fileURL = fileURL
         self.type = type
-        self.dict = dict
+        self.content = content
         self.readonly = readonly
         self.hasUnsavedChanges = hasUnsavedChanges
     }
@@ -100,7 +143,7 @@ enum FileDictType: Equatable {
         FileDict(id: id,
                  fileURL: fileURL,
                  type: type,
-                 dict: dict.with(saveToUserDict: saveToUserDict),
+                 content: content.with(saveToUserDict: saveToUserDict),
                  readonly: readonly,
                  hasUnsavedChanges: hasUnsavedChanges)
     }
@@ -116,7 +159,7 @@ enum FileDictType: Equatable {
                                         object: DictLoadEvent(id: id, status: .loading, trigger: .load))
 
         // ファイルI/O + パースはOperationQueue上で実行し、MainActorをブロックしない
-        let result: Result<MemoryDict, any Error> = await withCheckedContinuation { continuation in
+        let result: Result<Content, any Error> = await withCheckedContinuation { continuation in
             let fileCoordinator = NSFileCoordinator(filePresenter: self)
             let intent = NSFileAccessIntent.readingIntent(with: fileURL, options: [])
             fileCoordinator.coordinate(with: [intent], queue: queue) { error in
@@ -136,14 +179,28 @@ enum FileDictType: Equatable {
                         }
                         let okuriAriEntries = jisyo.okuriAri.mapValues { $0.map { Word($0) } }
                         let okuriNashiEntries = jisyo.okuriNasi.mapValues { $0.map { Word($0) } }
-                        continuation.resume(returning: .success(MemoryDict(okuriAriEntries: okuriAriEntries, okuriNashiEntries: okuriNashiEntries, readonly: readonly, saveToUserDict: saveToUserDict)))
+                        let mismatch = jisyo.sectionMismatch
+                        if mismatch.count > 0 {
+                            logger.warning("JSON辞書 \(id, privacy: .public) にセクションと読みの形が一致しない読みが \(mismatch.count)件あります (例: \(mismatch.examples.joined(separator: ", ")))")
+                        }
+                        let content: Content = if readonly {
+                            .readonly(ReadonlyMemoryDict(okuriAriEntries: okuriAriEntries, okuriNashiEntries: okuriNashiEntries, saveToUserDict: saveToUserDict))
+                        } else {
+                            .writable(MemoryDict(okuriAriEntries: okuriAriEntries, okuriNashiEntries: okuriNashiEntries, saveToUserDict: saveToUserDict))
+                        }
+                        continuation.resume(returning: .success(content))
                     } else if case .traditional(let encoding) = type {
                         let source = try Self.loadString(try self.loadData(url), encoding: encoding)
                         if source.isEmpty {
                             // 辞書ファイルを書き込み中に読み込んでしまった?
                             logger.warning("辞書 \(id) を読み込んだところ0バイトだったため更新を無視します")
                         }
-                        continuation.resume(returning: .success(MemoryDict(dictId: id, source: source, readonly: readonly, saveToUserDict: saveToUserDict)))
+                        let content: Content = if readonly {
+                            .readonly(ReadonlyMemoryDict(dictId: id, source: source, saveToUserDict: saveToUserDict))
+                        } else {
+                            .writable(MemoryDict(dictId: id, source: source, saveToUserDict: saveToUserDict))
+                        }
+                        continuation.resume(returning: .success(content))
                     } else {
                         continuation.resume(returning: .failure(FileDictError.decode))
                     }
@@ -155,12 +212,12 @@ enum FileDictType: Equatable {
 
         // 状態変更は MainActor 上で実行
         switch result {
-        case .success(let memoryDict):
-            self.dict = memoryDict
-            logger.log("辞書 \(self.id, privacy: .public) から \(self.dict.entries.count) エントリ読み込みました")
+        case .success(let content):
+            self.content = content
+            logger.log("辞書 \(self.id, privacy: .public) から \(self.entryCount) エントリ読み込みました")
             NotificationCenter.default.post(name: notificationNameDictLoad,
                                             object: DictLoadEvent(id: self.id,
-                                                                  status: .loaded(success: dict.entryCount, failure: dict.failedEntryCount),
+                                                                  status: .loaded(success: entryCount, failure: failedEntryCount),
                                                                   trigger: .load))
         case .failure(let error):
             logger.error("辞書 \(self.id, privacy: .public) の読み込みでエラーが発生しました: \(error)")
@@ -204,7 +261,12 @@ enum FileDictType: Equatable {
             logger.log("辞書 \(self.id, privacy: .public) は変更されていないため保存は行いません")
             return
         }
-        guard let data = serialize().data(using: type.encoding) else {
+        // 読み込み専用の辞書は変更されないため hasUnsavedChanges が立たず、ここには到達しない
+        guard case .writable(let dict) = content else {
+            assertionFailure("読み込み専用の辞書 \(id) を保存しようとしました")
+            return
+        }
+        guard let data = dict.serialize().data(using: type.encoding) else {
             fatalError("辞書 \(self.id) のシリアライズに失敗しました")
         }
         var coordinationError: NSError?
@@ -241,7 +303,7 @@ enum FileDictType: Equatable {
             fileModificationDate = fileAttributes[.modificationDate] as? Date
             hasUnsavedChanges = false
 
-            logger.log("辞書を永続化しました。現在のエントリ数は \(self.dict.entries.count)、シリアライズ後のファイルサイズは\(data.count)バイトです")
+            logger.log("辞書を永続化しました。現在のエントリ数は \(self.entryCount)、シリアライズ後のファイルサイズは\(data.count)バイトです")
         } catch {
             logger.error("辞書 \(self.id, privacy: .public) の書き込みに失敗しました: \(error)")
             try? FileManager.default.removeItem(at: tmpURL)
@@ -254,63 +316,60 @@ enum FileDictType: Equatable {
         NSFileCoordinator.removeFilePresenter(self)
     }
 
-    /// ユーザー辞書をSKK辞書形式に変換する
-    func serialize() -> String {
-        if readonly {
-            return dict.entries.map { entry in
-                Entry(yomi: entry.key, candidates: entry.value).serialize()
-            }.joined(separator: "\n")
-        }
-        var result: [String] = Self.headers + [Self.okuriAriHeader]
-        for yomi in dict.okuriAriYomis.reversed() {
-            if let words = dict.entries[yomi] {
-                result.append(Entry(yomi: yomi, candidates: words).serialize())
-            }
-        }
-        result.append(Self.okuriNashiHeader)
-        for yomi in dict.okuriNashiYomis.reversed() {
-            if let words = dict.entries[yomi] {
-                result.append(Entry(yomi: yomi, candidates: words).serialize())
-            }
-        }
-        result.append("")
-        return result.joined(separator: "\n")
-    }
-
     /**
      * 辞書がもっているエントリ数。
      */
-    var entryCount: Int { return dict.entryCount }
+    var entryCount: Int { return searchable.entryCount }
 
     /**
      * 読み込みに失敗した行数。コメント行、空行は除いた行数。
      */
-    var failedEntryCount: Int { return dict.failedEntryCount }
+    var failedEntryCount: Int { return searchable.failedEntryCount }
 
     // MARK: DictProtocol
     @MainActor func refer(_ yomi: String, option: DictReferringOption?) -> [Word] {
-        return dict.refer(yomi, option: option)
+        return searchable.refer(yomi, option: option)
     }
 
     @MainActor func reverseRefer(_ word: String) -> String? {
-        return dict.reverseRefer(word)
+        return searchable.reverseRefer(word)
+    }
+
+    /// 書き込み可能な辞書をその場で変更する。
+    ///
+    /// `content` が辞書を参照したまま変更するとCopy on Writeで辞書全体がコピーされるため、
+    /// 一度 `content` から外してから変更して戻す。
+    private func modifyWritable<T>(_ body: (inout MemoryDict) -> T) -> T? {
+        guard case .writable(var dict) = content else { return nil }
+        content = .empty(readonly: false, saveToUserDict: dict.saveToUserDict)
+        defer { content = .writable(dict) }
+        return body(&dict)
     }
 
     @MainActor func add(yomi: String, word: Word) {
-        dict.add(yomi: yomi, word: word)
+        guard case .writable = content else {
+            assertionFailure("読み込み専用の辞書 \(id) にエントリを追加しようとしました")
+            return
+        }
+        modifyWritable { $0.add(yomi: yomi, word: word) }
         NotificationCenter.default.post(name: notificationNameDictLoad,
                                         object: DictLoadEvent(id: self.id,
-                                                              status: .loaded(success: dict.entryCount, failure: dict.failedEntryCount),
+                                                              status: .loaded(success: entryCount, failure: failedEntryCount),
                                                               trigger: .edit))
         hasUnsavedChanges = true
     }
 
     @MainActor func delete(yomi: String, word: Word) -> Bool {
-        if dict.delete(yomi: yomi, word: word) {
+        guard case .writable = content else {
+            assertionFailure("読み込み専用の辞書 \(id) からエントリを削除しようとしました")
+            return false
+        }
+        let deleted = modifyWritable { $0.delete(yomi: yomi, word: word) } ?? false
+        if deleted {
             hasUnsavedChanges = true
             NotificationCenter.default.post(name: notificationNameDictLoad,
                                             object: DictLoadEvent(id: self.id,
-                                                                  status: .loaded(success: dict.entryCount, failure: dict.failedEntryCount),
+                                                                  status: .loaded(success: entryCount, failure: failedEntryCount),
                                                                   trigger: .edit))
             return true
         }
@@ -318,12 +377,16 @@ enum FileDictType: Equatable {
     }
 
     func findCompletions(prefix: String) -> [String] {
-        return dict.findCompletions(prefix: prefix)
+        return searchable.findCompletions(prefix: prefix)
     }
 
     // ユニットテスト用
     func setEntries(_ entries: [String: [Word]], readonly: Bool) {
-        self.dict = MemoryDict(entries: entries, readonly: readonly, saveToUserDict: saveToUserDict)
+        self.content = if readonly {
+            .readonly(ReadonlyMemoryDict(entries: entries, saveToUserDict: saveToUserDict))
+        } else {
+            .writable(MemoryDict(entries: entries, saveToUserDict: saveToUserDict))
+        }
     }
 }
 

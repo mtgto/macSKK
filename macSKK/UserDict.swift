@@ -35,7 +35,7 @@ enum UserDictAddSource {
      * ユーザー辞書。
      *
      * 通常起動時はFileDict形式で "skk-jisyo.utf8" というファイル名。
-     * ユニットテスト用に差し替え可能なMemoryDict形式も取れるようにしている。
+     * ユニットテスト用に差し替え可能なReadonlyMemoryDict形式も取れるようにしている。
      */
     var userDict: (any DictProtocol)?
     /// 有効になっている辞書。優先度が高い順。
@@ -84,7 +84,7 @@ enum UserDictAddSource {
         }
         userDictFileURL = dictionariesDirectoryURL.appending(path: Self.userDictFilename)
         if let userDictEntries {
-            self.userDict = MemoryDict(entries: userDictEntries, readonly: true)
+            self.userDict = ReadonlyMemoryDict(entries: userDictEntries)
         } else {
             if !FileManager.default.fileExists(atPath: userDictFileURL.path()) {
                 logger.log("ユーザー辞書ファイルがないため作成します")
@@ -153,8 +153,8 @@ enum UserDictAddSource {
 
     func snapshot() -> Snapshot {
         Snapshot(
-            userDict: (userDict as? FileDict)?.dict ?? (userDict as? MemoryDict),
-            dicts: dicts.compactMap { ($0 as? FileDict)?.dict ?? ($0 as? MemoryDict) },
+            userDict: (userDict as? FileDict)?.searchable ?? (userDict as? any SearchableDict),
+            dicts: dicts.compactMap { ($0 as? FileDict)?.searchable ?? ($0 as? any SearchableDict) },
             dateYomis: dateYomis,
             dateConversions: dateConversions,
             privateMode: privateMode.value,
@@ -270,7 +270,7 @@ enum UserDictAddSource {
         }
         if let userDict {
             if let dict = userDict as? FileDict {
-                logger.log("ユーザー辞書を永続化します。現在のエントリ数は \(dict.dict.entries.count)")
+                logger.log("ユーザー辞書を永続化します。現在のエントリ数は \(dict.entryCount)")
                 dict.save()
             } else {
                 // ユニットテストなど特殊な場合のみ
