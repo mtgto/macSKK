@@ -368,8 +368,8 @@ extension UserDict: NSFilePresenter {
     nonisolated func presentedSubitemDidChange(at url: URL) {
         // ユーザー辞書のバックアップファイルの場合は無視する
         if Self.ignoredPathExtensions.contains(url.pathExtension) { return }
-        // 削除されたときにaccommodatePresentedSubitemDeletionが呼ばれないがこのメソッドは呼ばれるようだった。
-        // そのためこのメソッドで削除のとき同様の処理を行う。
+        // 辞書フォルダ内のファイルが削除されてもaccommodatePresentedSubitemDeletionは呼ばれず、このメソッドだけが呼ばれる。
+        // そのためファイルが存在しなければ削除されたとみなす。
         if !FileManager.default.fileExists(atPath: url.path) {
             logger.log("変更されたファイル \(url.lastPathComponent, privacy: .public) が見つからないため削除されたと扱います")
             NotificationCenter.default.post(name: notificationNameDictFileDidMove, object: url)
@@ -411,8 +411,12 @@ extension UserDict: NSFilePresenter {
         NotificationCenter.default.post(name: notificationNameDictFileDidMove, object: oldURL)
     }
 
-    // NOTE: 本来ディレクトリ内のファイルが削除したときに呼ばれるはずだが、なぜか呼び出されない。
-    // macOSのバグかもしれない?
+    // NOTE: NSFilePresenter.hでは、NSFileCoordinatorの.forDeletingの前に呼ばれると説明されているが、
+    // macOS 27.2で確かめたところ呼ばれなかった。同じプロセスからでも別のプロセスからでも、
+    // async版・completionHandler版のどちらで実装しても変わらなかった。
+    // (ファイル自身のNSFilePresenterのaccommodatePresentedItemDeletionは呼ばれる)
+    // rmなどNSFileCoordinatorを介さない削除でも当然呼ばれない。
+    // どの場合も presentedSubitemDidChange(at:) は呼ばれるので、削除はそちらで検知する。
     // @see https://stackoverflow.com/questions/50439658/swift-cocoa-how-to-watch-folder-for-changes#comment120683334_50443763
     @concurrent nonisolated func accommodatePresentedSubitemDeletion(at url: URL) async throws {
         logger.log("ファイル \(url.lastPathComponent, privacy: .public) が辞書フォルダから削除されます")
