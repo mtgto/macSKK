@@ -167,6 +167,63 @@ import XCTest
         wait(for: [expectation], timeout: 1.0)
     }
 
+    // MARK: ファイルの監視
+
+    /// 一時ディレクトリに辞書ファイルを作って返す
+    private func makeTemporaryDictFile(_ source: String) throws -> URL {
+        let directoryURL = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        try FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true)
+        addTeardownBlock {
+            try? FileManager.default.removeItem(at: directoryURL)
+        }
+        let fileURL = directoryURL.appending(path: "SKK-JISYO.test")
+        try source.data(using: .utf8)!.write(to: fileURL)
+        return fileURL
+    }
+
+    func testDeinit() async throws {
+        let fileURL = try makeTemporaryDictFile("じしょ /辞書/\n")
+        weak var weakDict: FileDict?
+        do {
+            let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: true, saveToUserDict: true)
+            weakDict = dict
+            await dict.load()
+            XCTAssertEqual(dict.entryCount, 1)
+        }
+        XCTAssertNil(weakDict, "参照を手放したら解放されるべき")
+    }
+
+    func testFileDidChange() async throws {
+        let fileURL = try makeTemporaryDictFile("じしょ /辞書/\n")
+        let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: true, saveToUserDict: true)
+        await dict.load()
+        XCTAssertEqual(dict.refer("じしょ", option: nil).map({ $0.word }), ["辞書"])
+
+        try NSFileCoordinator.writeExternally("じしょ /辞書/\nじてん /辞典/\n", to: fileURL)
+        let modificationDate = try XCTUnwrap(try FileManager.default.attributesOfItem(atPath: fileURL.path)[.modificationDate] as? Date)
+        await dict.fileDidChange(modificationDate: modificationDate.addingTimeInterval(1))
+        XCTAssertEqual(dict.refer("じてん", option: nil).map({ $0.word }), ["辞典"], "更新日時が変わっていたら読み直す")
+
+        try NSFileCoordinator.writeExternally("じしょ /辞書/\n", to: fileURL)
+        await dict.fileDidChange(modificationDate: modificationDate.addingTimeInterval(1))
+        XCTAssertEqual(dict.entryCount, 2, "更新日時が前回と同じなら読み直さない")
+    }
+
+    func testWithSaveToUserDict() async throws {
+        let fileURL = try makeTemporaryDictFile("じしょ /辞書/\n")
+        let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: true, saveToUserDict: true)
+        await dict.load()
+        let changed = dict.with(saveToUserDict: false)
+        XCTAssertFalse(changed.saveToUserDict)
+        XCTAssertEqual(changed.refer("じしょ", option: nil).map({ $0.word }), ["辞書"])
+
+        try NSFileCoordinator.writeExternally("じしょ /辞書/\nじてん /辞典/\n", to: fileURL)
+        let modificationDate = try XCTUnwrap(try FileManager.default.attributesOfItem(atPath: fileURL.path)[.modificationDate] as? Date)
+        await changed.fileDidChange(modificationDate: modificationDate.addingTimeInterval(1))
+        XCTAssertEqual(changed.refer("じてん", option: nil).map({ $0.word }), ["辞典"])
+        XCTAssertFalse(changed.saveToUserDict, "読み直してもユーザー辞書に保存しない設定は維持されるべき")
+    }
+
     // MARK: JsonJisyo
     func testJsonJisyoSectionMismatch() {
         func jisyo(okuriAri: [String: [String]], okuriNasi: [String: [String]]) -> FileDict.JsonJisyo {

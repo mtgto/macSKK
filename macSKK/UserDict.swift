@@ -292,6 +292,19 @@ enum UserDictAddSource {
         return nil
     }
 
+    /// 辞書フォルダ内のファイルが変更されたことを、そのファイルのFileDict (ユーザー辞書を含む) に伝える
+    ///
+    /// 有効な辞書が `with(saveToUserDict:)` で置き換えられていても、その時点の辞書に伝わるよう通知のたびに引く。
+    private func fileDidChange(id: FileDict.ID, modificationDate: Date?) async {
+        let fileDict: FileDict?
+        if let userDict = userDict as? FileDict, userDict.id == id {
+            fileDict = userDict
+        } else {
+            fileDict = self.fileDict(id: id)
+        }
+        await fileDict?.fileDidChange(modificationDate: modificationDate)
+    }
+
     var hasUnsavedChanges: Bool {
         if let dict = userDict as? FileDict {
             return dict.hasUnsavedChanges
@@ -361,9 +374,6 @@ extension UserDict: NSFilePresenter {
             logger.log("変更されたファイル \(url.lastPathComponent, privacy: .public) が見つからないため削除されたと扱います")
             NotificationCenter.default.post(name: notificationNameDictFileDidMove, object: url)
             return
-        } else if url.lastPathComponent == Self.userDictFilename {
-            // ユーザー辞書ファイル自体はFileDictで監視しているため無視する
-            return
         }
 
         var relationship: FileManager.URLRelationship = .same
@@ -371,9 +381,18 @@ extension UserDict: NSFilePresenter {
             if try isFile(url) {
                 try FileManager.default.getRelationship(&relationship, ofDirectoryAt: dictionariesDirectoryURL, toItemAt: url)
                 if case .contains = relationship {
-                    logger.log("ファイル \(url.lastPathComponent, privacy: .public) が辞書フォルダに移動または更新されました")
-                    // 他フォルダから辞書フォルダに移動された
-                    NotificationCenter.default.post(name: notificationNameDictFileDidAppear, object: url)
+                    // URL#resourceValues はキャッシュされた値があればそれを返してしまうため、最新の更新日時を取得する
+                    let modificationDate = (try? FileManager.default.attributesOfItem(atPath: url.path))?[.modificationDate] as? Date
+                    let id = url.lastPathComponent
+                    Task { @MainActor in
+                        await self.fileDidChange(id: id, modificationDate: modificationDate)
+                    }
+                    // ユーザー辞書は辞書の一覧に追加しない
+                    if url.lastPathComponent != Self.userDictFilename {
+                        logger.log("ファイル \(url.lastPathComponent, privacy: .public) が辞書フォルダに移動または更新されました")
+                        // 他フォルダから辞書フォルダに移動された
+                        NotificationCenter.default.post(name: notificationNameDictFileDidAppear, object: url)
+                    }
                 } else {
                     // 辞書ファイルが別フォルダに移動したときにはpresentedSubitem:at:didMoveToも呼ばれる
                     logger.log("ファイル \(url.lastPathComponent, privacy: .public) が更新されましたが辞書フォルダ外なので無視します")

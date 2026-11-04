@@ -110,14 +110,6 @@ enum FileDictType: Equatable {
         }
     }
 
-    // MARK: NSFilePresenter
-    nonisolated var presentedItemURL: URL? { fileURL }
-    nonisolated let presentedItemOperationQueue: OperationQueue = {
-        let queue = OperationQueue()
-        queue.maxConcurrentOperationCount = 1
-        return queue
-    }()
-
     init(contentsOf fileURL: URL, type: FileDictType, readonly: Bool, saveToUserDict: Bool) throws {
         // iCloud Documents使うときには辞書フォルダが複数になりうるけど、それまではひとまずファイル名をIDとして使う
         self.id = fileURL.lastPathComponent
@@ -126,17 +118,16 @@ enum FileDictType: Equatable {
         self.content = .empty(readonly: readonly, saveToUserDict: saveToUserDict)
         self.readonly = readonly
         self.fileModificationDate = try fileURL.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate
-        super.init()
-        NSFileCoordinator.addFilePresenter(self)
     }
 
-    private init(id: String, fileURL: URL, type: FileDictType, content: Content, readonly: Bool, hasUnsavedChanges: Bool) {
+    private init(id: String, fileURL: URL, type: FileDictType, content: Content, readonly: Bool, hasUnsavedChanges: Bool, fileModificationDate: Date?) {
         self.id = id
         self.fileURL = fileURL
         self.type = type
         self.content = content
         self.readonly = readonly
         self.hasUnsavedChanges = hasUnsavedChanges
+        self.fileModificationDate = fileModificationDate
     }
 
     func with(saveToUserDict: Bool) -> FileDict {
@@ -145,7 +136,8 @@ enum FileDictType: Equatable {
                  type: type,
                  content: content.with(saveToUserDict: saveToUserDict),
                  readonly: readonly,
-                 hasUnsavedChanges: hasUnsavedChanges)
+                 hasUnsavedChanges: hasUnsavedChanges,
+                 fileModificationDate: fileModificationDate)
     }
 
     func load(queue: OperationQueue = OperationQueue()) async {
@@ -160,7 +152,7 @@ enum FileDictType: Equatable {
 
         // ファイルI/O + パースはOperationQueue上で実行し、MainActorをブロックしない
         let result: Result<Content, any Error> = await withCheckedContinuation { continuation in
-            let fileCoordinator = NSFileCoordinator(filePresenter: self)
+            let fileCoordinator = NSFileCoordinator(filePresenter: nil)
             let intent = NSFileAccessIntent.readingIntent(with: fileURL, options: [])
             fileCoordinator.coordinate(with: [intent], queue: queue) { error in
                 if let error {
@@ -271,7 +263,7 @@ enum FileDictType: Equatable {
         }
         var coordinationError: NSError?
         var writingError: NSError?
-        let fileCoordinator = NSFileCoordinator(filePresenter: self)
+        let fileCoordinator = NSFileCoordinator(filePresenter: nil)
         // 一時ファイルに書き込み
         let tmpURL = fileURL.deletingLastPathComponent().appendingPathComponent(".\(id).tmp")
         fileCoordinator.coordinate(writingItemAt: tmpURL, error: &coordinationError) { newURL in
@@ -313,7 +305,6 @@ enum FileDictType: Equatable {
 
     deinit {
         logger.log("辞書 \(self.id, privacy: .public) がプロセスから削除されます")
-        NSFileCoordinator.removeFilePresenter(self)
     }
 
     /**
@@ -390,28 +381,24 @@ enum FileDictType: Equatable {
     }
 }
 
-extension FileDict: NSFilePresenter {
-    // NOTE: 外部エディタで編集したときも、自分自身がNSFileCoordinator経由でsaveした場合もこのメソッドは呼ばれる。
-    // 更新日時が自分自身で保存したときと同じかどうかで判定する。
-    nonisolated func presentedItemDidChange() {
-        // URL#resourceValues はキャッシュされた値があればそれを返してしまうため、最新の更新日時を取得する
-        let modificationDate: Date?
-        if let attributes = try? FileManager.default.attributesOfItem(atPath: fileURL.path) {
-            modificationDate = attributes[.modificationDate] as? Date
-        } else {
-            modificationDate = nil
-        }
-        Task { @MainActor in
-            if let modificationDate {
-                if modificationDate == self.fileModificationDate {
-                    logger.log("辞書 \(self.id, privacy: .public) の変更は自分自身の保存によるもののため読み込みをスキップします")
-                    return
-                } else {
-                    self.fileModificationDate = modificationDate
-                }
+extension FileDict {
+    /// ファイルが変更されたときに ``UserDict`` から呼ばれる
+    ///
+    /// NSFileCoordinatorは登録したファイルプレゼンターを強参照で保持するため、FileDict自身は登録しない。
+    /// 辞書フォルダを監視しているUserDictが、フォルダ内のファイルの変更をこのメソッドで伝える。
+    ///
+    /// NOTE: 外部エディタで編集したときも、自分自身がNSFileCoordinator経由でsaveした場合も呼ばれる。
+    /// 更新日時が自分自身で保存したときと同じかどうかで判定する。
+    func fileDidChange(modificationDate: Date?) async {
+        if let modificationDate {
+            if modificationDate == fileModificationDate {
+                logger.log("辞書 \(self.id, privacy: .public) の更新日時が前回と同じため読み込みをスキップします")
+                return
+            } else {
+                fileModificationDate = modificationDate
             }
-            logger.log("辞書 \(self.id, privacy: .public) が変更されたため読み込みます")
-            await self.load()
         }
+        logger.log("辞書 \(self.id, privacy: .public) が変更されたため読み込みます")
+        await load()
     }
 }

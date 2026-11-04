@@ -83,4 +83,45 @@ final class UserDictTests: XCTestCase {
         XCTAssertNil(Global.skkservDict, "連続エラー数が閾値に達すると無効化される")
         XCTAssertEqual(Global.skkservConsecutiveErrorCount, 3, "無効化された時点で残りの成否は処理されない")
     }
+
+    @MainActor func testReloadFileDictWhenFileChanged() async throws {
+        let userDict = try UserDict(dicts: [],
+                                    userDictEntries: [:],
+                                    privateMode: CurrentValueSubject<Bool, Never>(false),
+                                    ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>(false),
+                                    dateYomis: [],
+                                    dateConversions: [])
+        // 複数のテストプロセスが同じ辞書フォルダを使うため、ファイル名が重ならないようにする
+        let fileURL = userDict.dictionariesDirectoryURL.appending(path: "SKK-JISYO.\(UUID().uuidString).utf8")
+        try "じしょ /辞書/\n".data(using: .utf8)!.write(to: fileURL)
+        addTeardownBlock {
+            try? FileManager.default.removeItem(at: fileURL)
+        }
+        let dict = try FileDict(contentsOf: fileURL, type: .traditional(.utf8), readonly: true, saveToUserDict: true)
+        await dict.load()
+        userDict.dicts = [dict]
+
+        let expectation = loadedExpectation(dictId: dict.id, count: 2)
+        try NSFileCoordinator.writeExternally("じしょ /辞書/\nじてん /辞典/\n", to: fileURL)
+        await fulfillment(of: [expectation], timeout: 5.0)
+        XCTAssertEqual(dict.refer("じてん", option: nil).map({ $0.word }), ["辞典"])
+
+        // 置き換え後の辞書に変更が伝わる
+        let changed = dict.with(saveToUserDict: false)
+        userDict.dicts = [changed]
+        let expectation2 = loadedExpectation(dictId: dict.id, count: 3)
+        try NSFileCoordinator.writeExternally("じしょ /辞書/\nじてん /辞典/\nじびき /字引/\n", to: fileURL)
+        await fulfillment(of: [expectation2], timeout: 5.0)
+        XCTAssertEqual(changed.refer("じびき", option: nil).map({ $0.word }), ["字引"])
+        XCTAssertEqual(dict.refer("じびき", option: nil), [], "置き換え前の辞書には伝えない")
+    }
+
+    /// 指定した辞書がエントリ数 `count` で読み込まれた通知を待つexpectation
+    private func loadedExpectation(dictId: FileDict.ID, count: Int) -> XCTestExpectation {
+        expectation(forNotification: notificationNameDictLoad, object: nil) { notification in
+            guard let loadEvent = notification.object as? DictLoadEvent, loadEvent.id == dictId,
+                  case .loaded(let loadCount, _) = loadEvent.status else { return false }
+            return loadCount == count
+        }
+    }
 }
