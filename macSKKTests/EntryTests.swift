@@ -68,10 +68,35 @@ final class EntryTests: XCTestCase {
         XCTAssertNil(Entry(line: "", dictId: ""))
         XCTAssertNil(Entry(line: ";こめんと /コメント/", dictId: ""))
         XCTAssertNil(Entry(line: "い/胃/", dictId: ""), "読みと変換候補の間にスペースがない")
+        if case .failure(let reason) = Entry.parse(line: "い/胃/", dictId: "") {
+            XCTAssertEqual(reason, .missingSeparator)
+        } else {
+            XCTFail("読みと変換候補の間にスペースがない")
+        }
         XCTAssertNil(Entry(line: "い  /胃/", dictId: ""), "読みと変換候補の間にスペースが2つある")
+        if case .failure(let reason) = Entry.parse(line: "い  /胃/", dictId: "") {
+            XCTAssertEqual(reason, .spaceInYomi)
+        } else {
+            XCTFail("読みと変換候補の間にスペースが2つある")
+        }
         XCTAssertNil(Entry(line: "い /胃/意", dictId: ""), "末尾がスラッシュで終わらない")
+        if case .failure(let reason) = Entry.parse(line: "い /胃/意", dictId: "") {
+            XCTAssertEqual(reason, .unterminatedCandidates)
+        } else {
+            XCTFail("末尾がスラッシュで終わらない")
+        }
         XCTAssertNil(Entry(line: "いt /[った/行]/", dictId: ""), "送り仮名ブロックの変換候補の末尾にスラッシュがない")
+        if case .failure(let reason) = Entry.parse(line: "いt /[った/行]/", dictId: "") {
+            XCTAssertEqual(reason, .unterminatedCandidates)
+        } else {
+            XCTFail("送り仮名ブロックの変換候補の末尾にスラッシュがない")
+        }
         XCTAssertNil(Entry(line: "い いt /行/", dictId: ""), "読みが複数ある")
+        if case .failure(let reason) = Entry.parse(line: "い いt /行/", dictId: "") {
+            XCTAssertEqual(reason, .spaceInYomi)
+        } else {
+            XCTFail("読みが複数ある")
+        }
     }
 
     func testIgnoreDuplicated() {

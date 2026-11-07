@@ -13,10 +13,39 @@ enum DictReferringOption {
     case okuri(String)
 }
 
+/// 従来形式の辞書で1行を読み込めなかった内容。コメント行と空行は含まない。
+struct DictReadFailure: Equatable, Sendable {
+    /// 1始まりの行番号
+    let lineNumber: Int
+    /// 読み込めなかった行の生テキスト
+    let line: String
+    let reason: Reason
+
+    enum Reason: Error, Equatable, Sendable {
+        /// " /" で読みと変換候補が区切られていない
+        case missingSeparator
+        /// 読みに空白が含まれる
+        case spaceInYomi
+        /// 変換候補がスラッシュで終わっていない
+        case unterminatedCandidates
+
+        var localizedDescription: String {
+            switch self {
+            case .missingSeparator:
+                String(localized: "DictReadFailureReasonMissingSeparator")
+            case .spaceInYomi:
+                String(localized: "DictReadFailureReasonSpaceInYomi")
+            case .unterminatedCandidates:
+                String(localized: "DictReadFailureReasonUnterminatedCandidates")
+            }
+        }
+    }
+}
+
 /// 辞書の読み込み状態
 enum DictLoadStatus {
-    /// 正常に読み込み済み。引数は読み込めたエントリ数と読み込みできなかった行数
-    case loaded(success: Int, failure: Int)
+    /// 正常に読み込み済み。引数は読み込めたエントリ数と読み込めなかった行
+    case loaded(success: Int, failures: [DictReadFailure])
     case loading
     /// 無効に設定されている
     case disabled
@@ -31,7 +60,7 @@ struct DictLoadEvent {
         case load
         /// 変換・確定にともなう学習 (`FileDict.add`/`delete`)。
         ///
-        /// 学習でも読み込み状態 (エントリ数) は更新されるが、失敗行数は読み込み時に一度決まる値なので、
+        /// 学習でも読み込み状態 (エントリ数と失敗行) は更新されるが、失敗行は読み込み時に一度決まる値なので、
         /// これを `.load` と区別しないと失敗通知が変換のたびに繰り返し出てしまう。
         case edit
     }

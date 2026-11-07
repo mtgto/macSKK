@@ -7,16 +7,21 @@ struct DictionariesView: View {
     @ObservedObject var settingsViewModel: SettingsViewModel
     @State private var selectedDictSetting: DictSetting?
     @State var isShowingSkkservSheet: Bool = false
+    @State private var presentedReadFailures: [DictReadFailure] = []
+    @State private var isShowingReadFailures = false
 
     var body: some View {
         VStack {
             Form {
                 Section {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(UserDict.userDictFilename)
-                            .font(.body)
-                        Text(loadingStatus(of: settingsViewModel.userDictLoadingStatus))
-                            .font(.footnote)
+                    HStack(alignment: .top) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(UserDict.userDictFilename)
+                                .font(.body)
+                            Text(loadingStatus(of: settingsViewModel.userDictLoadingStatus))
+                                .font(.footnote)
+                        }
+                        readFailureButton(status: settingsViewModel.userDictLoadingStatus)
                     }
                 } header: {
                     Text("SettingsNameUserDictTitle")
@@ -55,6 +60,7 @@ struct DictionariesView: View {
                                         }
                                     }
                                     .toggleStyle(.switch)
+                                    readFailureButton(setting: dictSetting.wrappedValue)
                                     Button {
                                         selectedDictSetting = dictSetting.wrappedValue
                                     } label: {
@@ -94,6 +100,9 @@ struct DictionariesView: View {
                     saveToUserDict: dictSetting.saveToUserDict,
                 )
             }
+            .sheet(isPresented: $isShowingReadFailures) {
+                DictReadFailuresSheet(failures: presentedReadFailures)
+            }
             .sheet(isPresented: $isShowingSkkservSheet) {
                 SKKServDictView(settingsViewModel: settingsViewModel,
                                 isShowSheet: $isShowingSkkservSheet,
@@ -117,13 +126,34 @@ struct DictionariesView: View {
         }
     }
 
+    @ViewBuilder
+    private func readFailureButton(status: DictLoadStatus) -> some View {
+        if case .loaded(_, let failures) = status, !failures.isEmpty {
+            Button {
+                presentedReadFailures = failures
+                isShowingReadFailures = true
+            } label: {
+                Text("DictReadFailureShow")
+            }
+            .buttonStyle(.borderless)
+            .controlSize(.small)
+        }
+    }
+
+    @ViewBuilder
+    private func readFailureButton(setting: DictSetting) -> some View {
+        if setting.enabled, let status = settingsViewModel.dictLoadingStatuses[setting.id] {
+            readFailureButton(status: status)
+        }
+    }
+
     private func loadingStatus(of status: DictLoadStatus) -> String {
         switch status {
-        case .loaded(success: let entryCount, failure: let failureCount):
-            if failureCount == 0 {
+        case .loaded(success: let entryCount, failures: let failures):
+            if failures.isEmpty {
                 return String(localized: "LoadingStatusLoaded \(entryCount)")
             } else {
-                return String(localized: "LoadingStatusLoaded \(entryCount) WithError \(failureCount)")
+                return String(localized: "LoadingStatusLoaded \(entryCount) WithError \(failures.count)")
             }
         case .loading:
             return String(localized: "LoadingStatusLoading")
@@ -132,6 +162,43 @@ struct DictionariesView: View {
         case .fail(let error):
             return String(localized: "LoadingStatusError \(error as NSError)")
         }
+    }
+}
+
+private struct DictReadFailuresSheet: View {
+    let failures: [DictReadFailure]
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        VStack {
+            Text("DictReadFailureTitle")
+                .font(.headline)
+                .padding(.top)
+            List(failures, id: \.lineNumber) { failure in
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("DictReadFailureLine \(failure.lineNumber)")
+                        .font(.headline)
+                    Text(failure.reason.localizedDescription)
+                        .font(.subheadline)
+                    Text(failure.line)
+                        .font(.body.monospaced())
+                        .textSelection(.enabled)
+                }
+                .padding(.vertical, 2)
+            }
+            HStack {
+                Spacer()
+                Button {
+                    dismiss()
+                } label: {
+                    Text("Done")
+                        .padding([.leading, .trailing])
+                }
+                .keyboardShortcut(.defaultAction)
+                .padding([.trailing, .bottom, .top])
+            }
+        }
+        .frame(width: 480, height: 320)
     }
 }
 
@@ -148,8 +215,13 @@ struct DictionariesView_Previews: PreviewProvider {
             DictSetting(filename: "SKK-JISYO.error", enabled: true, type: .traditional(.utf8), saveToUserDict: true),
         ]
         let settings = try! SettingsViewModel(dictSettings: dictSettings)
+        settings.userDictLoadingStatus = .loaded(success: 10, failures: [
+            DictReadFailure(lineNumber: 4, line: "い /胃", reason: .unterminatedCandidates),
+        ])
         settings.dictLoadingStatuses = [
-            "SKK-JISYO.L": .loaded(success: 123456, failure: 789),
+            "SKK-JISYO.L": .loaded(success: 123456, failures: [
+                DictReadFailure(lineNumber: 12, line: "い/胃/", reason: .missingSeparator),
+            ]),
             "SKK-JISYO.sample.utf-8": .disabled,
             "SKK-JISYO.dummy": .loading,
             "SKK-JISYO.error": .fail(DictionariesViewPreviewError.dummy)

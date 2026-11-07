@@ -10,9 +10,9 @@ struct MemoryDict: SearchableDict, DictProtocol, Sendable {
      */
     private(set) var entries: [String: [Word]]
     /**
-     * 読み込みに失敗した行数。コメント行、空行は除いた行数。
+     * 読み込みに失敗した行。コメント行、空行は除く。
      */
-    private(set) var failedEntryCount: Int
+    private(set) var readFailures: [DictReadFailure]
     /**
      * 重複を含まない送りなしの読みの配列。最近変換したものが後に登場する。
      *
@@ -31,14 +31,15 @@ struct MemoryDict: SearchableDict, DictProtocol, Sendable {
         var okuriNashiYomis: [String] = []
         var okuriAriYomis: [String] = []
         var lineNumber = 0
-        var failedEntryCount = 0
+        var readFailures: [DictReadFailure] = []
 
         source.enumerateLines { line, stop in
             lineNumber += 1
             if line.isEmpty || line.hasPrefix(";") {
                 return
             }
-            if let entry = Entry(line: line, dictId: dictId) {
+            switch Entry.parse(line: line, dictId: dictId) {
+            case .success(let entry):
                 // 空文字列への変換候補をもつ場合、entry.candidatesは空になっているのでスキップする
                 if !entry.candidates.isEmpty {
                     if let candidates = dict[entry.yomi] {
@@ -52,13 +53,13 @@ struct MemoryDict: SearchableDict, DictProtocol, Sendable {
                         okuriNashiYomis.append(entry.yomi)
                     }
                 }
-            } else {
-                failedEntryCount += 1
-                logger.warning("辞書 \(dictId, privacy: .public) の読み込みで \(lineNumber)行目を正常に読み込めなかったためこの行をスキップします")
+            case .failure(let reason):
+                readFailures.append(DictReadFailure(lineNumber: lineNumber, line: line, reason: reason))
+                logger.warning("辞書 \(dictId, privacy: .public) の読み込みで \(lineNumber)行目を正常に読み込めなかったためこの行をスキップします (\(String(describing: reason), privacy: .public))")
             }
         }
         entries = dict
-        self.failedEntryCount = failedEntryCount
+        self.readFailures = readFailures
         self.okuriNashiYomis = okuriNashiYomis.reversed()
         self.okuriAriYomis = okuriAriYomis.reversed()
     }
@@ -66,7 +67,7 @@ struct MemoryDict: SearchableDict, DictProtocol, Sendable {
     init(entries: [String: [Word]], saveToUserDict: Bool = true) {
         self.entries = entries
         self.saveToUserDict = saveToUserDict
-        failedEntryCount = 0
+        readFailures = []
         for yomi in entries.keys {
             if yomi.isOkuriAri {
                 okuriAriYomis.append(yomi)
@@ -78,15 +79,15 @@ struct MemoryDict: SearchableDict, DictProtocol, Sendable {
 
     init(okuriAriEntries: [String: [Word]], okuriNashiEntries: [String: [Word]], saveToUserDict: Bool = true) {
         self.entries = okuriAriEntries.merging(okuriNashiEntries) { current, _  in current }
-        failedEntryCount = 0
+        readFailures = []
         okuriAriYomis = Array(okuriAriEntries.keys)
         okuriNashiYomis = Array(okuriNashiEntries.keys)
         self.saveToUserDict = saveToUserDict
     }
 
-    init(entries: [String: [Word]], failedEntryCount: Int, okuriNashiYomis: [String], okuriAriYomis: [String], saveToUserDict: Bool) {
+    init(entries: [String: [Word]], readFailures: [DictReadFailure], okuriNashiYomis: [String], okuriAriYomis: [String], saveToUserDict: Bool) {
         self.entries = entries
-        self.failedEntryCount = failedEntryCount
+        self.readFailures = readFailures
         self.okuriNashiYomis = okuriNashiYomis
         self.okuriAriYomis = okuriAriYomis
         self.saveToUserDict = saveToUserDict
@@ -97,7 +98,7 @@ struct MemoryDict: SearchableDict, DictProtocol, Sendable {
     nonisolated func with(saveToUserDict: Bool) -> MemoryDict {
         MemoryDict(
             entries: entries,
-            failedEntryCount: failedEntryCount,
+            readFailures: readFailures,
             okuriNashiYomis: okuriNashiYomis,
             okuriAriYomis: okuriAriYomis,
             saveToUserDict: saveToUserDict

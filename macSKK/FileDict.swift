@@ -209,7 +209,7 @@ enum FileDictType: Equatable {
             logger.log("辞書 \(self.id, privacy: .public) から \(self.entryCount) エントリ読み込みました")
             NotificationCenter.default.post(name: notificationNameDictLoad,
                                             object: DictLoadEvent(id: self.id,
-                                                                  status: .loaded(success: entryCount, failure: failedEntryCount),
+                                                                  status: .loaded(success: entryCount, failures: readFailures),
                                                                   trigger: .load))
         case .failure(let error):
             logger.error("辞書 \(self.id, privacy: .public) の読み込みでエラーが発生しました: \(error)")
@@ -317,6 +317,11 @@ enum FileDictType: Equatable {
      */
     var failedEntryCount: Int { return searchable.failedEntryCount }
 
+    /**
+     * 読み込みに失敗した行。コメント行、空行は除く。
+     */
+    var readFailures: [DictReadFailure] { return searchable.readFailures }
+
     // MARK: DictProtocol
     @MainActor func refer(_ yomi: String, option: DictReferringOption?) -> [Word] {
         return searchable.refer(yomi, option: option)
@@ -345,7 +350,7 @@ enum FileDictType: Equatable {
         modifyWritable { $0.add(yomi: yomi, word: word) }
         NotificationCenter.default.post(name: notificationNameDictLoad,
                                         object: DictLoadEvent(id: self.id,
-                                                              status: .loaded(success: entryCount, failure: failedEntryCount),
+                                                              status: .loaded(success: entryCount, failures: readFailures),
                                                               trigger: .edit))
         hasUnsavedChanges = true
     }
@@ -360,7 +365,7 @@ enum FileDictType: Equatable {
             hasUnsavedChanges = true
             NotificationCenter.default.post(name: notificationNameDictLoad,
                                             object: DictLoadEvent(id: self.id,
-                                                                  status: .loaded(success: entryCount, failure: failedEntryCount),
+                                                                  status: .loaded(success: entryCount, failures: readFailures),
                                                                   trigger: .edit))
             return true
         }
