@@ -27,7 +27,7 @@ jobs:
         id: app-token
         uses: actions/create-github-app-token@v3.3.0
         with:
-          app-id: ${{ secrets.HOMEBREW_MACSKK_APP_ID }}
+          client-id: ${{ vars.HOMEBREW_MACSKK_CLIENT_ID }}
           private-key: ${{ secrets.HOMEBREW_MACSKK_APP_PRIVATE_KEY }}
           owner: mtgto
           repositories: homebrew-macSKK
