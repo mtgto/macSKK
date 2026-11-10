@@ -26,10 +26,10 @@ $ ./build_restart.sh
 > [!NOTE]
 > `build_restart.sh` はDebug構成でビルドします。Debug構成ではInfo.plistに `LSUIElement` と `LSBackgroundOnly` が設定されないため、macSKKが通常のアプリとして扱われます。そのためmacOSの再起動やログアウトのときに、一度終了したmacSKKがすぐ自動で起動し直され、「"macSKK"が終了しないため再起動できませんでした」というダイアログが表示されることがあります。その場合はもう一度再起動を実行してください。
 
-## iCloudでの設定同期について
+## iCloudでの同期について
 
-設定をiCloudで同期する機能 (`NSUbiquitousKeyValueStore`) には `com.apple.developer.ubiquity-kvstore-identifier` というentitlementが必要で、これを使うにはApp IDにiCloud capabilityを有効にしたプロビジョニングプロファイルが要ります。
+設定をiCloudで同期する機能 (`NSUbiquitousKeyValueStore`) には `com.apple.developer.ubiquity-kvstore-identifier`、ユーザー辞書をiCloudで同期する機能 (CloudKit) には `com.apple.developer.icloud-services` と `com.apple.developer.icloud-container-identifiers` というentitlementが必要です。これらを使うには、App IDにiCloud capabilityを有効にしてCloudKitのコンテナ `iCloud.net.mtgto.inputmethod.macSKK` を割り当てたプロビジョニングプロファイルが要ります。
 
-リポジトリの標準の設定 (`macSKK/macSKK.entitlements`) にはこのentitlementを含めていないため、Apple Developer Programに参加していなくてもこれまでどおりビルドできます。このビルドでは設定画面のiCloud同期のトグルが無効になるだけで、それ以外の動作は変わりません。
+リポジトリの標準の設定 (`macSKK/macSKK.entitlements`) にはこのentitlementを含めていないため、Apple Developer Programに参加していなくてもこれまでどおりビルドできます。このビルドでは設定画面のiCloud同期のトグル (設定とユーザー辞書) が無効になるだけで、それ以外の動作は変わりません。
 
-手元でiCloud同期を有効にしたビルドを作る場合は、Developer PortalでApp IDにiCloud capabilityを有効にしたプロビジョニングプロファイルを作成・インストールした上で、`macSKK/Config/Local.xcconfig.sample` を `macSKK/Config/Local.xcconfig` にコピーして自分の環境に合わせて書き換えてください。
+手元でiCloud同期を有効にしたビルドを作る場合は、Developer PortalでApp IDにiCloud capabilityを有効にしてCloudKitのコンテナを割り当てたプロビジョニングプロファイルを作成・インストールした上で、`macSKK/Config/Local.xcconfig.sample` を `macSKK/Config/Local.xcconfig` にコピーして自分の環境に合わせて書き換えてください。

@@ -12,8 +12,12 @@ struct UNNotifier {
     static let userNotificationWriteErrorIdentifier = "net.mtgto.inputmethod.macSKK.userNotification.userDictWriteError"
     // skkservの自動無効化の通知センター用通知のID
     static let userNotificationSKKServAutoDisabledIdentifier = "net.mtgto.inputmethod.macSKK.userNotification.skkservAutoDisabled"
+    // ユーザー辞書のiCloud同期を自動で停止したことの通知センター用通知のID
+    static let userNotificationUserDictSyncStoppedIdentifier = "net.mtgto.inputmethod.macSKK.userNotification.userDictSyncStopped"
     // iCloudから設定を取り込んだことの通知センター用通知のID。
     static let userNotificationSettingsSyncedIdentifier = "net.mtgto.inputmethod.macSKK.userNotification.settingsSynced"
+    // 他のMacからユーザー辞書の変更を取り込んだことの通知センター用通知のID
+    static let userNotificationUserDictSyncedIdentifier = "net.mtgto.inputmethod.macSKK.userNotification.userDictSynced"
 
     static func sendNotificationForUserDict(readError: any Error) {
         let content = UNMutableNotificationContent()
@@ -60,6 +64,33 @@ struct UNNotifier {
         content.body = String(localized: "UNUserDictWriteErrorBody", comment: "ユーザー辞書の永続化に失敗しました")
 
         let request = UNNotificationRequest(identifier: Self.userNotificationWriteErrorIdentifier, content: content, trigger: nil)
+        sendUserNotification(request: request)
+    }
+
+    static func sendNotificationForUserDictSynced(changes: MemoryDict.CandidateChanges) {
+        let content = UNMutableNotificationContent()
+        content.title = String(localized: "UNUserDictSyncedTitle", comment: "ユーザー辞書がiCloudと同期されました")
+        // 0件の項目は省く
+        let counts = [
+            (changes.addedCount, "UNUserDictSyncedAdded"),
+            (changes.updatedCount, "UNUserDictSyncedUpdated"),
+            (changes.removedCount, "UNUserDictSyncedRemoved"),
+        ].filter { $0.0 > 0 }.map { count, key in
+            String(format: String(localized: LocalizedStringResource(stringLiteral: key)), count)
+        }
+        content.body = String(format: String(localized: "UNUserDictSyncedBody", comment: "他のMacで変更されたユーザー辞書を取り込みました (%@)"),
+                              ListFormatter.localizedString(byJoining: counts))
+
+        let request = UNNotificationRequest(identifier: Self.userNotificationUserDictSyncedIdentifier, content: content, trigger: nil)
+        sendUserNotification(request: request)
+    }
+
+    static func sendNotificationForUserDictSyncStopped(reason: UserDictSyncResetReason) {
+        let content = UNMutableNotificationContent()
+        content.title = String(localized: "UNUserDictSyncStoppedTitle", comment: "ユーザー辞書のiCloud同期を停止しました")
+        content.body = reason.localizedMessage
+
+        let request = UNNotificationRequest(identifier: Self.userNotificationUserDictSyncStoppedIdentifier, content: content, trigger: nil)
         sendUserNotification(request: request)
     }
 
