@@ -42,6 +42,11 @@ final class ReadonlyMemoryDictTests: XCTestCase {
             """
         let dict = ReadonlyMemoryDict(dictId: "testDict", source: source)
         XCTAssertEqual(dict.failedEntryCount, 2)
+        XCTAssertEqual(dict.readFailures, [
+            DictReadFailure(lineNumber: 2, line: "不正な行", reason: .missingSeparator),
+            DictReadFailure(lineNumber: 3, line: "い い /胃/", reason: .spaceInYomi),
+        ])
+        XCTAssertEqual(dict.with(saveToUserDict: false).readFailures, dict.readFailures)
         XCTAssertEqual(dict.entryCount, 2)
         XCTAssertEqual(dict.okuriNashiYomis, ["あ", "う"])
     }
