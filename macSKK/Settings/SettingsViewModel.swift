@@ -286,7 +286,7 @@ final class SettingsViewModel: ObservableObject {
             self.systemDict = .daijirin
         }
 
-        selectCandidateKeys = UserDefaults.app.string(forKey: UserDefaultsKeys.selectCandidateKeys)!
+        selectCandidateKeys = SelectCandidateKeys.sanitize(UserDefaults.app.string(forKey: UserDefaultsKeys.selectCandidateKeys))
         enterNewLine = UserDefaults.app.bool(forKey: UserDefaultsKeys.enterNewLine)
         showCompletion = UserDefaults.app.bool(forKey: UserDefaultsKeys.showCompletion)
         showCandidateForCompletion = UserDefaults.app.bool(forKey: UserDefaultsKeys.showCandidateForCompletion)
@@ -947,9 +947,8 @@ final class SettingsViewModel: ObservableObject {
                 annotationBackgroundColor = color
             }
         case UserDefaultsKeys.selectCandidateKeys:
-            if let selectCandidateKeys = UserDefaults.app.string(forKey: key) {
-                self.selectCandidateKeys = selectCandidateKeys
-            }
+            // 手で書き換えられた値などで候補パネルの表示が範囲外アクセスしないように不正な値はデフォルト値にする。
+            selectCandidateKeys = SelectCandidateKeys.sanitize(UserDefaults.app.string(forKey: key))
         case UserDefaultsKeys.enterNewLine:
             enterNewLine = UserDefaults.app.bool(forKey: key)
         case UserDefaultsKeys.showCompletion:
@@ -1110,7 +1109,7 @@ final class SettingsViewModel: ObservableObject {
             responseEncoding: .japaneseEUC,
             saveToUserDict: true,
             enableCompletion: false)
-        selectCandidateKeys = "123456789"
+        selectCandidateKeys = SelectCandidateKeys.default
         findCompletionFromAllDicts = false
         keyBindingSets = [KeyBindingSet.defaultKeyBindingSet]
         selectedKeyBindingSet = KeyBindingSet.defaultKeyBindingSet

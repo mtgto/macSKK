@@ -170,6 +170,36 @@ final class SettingsSyncTests: XCTestCase {
         XCTAssertEqual(store.setCount, setCountBeforeApply, "取り込んだ設定がiCloudに送り返されています")
     }
 
+    /// iCloudから不正な選択キーを取り込んだときはデフォルト値になること
+    func testInvalidSelectCandidateKeysFromStoreFallsBackToDefault() {
+        let preserved = preserveUserDefaults()
+        defer { restoreUserDefaults(preserved) }
+
+        UserDefaults.app.set("ASDFGHJKL", forKey: UserDefaultsKeys.selectCandidateKeys)
+        let store = FakeKeyValueStore()
+        let settingsViewModel = makeSettingsViewModel(store: store)
+        settingsViewModel.enableSyncSettingsWithiCloud(initialSync: .pushLocal)
+
+        store.set("AAB", forKey: UserDefaultsKeys.selectCandidateKeys)
+        postDidChangeExternallyNotification(changedKeys: [UserDefaultsKeys.selectCandidateKeys])
+        pumpRunLoop { settingsViewModel.selectCandidateKeys == SelectCandidateKeys.default }
+
+        XCTAssertEqual(settingsViewModel.selectCandidateKeys, SelectCandidateKeys.default)
+        XCTAssertEqual(Global.selectCandidateKeys, Array(SelectCandidateKeys.default))
+    }
+
+    /// 保存されていた選択キーが不正なときは起動時にデフォルト値になること
+    func testInvalidSelectCandidateKeysInUserDefaultsFallsBackToDefault() {
+        let preserved = preserveUserDefaults()
+        defer { restoreUserDefaults(preserved) }
+
+        UserDefaults.app.set("12345", forKey: UserDefaultsKeys.selectCandidateKeys)
+        let settingsViewModel = makeSettingsViewModel(store: FakeKeyValueStore())
+
+        XCTAssertEqual(settingsViewModel.selectCandidateKeys, SelectCandidateKeys.default)
+        XCTAssertEqual(Global.selectCandidateKeys, Array(SelectCandidateKeys.default))
+    }
+
     // MARK: - 取り込んだことの通知
 
     /// 起動時にiCloudの設定を取り込んだとき、実際に値が変わった設定のカテゴリだけが通知されること

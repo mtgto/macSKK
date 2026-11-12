@@ -77,6 +77,12 @@
 "Show Annotation" = "現在の変換候補の注釈を表示";
 "System Dictionary for annotation" = "注釈に使用するシステム辞書";
 "Keys of selecting candidates" = "変換候補の決定に使用するキー";
+"Custom…" = "カスタム…";
+"Keys" = "キー";
+"SelectCandidateKeysDescription" = "変換候補の選択に使う9つのキーを入力してください。スペースを除く半角英数字と記号が使え、大文字と小文字は区別しません。Shiftを押しながら入力する記号や、キーバインドに割り当てたキーでは変換候補を選択できません。";
+"SelectCandidateKeysErrorLength %lld %lld" = "%1$lld文字で入力してください (現在%2$lld文字)";
+"SelectCandidateKeysErrorDuplicated %@" = "重複している文字があります: %@";
+"SelectCandidateKeysErrorInvalidCharacters %@" = "使用できない文字があります: %@";
 "Copy" = "コピー";
 "Number of inline candidates" = "インラインで表示する変換候補の数";
 "Number of candidates in panel" = "変換候補パネルに表示する変換候補の数";

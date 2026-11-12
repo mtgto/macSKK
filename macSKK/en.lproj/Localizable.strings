@@ -77,6 +77,12 @@
 "Show Annotation" = "Show the annotation of the candidate in current";
 "System Dictionary for annotation" = "System Dictionary for annotation";
 "Keys of selecting candidates" = "Keys of selecting candidates";
+"Custom…" = "Custom…";
+"Keys" = "Keys";
+"SelectCandidateKeysDescription" = "Enter 9 keys to select candidates. ASCII letters, digits and symbols except space are allowed, and uppercase and lowercase letters are treated the same. Symbols that require the Shift key and keys assigned in key bindings cannot be used to select candidates.";
+"SelectCandidateKeysErrorLength %lld %lld" = "Enter %1$lld characters (currently %2$lld)";
+"SelectCandidateKeysErrorDuplicated %@" = "Duplicated characters: %@";
+"SelectCandidateKeysErrorInvalidCharacters %@" = "Invalid characters: %@";
 "Copy" = "Copy";
 "Number of inline candidates" = "Number of inline candidates";
 "Number of candidates in panel" = "Number of candidates in panel";
