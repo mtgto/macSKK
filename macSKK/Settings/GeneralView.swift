@@ -6,6 +6,23 @@ import SwiftUI
 struct GeneralView: View {
     @StateObject var settingsViewModel: SettingsViewModel
     @State private var isShowingInputModeSettings = false
+    @State private var isShowingSelectCandidateKeysSheet = false
+
+    /// Pickerで「カスタム…」を表すタグ。空文字列は選択キーとして不正なので実際の値と衝突しない
+    private static let customSelectCandidateKeysTag = ""
+
+    /// 「カスタム…」が選ばれたときは値を変えずにシートを開く。キャンセルされたらPickerは元の値のまま
+    private var selectCandidateKeysSelection: Binding<String> {
+        Binding {
+            settingsViewModel.selectCandidateKeys
+        } set: { newValue in
+            if newValue == Self.customSelectCandidateKeysTag {
+                isShowingSelectCandidateKeysSheet = true
+            } else {
+                settingsViewModel.selectCandidateKeys = newValue
+            }
+        }
+    }
 
     var body: some View {
         VStack {
@@ -35,10 +52,20 @@ struct GeneralView: View {
                     Text("SystemDictDaijirin").tag(SystemDict.Kind.daijirin)
                     Text("SystemDictWisdom").tag(SystemDict.Kind.wisdom)
                 }.disabled(!settingsViewModel.showAnnotation)
-                Picker("Keys of selecting candidates", selection: $settingsViewModel.selectCandidateKeys) {
-                    Text("123456789").tag("123456789")
-                    Text("ASDFGHJKL").tag("ASDFGHJKL")
-                    Text("AOEUIDHTN").tag("AOEUIDHTN")
+                Picker("Keys of selecting candidates", selection: selectCandidateKeysSelection) {
+                    ForEach(SelectCandidateKeys.presets, id: \.self) { keys in
+                        Text(keys).tag(keys)
+                    }
+                    if !SelectCandidateKeys.presets.contains(settingsViewModel.selectCandidateKeys) {
+                        Divider()
+                        Text(settingsViewModel.selectCandidateKeys).tag(settingsViewModel.selectCandidateKeys)
+                    }
+                    Divider()
+                    Text("Custom…").tag(Self.customSelectCandidateKeysTag)
+                }
+                .sheet(isPresented: $isShowingSelectCandidateKeysSheet) {
+                    SelectCandidateKeysView(settingsViewModel: settingsViewModel,
+                                            keys: settingsViewModel.selectCandidateKeys)
                 }
                 Picker("Behavior of Comma", selection: $settingsViewModel.comma) {
                     ForEach(Punctuation.Comma.allCases, id: \.id) { comma in

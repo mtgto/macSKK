@@ -134,6 +134,9 @@
 		CE8871462E63ECB700E20BFB /* kana-rule-azik-us.conf in Resources */ = {isa = PBXBuildFile; fileRef = CE8871452E63ECB700E20BFB /* kana-rule-azik-us.conf */; };
 		CE8DFE092CBEAA2900A24230 /* Character+AdditionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE8DFE082CBEAA1F00A24230 /* Character+AdditionsTests.swift */; };
 		CE97887B2A9B93EB00F9B196 /* DirectModeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE97887A2A9B93EB00F9B196 /* DirectModeView.swift */; };
+		CEA0C37F30A5E118001AF9B3 /* SelectCandidateKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA0C37E30A5E118001AF9B3 /* SelectCandidateKeys.swift */; };
+		CEA0C38130A5E118001AF9B3 /* SelectCandidateKeysView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA0C38030A5E118001AF9B3 /* SelectCandidateKeysView.swift */; };
+		CEA0C38330A5E118001AF9B3 /* SelectCandidateKeysTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA0C38230A5E118001AF9B3 /* SelectCandidateKeysTests.swift */; };
 		CEA253942E228E2000618E64 /* SKKServDictSettingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA253932E228E2000618E64 /* SKKServDictSettingTests.swift */; };
 		CEA253962E2290AC00618E64 /* SKKServDictSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA253952E2290AC00618E64 /* SKKServDictSetting.swift */; };
 		CEA253982E23AB7600618E64 /* DictSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA253972E23AB7600618E64 /* DictSetting.swift */; };
@@ -365,6 +368,9 @@
 		CE8871452E63ECB700E20BFB /* kana-rule-azik-us.conf */ = {isa = PBXFileReference; lastKnownFileType = text; path = "kana-rule-azik-us.conf"; sourceTree = "<group>"; };
 		CE8DFE082CBEAA1F00A24230 /* Character+AdditionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Character+AdditionsTests.swift"; sourceTree = "<group>"; };
 		CE97887A2A9B93EB00F9B196 /* DirectModeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectModeView.swift; sourceTree = "<group>"; };
+		CEA0C37E30A5E118001AF9B3 /* SelectCandidateKeys.swift */ = {isa = PBXFileReference; path = SelectCandidateKeys.swift; sourceTree = "<group>"; };
+		CEA0C38030A5E118001AF9B3 /* SelectCandidateKeysView.swift */ = {isa = PBXFileReference; path = SelectCandidateKeysView.swift; sourceTree = "<group>"; };
+		CEA0C38230A5E118001AF9B3 /* SelectCandidateKeysTests.swift */ = {isa = PBXFileReference; path = SelectCandidateKeysTests.swift; sourceTree = "<group>"; };
 		CEA253932E228E2000618E64 /* SKKServDictSettingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServDictSettingTests.swift; sourceTree = "<group>"; };
 		CEA253952E2290AC00618E64 /* SKKServDictSetting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKKServDictSetting.swift; sourceTree = "<group>"; };
 		CEA253972E23AB7600618E64 /* DictSetting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictSetting.swift; sourceTree = "<group>"; };
@@ -694,6 +700,7 @@
 				CED7CA572A83BFE9004EF988 /* fixture */,
 				CE1E7BAA2E406B6700C2E410 /* URL+AdditionsTests.swift */,
 				CE25D7DA307A95290080B25E /* MockTextInput.swift */,
+				CEA0C38230A5E118001AF9B3 /* SelectCandidateKeysTests.swift */,
 			);
 			path = macSKKTests;
 			sourceTree = "<group>";
@@ -759,6 +766,8 @@
 				CE2157652B2EA985006E4C41 /* UserDefaultsKeys.swift */,
 				CE420SYNC2F00000100000001 /* SettingsSync.swift */,
 				CEA602AB2F02CFB000E605F2 /* OptionalBackgroundModifier.swift */,
+				CEA0C37E30A5E118001AF9B3 /* SelectCandidateKeys.swift */,
+				CEA0C38030A5E118001AF9B3 /* SelectCandidateKeysView.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -1088,6 +1097,7 @@
 				CEB52CC62E080B030025542F /* DateConversionsView.swift in Sources */,
 				CED7F51F2AB5F4A7007FC6BD /* Character+Additions.swift in Sources */,
 				CE2157662B2EA985006E4C41 /* UserDefaultsKeys.swift in Sources */,
+				CEA0C38130A5E118001AF9B3 /* SelectCandidateKeysView.swift in Sources */,
 				CE420SYNC2F00000100000002 /* SettingsSync.swift in Sources */,
 				CE420CSV2F00000100000002 /* CloudSyncView.swift in Sources */,
 				CE84A3B929570C37009394C4 /* InputController.swift in Sources */,
@@ -1116,6 +1126,7 @@
 				4B8E87D42CE05C40004E7461 /* CurrentInput.swift in Sources */,
 				CE7F9AD92AADEBF9001B1877 /* AppDelegate.swift in Sources */,
 				CEF0825B296D8FF000646366 /* CandidatesView.swift in Sources */,
+				CEA0C37F30A5E118001AF9B3 /* SelectCandidateKeys.swift in Sources */,
 				CED098512B95F32600F2E844 /* WorkaroundView.swift in Sources */,
 				CE84A3E0295717CB009394C4 /* StateMachine.swift in Sources */,
 				CED7CA3C2A839603004EF988 /* UpdateChecker.swift in Sources */,
@@ -1188,6 +1199,7 @@
 				7A1B2C3D4E5F60718293A001 /* ReadonlyMemoryDictMemoryTests.swift in Sources */,
 				CE06CA342AAC199500E80E5E /* UserDict+Utilities.swift in Sources */,
 				CE84A3E9295DA504009394C4 /* RomajiTests.swift in Sources */,
+				CEA0C38330A5E118001AF9B3 /* SelectCandidateKeysTests.swift in Sources */,
 				CE4CB5CE2AD55DF90046FA34 /* NumberEntryTests.swift in Sources */,
 				CE49A2782C19E07800D53CFE /* KeyBindingSetTests.swift in Sources */,
 				CEA253942E228E2000618E64 /* SKKServDictSettingTests.swift in Sources */,
