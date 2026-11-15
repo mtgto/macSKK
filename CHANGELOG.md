@@ -1,4 +1,12 @@
 # CHANGELOG
+## v2.23.0 (2026-11-15)
+
+- 動作確認用にDevelopment署名・公証なしのインストーラを作るdev-pkgターゲットを追加する (#531)
+- create-github-app-tokenのapp-idをclient-idに変える (#546)
+- GitHub Actions環境をXcode 27.2に変更 (before 27.1) (#548)
+- ユーザー辞書をiCloud (CloudKit) で複数のMacと同期する (#547)
+- 変換候補の選択キーを任意の9文字に設定できるようにする (#550)
+
 ## v2.22.2 (2026-11-07)
 
 - GitHub Workflowで使っているアクションをロックファイルで管理 (#537)
