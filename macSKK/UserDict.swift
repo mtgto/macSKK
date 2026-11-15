@@ -50,6 +50,8 @@ enum UserDictAddSource {
     private let ignoreUserDictInPrivateMode: CurrentValueSubject<Bool, Never>
     private var cancellables: Set<AnyCancellable> = []
     private(set) var recentRegisteredCandidates: [RecentRegisteredCandidate] = []
+    /// ユーザー辞書を変換・単語登録・削除したときに、その同期情報を受け取る。iCloud同期が無効のときはnil。
+    var syncChangeHandler: ((UserDictSyncRecord) -> Void)?
     private let maxRecentRegisteredCandidateCount = 3
 
     // MARK: NSFilePresenter
@@ -210,6 +212,8 @@ enum UserDictAddSource {
         if !privateMode.value {
             if let dict = userDict as? FileDict {
                 dict.add(yomi: yomi, word: word)
+                postEditEvent(dict)
+                syncChangeHandler?(.use(yomi: yomi, word: word))
                 if source == .registering {
                     addRecentRegisteredCandidate(yomi: yomi, word: word)
                 }
@@ -240,6 +244,8 @@ enum UserDictAddSource {
             return true
         } else if let dict = userDict as? FileDict {
             if dict.delete(yomi: yomi, word: word) {
+                postEditEvent(dict)
+                syncChangeHandler?(.delete(yomi: yomi, word: word))
                 logger.log("ユーザー辞書からエントリ \(Entry(yomi: yomi, candidates: [word]).serialize(), privacy: .public) を削除しました")
                 recentRegisteredCandidates.removeAll { $0.yomi == yomi && $0.word == word }
                 scheduleSave()
@@ -247,6 +253,70 @@ enum UserDictAddSource {
             }
         }
         return false
+    }
+
+    /// ユーザー辞書をファイルから読み込み済みかどうか
+    var isUserDictLoaded: Bool {
+        (userDict as? FileDict)?.isLoaded ?? false
+    }
+
+    /**
+     * 他の端末から受け取った同期情報をユーザー辞書に反映して保存する。
+     *
+     * 反映中にこの端末で辞書を編集してもよいが、受け取った同期情報より後に編集した変換候補はisSkippedで反映から除くこと。
+     *
+     * - Parameters:
+     *   - records: 他の端末から受け取った同期情報
+     *   - progress: 反映した件数と全体の件数を途中で受け取る
+     *   - isSkipped: 反映しない変換候補かどうか。反映する直前に判定する
+     *   - savesImmediately: すぐに保存するかどうか。取得した変更は再取得できないのですぐに保存する。
+     *     falseなら他の編集と同様に保存を予約する
+     * - Returns: 反映した変換候補の追加・更新・削除
+     */
+    @discardableResult
+    @MainActor func applySyncRecords(_ records: [UserDictSyncRecord],
+                                     progress: ((_ done: Int, _ total: Int) -> Void)? = nil,
+                                     skipping isSkipped: (UserDictSyncKey) -> Bool = { _ in false },
+                                     savesImmediately: Bool = true) async -> MemoryDict.CandidateChanges {
+        guard var dict = userDict as? FileDict, dict.isLoaded, let old = dict.writableDict, !records.isEmpty else {
+            return MemoryDict.CandidateChanges()
+        }
+        await dict.apply(records, progress: progress, skipping: isSkipped)
+        guard let new = dict.writableDict else { return MemoryDict.CandidateChanges() }
+        let changes = old.candidateChanges(to: new, receiving: records.filter { !isSkipped($0.key) })
+        if changes.isEmpty {
+            return changes
+        }
+        logger.log("ユーザー辞書にiCloud同期の変更を反映しました。追加 \(changes.addedCount) 件、更新 \(changes.updatedCount) 件、削除 \(changes.removedCount) 件")
+        for entry in changes.added {
+            logger.log("iCloud同期でユーザー辞書に追加しました: \(entry.serialize(), privacy: .public)")
+        }
+        for entry in changes.updated {
+            logger.log("iCloud同期でユーザー辞書を更新しました: \(entry.serialize(), privacy: .public)")
+        }
+        for entry in changes.removed {
+            logger.log("iCloud同期でユーザー辞書から削除しました: \(entry.serialize(), privacy: .public)")
+        }
+        postEditEvent(dict)
+        // 他の端末で削除された候補は直近の辞書登録履歴からも取り除く
+        recentRegisteredCandidates.removeAll { candidate in
+            !dict.refer(candidate.yomi, option: nil).contains { $0.word == candidate.word.word && $0.okuri == candidate.word.okuri }
+        }
+        if savesImmediately {
+            saveTask?.cancel()
+            save()
+        } else {
+            scheduleSave()
+        }
+        return changes
+    }
+
+    /// ユーザー辞書を編集したことを通知する
+    @MainActor private func postEditEvent(_ dict: FileDict) {
+        NotificationCenter.default.post(name: notificationNameFileDictStatus,
+                                        object: FileDict.StatusEvent(id: dict.id,
+                                                                     status: .loaded(success: dict.entryCount, failures: dict.readFailures),
+                                                                     trigger: .edit))
     }
 
     /// ユーザー辞書の永続化を予約する
@@ -290,6 +360,19 @@ enum UserDictAddSource {
             }
         }
         return nil
+    }
+
+    /// 辞書フォルダ内のファイルが変更されたことを、そのファイルのFileDict (ユーザー辞書を含む) に伝える
+    ///
+    /// 有効な辞書が `with(saveToUserDict:)` で置き換えられていても、その時点の辞書に伝わるよう通知のたびに引く。
+    private func fileDidChange(id: FileDict.ID, modificationDate: Date?) async {
+        let fileDict: FileDict?
+        if let userDict = userDict as? FileDict, userDict.id == id {
+            fileDict = userDict
+        } else {
+            fileDict = self.fileDict(id: id)
+        }
+        await fileDict?.fileDidChange(modificationDate: modificationDate)
     }
 
     var hasUnsavedChanges: Bool {
@@ -355,14 +438,11 @@ extension UserDict: NSFilePresenter {
     nonisolated func presentedSubitemDidChange(at url: URL) {
         // ユーザー辞書のバックアップファイルの場合は無視する
         if Self.ignoredPathExtensions.contains(url.pathExtension) { return }
-        // 削除されたときにaccommodatePresentedSubitemDeletionが呼ばれないがこのメソッドは呼ばれるようだった。
-        // そのためこのメソッドで削除のとき同様の処理を行う。
+        // 辞書フォルダ内のファイルが削除されてもaccommodatePresentedSubitemDeletionは呼ばれず、このメソッドだけが呼ばれる。
+        // そのためファイルが存在しなければ削除されたとみなす。
         if !FileManager.default.fileExists(atPath: url.path) {
             logger.log("変更されたファイル \(url.lastPathComponent, privacy: .public) が見つからないため削除されたと扱います")
             NotificationCenter.default.post(name: notificationNameDictFileDidMove, object: url)
-            return
-        } else if url.lastPathComponent == Self.userDictFilename {
-            // ユーザー辞書ファイル自体はFileDictで監視しているため無視する
             return
         }
 
@@ -371,9 +451,18 @@ extension UserDict: NSFilePresenter {
             if try isFile(url) {
                 try FileManager.default.getRelationship(&relationship, ofDirectoryAt: dictionariesDirectoryURL, toItemAt: url)
                 if case .contains = relationship {
-                    logger.log("ファイル \(url.lastPathComponent, privacy: .public) が辞書フォルダに移動または更新されました")
-                    // 他フォルダから辞書フォルダに移動された
-                    NotificationCenter.default.post(name: notificationNameDictFileDidAppear, object: url)
+                    // URL#resourceValues はキャッシュされた値があればそれを返してしまうため、最新の更新日時を取得する
+                    let modificationDate = (try? FileManager.default.attributesOfItem(atPath: url.path))?[.modificationDate] as? Date
+                    let id = url.lastPathComponent
+                    Task { @MainActor in
+                        await self.fileDidChange(id: id, modificationDate: modificationDate)
+                    }
+                    // ユーザー辞書は辞書の一覧に追加しない
+                    if url.lastPathComponent != Self.userDictFilename {
+                        logger.log("ファイル \(url.lastPathComponent, privacy: .public) が辞書フォルダに移動または更新されました")
+                        // 他フォルダから辞書フォルダに移動された
+                        NotificationCenter.default.post(name: notificationNameDictFileDidAppear, object: url)
+                    }
                 } else {
                     // 辞書ファイルが別フォルダに移動したときにはpresentedSubitem:at:didMoveToも呼ばれる
                     logger.log("ファイル \(url.lastPathComponent, privacy: .public) が更新されましたが辞書フォルダ外なので無視します")
@@ -392,8 +481,12 @@ extension UserDict: NSFilePresenter {
         NotificationCenter.default.post(name: notificationNameDictFileDidMove, object: oldURL)
     }
 
-    // NOTE: 本来ディレクトリ内のファイルが削除したときに呼ばれるはずだが、なぜか呼び出されない。
-    // macOSのバグかもしれない?
+    // NOTE: NSFilePresenter.hでは、NSFileCoordinatorの.forDeletingの前に呼ばれると説明されているが、
+    // macOS 27.2で確かめたところ呼ばれなかった。同じプロセスからでも別のプロセスからでも、
+    // async版・completionHandler版のどちらで実装しても変わらなかった。
+    // (ファイル自身のNSFilePresenterのaccommodatePresentedItemDeletionは呼ばれる)
+    // rmなどNSFileCoordinatorを介さない削除でも当然呼ばれない。
+    // どの場合も presentedSubitemDidChange(at:) は呼ばれるので、削除はそちらで検知する。
     // @see https://stackoverflow.com/questions/50439658/swift-cocoa-how-to-watch-folder-for-changes#comment120683334_50443763
     @concurrent nonisolated func accommodatePresentedSubitemDeletion(at url: URL) async throws {
         logger.log("ファイル \(url.lastPathComponent, privacy: .public) が辞書フォルダから削除されます")

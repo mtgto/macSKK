@@ -127,7 +127,7 @@ struct DictionariesView: View {
     }
 
     @ViewBuilder
-    private func readFailureButton(status: DictLoadStatus) -> some View {
+    private func readFailureButton(status: FileDict.Status) -> some View {
         if case .loaded(_, let failures) = status, !failures.isEmpty {
             Button {
                 presentedReadFailures = failures
@@ -147,7 +147,7 @@ struct DictionariesView: View {
         }
     }
 
-    private func loadingStatus(of status: DictLoadStatus) -> String {
+    private func loadingStatus(of status: FileDict.Status) -> String {
         switch status {
         case .loaded(success: let entryCount, failures: let failures):
             if failures.isEmpty {

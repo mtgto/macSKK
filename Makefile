@@ -8,8 +8,9 @@
 # 設定項目
 #APPLE_ID := hogerappa@gmail.com
 APPLE_TEAM_ID := W3A6B7FDC7
-# iCloudでの設定同期 (NSUbiquitousKeyValueStore) にはentitlementが必要で、
-# App IDにiCloud capabilityを有効にしたDeveloper IDのプロビジョニングプロファイルが要る。
+# iCloudでの設定同期 (NSUbiquitousKeyValueStore) とユーザー辞書の同期 (CloudKit) にはentitlementが必要で、
+# App IDにiCloud capabilityを有効にしてCloudKitのコンテナ iCloud.net.mtgto.inputmethod.macSKK を割り当てた
+# Developer IDのプロビジョニングプロファイルが要る。
 # Developer Portalで作成してインストールし、そのプロファイル名を指定すること。
 # script/export-options.plist の provisioningProfiles にも同じ名前を書くこと。
 # entitlementを含まない macSKK/macSKK.entitlements がリポジトリの標準で、
@@ -17,6 +18,9 @@ APPLE_TEAM_ID := W3A6B7FDC7
 PROVISIONING_PROFILE := macSKKRelease
 ENTITLEMENTS := macSKK/macSKK-iCloud.entitlements
 CREDENTIALS_PROFILE := macSKK
+# dev-pkg で使うDevelopment署名のプロファイル名とビルド構成
+DEV_PROVISIONING_PROFILE := macSKKDev
+DEV_CONFIGURATION := Debug
 VERSION := $(shell xcodebuild -project macSKK.xcodeproj -target macSKK -showBuildSettings -json | jq -r '.[0].buildSettings.MARKETING_VERSION')
 
 WORKDIR := script/work
@@ -36,6 +40,9 @@ TARGET_DSYM_ARCHIVE := $(WORKDIR)/macSKK-$(VERSION)-dSYMs.zip
 APP_PKG_ID := net.mtgto.inputmethod.macSKK.app
 DICT_PKG_ID := net.mtgto.inputmethod.macSKK.dict
 PRODUCT_SIGN_ID := "Developer ID Installer"
+DEV_WORKDIR := $(WORKDIR)/dev
+DEV_APP := $(DEV_WORKDIR)/DerivedData/Build/Products/$(DEV_CONFIGURATION)/macSKK.app
+DEV_PKG := $(DEV_WORKDIR)/macSKK-$(VERSION)-dev.pkg
 
 .PHONY: all
 
@@ -87,6 +94,20 @@ $(TARGET_DSYM_ARCHIVE): $(APP)
 	pushd $(XCARCHIVE)/dSYMs; zip ../../../../$(TARGET_DSYM_ARCHIVE) -r .; popd
 
 release: $(TARGET_DMG) $(TARGET_DSYM_ARCHIVE)
+
+# 動作確認用に別のMacへ持っていくための、Development署名・公証なしのインストーラ。ソースの変更を反映させるため、毎回作り直す。
+# iCloudのentitlementを含むため、インストール先のMacが DEV_PROVISIONING_PROFILE に登録されていないと起動できない。
+# pkgは未署名なので、AirDropなどで持っていくとGatekeeperに止められる。その場合はシステム設定の「プライバシーとセキュリティ」から開くか、
+# `xattr -d com.apple.quarantine` で隔離属性を外すこと。
+.PHONY: dev-pkg
+dev-pkg:
+	rm -rf $(DEV_WORKDIR)
+	xcodebuild -project macSKK.xcodeproj -scheme macSKK -configuration $(DEV_CONFIGURATION) CODE_SIGN_IDENTITY="Apple Development" DEVELOPMENT_TEAM=$(APPLE_TEAM_ID) CODE_SIGN_STYLE=Manual MACSKK_PROVISIONING_PROFILE="$(DEV_PROVISIONING_PROFILE)" MACSKK_ENTITLEMENTS="$(ENTITLEMENTS)" -derivedDataPath $(DEV_WORKDIR)/DerivedData build
+	mkdir -p $(DEV_WORKDIR)/app/Library/Input\ Methods
+	cp -r "$(DEV_APP)" $(DEV_WORKDIR)/app/Library/Input\ Methods
+	pkgbuild --root $(DEV_WORKDIR)/app --component-plist script/app.plist --identifier $(APP_PKG_ID) --version $(VERSION) --install-location / --scripts $(SCRIPTSDIR) $(DEV_WORKDIR)/app.pkg
+	sed -e "s/%TITLE%/macSKK $(VERSION) (Development)/" script/distribution.xml.template > $(DEV_WORKDIR)/distribution.xml
+	productbuild --distribution $(DEV_WORKDIR)/distribution.xml --resources script --package-path $(DEV_WORKDIR) $(DEV_PKG)
 
 clean:
 	rm -rf $(WORKDIR) build

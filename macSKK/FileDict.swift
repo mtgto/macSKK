@@ -8,8 +8,8 @@ import Foundation
 let notificationNameDictFileDidAppear = Notification.Name("dictFileDidAppear")
 // 辞書ディレクトリからファイルが移動されたときに通知する通知の名前。objectは移動前のURL
 let notificationNameDictFileDidMove = Notification.Name("dictFileDidMove")
-// 辞書を読み込んだ結果を通知する通知の名前。objectはDictLoadEvent
-let notificationNameDictLoad = Notification.Name("dictLoad")
+// 辞書の読み込み状態が変わったことを通知する通知の名前。objectはFileDict.StatusEvent
+let notificationNameFileDictStatus = Notification.Name("fileDictStatus")
 
 // 辞書形式
 enum FileDictType: Equatable {
@@ -74,12 +74,18 @@ enum FileDictType: Equatable {
         }
     }
     private(set) var content: Content
+    /// ファイルからの読み込みに一度でも成功したかどうか
+    private(set) var isLoaded: Bool = false
     /**
      * 読み込み専用で保存しないかどうか
      */
     private let readonly: Bool
     /// 検索用の辞書。``UserDict/Snapshot`` に渡す
     var searchable: any SearchableDict { content.searchable }
+    /// 書き込み可能な辞書の中身。読み込み専用の辞書ではnil
+    var writableDict: MemoryDict? {
+        if case .writable(let dict) = content { dict } else { nil }
+    }
     /// この辞書から返した変換候補をユーザー辞書に保存するかどうか
     var saveToUserDict: Bool { searchable.saveToUserDict }
 
@@ -110,14 +116,6 @@ enum FileDictType: Equatable {
         }
     }
 
-    // MARK: NSFilePresenter
-    nonisolated var presentedItemURL: URL? { fileURL }
-    nonisolated let presentedItemOperationQueue: OperationQueue = {
-        let queue = OperationQueue()
-        queue.maxConcurrentOperationCount = 1
-        return queue
-    }()
-
     init(contentsOf fileURL: URL, type: FileDictType, readonly: Bool, saveToUserDict: Bool) throws {
         // iCloud Documents使うときには辞書フォルダが複数になりうるけど、それまではひとまずファイル名をIDとして使う
         self.id = fileURL.lastPathComponent
@@ -126,17 +124,16 @@ enum FileDictType: Equatable {
         self.content = .empty(readonly: readonly, saveToUserDict: saveToUserDict)
         self.readonly = readonly
         self.fileModificationDate = try fileURL.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate
-        super.init()
-        NSFileCoordinator.addFilePresenter(self)
     }
 
-    private init(id: String, fileURL: URL, type: FileDictType, content: Content, readonly: Bool, hasUnsavedChanges: Bool) {
+    private init(id: String, fileURL: URL, type: FileDictType, content: Content, readonly: Bool, hasUnsavedChanges: Bool, fileModificationDate: Date?) {
         self.id = id
         self.fileURL = fileURL
         self.type = type
         self.content = content
         self.readonly = readonly
         self.hasUnsavedChanges = hasUnsavedChanges
+        self.fileModificationDate = fileModificationDate
     }
 
     func with(saveToUserDict: Bool) -> FileDict {
@@ -145,7 +142,8 @@ enum FileDictType: Equatable {
                  type: type,
                  content: content.with(saveToUserDict: saveToUserDict),
                  readonly: readonly,
-                 hasUnsavedChanges: hasUnsavedChanges)
+                 hasUnsavedChanges: hasUnsavedChanges,
+                 fileModificationDate: fileModificationDate)
     }
 
     func load(queue: OperationQueue = OperationQueue()) async {
@@ -155,12 +153,12 @@ enum FileDictType: Equatable {
         let readonly = self.readonly
         let saveToUserDict = self.saveToUserDict
 
-        NotificationCenter.default.post(name: notificationNameDictLoad,
-                                        object: DictLoadEvent(id: id, status: .loading, trigger: .load))
+        NotificationCenter.default.post(name: notificationNameFileDictStatus,
+                                        object: StatusEvent(id: id, status: .loading, trigger: .load))
 
         // ファイルI/O + パースはOperationQueue上で実行し、MainActorをブロックしない
         let result: Result<Content, any Error> = await withCheckedContinuation { continuation in
-            let fileCoordinator = NSFileCoordinator(filePresenter: self)
+            let fileCoordinator = NSFileCoordinator(filePresenter: nil)
             let intent = NSFileAccessIntent.readingIntent(with: fileURL, options: [])
             fileCoordinator.coordinate(with: [intent], queue: queue) { error in
                 if let error {
@@ -214,15 +212,16 @@ enum FileDictType: Equatable {
         switch result {
         case .success(let content):
             self.content = content
+            isLoaded = true
             logger.log("辞書 \(self.id, privacy: .public) から \(self.entryCount) エントリ読み込みました")
-            NotificationCenter.default.post(name: notificationNameDictLoad,
-                                            object: DictLoadEvent(id: self.id,
-                                                                  status: .loaded(success: entryCount, failures: readFailures),
-                                                                  trigger: .load))
+            NotificationCenter.default.post(name: notificationNameFileDictStatus,
+                                            object: StatusEvent(id: self.id,
+                                                                status: .loaded(success: entryCount, failures: readFailures),
+                                                                trigger: .load))
         case .failure(let error):
             logger.error("辞書 \(self.id, privacy: .public) の読み込みでエラーが発生しました: \(error)")
-            NotificationCenter.default.post(name: notificationNameDictLoad,
-                                            object: DictLoadEvent(id: self.id, status: .fail(error), trigger: .load))
+            NotificationCenter.default.post(name: notificationNameFileDictStatus,
+                                            object: StatusEvent(id: self.id, status: .fail(error), trigger: .load))
         }
     }
 
@@ -271,7 +270,7 @@ enum FileDictType: Equatable {
         }
         var coordinationError: NSError?
         var writingError: NSError?
-        let fileCoordinator = NSFileCoordinator(filePresenter: self)
+        let fileCoordinator = NSFileCoordinator(filePresenter: nil)
         // 一時ファイルに書き込み
         let tmpURL = fileURL.deletingLastPathComponent().appendingPathComponent(".\(id).tmp")
         fileCoordinator.coordinate(writingItemAt: tmpURL, error: &coordinationError) { newURL in
@@ -313,7 +312,6 @@ enum FileDictType: Equatable {
 
     deinit {
         logger.log("辞書 \(self.id, privacy: .public) がプロセスから削除されます")
-        NSFileCoordinator.removeFilePresenter(self)
     }
 
     /**
@@ -357,10 +355,15 @@ enum FileDictType: Equatable {
             return
         }
         modifyWritable { $0.add(yomi: yomi, word: word) }
-        NotificationCenter.default.post(name: notificationNameDictLoad,
-                                        object: DictLoadEvent(id: self.id,
-                                                              status: .loaded(success: entryCount, failures: readFailures),
-                                                              trigger: .edit))
+        hasUnsavedChanges = true
+    }
+
+    @MainActor func addAsOldest(yomi: String, word: Word) {
+        guard case .writable = content else {
+            assertionFailure("読み込み専用の辞書 \(id) にエントリを追加しようとしました")
+            return
+        }
+        modifyWritable { $0.addAsOldest(yomi: yomi, word: word) }
         hasUnsavedChanges = true
     }
 
@@ -372,10 +375,6 @@ enum FileDictType: Equatable {
         let deleted = modifyWritable { $0.delete(yomi: yomi, word: word) } ?? false
         if deleted {
             hasUnsavedChanges = true
-            NotificationCenter.default.post(name: notificationNameDictLoad,
-                                            object: DictLoadEvent(id: self.id,
-                                                                  status: .loaded(success: entryCount, failures: readFailures),
-                                                                  trigger: .edit))
             return true
         }
         return false
@@ -395,28 +394,55 @@ enum FileDictType: Equatable {
     }
 }
 
-extension FileDict: NSFilePresenter {
-    // NOTE: 外部エディタで編集したときも、自分自身がNSFileCoordinator経由でsaveした場合もこのメソッドは呼ばれる。
-    // 更新日時が自分自身で保存したときと同じかどうかで判定する。
-    nonisolated func presentedItemDidChange() {
-        // URL#resourceValues はキャッシュされた値があればそれを返してしまうため、最新の更新日時を取得する
-        let modificationDate: Date?
-        if let attributes = try? FileManager.default.attributesOfItem(atPath: fileURL.path) {
-            modificationDate = attributes[.modificationDate] as? Date
-        } else {
-            modificationDate = nil
+extension FileDict {
+    /// 辞書の読み込み状態
+    enum Status {
+        /// 正常に読み込み済み。引数は読み込めたエントリ数と読み込めなかった行
+        case loaded(success: Int, failures: [DictReadFailure])
+        case loading
+        /// 無効に設定されている
+        case disabled
+        case fail(any Error)
+    }
+
+    /// 辞書の読み込み状態の通知オブジェクト
+    struct StatusEvent {
+        /// この通知を発生させた契機。
+        enum Trigger {
+            /// ファイルからの読み込み (`FileDict.load`)。読み込み失敗通知はこの契機のときだけ出す。
+            case load
+            /// ユーザー辞書の編集 (`UserDict.add`/`delete` による学習・削除と、`applySyncRecords` によるiCloud同期の反映)。
+            ///
+            /// 編集でも読み込み状態 (エントリ数) は更新されるが、失敗行数は読み込み時に一度決まる値なので、
+            /// これを `.load` と区別しないと失敗通知が変換のたびに繰り返し出てしまう。
+            case edit
         }
-        Task { @MainActor in
-            if let modificationDate {
-                if modificationDate == self.fileModificationDate {
-                    logger.log("辞書 \(self.id, privacy: .public) の変更は自分自身の保存によるもののため読み込みをスキップします")
-                    return
-                } else {
-                    self.fileModificationDate = modificationDate
-                }
+
+        let id: FileDict.ID
+        let status: Status
+        /// この通知を発生させた契機。
+        let trigger: Trigger
+    }
+}
+
+extension FileDict {
+    /// ファイルが変更されたときに ``UserDict`` から呼ばれる
+    ///
+    /// NSFileCoordinatorは登録したファイルプレゼンターを強参照で保持するため、FileDict自身は登録しない。
+    /// 辞書フォルダを監視しているUserDictが、フォルダ内のファイルの変更をこのメソッドで伝える。
+    ///
+    /// NOTE: 外部エディタで編集したときも、自分自身がNSFileCoordinator経由でsaveした場合も呼ばれる。
+    /// 更新日時が自分自身で保存したときと同じかどうかで判定する。
+    func fileDidChange(modificationDate: Date?) async {
+        if let modificationDate {
+            if modificationDate == fileModificationDate {
+                logger.log("辞書 \(self.id, privacy: .public) の更新日時が前回と同じため読み込みをスキップします")
+                return
+            } else {
+                fileModificationDate = modificationDate
             }
-            logger.log("辞書 \(self.id, privacy: .public) が変更されたため読み込みます")
-            await self.load()
         }
+        logger.log("辞書 \(self.id, privacy: .public) が変更されたため読み込みます")
+        await load()
     }
 }

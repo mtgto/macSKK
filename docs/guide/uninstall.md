@@ -15,3 +15,7 @@
 ::: warning
 ユーザー辞書 (`~/Library/Containers/net.mtgto.inputmethod.macSKK/Data/Documents/Dictionaries/skk-jisyo.utf8`) を削除するとこれまで登録した単語がすべて失われます。必要であればバックアップを取っておいてください。
 :::
+
+## iCloudに設定を同期している場合
+
+iCloudに設定を同期している場合、上記の手順ではiCloudに保存された設定は消えません。iCloudからも削除したい場合は、アンインストールする前に[iCloudから設定を削除](../config/icloud#icloudから設定を削除)の手順で削除してください。

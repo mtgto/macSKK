@@ -124,6 +124,7 @@ struct macSKKApp: App {
             setupSettingsNotification()
             // 取り込んだ設定がGlobalの各要素を更新するため、他の初期化が終わったあとに開始する
             settingsViewModel.startSyncSettingsWithiCloudIfEnabled()
+            settingsViewModel.startSyncUserDictWithiCloudIfEnabled()
         }
     }
 
@@ -280,6 +281,7 @@ struct macSKKApp: App {
             // 一度iCloudに保存した設定は同期を外しても消えないので、
             // ユーザーが設定画面で選んだものだけを同期する。
             UserDefaultsKeys.syncedSettingsCategories: [String](),
+            UserDefaultsKeys.syncUserDictWithiCloud: false,
         ])
     }
 

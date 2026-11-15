@@ -1,0 +1,40 @@
+{
+  "configurations" : [
+    {
+      "id" : "C693F64D-3D91-4270-BE78-1FA0FF852188",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "environmentVariableEntries" : [
+      {
+        "key" : "MACSKK_IS_TEST",
+        "value" : "1"
+      },
+      {
+        "key" : "DISABLE_USER_DICT_SAVE",
+        "value" : "1"
+      },
+      {
+        "key" : "MACSKK_CLOUDKIT_TESTS",
+        "value" : "1"
+      }
+    ]
+  },
+  "testTargets" : [
+    {
+      "selectedTests" : [
+        "UserDictSyncerIntegrationTests"
+      ],
+      "target" : {
+        "containerPath" : "container:macSKK.xcodeproj",
+        "identifier" : "CE5ECF422957034D00E7BE7D",
+        "name" : "macSKKTests"
+      }
+    }
+  ],
+  "version" : 1
+}
