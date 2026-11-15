@@ -1,0 +1,42 @@
+{
+  "configurations" : [
+    {
+      "id" : "ADFFC3DB-C74C-4799-A662-ADA83FAEA688",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "environmentVariableEntries" : [
+      {
+        "key" : "MACSKK_IS_TEST",
+        "value" : "1"
+      },
+      {
+        "key" : "DISABLE_USER_DICT_SAVE",
+        "value" : "1"
+      }
+    ]
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:macSKK.xcodeproj",
+        "identifier" : "CE5ECF422957034D00E7BE7D",
+        "name" : "macSKKTests"
+      }
+    },
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:macSKK.xcodeproj",
+        "identifier" : "CE04E8893017BB3000310428",
+        "name" : "SKKServClientTests"
+      }
+    }
+  ],
+  "version" : 1
+}

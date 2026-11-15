@@ -8,8 +8,8 @@ import Foundation
 let notificationNameDictFileDidAppear = Notification.Name("dictFileDidAppear")
 // 辞書ディレクトリからファイルが移動されたときに通知する通知の名前。objectは移動前のURL
 let notificationNameDictFileDidMove = Notification.Name("dictFileDidMove")
-// 辞書を読み込んだ結果を通知する通知の名前。objectはDictLoadEvent
-let notificationNameDictLoad = Notification.Name("dictLoad")
+// 辞書の読み込み状態が変わったことを通知する通知の名前。objectはFileDict.StatusEvent
+let notificationNameFileDictStatus = Notification.Name("fileDictStatus")
 
 // 辞書形式
 enum FileDictType: Equatable {
@@ -74,12 +74,18 @@ enum FileDictType: Equatable {
         }
     }
     private(set) var content: Content
+    /// ファイルからの読み込みに一度でも成功したかどうか
+    private(set) var isLoaded: Bool = false
     /**
      * 読み込み専用で保存しないかどうか
      */
     private let readonly: Bool
     /// 検索用の辞書。``UserDict/Snapshot`` に渡す
     var searchable: any SearchableDict { content.searchable }
+    /// 書き込み可能な辞書の中身。読み込み専用の辞書ではnil
+    var writableDict: MemoryDict? {
+        if case .writable(let dict) = content { dict } else { nil }
+    }
     /// この辞書から返した変換候補をユーザー辞書に保存するかどうか
     var saveToUserDict: Bool { searchable.saveToUserDict }
 
@@ -147,8 +153,8 @@ enum FileDictType: Equatable {
         let readonly = self.readonly
         let saveToUserDict = self.saveToUserDict
 
-        NotificationCenter.default.post(name: notificationNameDictLoad,
-                                        object: DictLoadEvent(id: id, status: .loading, trigger: .load))
+        NotificationCenter.default.post(name: notificationNameFileDictStatus,
+                                        object: StatusEvent(id: id, status: .loading, trigger: .load))
 
         // ファイルI/O + パースはOperationQueue上で実行し、MainActorをブロックしない
         let result: Result<Content, any Error> = await withCheckedContinuation { continuation in
@@ -206,15 +212,16 @@ enum FileDictType: Equatable {
         switch result {
         case .success(let content):
             self.content = content
+            isLoaded = true
             logger.log("辞書 \(self.id, privacy: .public) から \(self.entryCount) エントリ読み込みました")
-            NotificationCenter.default.post(name: notificationNameDictLoad,
-                                            object: DictLoadEvent(id: self.id,
-                                                                  status: .loaded(success: entryCount, failure: failedEntryCount),
-                                                                  trigger: .load))
+            NotificationCenter.default.post(name: notificationNameFileDictStatus,
+                                            object: StatusEvent(id: self.id,
+                                                                status: .loaded(success: entryCount, failure: failedEntryCount),
+                                                                trigger: .load))
         case .failure(let error):
             logger.error("辞書 \(self.id, privacy: .public) の読み込みでエラーが発生しました: \(error)")
-            NotificationCenter.default.post(name: notificationNameDictLoad,
-                                            object: DictLoadEvent(id: self.id, status: .fail(error), trigger: .load))
+            NotificationCenter.default.post(name: notificationNameFileDictStatus,
+                                            object: StatusEvent(id: self.id, status: .fail(error), trigger: .load))
         }
     }
 
@@ -343,10 +350,15 @@ enum FileDictType: Equatable {
             return
         }
         modifyWritable { $0.add(yomi: yomi, word: word) }
-        NotificationCenter.default.post(name: notificationNameDictLoad,
-                                        object: DictLoadEvent(id: self.id,
-                                                              status: .loaded(success: entryCount, failure: failedEntryCount),
-                                                              trigger: .edit))
+        hasUnsavedChanges = true
+    }
+
+    @MainActor func addAsOldest(yomi: String, word: Word) {
+        guard case .writable = content else {
+            assertionFailure("読み込み専用の辞書 \(id) にエントリを追加しようとしました")
+            return
+        }
+        modifyWritable { $0.addAsOldest(yomi: yomi, word: word) }
         hasUnsavedChanges = true
     }
 
@@ -358,10 +370,6 @@ enum FileDictType: Equatable {
         let deleted = modifyWritable { $0.delete(yomi: yomi, word: word) } ?? false
         if deleted {
             hasUnsavedChanges = true
-            NotificationCenter.default.post(name: notificationNameDictLoad,
-                                            object: DictLoadEvent(id: self.id,
-                                                                  status: .loaded(success: entryCount, failure: failedEntryCount),
-                                                                  trigger: .edit))
             return true
         }
         return false
@@ -378,6 +386,37 @@ enum FileDictType: Equatable {
         } else {
             .writable(MemoryDict(entries: entries, saveToUserDict: saveToUserDict))
         }
+    }
+}
+
+extension FileDict {
+    /// 辞書の読み込み状態
+    enum Status {
+        /// 正常に読み込み済み。引数は読み込めたエントリ数と読み込みできなかった行数
+        case loaded(success: Int, failure: Int)
+        case loading
+        /// 無効に設定されている
+        case disabled
+        case fail(any Error)
+    }
+
+    /// 辞書の読み込み状態の通知オブジェクト
+    struct StatusEvent {
+        /// この通知を発生させた契機。
+        enum Trigger {
+            /// ファイルからの読み込み (`FileDict.load`)。読み込み失敗通知はこの契機のときだけ出す。
+            case load
+            /// ユーザー辞書の編集 (`UserDict.add`/`delete` による学習・削除と、`applySyncRecords` によるiCloud同期の反映)。
+            ///
+            /// 編集でも読み込み状態 (エントリ数) は更新されるが、失敗行数は読み込み時に一度決まる値なので、
+            /// これを `.load` と区別しないと失敗通知が変換のたびに繰り返し出てしまう。
+            case edit
+        }
+
+        let id: FileDict.ID
+        let status: Status
+        /// この通知を発生させた契機。
+        let trigger: Trigger
     }
 }
 

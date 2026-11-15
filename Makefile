@@ -8,8 +8,9 @@
 # 設定項目
 #APPLE_ID := hogerappa@gmail.com
 APPLE_TEAM_ID := W3A6B7FDC7
-# iCloudでの設定同期 (NSUbiquitousKeyValueStore) にはentitlementが必要で、
-# App IDにiCloud capabilityを有効にしたDeveloper IDのプロビジョニングプロファイルが要る。
+# iCloudでの設定同期 (NSUbiquitousKeyValueStore) とユーザー辞書の同期 (CloudKit) にはentitlementが必要で、
+# App IDにiCloud capabilityを有効にしてCloudKitのコンテナ iCloud.net.mtgto.inputmethod.macSKK を割り当てた
+# Developer IDのプロビジョニングプロファイルが要る。
 # Developer Portalで作成してインストールし、そのプロファイル名を指定すること。
 # script/export-options.plist の provisioningProfiles にも同じ名前を書くこと。
 # entitlementを含まない macSKK/macSKK.entitlements がリポジトリの標準で、

@@ -158,6 +158,11 @@ struct ReadonlyMemoryDict: SearchableDict, DictProtocol, Sendable {
         assertionFailure("読み込み専用の辞書にエントリを追加しようとしました")
     }
 
+    /// 読み込み専用のため追加できない。呼ばれた場合はなにもしない。
+    @MainActor mutating func addAsOldest(yomi: String, word: Word) {
+        assertionFailure("読み込み専用の辞書にエントリを追加しようとしました")
+    }
+
     /// 読み込み専用のため削除できない。呼ばれた場合はなにもせずfalseを返す。
     @MainActor mutating func delete(yomi: String, word: Word) -> Bool {
         assertionFailure("読み込み専用の辞書からエントリを削除しようとしました")

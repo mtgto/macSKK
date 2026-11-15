@@ -1,7 +1,7 @@
 // macSKKの署名まわりのビルド設定。
 //
-// git cloneした状態ではiCloudでの設定同期 (NSUbiquitousKeyValueStore) を含みません。
-// iCloudで設定同期するにはApp IDにiCloud capabilityを有効にしたプロビジョニングプロファイルが
+// git cloneした状態ではiCloudでの設定同期 (NSUbiquitousKeyValueStore) とユーザー辞書の同期 (CloudKit) を含みません。
+// iCloudで同期するにはApp IDにiCloud capabilityを有効にしてCloudKitのコンテナを割り当てたプロビジョニングプロファイルが
 // 必要になるため、含めてしまうとDeveloper Programに参加していない環境でビルドできなくなるためです。
 // iCloud同期の設定が無効になるだけで、それ以外は同じように動きます。
 //
