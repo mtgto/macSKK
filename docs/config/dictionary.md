@@ -16,6 +16,8 @@
 
 即時保存したい場合は **入力メニュー → ユーザー辞書を今すぐ保存** を選択してください。
 
+同じApple AccountでiCloudにサインインした他のMacとユーザー辞書を同期できます。詳しくは[iCloud](./icloud#user-dictionary)を参照してください。
+
 ::: warning
 `Command + Option + Esc` による強制終了やシグナルによる終了では未保存の内容が失われます。
 :::

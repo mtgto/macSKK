@@ -40,7 +40,7 @@ Universal Binary (Apple Silicon & Intel Mac) でビルドしていますが、�
 - [x] [確定アンドゥ](https://mtgto.github.io/macSKK/features/reconvert#確定アンドゥ)
 - [x] [iCloudで設定を複数のMac間で同期する](https://mtgto.github.io/macSKK/config/icloud)
   - 同期する設定の分類 (キーバインド、変換候補パネルなど) はMacごとに選べる
-- [x] [iCloudにマイ辞書を保存して他環境と共有できるようにする](https://mtgto.github.io/macSKK/config/icloud)
+- [x] [iCloudにマイ辞書を保存して他環境と共有できるようにする](https://mtgto.github.io/macSKK/config/icloud#user-dictionary)
 - [ ] マイ辞書の暗号化
   - 編集したい場合は生データでのエクスポート & インポートできるようにする
 
