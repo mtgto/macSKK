@@ -315,7 +315,7 @@ enum UserDictAddSource {
     @MainActor private func postEditEvent(_ dict: FileDict) {
         NotificationCenter.default.post(name: notificationNameFileDictStatus,
                                         object: FileDict.StatusEvent(id: dict.id,
-                                                                     status: .loaded(success: dict.entryCount, failure: dict.failedEntryCount),
+                                                                     status: .loaded(success: dict.entryCount, failures: dict.readFailures),
                                                                      trigger: .edit))
     }
 

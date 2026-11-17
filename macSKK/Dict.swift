@@ -13,6 +13,35 @@ enum DictReferringOption {
     case okuri(String)
 }
 
+/// 従来形式の辞書で1行を読み込めなかった内容。コメント行と空行は含まない。
+struct DictReadFailure: Equatable, Sendable {
+    /// 1始まりの行番号
+    let lineNumber: Int
+    /// 読み込めなかった行の生テキスト
+    let line: String
+    let reason: Reason
+
+    enum Reason: Error, Equatable, Sendable {
+        /// " /" で読みと変換候補が区切られていない
+        case missingSeparator
+        /// 読みに空白が含まれる
+        case spaceInYomi
+        /// 変換候補がスラッシュで終わっていない
+        case unterminatedCandidates
+
+        var localizedDescription: String {
+            switch self {
+            case .missingSeparator:
+                String(localized: "DictReadFailureReasonMissingSeparator")
+            case .spaceInYomi:
+                String(localized: "DictReadFailureReasonSpaceInYomi")
+            case .unterminatedCandidates:
+                String(localized: "DictReadFailureReasonUnterminatedCandidates")
+            }
+        }
+    }
+}
+
 protocol DictProtocol {
     /**
      * 辞書を引き変換候補順に返す

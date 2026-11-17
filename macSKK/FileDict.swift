@@ -216,7 +216,7 @@ enum FileDictType: Equatable {
             logger.log("辞書 \(self.id, privacy: .public) から \(self.entryCount) エントリ読み込みました")
             NotificationCenter.default.post(name: notificationNameFileDictStatus,
                                             object: StatusEvent(id: self.id,
-                                                                status: .loaded(success: entryCount, failure: failedEntryCount),
+                                                                status: .loaded(success: entryCount, failures: readFailures),
                                                                 trigger: .load))
         case .failure(let error):
             logger.error("辞書 \(self.id, privacy: .public) の読み込みでエラーが発生しました: \(error)")
@@ -324,6 +324,11 @@ enum FileDictType: Equatable {
      */
     var failedEntryCount: Int { return searchable.failedEntryCount }
 
+    /**
+     * 読み込みに失敗した行。コメント行、空行は除く。
+     */
+    var readFailures: [DictReadFailure] { return searchable.readFailures }
+
     // MARK: DictProtocol
     @MainActor func refer(_ yomi: String, option: DictReferringOption?) -> [Word] {
         return searchable.refer(yomi, option: option)
@@ -392,8 +397,8 @@ enum FileDictType: Equatable {
 extension FileDict {
     /// 辞書の読み込み状態
     enum Status {
-        /// 正常に読み込み済み。引数は読み込めたエントリ数と読み込みできなかった行数
-        case loaded(success: Int, failure: Int)
+        /// 正常に読み込み済み。引数は読み込めたエントリ数と読み込めなかった行
+        case loaded(success: Int, failures: [DictReadFailure])
         case loading
         /// 無効に設定されている
         case disabled

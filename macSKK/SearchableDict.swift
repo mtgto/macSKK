@@ -20,11 +20,14 @@ protocol SearchableDict: Sendable {
     var saveToUserDict: Bool { get }
     /// 辞書がもっているエントリ数
     var entryCount: Int { get }
-    /// 読み込みに失敗した行数。コメント行、空行は除いた行数。
-    var failedEntryCount: Int { get }
+    /// 読み込みに失敗した行。コメント行、空行は除く。
+    var readFailures: [DictReadFailure] { get }
 }
 
 extension SearchableDict {
+    /// 読み込みに失敗した行数。コメント行、空行は除いた行数。
+    var failedEntryCount: Int { readFailures.count }
+
     nonisolated func refer(_ yomi: String, option: DictReferringOption?) -> [Word] {
         if let option {
             switch option {

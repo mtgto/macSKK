@@ -44,7 +44,7 @@ final class UserDictSyncRecordTests: XCTestCase {
     func testPlaceholderRecords() {
         // 読みは最近変換したものが後に、変換候補は最近変換したものが前に並ぶ
         let dict = MemoryDict(entries: ["あ": [Word("亜"), Word("阿")], "い": [Word("井")], "かk": [Word("書")]],
-                              failedEntryCount: 0,
+                              readFailures: [],
                               okuriNashiYomis: ["い", "あ"],
                               okuriAriYomis: ["かk"],
                               saveToUserDict: true)
@@ -69,7 +69,7 @@ final class UserDictSyncRecordTests: XCTestCase {
 
     @MainActor func testApplyingOrdersReceivedFirst() async {
         let dict = MemoryDict(entries: ["あ": [Word("阿"), Word("亜")], "い": [Word("伊")], "う": [Word("鵜")]],
-                              failedEntryCount: 0,
+                              readFailures: [],
                               okuriNashiYomis: ["う", "い", "あ"],
                               okuriAriYomis: [],
                               saveToUserDict: true)
@@ -86,7 +86,7 @@ final class UserDictSyncRecordTests: XCTestCase {
         // 他の端末で「すべて同期」したときに受け取る、仮の日時の同期情報
         let ceiling = UserDictSyncRecord.placeholderDateCeiling
         let dict = MemoryDict(entries: ["あ": [Word("亜")], "い": [Word("伊")], "か": [Word("蚊")]],
-                              failedEntryCount: 0,
+                              readFailures: [],
                               okuriNashiYomis: ["か", "い", "あ"],
                               okuriAriYomis: [],
                               saveToUserDict: true)

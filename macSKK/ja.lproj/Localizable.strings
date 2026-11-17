@@ -38,6 +38,12 @@
 "LoadingStatusError %@" = "エラー: %@";
 "LoadingStatusDisabled" = "無効";
 "LoadingStatusUnknown" = "不明";
+"DictReadFailureShow" = "読み込めなかった行を表示";
+"DictReadFailureTitle" = "読み込めなかった行";
+"DictReadFailureLine %lld" = "%lld行目";
+"DictReadFailureReasonMissingSeparator" = "読みと変換候補の間に区切りがありません";
+"DictReadFailureReasonSpaceInYomi" = "読みに空白が含まれています";
+"DictReadFailureReasonUnterminatedCandidates" = "変換候補がスラッシュで終わっていません";
 "SKKServDictTitle" = "SKKServ辞書の設定";
 "SKKServDictTesting" = "SKKServへの接続テスト中…";
 "SKKServDictReferTestTitle" = "SKKServ辞書の参照テスト";

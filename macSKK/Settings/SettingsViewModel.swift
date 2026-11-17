@@ -853,8 +853,8 @@ final class SettingsViewModel: ObservableObject {
                     if loadEvent.trigger == .load {
                         if case .fail(let error) = loadEvent.status {
                             UNNotifier.sendNotificationForUserDict(readError: error)
-                        } else if case .loaded(_, let failureCount) = loadEvent.status, failureCount > 0 {
-                            UNNotifier.sendNotificationForUserDict(failureEntryCount: failureCount)
+                        } else if case .loaded(_, let failures) = loadEvent.status, failures.count > 0 {
+                            UNNotifier.sendNotificationForUserDict(failureEntryCount: failures.count)
                         }
                     }
                 } else {
