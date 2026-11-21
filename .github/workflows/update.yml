@@ -25,7 +25,7 @@ jobs:
           echo "sha256=${SHA256}" >> "$GITHUB_OUTPUT"
       - name: generate token
         id: app-token
-        uses: actions/create-github-app-token@v3.3.0
+        uses: actions/create-github-app-token@v3.4.0
         with:
           client-id: ${{ vars.HOMEBREW_MACSKK_CLIENT_ID }}
           private-key: ${{ secrets.HOMEBREW_MACSKK_APP_PRIVATE_KEY }}
