@@ -109,6 +109,8 @@ struct ReadonlyMemoryDict: SearchableDict, DictProtocol, Sendable {
         var keys: [String] = []
         var starts: [UInt32] = []
         var words: [CompactWord] = []
+        // 倍々で伸ばすと必要量の最大2倍近く確保されるので、候補の総数ぶんだけ確保する
+        words.reserveCapacity(entries.reduce(0) { $0 + $1.words.count })
         for index in order {
             let entry = entries[index]
             // 先頭のキーは必ず新規、以降は直前のキーと同じ(正規等価)なら連結する
