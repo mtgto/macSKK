@@ -182,7 +182,7 @@ enum FileDictType: Equatable {
                             logger.warning("JSON辞書 \(id, privacy: .public) にセクションと読みの形が一致しない読みが \(mismatch.count)件あります (例: \(mismatch.examples.joined(separator: ", ")))")
                         }
                         let content: Content = if readonly {
-                            .readonly(ReadonlyMemoryDict(okuriAriEntries: okuriAriEntries, okuriNashiEntries: okuriNashiEntries, saveToUserDict: saveToUserDict))
+                            .readonly(ReadonlyMemoryDict(okuriAriEntries: okuriAriEntries, okuriNashiEntries: okuriNashiEntries, dictName: id, saveToUserDict: saveToUserDict))
                         } else {
                             .writable(MemoryDict(okuriAriEntries: okuriAriEntries, okuriNashiEntries: okuriNashiEntries, saveToUserDict: saveToUserDict))
                         }
@@ -194,7 +194,7 @@ enum FileDictType: Equatable {
                             logger.warning("辞書 \(id) を読み込んだところ0バイトだったため更新を無視します")
                         }
                         let content: Content = if readonly {
-                            .readonly(ReadonlyMemoryDict(dictId: id, source: source, saveToUserDict: saveToUserDict))
+                            .readonly(ReadonlyMemoryDict(dictName: id, source: source, saveToUserDict: saveToUserDict))
                         } else {
                             .writable(MemoryDict(dictId: id, source: source, saveToUserDict: saveToUserDict))
                         }
@@ -382,7 +382,7 @@ enum FileDictType: Equatable {
     // ユニットテスト用
     func setEntries(_ entries: [String: [Word]], readonly: Bool) {
         self.content = if readonly {
-            .readonly(ReadonlyMemoryDict(entries: entries, saveToUserDict: saveToUserDict))
+            .readonly(ReadonlyMemoryDict(entries: entries, dictName: id, saveToUserDict: saveToUserDict))
         } else {
             .writable(MemoryDict(entries: entries, saveToUserDict: saveToUserDict))
         }

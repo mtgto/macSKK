@@ -22,7 +22,9 @@ struct ReadonlyMemoryDict: SearchableDict, DictProtocol, Sendable {
     /// 4バイトの `UInt32` なので `words` の要素数は `UInt32.max` 以下に限られる。
     private let starts: [UInt32]
     /// 全読みの変換候補を `keys` の順に連結したもの。読みごとの範囲は `starts` で引く
-    private let words: [Word]
+    private let words: [CompactWord]
+    /// 注釈に表示する辞書名。変換候補を返すときに ``Annotation/dictId`` にする
+    private let dictName: String
     /**
      * 読み込みに失敗した行数。コメント行、空行は除いた行数。
      */
@@ -30,7 +32,8 @@ struct ReadonlyMemoryDict: SearchableDict, DictProtocol, Sendable {
     /// この辞書から返した変換候補をユーザー辞書に保存するかどうか
     let saveToUserDict: Bool
 
-    init(dictId: FileDict.ID, source: String, saveToUserDict: Bool = true) {
+    /// - Parameter dictName: 注釈に表示する辞書名
+    init(dictName: String, source: String, saveToUserDict: Bool = true) {
         // 読み込み中のピークメモリを抑えるためDictionaryを経由せず登場順に溜める
         var entries: [(yomi: String, words: [Word])] = []
         var lineNumber = 0
@@ -41,21 +44,22 @@ struct ReadonlyMemoryDict: SearchableDict, DictProtocol, Sendable {
             if line.isEmpty || line.hasPrefix(";") {
                 return
             }
-            if let entry = Entry(line: line, dictId: dictId) {
+            if let entry = Entry(line: line, dictId: dictName) {
                 // 空文字列への変換候補をもつ場合、entry.candidatesは空になっているのでスキップする
                 if !entry.candidates.isEmpty {
                     entries.append((yomi: entry.yomi, words: entry.candidates))
                 }
             } else {
                 failedEntryCount += 1
-                logger.warning("辞書 \(dictId, privacy: .public) の読み込みで \(lineNumber)行目を正常に読み込めなかったためこの行をスキップします")
+                logger.warning("辞書 \(dictName, privacy: .public) の読み込みで \(lineNumber)行目を正常に読み込めなかったためこの行をスキップします")
             }
         }
-        self.init(table: Self.makeTable(entries: entries), failedEntryCount: failedEntryCount, saveToUserDict: saveToUserDict)
+        self.init(table: Self.makeTable(entries: entries), dictName: dictName, failedEntryCount: failedEntryCount, saveToUserDict: saveToUserDict)
     }
 
-    init(entries: [String: [Word]], saveToUserDict: Bool = true) {
-        self.init(table: Self.makeTable(entries: entries.map { (yomi: $0.key, words: $0.value) }), failedEntryCount: 0, saveToUserDict: saveToUserDict)
+    /// - Parameter dictName: 注釈に表示する辞書名。`entries` の変換候補の注釈の ``Annotation/dictId`` は使わず、この辞書名に置き換える
+    init(entries: [String: [Word]], dictName: String = "", saveToUserDict: Bool = true) {
+        self.init(table: Self.makeTable(entries: entries.map { (yomi: $0.key, words: $0.value) }), dictName: dictName, failedEntryCount: 0, saveToUserDict: saveToUserDict)
     }
 
     /// JSON形式の辞書用。
@@ -63,19 +67,22 @@ struct ReadonlyMemoryDict: SearchableDict, DictProtocol, Sendable {
     /// JSON辞書ではセクションと読みの形 (`String.isOkuriAri`) が一致しないことがあるが、
     /// 送りなし・送りありを同じテーブルに持つのでどちらのセクションの読みも引ける。
     /// 両セクションに同じ読みがある場合は送りありセクションの変換候補を採用し、送りなしセクションのものは捨てる。
-    init(okuriAriEntries: [String: [Word]], okuriNashiEntries: [String: [Word]], saveToUserDict: Bool = true) {
+    ///
+    /// - Parameter dictName: 注釈に表示する辞書名。変換候補の注釈の ``Annotation/dictId`` は使わず、この辞書名に置き換える
+    init(okuriAriEntries: [String: [Word]], okuriNashiEntries: [String: [Word]], dictName: String = "", saveToUserDict: Bool = true) {
         let entries = okuriAriEntries.map { (yomi: $0.key, words: $0.value) }
             + okuriNashiEntries.filter { okuriAriEntries[$0.key] == nil }.map { (yomi: $0.key, words: $0.value) }
-        self.init(table: Self.makeTable(entries: entries), failedEntryCount: 0, saveToUserDict: saveToUserDict)
+        self.init(table: Self.makeTable(entries: entries), dictName: dictName, failedEntryCount: 0, saveToUserDict: saveToUserDict)
     }
 
     /// ``keys``, ``starts``, ``words`` の組。
-    private typealias Table = (keys: [String], starts: [UInt32], words: [Word])
+    private typealias Table = (keys: [String], starts: [UInt32], words: [CompactWord])
 
-    private init(table: Table, failedEntryCount: Int, saveToUserDict: Bool) {
+    private init(table: Table, dictName: String, failedEntryCount: Int, saveToUserDict: Bool) {
         self.keys = table.keys
         self.starts = table.starts
         self.words = table.words
+        self.dictName = dictName
         self.failedEntryCount = failedEntryCount
         self.saveToUserDict = saveToUserDict
     }
@@ -101,7 +108,7 @@ struct ReadonlyMemoryDict: SearchableDict, DictProtocol, Sendable {
         }
         var keys: [String] = []
         var starts: [UInt32] = []
-        var words: [Word] = []
+        var words: [CompactWord] = []
         for index in order {
             let entry = entries[index]
             // 先頭のキーは必ず新規、以降は直前のキーと同じ(正規等価)なら連結する
@@ -109,7 +116,7 @@ struct ReadonlyMemoryDict: SearchableDict, DictProtocol, Sendable {
                 keys.append(entry.yomi)
                 starts.append(UInt32(words.count))
             }
-            words.append(contentsOf: entry.words)
+            words.append(contentsOf: entry.words.map(CompactWord.init))
         }
         starts.append(UInt32(words.count))
         return (keys: keys, starts: starts, words: words)
@@ -119,6 +126,7 @@ struct ReadonlyMemoryDict: SearchableDict, DictProtocol, Sendable {
 
     nonisolated func with(saveToUserDict: Bool) -> ReadonlyMemoryDict {
         ReadonlyMemoryDict(table: (keys: keys, starts: starts, words: words),
+                           dictName: dictName,
                            failedEntryCount: failedEntryCount,
                            saveToUserDict: saveToUserDict)
     }
@@ -140,7 +148,7 @@ struct ReadonlyMemoryDict: SearchableDict, DictProtocol, Sendable {
     }
 
     private nonisolated func words(at index: Int) -> [Word] {
-        Array(words[Int(starts[index])..<Int(starts[index + 1])])
+        words[Int(starts[index])..<Int(starts[index + 1])].map { $0.word(dictName: dictName) }
     }
 
     // MARK: DictProtocol
@@ -226,4 +234,30 @@ extension ReadonlyMemoryDict {
 
     /// 重複を含まない送りありの読みの配列。辞書順。本番コードでは使わない。
     var okuriAriYomis: [String] { keys.filter { $0.isOkuriAri } }
+}
+
+extension ReadonlyMemoryDict {
+    /**
+     * 読み込み専用辞書の変換候補。
+     *
+     * ``Word`` から注釈の辞書名 (``Annotation/dictId``) を除いたもの。
+     * 辞書名は辞書の中で共通なので、変換候補ごとに持たずに ``ReadonlyMemoryDict`` が1つだけ持つ。
+     */
+    private struct CompactWord: Sendable {
+        let word: Word.Word
+        let okuri: String?
+        /// 注釈の本文
+        let annotationText: String?
+
+        init(_ word: Word) {
+            self.word = word.word
+            self.okuri = word.okuri
+            self.annotationText = word.annotation?.text
+        }
+
+        /// 注釈の辞書名を付けて ``Word`` に戻す
+        func word(dictName: String) -> Word {
+            Word(word, okuri: okuri, annotation: annotationText.map { Annotation(dictId: dictName, text: $0) })
+        }
+    }
 }

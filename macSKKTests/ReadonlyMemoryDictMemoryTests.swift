@@ -71,7 +71,7 @@ class ReadonlyMemoryDictMemoryTests: XCTestCase {
         let clock = ContinuousClock()
         var dict: ReadonlyMemoryDict?
         let elapsed = clock.measure {
-            dict = ReadonlyMemoryDict(dictId: "SKK-JISYO.L", source: source)
+            dict = ReadonlyMemoryDict(dictName: "SKK-JISYO.L", source: source)
         }
         let heapDeltaBytes = heapInUse() - before
         withExtendedLifetime(source) {}
