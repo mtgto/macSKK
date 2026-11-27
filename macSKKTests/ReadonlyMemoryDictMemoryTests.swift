@@ -54,9 +54,8 @@ class ReadonlyMemoryDictMemoryTests: XCTestCase {
         return usage.ru_maxrss
     }
 
-    /// heapDeltaBytes の上限。実測は約30.2MBでその約1.3倍に余裕を持たせている。
-    /// 分割前のDictionary表現は約43.2MBなので、この上限ならDictionary表現への回帰を検知できる。
-    private static let heapDeltaBytesUpperBound = 40_000_000
+    /// heapDeltaBytes の上限。実測は約23.7MBで、その約1.3倍にしている。
+    private static let heapDeltaBytesUpperBound = 31_000_000
 
     func testLoadSKKJisyoL() throws {
         guard ProcessInfo.processInfo.environment["MACSKK_MEMORY_TEST"] == "1" else {
@@ -71,7 +70,7 @@ class ReadonlyMemoryDictMemoryTests: XCTestCase {
         let clock = ContinuousClock()
         var dict: ReadonlyMemoryDict?
         let elapsed = clock.measure {
-            dict = ReadonlyMemoryDict(dictId: "SKK-JISYO.L", source: source)
+            dict = ReadonlyMemoryDict(dictName: "SKK-JISYO.L", source: source)
         }
         let heapDeltaBytes = heapInUse() - before
         withExtendedLifetime(source) {}

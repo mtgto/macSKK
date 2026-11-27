@@ -2775,9 +2775,9 @@ final class StateMachineTests: XCTestCase {
         let annotation1 = Annotation(dictId: "dict1", text: "dict1")
         let annotation2 = Annotation(dictId: "dict2", text: "dict2")
         let annotation3 = Annotation(dictId: "dict3", text: "dict2")
-        let dict1 = ReadonlyMemoryDict(entries: ["う": [Word("雨", annotation: annotation1)]])
-        let dict2 = ReadonlyMemoryDict(entries: ["う": [Word("雨", annotation: annotation2)]])
-        let dict3 = ReadonlyMemoryDict(entries: ["う": [Word("雨", annotation: annotation3)]])
+        let dict1 = ReadonlyMemoryDict(entries: ["う": [Word("雨", annotation: annotation1)]], dictName: "dict1")
+        let dict2 = ReadonlyMemoryDict(entries: ["う": [Word("雨", annotation: annotation2)]], dictName: "dict2")
+        let dict3 = ReadonlyMemoryDict(entries: ["う": [Word("雨", annotation: annotation3)]], dictName: "dict3")
         Global.dictionary.dicts = [dict1, dict2, dict3]
 
         let ctx = StateMachineTestContext(verifying: [.inputMethod, .candidate])

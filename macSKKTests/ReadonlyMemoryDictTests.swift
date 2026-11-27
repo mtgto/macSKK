@@ -20,7 +20,7 @@ final class ReadonlyMemoryDictTests: XCTestCase {
             いぬ /犬;*かわいい/
 
             """
-        let dict = ReadonlyMemoryDict(dictId: "testDict", source: source)
+        let dict = ReadonlyMemoryDict(dictName: "testDict", source: source)
         XCTAssertEqual(dict.refer("あg", option: nil).map { $0.word }, ["挙", "揚", "上"])
         XCTAssertEqual(dict.refer("あ", option: nil).map { $0.word }, ["阿", "唖", "亜", "娃"])
         XCTAssertEqual(dict.refer("けい", option: nil).map { $0.word }, ["京"])
@@ -40,7 +40,7 @@ final class ReadonlyMemoryDictTests: XCTestCase {
             う /宇/
 
             """
-        let dict = ReadonlyMemoryDict(dictId: "testDict", source: source)
+        let dict = ReadonlyMemoryDict(dictName: "testDict", source: source)
         XCTAssertEqual(dict.failedEntryCount, 2)
         XCTAssertEqual(dict.entryCount, 2)
         XCTAssertEqual(dict.okuriNashiYomis, ["あ", "う"])
@@ -63,7 +63,7 @@ final class ReadonlyMemoryDictTests: XCTestCase {
             けい /京;10^16/
 
             """
-        let dict = ReadonlyMemoryDict(dictId: "testDict", source: source)
+        let dict = ReadonlyMemoryDict(dictName: "testDict", source: source)
         XCTAssertEqual(dict.okuriNashiYomis, ["Cyrillic", "Greek", "cyrillic", "greek", "あ", "けい"])
         XCTAssertEqual(dict.okuriAriYomis, ["あb", "あg", "いt", "おおk"])
     }
@@ -76,7 +76,7 @@ final class ReadonlyMemoryDictTests: XCTestCase {
             あお /碧/
 
             """
-        let dict = ReadonlyMemoryDict(dictId: "testDict", source: source)
+        let dict = ReadonlyMemoryDict(dictName: "testDict", source: source)
         XCTAssertEqual(dict.refer("あお", option: nil).map { $0.word }, ["青", "蒼", "碧"], "同じ読みは登場順に連結する")
         XCTAssertEqual(dict.okuriNashiYomis, ["あお", "あか"])
         XCTAssertEqual(dict.entryCount, 2)
@@ -89,7 +89,7 @@ final class ReadonlyMemoryDictTests: XCTestCase {
             い /胃/
 
             """
-        let dict = ReadonlyMemoryDict(dictId: "testDict", source: source)
+        let dict = ReadonlyMemoryDict(dictName: "testDict", source: source)
         XCTAssertEqual(dict.refer("あ", option: nil).map(\.word), ["亜", "阿"])
         XCTAssertEqual(dict.okuriNashiYomis, ["あ", "い"])
         XCTAssertEqual(dict.entryCount, 2)
@@ -98,7 +98,7 @@ final class ReadonlyMemoryDictTests: XCTestCase {
     func testParseUnsortedInputIsSorted() {
         let yomis = ["う", "あr", "い", "あ", "Greek", "cyrillic", "おおk"]
         let source = yomis.map { "\($0) /\($0)!/" }.joined(separator: "\n")
-        let dict = ReadonlyMemoryDict(dictId: "testDict", source: source)
+        let dict = ReadonlyMemoryDict(dictName: "testDict", source: source)
         XCTAssertEqual(dict.okuriNashiYomis, ["Greek", "cyrillic", "あ", "い", "う"])
         XCTAssertEqual(dict.okuriAriYomis, ["あr", "おおk"])
         for yomi in yomis {
@@ -115,7 +115,7 @@ final class ReadonlyMemoryDictTests: XCTestCase {
             あお /蒼/
 
             """
-        let dict = ReadonlyMemoryDict(dictId: "testDict", source: source)
+        let dict = ReadonlyMemoryDict(dictName: "testDict", source: source)
         XCTAssertEqual(dict.entries, ["あb": [Word("浴")], "あお": [Word("青"), Word("蒼")]])
     }
 
@@ -128,6 +128,29 @@ final class ReadonlyMemoryDictTests: XCTestCase {
         XCTAssertEqual(dict.entryCount, 3)
         XCTAssertEqual(dict.failedEntryCount, 0)
         XCTAssertFalse(dict.saveToUserDict)
+    }
+
+    func testAnnotationUsesDictName() {
+        let entries: [String: [Word]] = [
+            "い": [Word("胃", annotation: Annotation(dictId: "other", text: "stomach")), Word("伊")],
+            "おおk": [Word("多", okuri: "く", annotation: Annotation(dictId: "other", text: "many"))],
+        ]
+        let dict = ReadonlyMemoryDict(entries: entries, dictName: "dict")
+        XCTAssertEqual(dict.refer("い", option: nil).map(\.annotation), [Annotation(dictId: "dict", text: "stomach"), nil],
+                       "注釈の辞書名は渡されたWordの注釈のものではなく辞書名になる")
+        let okuri = dict.refer("おおk", option: nil)
+        XCTAssertEqual(okuri.map(\.okuri), ["く"])
+        XCTAssertEqual(okuri.map(\.annotation), [Annotation(dictId: "dict", text: "many")])
+        XCTAssertEqual(dict.with(saveToUserDict: false).refer("い", option: nil).first?.annotation,
+                       Annotation(dictId: "dict", text: "stomach"), "with(saveToUserDict:)でも辞書名を引き継ぐ")
+    }
+
+    func testAnnotationUsesDictNameWithOkuriAriNashiEntries() {
+        let dict = ReadonlyMemoryDict(okuriAriEntries: ["あr": [Word("有", annotation: Annotation(dictId: "other", text: "exist"))]],
+                                      okuriNashiEntries: ["え": [Word("絵", annotation: Annotation(dictId: "other", text: "picture"))]],
+                                      dictName: "json")
+        XCTAssertEqual(dict.refer("あr", option: nil).first?.annotation, Annotation(dictId: "json", text: "exist"))
+        XCTAssertEqual(dict.refer("え", option: nil).first?.annotation, Annotation(dictId: "json", text: "picture"))
     }
 
     func testInitWithOkuriAriNashiEntries() {
@@ -180,7 +203,7 @@ final class ReadonlyMemoryDictTests: XCTestCase {
             \(nfd)k /書/
 
             """
-        let dict = ReadonlyMemoryDict(dictId: "testDict", source: source)
+        let dict = ReadonlyMemoryDict(dictName: "testDict", source: source)
         XCTAssertEqual(dict.entryCount, 3)
         XCTAssertEqual(dict.refer(nfc, option: nil).map(\.word), ["蛾", "我"])
         XCTAssertEqual(dict.refer(nfd, option: nil).map(\.word), ["蛾", "我"])
@@ -208,7 +231,7 @@ final class ReadonlyMemoryDictTests: XCTestCase {
             あいうえ /アイウエ/
 
             """
-        let dict = ReadonlyMemoryDict(dictId: "testDict", source: source)
+        let dict = ReadonlyMemoryDict(dictName: "testDict", source: source)
         XCTAssertEqual(dict.findCompletions(prefix: "あい"), ["あいう", "あいうえ"], "SKK形式の送りありの読みは補完しない")
         XCTAssertEqual(dict.findCompletions(prefix: "あいう"), ["あいうえ"])
         let json = ReadonlyMemoryDict(okuriAriEntries: ["あいうk": [Word("合")], "あいb": [Word("浴")]],
@@ -250,7 +273,7 @@ final class ReadonlyMemoryDictTests: XCTestCase {
             うえ /上/
 
             """
-        let dict = ReadonlyMemoryDict(dictId: "testDict", source: source)
+        let dict = ReadonlyMemoryDict(dictName: "testDict", source: source)
         XCTAssertEqual(dict.findCompletions(prefix: "い"), ["いか", "いかめし", "いかめら", "いがい", "いきおい", "いきなり", "いきば", "いく", "いこい"])
         XCTAssertEqual(dict.findCompletions(prefix: "いか"), ["いかめし", "いかめら"])
         XCTAssertEqual(dict.findCompletions(prefix: "いき"), ["いきおい", "いきなり", "いきば"])

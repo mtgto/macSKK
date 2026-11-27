@@ -228,8 +228,8 @@ final class UserDictSnapshotTests: XCTestCase {
     }
 
     @MainActor func testSnapshotReferDictsMergeAnnotation() throws {
-        let dict1 = ReadonlyMemoryDict(entries: ["い": [Word("胃", annotation: Annotation(dictId: "dict1", text: "d1ann")), Word("伊")]], saveToUserDict: true)
-        let dict2 = ReadonlyMemoryDict(entries: ["い": [Word("胃", annotation: Annotation(dictId: "dict2", text: "d2ann")), Word("意")]])
+        let dict1 = ReadonlyMemoryDict(entries: ["い": [Word("胃", annotation: Annotation(dictId: "dict1", text: "d1ann")), Word("伊")]], dictName: "dict1", saveToUserDict: true)
+        let dict2 = ReadonlyMemoryDict(entries: ["い": [Word("胃", annotation: Annotation(dictId: "dict2", text: "d2ann")), Word("意")]], dictName: "dict2")
         let userDict = try UserDict(dicts: [dict1, dict2],
                                     userDictEntries: [:],
                                     privateMode: CurrentValueSubject<Bool, Never>(false),

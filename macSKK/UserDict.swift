@@ -86,7 +86,7 @@ enum UserDictAddSource {
         }
         userDictFileURL = dictionariesDirectoryURL.appending(path: Self.userDictFilename)
         if let userDictEntries {
-            self.userDict = ReadonlyMemoryDict(entries: userDictEntries)
+            self.userDict = ReadonlyMemoryDict(entries: userDictEntries, dictName: Self.userDictFilename)
         } else {
             if !FileManager.default.fileExists(atPath: userDictFileURL.path()) {
                 logger.log("ユーザー辞書ファイルがないため作成します")
