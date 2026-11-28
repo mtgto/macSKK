@@ -10,6 +10,9 @@ defaults:
   run:
     shell: bash
 
+# GITHUB_TOKENは使わない (homebrew-macSKKへのpushはGitHub Appのトークンで行う)
+permissions: {}
+
 jobs:
   update:
     runs-on: ubuntu-slim
@@ -38,6 +41,7 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
           sparse-checkout: Casks
           path: homebrew-macSKK
+          persist-credentials: false
       - name: Modify a Cask
         working-directory: homebrew-macSKK
         env:
@@ -57,6 +61,7 @@ jobs:
             user_id=$(gh api "/users/${APP_SLUG}[bot]" --jq .id)
             git config user.name "${APP_SLUG}[bot]"
             git config user.email "${user_id}+${APP_SLUG}[bot]@users.noreply.github.com"
+            gh auth setup-git
             git add --update
             git commit -m "Update Cask for version ${VERSION}"
             git push

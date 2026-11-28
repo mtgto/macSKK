@@ -32,6 +32,9 @@ defaults:
   run:
     shell: bash
 
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: xcode-27
@@ -41,6 +44,8 @@ jobs:
     - name: Select Xcode version
       run: sudo xcode-select -s '/Applications/Xcode_27.2.app/Contents/Developer'
     - uses: actions/checkout@v7.0.1
+      with:
+        persist-credentials: false
     # 結果は.xcresultに残し、xcresult-summaryで失敗理由をジョブのサマリーとアノテーションに出す。
     # xcbeautifyだけでは並列テスト時に失敗の詳細(XCTAssertEqual failed: ...)が出ない。
     - name: test
